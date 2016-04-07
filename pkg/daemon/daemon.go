@@ -2,55 +2,72 @@ package daemon
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/docker/docker/pkg/ioutils"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
-	"github.com/emc-advanced-dev/unik/pkg/stagers"
+	"github.com/emc-advanced-dev/unik/pkg/config"
+	"github.com/emc-advanced-dev/unik/pkg/providers"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/go-martini/martini"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/layer-x/layerx-commons/lxlog"
 	"github.com/layer-x/layerx-commons/lxmartini"
 	"github.com/pborman/uuid"
-	"net/http"
-	"strings"
-	"github.com/emc-advanced-dev/unik/pkg/config"
-	"strconv"
-	"fmt"
-	"time"
 	"io"
-	"mime/multipart"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type UnikDaemon struct {
 	server    *martini.ClassicMartini
-	stagers   map[string]stagers.Stager
+	providers providers.Providers
 	compilers map[string]compilers.Compiler
-	mode      string
 }
 
 const (
-	aws = "aws"
+	aws     = "aws"
 	vsphere = "vsphere"
-	vbox = "vbox"
+	vbox    = "vbox"
 )
 
+func NewAwsProvider(aws config.Aws) providers.Provider {
+	return nil
+}
+
+func NewVsphereProvider(aws config.Vsphere) providers.Provider {
+	return nil
+}
+
+func NewVirtualboxProvider(aws config.Vbox) providers.Provider {
+	return nil
+}
+
 func NewUnikDaemon(config config.UnikConfig) *UnikDaemon {
-	stagers := make(map[string]stagers.Stager)
+	providers := make(providers.Providers)
 	compilers := make(map[string]compilers.Compiler)
-
-	if config.Config.Providers.Aws.AwsAccessKeyID != "" {
-		stagers[aws] = NewAwsStager(config)
+	for _, awsConfig := range config.Config.Providers.Aws {
+		providers[aws] = NewAwsProvider(awsConfig)
+		break
 	}
-	if config.Config.Providers.Vsphere.VsphereURL != "" {
-		stagers[vsphere] = NewVsphereStager(config)
+	for _, vsphereConfig := range config.Config.Providers.Vsphere {
+		providers[vsphere] = NewVsphereProvider(vsphereConfig)
+		break
 	}
-	stagers[vbox] = NewVirtualboxStager(config)
-
+	for _, vboxConfig := range config.Config.Providers.Vbox {
+		providers[vbox] = NewVirtualboxProvider(vboxConfig)
+		break
+	}
 	return &UnikDaemon{
-		server: lxmartini.QuietMartini(),
-		stagers: stagers,
+		server:    lxmartini.QuietMartini(),
+		providers: providers,
 		compilers: compilers,
-		mode: vbox,
 	}
+}
+
+func (d *UnikDaemon) Start(port int) {
+	d.server.RunOnAddr(fmt.Sprintf(":%v", port))
 }
 
 func (d *UnikDaemon) registerHandlers() {
@@ -105,57 +122,35 @@ func (d *UnikDaemon) registerHandlers() {
 		}
 	}
 
-	//mode
-	d.server.Get("/modes/current", func() string {
-		return d.mode
-	})
-	d.server.Get("/modes", func(res http.ResponseWriter, req *http.Request) {
-		streamOrRespond(res, req, "set-staging-mode", func(logger lxlog.Logger) (interface{}, error) {
-			modes := []string{}
-			for mode := range d.compilers {
-				modes = append(modes, mode)
-			}
-			return strings.Join(modes, "|"), nil
-		})
-	})
-	d.server.Put("/mode/:name", func(res http.ResponseWriter, req *http.Request, params martini.Params){
-		streamOrRespond(res, req, "set-staging-mode", func(logger lxlog.Logger) (interface{}, error) {
-			mode := params["name"]
-			logger.Debugf("requested staging mode: %s", mode)
-			if _, ok := d.stagers[mode]; !ok {
-				return nil, lxerrors.New("requested mode '"+mode+"' not found", nil)
-			}
-			d.mode = mode
-			return mode+" accepted", nil
-		})
-	})
-
 	//images
 	d.server.Get("/images", func(res http.ResponseWriter, req *http.Request) {
 		streamOrRespond(res, req, "get-images", func(logger lxlog.Logger) (interface{}, error) {
-			images, err := d.stagers[d.mode].ListImages(logger)
-			if err != nil {
-				logger.WithErr(err).Errorf("could not get image list")
-			} else {
-				logger.WithFields(lxlog.Fields{
-					"images": images,
-				}).Debugf("Listing all images")
+			allImages := []*types.Image{}
+			for _, provider := range d.providers {
+				images, err := provider.ListImages(logger)
+				if err != nil {
+					return nil, lxerrors.New("could not get image list", err)
+				}
+				allImages = append(allImages, images...)
 			}
-			return images, err
+			logger.WithFields(lxlog.Fields{
+				"images": allImages,
+			}).Debugf("Listing all images")
+			return allImages, nil
 		})
 	})
 	d.server.Get("/images/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		streamOrRespond(res, req, "get-images", func(logger lxlog.Logger) (interface{}, error) {
 			imageName := params["image_name"]
-			image, err := d.stagers[d.mode].GetImage(logger, imageName)
+			provider, err := d.providers.ProviderForImage(logger, imageName)
 			if err != nil {
-				logger.WithErr(err).Errorf("could not get image %s", imageName)
-			} else {
-				logger.WithFields(lxlog.Fields{
-					"image": image,
-				}).Debugf("Retrieving image")
+				return nil, err
 			}
-			return image, err
+			image, err := provider.GetImage(logger, imageName)
+			if err != nil {
+				return nil, err
+			}
+			return image, nil
 		})
 	})
 	d.server.Post("/images/:name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
@@ -181,30 +176,34 @@ func (d *UnikDaemon) registerHandlers() {
 			defer sourceTar.Close()
 			force := req.FormValue("force")
 			unikernelType := req.FormValue("type")
-			compilerMode := getCompilerMode(d.mode, unikernelType)
+			providerType := req.FormValue("provider")
+			if _, ok := d.providers[providerType]; !ok {
+				return nil, lxerrors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
+			}
+
+			compilerMode := getCompilerMode(providerType, unikernelType)
 			compiler, ok := d.compilers[compilerMode]
 			if !ok {
-				return nil, lxerrors.New("unikernel type "+unikernelType+" not available for "+d.mode+"infrastructure", nil)
+				return nil, lxerrors.New("unikernel type "+unikernelType+" not available for "+providerType+"infrastructure", nil)
 			}
 			mountPoints := strings.Split(req.FormValue("mounts"), ",")
 
-			logger.WithFields(lxlog.Fields{
-				"source-tar": header.Filename,
-				"force":         force,
-				"mount-points":   mountPoints,
-				"name": name,
-			}).Debugf("compiling raw image")
-
-			rawImage, err := compiler.CompileRawImage(sourceTar, header, mountPoints)
-			if err != nil {
-				return nil, lxerrors.New("failed to compile raw image", err)
+			compileFunc := func() (*types.RawImage, error) {
+				logger.WithFields(lxlog.Fields{
+					"source-tar":   header.Filename,
+					"force":        force,
+					"mount-points": mountPoints,
+					"name":         name,
+					"compiler":     compilerMode,
+				}).Debugf("compiling raw image")
+				rawImage, err := compiler.CompileRawImage(sourceTar, header, mountPoints)
+				if err != nil {
+					return nil, lxerrors.New("failed to compile raw image", err)
+				}
+				return rawImage, nil
 			}
 
-			logger.WithFields(lxlog.Fields{
-				"raw-image": rawImage,
-			}).Debugf("staging compiled image")
-
-			image, err := d.stagers[d.mode].Stage(logger, name, rawImage, force)
+			image, err := d.providers[providerType].Stage(logger, name, compileFunc, force)
 			if err != nil {
 				return nil, lxerrors.New("failed staging image", err)
 			}
@@ -228,9 +227,12 @@ func (d *UnikDaemon) registerHandlers() {
 			if strings.ToLower(forceStr) == "true" {
 				force = true
 			}
-			err := d.stagers[d.mode].DeleteImage(logger, imageName, force)
+			provider, err := d.providers.ProviderForImage(logger, imageName)
 			if err != nil {
-				logger.WithErr(err).Errorf("could not delete image " + imageName)
+				return nil, err
+			}
+			err = provider.DeleteImage(logger, imageName, force)
+			if err != nil {
 				return nil, err
 			}
 			return nil, nil
@@ -240,29 +242,33 @@ func (d *UnikDaemon) registerHandlers() {
 	//Instances
 	d.server.Get("/instances", func(res http.ResponseWriter, req *http.Request) {
 		streamOrRespond(res, req, "get-instances", func(logger lxlog.Logger) (interface{}, error) {
-			instances, err := d.stagers[d.mode].ListInstances(logger)
-			if err != nil {
-				logger.WithErr(err).Errorf("could not get instance list")
-			} else {
-				logger.WithFields(lxlog.Fields{
-					"instances": instances,
-				}).Debugf("Listing all instances")
+			allInstances := []*types.Instance{}
+			for _, provider := range d.providers {
+				instances, err := provider.ListInstances(logger)
+				if err != nil {
+					logger.WithErr(err).Errorf("could not get instance list")
+				} else {
+					allInstances = append(allInstances, instances...)
+				}
 			}
-			return instances, err
+			logger.WithFields(lxlog.Fields{
+				"instances": allInstances,
+			}).Debugf("Listing all instances")
+			return allInstances, nil
 		})
 	})
 	d.server.Get("/instances/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		streamOrRespond(res, req, "get-instances", func(logger lxlog.Logger) (interface{}, error) {
 			instanceId := params["instance_id"]
-			instance, err := d.stagers[d.mode].GetInstance(logger, instanceId)
+			provider, err := d.providers.ProviderForInstance(logger, instanceId)
 			if err != nil {
-				logger.WithErr(err).Errorf("could not get instance")
-			} else {
-				logger.WithFields(lxlog.Fields{
-					"instance": instance,
-				}).Debugf("Retrieved instance")
+				return nil, err
 			}
-			return instance, err
+			instance, err := provider.GetInstance(logger, instanceId)
+			if err != nil {
+				return nil, err
+			}
+			return instance, nil
 		})
 	})
 	d.server.Delete("/instances/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
@@ -271,9 +277,13 @@ func (d *UnikDaemon) registerHandlers() {
 			logger.WithFields(lxlog.Fields{
 				"request": req,
 			}).Infof("deleting instance " + instanceId)
-			err := d.stagers[d.mode].DeleteInstance(logger, instanceId)
+			provider, err := d.providers.ProviderForInstance(logger, instanceId)
 			if err != nil {
-				return nil, lxerrors.New("could not delete instance " + instanceId, err)
+				return nil, err
+			}
+			err = provider.DeleteInstance(logger, instanceId)
+			if err != nil {
+				return nil, err
 			}
 			return nil, nil
 		})
@@ -283,6 +293,10 @@ func (d *UnikDaemon) registerHandlers() {
 			instanceId := params["instance_id"]
 			follow := req.URL.Query().Get("follow")
 			res.Write([]byte("getting logs for " + instanceId + "...\n"))
+			provider, err := d.providers.ProviderForInstance(logger, instanceId)
+			if err != nil {
+				return nil, err
+			}
 			if strings.ToLower(follow) == "true" {
 				if f, ok := res.(http.Flusher); ok {
 					f.Flush()
@@ -292,14 +306,14 @@ func (d *UnikDaemon) registerHandlers() {
 
 				deleteOnDisconnect := req.URL.Query().Get("delete")
 				if strings.ToLower(deleteOnDisconnect) == "true" {
-					defer d.stagers[d.mode].DeleteInstance(logger, instanceId)
+					defer provider.DeleteInstance(logger, instanceId)
 				}
 
 				output := ioutils.NewWriteFlusher(res)
 				logFn := func() (string, error) {
-					return d.stagers[d.mode].GetLogs(logger, instanceId)
+					return provider.GetLogs(logger, instanceId)
 				}
-				err := streamOutput(logFn(), output)
+				err := streamOutput(logFn, output)
 				if err != nil {
 					logger.WithErr(err).WithFields(lxlog.Fields{
 						"instanceId": instanceId,
@@ -307,8 +321,7 @@ func (d *UnikDaemon) registerHandlers() {
 				}
 				return nil, nil
 			}
-
-			logs, err := d.stagers[d.mode].GetLogs(logger, instanceId)
+			logs, err := provider.GetLogs(logger, instanceId)
 			if err != nil {
 				return nil, lxerrors.New("failed to perform get logs request", err)
 			}
@@ -369,7 +382,12 @@ func (d *UnikDaemon) registerHandlers() {
 				}
 			}
 
-			instance, err := d.stagers[d.mode].RunInstance(logger, instanceName, imageName, mntPointsToVolumeIds, env)
+			provider, err := d.providers.ProviderForImage(logger, imageName)
+			if err != nil {
+				return nil, err
+			}
+
+			instance, err := provider.RunInstance(logger, instanceName, imageName, mntPointsToVolumeIds, env)
 			if err != nil {
 				return nil, err
 			}
@@ -382,9 +400,13 @@ func (d *UnikDaemon) registerHandlers() {
 			logger.WithFields(lxlog.Fields{
 				"request": req,
 			}).Infof("starting instance " + instanceId)
-			err := d.stagers[d.mode].StartInstance(logger, instanceId)
+			provider, err := d.providers.ProviderForInstance(logger, instanceId)
 			if err != nil {
-				return nil, lxerrors.New("could not start instance " + instanceId, err)
+				return nil, err
+			}
+			err = provider.StartInstance(logger, instanceId)
+			if err != nil {
+				return nil, lxerrors.New("could not start instance "+instanceId, err)
 			}
 			return nil, nil
 		})
@@ -395,9 +417,13 @@ func (d *UnikDaemon) registerHandlers() {
 			logger.WithFields(lxlog.Fields{
 				"request": req,
 			}).Infof("stopping instance " + instanceId)
-			err := d.stagers[d.mode].StopInstance(logger, instanceId)
+			provider, err := d.providers.ProviderForInstance(logger, instanceId)
 			if err != nil {
-				return nil, lxerrors.New("could not stop instance " + instanceId, err)
+				return nil, err
+			}
+			err = provider.StopInstance(logger, instanceId)
+			if err != nil {
+				return nil, lxerrors.New("could not stop instance "+instanceId, err)
 			}
 			return nil, nil
 		})
@@ -407,20 +433,28 @@ func (d *UnikDaemon) registerHandlers() {
 	d.server.Get("/volumes", func(res http.ResponseWriter, req *http.Request) {
 		streamOrRespond(res, req, "get-volumes", func(logger lxlog.Logger) (interface{}, error) {
 			logger.Debugf("listing volumes started")
-			volumes, err := d.stagers[d.mode].ListVolumes(logger)
-			if err != nil {
-				return nil, lxerrors.New("could not retrieve volumes", err)
+			allVolumes := []*types.Volume{}
+			for _, provider := range d.providers {
+				volumes, err := provider.ListVolumes(logger)
+				if err != nil {
+					return nil, lxerrors.New("could not retrieve volumes", err)
+				}
+				allVolumes = append(allVolumes, volumes...)
 			}
 			logger.WithFields(lxlog.Fields{
-				"volumes": volumes,
+				"volumes": allVolumes,
 			}).Infof("volumes")
-			return volumes, nil
+			return allVolumes, nil
 		})
 	})
 	d.server.Get("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		streamOrRespond(res, req, "delete-volume", func(logger lxlog.Logger) (interface{}, error) {
 			volumeName := params["volume_name"]
-			volume, err := d.stagers[d.mode].GetVolume(logger, volumeName)
+			provider, err := d.providers.ProviderForVolume(logger, volumeName)
+			if err != nil {
+				return nil, err
+			}
+			volume, err := provider.GetVolume(logger, volumeName)
 			if err != nil {
 				return nil, lxerrors.New("could not get volume", err)
 			}
@@ -442,16 +476,26 @@ func (d *UnikDaemon) registerHandlers() {
 			}).Debugf("parsing multipart form")
 
 			sizeStr := req.FormValue("sizeStr")
-			if sizeStr != "" {
-				size, err := strconv.Atoi(sizeStr)
-				if err != nil {
-					return nil, lxerrors.New("could not parse given size", err)
-				}
+			size, err := strconv.Atoi(sizeStr)
+			if err != nil {
+				return nil, lxerrors.New("could not parse given size", err)
+			}
+
+			providerType := req.FormValue("provider")
+			if _, ok := d.providers[providerType]; !ok {
+				return nil, lxerrors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
+			}
+
+			logger.WithFields(lxlog.Fields{
+				"form": req.Form,
+			}).Debugf("seeking form file marked 'tarfile'")
+			dataTar, header, err := req.FormFile("tarfile")
+			if err != nil {
 				logger.WithFields(lxlog.Fields{
 					"size": size,
 					"name": volumeName,
-				}).Debugf("creating empty volume started")
-				volume, err := d.stagers[d.mode].CreateEmptyVolume(logger, volumeName, size)
+				}).WithErr(err).Debugf("creating empty volume started")
+				volume, err := d.providers[providerType].CreateEmptyVolume(logger, volumeName, size)
 				if err != nil {
 					return nil, lxerrors.New("creating volume", err)
 				}
@@ -460,21 +504,13 @@ func (d *UnikDaemon) registerHandlers() {
 				}).Infof("volume created")
 				return volume
 			}
-
-			logger.WithFields(lxlog.Fields{
-				"form": req.Form,
-			}).Debugf("seeking form file marked 'tarfile'")
-			dataTar, header, err := req.FormFile("tarfile")
-			if err != nil {
-				return nil, lxerrors.New("failed to retrieve file for field 'tarfile'", err)
-			}
 			defer dataTar.Close()
 
 			logger.WithFields(lxlog.Fields{
 				"tarred-data": header.Filename,
-				"name": volumeName,
+				"name":        volumeName,
 			}).Debugf("creating volume started")
-			volume, err := d.stagers[d.mode].CreateVolume(logger, volumeName, dataTar, header)
+			volume, err := d.providers[providerType].CreateVolume(logger, volumeName, dataTar, header, size)
 			if err != nil {
 				return nil, lxerrors.New("could not create volume", err)
 			}
@@ -487,6 +523,10 @@ func (d *UnikDaemon) registerHandlers() {
 	d.server.Delete("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		streamOrRespond(res, req, "delete-volume", func(logger lxlog.Logger) (interface{}, error) {
 			volumeName := params["volume_name"]
+			provider, err := d.providers.ProviderForVolume(logger, volumeName)
+			if err != nil {
+				return nil, err
+			}
 			forceStr := req.URL.Query().Get("force")
 			force := false
 			if strings.ToLower(forceStr) == "true" {
@@ -496,7 +536,7 @@ func (d *UnikDaemon) registerHandlers() {
 			logger.WithFields(lxlog.Fields{
 				"force": force, "name": volumeName,
 			}).Debugf("deleting volume started")
-			err := d.stagers[d.mode].DeleteVolume(logger, volumeName, force)
+			err = provider.DeleteVolume(logger, volumeName, force)
 			if err != nil {
 				return nil, lxerrors.New("could not delete volume", err)
 			}
@@ -509,22 +549,28 @@ func (d *UnikDaemon) registerHandlers() {
 	d.server.Post("/volumes/:volume_name/attach/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		streamOrRespond(res, req, "attach-volume", func(logger lxlog.Logger) (interface{}, error) {
 			volumeName := params["volume_name"]
+			provider, err := d.providers.ProviderForVolume(logger, volumeName)
+			if err != nil {
+				return nil, err
+			}
 			instanceId := params["instance_id"]
-			device := req.URL.Query().Get("device")
-			if device == "" {
-				return nil, lxerrors.New("must provide a device name in URL query", nil)
+			mount := req.URL.Query().Get("mount")
+			if mount == "" {
+				return nil, lxerrors.New("must provide a mount point in URL query", nil)
 			}
 			logger.WithFields(lxlog.Fields{
 				"instance": instanceId,
 				"volume":   volumeName,
+				"mount":    mount,
 			}).Debugf("attaching volume to instance")
-			err := d.stagers[d.mode].AttachVolume(logger, volumeName, instanceId, device)
+			err = provider.AttachVolume(logger, volumeName, instanceId, mount)
 			if err != nil {
 				return nil, lxerrors.New("could not attach volume to instance", err)
 			}
 			logger.WithFields(lxlog.Fields{
 				"instance": instanceId,
 				"volume":   volumeName,
+				"mount":    mount,
 			}).Infof("volume attached")
 			return volumeName, nil
 		})
@@ -532,17 +578,16 @@ func (d *UnikDaemon) registerHandlers() {
 	d.server.Post("/volumes/:volume_name/detach", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		streamOrRespond(res, req, "detach-volume", func(logger lxlog.Logger) (interface{}, error) {
 			volumeName := params["volume_name"]
-			forceStr := req.URL.Query().Get("force")
-			force := false
-			if strings.ToLower(forceStr) == "true" {
-				force = true
+			provider, err := d.providers.ProviderForVolume(logger, volumeName)
+			if err != nil {
+				return nil, err
 			}
 			logger.WithFields(lxlog.Fields{
 				"volume": volumeName,
 			}).Debugf("detaching volume from any instance")
-			err := d.stagers[d.mode].DetachVolume(logger, volumeName, force)
+			err = provider.DetachVolume(logger, volumeName)
 			if err != nil {
-				return nil, lxerrors.New("could not attach volume to instance", err)
+				return nil, lxerrors.New("could not detach volume from instance", err)
 			}
 			logger.WithFields(lxlog.Fields{
 				"volume": volumeName,
@@ -571,7 +616,7 @@ func streamOutput(outputFunc func() (string, error), w io.Writer) error {
 					return lxerrors.New("w is not a flusher", nil)
 				}
 
-				_, err = w.Write([]byte(logLines[linesCounted] + "\n")) 
+				_, err = w.Write([]byte(logLines[linesCounted] + "\n"))
 				if err != nil {
 					return nil
 				}

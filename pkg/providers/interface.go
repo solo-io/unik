@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxlog"
 	"mime/multipart"
@@ -8,7 +9,7 @@ import (
 
 type Provider interface {
 	//Images
-	Stage(logger lxlog.Logger, name string, rawImage *types.RawImage, force bool) (*types.Image, error)
+	Stage(logger lxlog.Logger, name string, compileFunc func() (*types.RawImage, error), force bool) (*types.Image, error)
 	ListImages(logger lxlog.Logger) ([]*types.Image, error)
 	GetImage(logger lxlog.Logger, nameOrIdPrefix string) (*types.Image, error)
 	DeleteImage(logger lxlog.Logger, id string, force bool) error
@@ -26,6 +27,46 @@ type Provider interface {
 	ListVolumes(logger lxlog.Logger) ([]*types.Volume, error)
 	GetVolume(logger lxlog.Logger, nameOrIdPrefix string) (*types.Volume, error)
 	DeleteVolume(logger lxlog.Logger, id string, force bool) error
-	AttachVolume(logger lxlog.Logger, id, instanceId string) error
+	AttachVolume(logger lxlog.Logger, id, instanceId, mntPoint string) error
 	DetachVolume(logger lxlog.Logger, id string) error
+}
+
+type Providers map[string]Provider
+
+func (providers Providers) Keys() []string {
+	keys := []string{}
+	for providerType := range providers {
+		keys = append(keys, providerType)
+	}
+	return keys
+}
+
+func (providers Providers) ProviderForImage(logger lxlog.Logger, imageId string) (Provider, error) {
+	for _, provider := range providers {
+		_, err := provider.GetImage(logger, imageId)
+		if err == nil {
+			return provider, nil
+		}
+	}
+	return errors.New("provider not found for image " + imageId)
+}
+
+func (providers Providers) ProviderForInstance(logger lxlog.Logger, instanceId string) (Provider, error) {
+	for _, provider := range providers {
+		_, err := provider.GetInstance(logger, instanceId)
+		if err == nil {
+			return provider, nil
+		}
+	}
+	return errors.New("provider not found for instance " + instanceId)
+}
+
+func (providers Providers) ProviderForVolume(logger lxlog.Logger, volumeId string) (Provider, error) {
+	for _, provider := range providers {
+		_, err := provider.GetVolume(logger, volumeId)
+		if err == nil {
+			return provider, nil
+		}
+	}
+	return errors.New("provider not found for volume " + volumeId)
 }

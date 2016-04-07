@@ -10,10 +10,11 @@ const (
 )
 
 type Instance struct {
-	Name    string        `json:"Name"`
-	Id      string        `json:"Id"`
-	State   InstanceState `json:"State"`
-	ImageId string        `json:"ImageId"`
+	Name           string        `json:"Name"`
+	Id             string        `json:"Id"`
+	State          InstanceState `json:"State"`
+	ImageId        string        `json:"ImageId"`
+	Infrastructure string        `json:"Infrastructure"`
 }
 
 type Image struct {
@@ -21,12 +22,15 @@ type Image struct {
 	Id             string           `json:"Id"`
 	DeviceMappings []*DeviceMapping `json:"DeviceMappings"`
 	SizeMb         int64            `json:"SizeMb"`
+	Infrastructure string           `json:"Infrastructure"`
 }
 
 type Volume struct {
-	Name string `json:"Name"`
-	Id   string `json:"Id"`
-	SizeMb int64 `json:"SizeMb"`
+	Name           string `json:"Name"`
+	Id             string `json:"Id"`
+	SizeMb         int64  `json:"SizeMb"`
+	Attachment     string `json:"Attachment"` //instanceId
+	Infrastructure string `json:"Infrastructure"`
 }
 
 type DeviceMapping struct {
@@ -37,5 +41,4 @@ type DeviceMapping struct {
 type RawImage struct {
 	LocalImagePath string           `json:"LocalImagePath"`
 	DeviceMappings []*DeviceMapping `json:"DeviceMappings"`
-	SizeMb         int64            `json:"SizeMb"`
 }
