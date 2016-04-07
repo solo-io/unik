@@ -1,12 +1,12 @@
-package stagers
+package providers
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"mime/multipart"
 	"github.com/layer-x/layerx-commons/lxlog"
+	"mime/multipart"
 )
 
-type Stager interface {
+type Provider interface {
 	//Images
 	Stage(logger lxlog.Logger, name string, rawImage *types.RawImage, force bool) (*types.Image, error)
 	ListImages(logger lxlog.Logger) ([]*types.Image, error)
@@ -21,7 +21,7 @@ type Stager interface {
 	DeleteInstance(logger lxlog.Logger, id string) error
 	GetLogs(logger lxlog.Logger, id string) (string, error)
 	//Volumes
-	CreateVolume(logger lxlog.Logger, name string, dataTar multipart.File, tarHeader *multipart.FileHeader) (*types.Volume, error)
+	CreateVolume(logger lxlog.Logger, name string, dataTar multipart.File, tarHeader *multipart.FileHeader, size int) (*types.Volume, error)
 	CreateEmptyVolume(logger lxlog.Logger, name string, size int) (*types.Volume, error)
 	ListVolumes(logger lxlog.Logger) ([]*types.Volume, error)
 	GetVolume(logger lxlog.Logger, nameOrIdPrefix string) (*types.Volume, error)
