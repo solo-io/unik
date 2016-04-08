@@ -1,0 +1,51 @@
+package aws
+
+import (
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxlog"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/aws"
+)
+
+const UNIK_INSTANCE_ID = "UNIK_INSTANCE_ID"
+
+func (p *AwsProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance, error) {
+	param := &ec2.DescribeInstancesInput{
+		Filters: []*ec2.Filter{
+			&ec2.Filter{
+				Name:   aws.String("tag-key"),
+				Values: []*string{aws.String(UNIK_INSTANCE_ID)},
+			},
+		},
+	}
+	output, err := p.newEC2(logger).DescribeInstances(param)
+	if err != nil {
+		return nil, lxerrors.New("running ec2 describe instances ", err)
+	}
+	instances := []*types.Instance{}
+	for _, reservation := range output.Reservations {
+		for _, ec2Instance := range reservation.Instances {
+			instanceId := parseInstanceId(ec2Instance)
+			if instanceId == "" {
+				continue
+			}
+			instance, ok := p.State.Instances[instanceId]
+			if !ok {
+				logger.WithFields(lxlog.Fields{"ec2Instance": ec2Instance}).Errorf("found an instance that unik has no record of")
+				continue
+			}
+			instances = append(instances, instance)
+		}
+	}
+	return instances, nil
+}
+
+func parseInstanceId(instance *ec2.Instance) string {
+	for _, tag := range instance.Tags {
+		if *tag.Key == UNIK_INSTANCE_ID {
+			return *tag.Value
+		}
+	}
+	return ""
+}
