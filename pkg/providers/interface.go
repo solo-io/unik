@@ -16,11 +16,11 @@ type Provider interface {
 	//Instances
 	RunInstance(logger lxlog.Logger, name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (*types.Instance, error)
 	ListInstances(logger lxlog.Logger) ([]*types.Instance, error)
-	StartInstance(logger lxlog.Logger, id string) error
-	StopInstance(logger lxlog.Logger, id string) error
 	GetInstance(logger lxlog.Logger, nameOrIdPrefix string) (*types.Instance, error)
 	DeleteInstance(logger lxlog.Logger, id string) error
-	GetLogs(logger lxlog.Logger, id string) (string, error)
+	StartInstance(logger lxlog.Logger, id string) error
+	StopInstance(logger lxlog.Logger, id string) error
+	GetInstanceLogs(logger lxlog.Logger, id string) (string, error)
 	//Volumes
 	CreateVolume(logger lxlog.Logger, name string, dataTar multipart.File, tarHeader *multipart.FileHeader, size int) (*types.Volume, error)
 	CreateEmptyVolume(logger lxlog.Logger, name string, size int) (*types.Volume, error)

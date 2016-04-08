@@ -31,20 +31,37 @@ func (p *AwsProvider) DeleteImage(logger lxlog.Logger, id string, force bool) er
 	}
 
 	svc := p.newEC2(logger)
-	svc.ImportImage()
 	describeSnapshotsOutput, err := svc.DescribeSnapshots(&ec2.DescribeSnapshotsInput{})
 	if err != nil {
 		return lxerrors.New("getting ec2 snapshot list", err)
 	}
-	snap, err := getSnapshotForImage(describeSnapshotsOutput)
+	snap, err := getSnapshotForImage(describeSnapshotsOutput, image.Id)
 	if err != nil {
 		return err
 	}
+	deleteSnapshotParam := &ec2.DeleteSnapshotInput{
+		SnapshotId: aws.String(*snap.SnapshotId),
+	}
+	_, err  = svc.DeleteSnapshot(deleteSnapshotParam)
+	if err != nil {
+		return lxerrors.New("failed deleting snapshot "+*snap.SnapshotId, err)
+	}
+	deleteVolumeParam := &ec2.DeleteVolumeInput{
+		VolumeId: aws.String(*snap.VolumeId),
+	}
+	_, err = svc.DeleteVolume(deleteVolumeParam)
+	if err != nil {
+		return lxerrors.New("failed deleting volumme "+*snap.VolumeId, err)
+	}
 
-	snap.VolumeId
+	return p.State.ModifyImages(func(images map[string]*types.Image) error{
+		delete(images, image.Id)
+		return nil
+	})
 }
 
 make sure we tag the snapshot when we tag the ami
+
 func getSnapshotForImage(describeSnapshotsOutput *ec2.DescribeSnapshotsOutput, imageId string) (*ec2.Snapshot, error) {
 	for _, snapshot := range describeSnapshotsOutput.Snapshots {
 		for _, tag := range snapshot.Tags {

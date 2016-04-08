@@ -23,22 +23,28 @@ func (p *AwsProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance, err
 	if err != nil {
 		return nil, lxerrors.New("running ec2 describe instances ", err)
 	}
-	instances := []*types.Instance{}
+	updatedInstances := []*types.Instance{}
 	for _, reservation := range output.Reservations {
 		for _, ec2Instance := range reservation.Instances {
 			instanceId := parseInstanceId(ec2Instance)
 			if instanceId == "" {
 				continue
 			}
-			instance, ok := p.State.Instances[instanceId]
+			instance, ok := p.State.GetInstances()[instanceId]
 			if !ok {
 				logger.WithFields(lxlog.Fields{"ec2Instance": ec2Instance}).Errorf("found an instance that unik has no record of")
 				continue
 			}
-			instances = append(instances, instance)
+			instance.State = parseInstanceState(ec2Instance.State)
+			instance.IpAddress = *ec2Instance.PublicIpAddress
+			p.State.ModifyImages(func(instances map[string]*types.Instance) error{
+				instances[instance.Id] = instance
+				return nil
+			})
+			updatedInstances = append(updatedInstances, instance)
 		}
 	}
-	return instances, nil
+	return updatedInstances, nil
 }
 
 func parseInstanceId(instance *ec2.Instance) string {
@@ -48,4 +54,23 @@ func parseInstanceId(instance *ec2.Instance) string {
 		}
 	}
 	return ""
+}
+
+func parseInstanceState(ec2State *ec2.InstanceState) types.InstanceState {
+	if ec2State == nil {
+		return types.InstanceState_Unknown
+	}
+	switch (*ec2State.Name) {
+	case "running":
+		return types.InstanceState_Running
+	case "pending":
+		return types.InstanceState_Pending
+	case "stopped":
+		return types.InstanceState_Stopped
+	case "shutting-down":
+		return types.InstanceState_Stopped
+	case "terminated":
+		return types.InstanceState_Terminating
+	}
+	return types.InstanceState_Unknown
 }

@@ -12,15 +12,17 @@ import (
 	"github.com/layer-x/layerx-commons/lxlog"
 )
 
+const awsStateFile = "/var/unik/aws_state.json"
+
 type AwsProvider struct {
 	config  config.Aws  `json:"Config"`
 	State   state.State `json:"State"`
-	session *session.Session
 }
 
 func NewAwsProvier(config config.Aws) *AwsProvider {
 	return &AwsProvider{
 		config: config,
+		State: state.NewMemoryState(awsStateFile),
 	}
 }
 

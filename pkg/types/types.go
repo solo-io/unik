@@ -7,6 +7,7 @@ const (
 	InstanceState_Stopped     = "InstanceState_Stopped"
 	InstanceState_Terminating = "InstanceState_Terminating"
 	InstanceState_Pending     = "InstanceState_Pending"
+	InstanceState_Unknown     = "InstanceState_Unknown"
 )
 
 type Image struct {
@@ -21,6 +22,7 @@ type Instance struct {
 	Id             string        `json:"Id"`
 	Name           string        `json:"Name"`
 	State          InstanceState `json:"State"`
+	IpAddress      string        `json:"IpAddress"`
 	ImageId        string        `json:"ImageId"`
 	Infrastructure string        `json:"Infrastructure"`
 }

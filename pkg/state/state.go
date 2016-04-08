@@ -14,24 +14,30 @@ type State interface {
 	GetImages() map[string]*types.Image
 	GetInstances() map[string]*types.Instance
 	GetVolumes() map[string]*types.Volume
-	SetImages(map[string]*types.Image)
-	SetInstances(map[string]*types.Instance)
-	SetVolumes(map[string]*types.Volume)
+	ModifyImages(modify func(images map[string]*types.Image) error) error
+	ModifyInstances(modify func(instances map[string]*types.Instance) error) error
+	ModifyVolumes(modify func(volumes map[string]*types.Volume) error) error
 	Save() error
 	Load() error
 }
 
 type memoryState struct {
-	lock      *sync.Mutex
-	saveFile  string
-	Images    map[string]*types.Image    `json:"Images"`
-	Instances map[string]*types.Instance `json:"Instances"`
-	Volumes   map[string]*types.Volume   `json:"Volumes"`
+	imagesLock *sync.Mutex
+	instancesLock *sync.Mutex
+	volumesLock *sync.Mutex
+	saveLock   *sync.Mutex
+	saveFile   string
+	Images     map[string]*types.Image    `json:"Images"`
+	Instances  map[string]*types.Instance `json:"Instances"`
+	Volumes    map[string]*types.Volume   `json:"Volumes"`
 }
 
 func NewMemoryState(saveFile string) *memoryState {
 	return &memoryState{
-		lock: &sync.Mutex{},
+		imagesLock: &sync.Mutex{},
+		instancesLock: &sync.Mutex{},
+		volumesLock: &sync.Mutex{},
+		saveLock: &sync.Mutex{},
 		saveFile: saveFile,
 		Images: make(map[string]*types.Image),
 		Instances: make(map[string]*types.Instance),
@@ -92,21 +98,27 @@ func (s *memoryState) GetVolumes() map[string]*types.Volume {
 	return volumesCopy
 }
 
-func (s *memoryState) SetImages(images map[string]*types.Image) {
-	s.Images = images
+func (s *memoryState) ModifyImages(modify func(images map[string]*types.Image) error) error {
+	s.imagesLock.Lock()
+	defer s.imagesLock.Unlock()
+	return modify(s.Images)
 }
 
-func (s *memoryState) SetInstances(instances map[string]*types.Instance) {
-	s.Instances = instances
+func (s *memoryState) ModifyInstances(modify func(instances map[string]*types.Instance) error) error {
+	s.instancesLock.Lock()
+	defer s.instancesLock.Unlock()
+	return modify(s.Instances)
 }
 
-func (s *memoryState) SetVolumes(volumes map[string]*types.Volume) {
-	s.Volumes = volumes
+func (s *memoryState) ModifyVolumes(modify func(volumes map[string]*types.Volume) error) error {
+	s.volumesLock.Lock()
+	defer s.volumesLock.Unlock()
+	return modify(s.Images)
 }
 
 func (s *memoryState) Save() error {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.saveLock.Lock()
+	defer s.saveLock.Unlock()
 	data, err := json.Marshal(s)
 	if err != nil {
 		return lxerrors.New("failed to marshal memory state to json", err)

@@ -311,7 +311,7 @@ func (d *UnikDaemon) registerHandlers() {
 
 				output := ioutils.NewWriteFlusher(res)
 				logFn := func() (string, error) {
-					return provider.GetLogs(logger, instanceId)
+					return provider.GetInstanceLogs(logger, instanceId)
 				}
 				err := streamOutput(logFn, output)
 				if err != nil {
@@ -321,7 +321,7 @@ func (d *UnikDaemon) registerHandlers() {
 				}
 				return nil, nil
 			}
-			logs, err := provider.GetLogs(logger, instanceId)
+			logs, err := provider.GetInstanceLogs(logger, instanceId)
 			if err != nil {
 				return nil, lxerrors.New("failed to perform get logs request", err)
 			}
