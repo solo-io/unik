@@ -1,11 +1,11 @@
 package aws
 
 import (
-	"github.com/layer-x/layerx-commons/lxlog"
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/layer-x/layerx-commons/lxlog"
 )
 
 func (p *AwsProvider) AttachVolume(logger lxlog.Logger, id, instanceId, mntPoint string) error {
@@ -33,9 +33,9 @@ func (p *AwsProvider) AttachVolume(logger lxlog.Logger, id, instanceId, mntPoint
 		return lxerrors.New("no mapping found on image "+image.Id+" for mount point "+mntPoint, nil)
 	}
 	param := &ec2.AttachVolumeInput{
-		VolumeId: aws.String(volume.Id),
+		VolumeId:   aws.String(volume.Id),
 		InstanceId: aws.String(instance.Id),
-		Device: aws.String(deviceName),
+		Device:     aws.String(deviceName),
 	}
 	_, err = p.newEC2(logger).AttachVolume(param)
 	if err != nil {

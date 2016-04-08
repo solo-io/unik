@@ -1,11 +1,11 @@
 package common
 
 import (
+	"fmt"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
-	"fmt"
+	"github.com/layer-x/layerx-commons/lxlog"
 )
 
 const UnikLogsPort = 9876
