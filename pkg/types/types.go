@@ -9,25 +9,25 @@ const (
 	InstanceState_Pending     = "InstanceState_Pending"
 )
 
-type Instance struct {
-	Name           string        `json:"Name"`
-	Id             string        `json:"Id"`
-	State          InstanceState `json:"State"`
-	ImageId        string        `json:"ImageId"`
-	Infrastructure string        `json:"Infrastructure"`
-}
-
 type Image struct {
-	Name           string           `json:"Name"`
 	Id             string           `json:"Id"`
+	Name           string           `json:"Name"`
 	DeviceMappings []*DeviceMapping `json:"DeviceMappings"`
 	SizeMb         int64            `json:"SizeMb"`
 	Infrastructure string           `json:"Infrastructure"`
 }
 
+type Instance struct {
+	Id             string        `json:"Id"`
+	Name           string        `json:"Name"`
+	State          InstanceState `json:"State"`
+	ImageId        string        `json:"ImageId"`
+	Infrastructure string        `json:"Infrastructure"`
+}
+
 type Volume struct {
-	Name           string `json:"Name"`
 	Id             string `json:"Id"`
+	Name           string `json:"Name"`
 	SizeMb         int64  `json:"SizeMb"`
 	Attachment     string `json:"Attachment"` //instanceId
 	Infrastructure string `json:"Infrastructure"`
