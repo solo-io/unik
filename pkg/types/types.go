@@ -42,3 +42,8 @@ type RawImage struct {
 	LocalImagePath string           `json:"LocalImagePath"`
 	DeviceMappings []*DeviceMapping `json:"DeviceMappings"`
 }
+
+type RawVolume struct {
+	Path string `json:"Path"`
+	Size int64  `json:"Size"`
+}
