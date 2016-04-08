@@ -37,7 +37,7 @@ func (p *AwsProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance, err
 			}
 			instance.State = parseInstanceState(ec2Instance.State)
 			instance.IpAddress = *ec2Instance.PublicIpAddress
-			p.State.ModifyImages(func(instances map[string]*types.Instance) error{
+			p.State.ModifyInstances(func(instances map[string]*types.Instance) error{
 				instances[instance.Id] = instance
 				return nil
 			})
