@@ -15,7 +15,7 @@ func (p *AwsProvider) DetachVolume(logger lxlog.Logger, id string) error {
 	}
 	param := &ec2.DetachVolumeInput{
 		VolumeId: aws.String(volume.Id),
-		Force: true,
+		Force: aws.Bool(true),
 	}
 	_, err = p.newEC2(logger).DetachVolume(param)
 	if err != nil {

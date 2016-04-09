@@ -113,7 +113,7 @@ func (s *memoryState) ModifyInstances(modify func(instances map[string]*types.In
 func (s *memoryState) ModifyVolumes(modify func(volumes map[string]*types.Volume) error) error {
 	s.volumesLock.Lock()
 	defer s.volumesLock.Unlock()
-	return modify(s.Images)
+	return modify(s.Volumes)
 }
 
 func (s *memoryState) Save() error {
@@ -141,6 +141,6 @@ func (s *memoryState) Load() error {
 	if err != nil {
 		return lxerrors.New("failed to unmarshal data "+string(data)+" to memory state", err)
 	}
-	s = newS
+	*s = newS
 	return nil
 }

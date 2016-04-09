@@ -60,7 +60,7 @@ func (p *AwsProvider) DeleteImage(logger lxlog.Logger, id string, force bool) er
 	})
 }
 
-make sure we tag the snapshot when we tag the ami
+//make sure we tag the snapshot when we tag the ami
 
 func getSnapshotForImage(describeSnapshotsOutput *ec2.DescribeSnapshotsOutput, imageId string) (*ec2.Snapshot, error) {
 	for _, snapshot := range describeSnapshotsOutput.Snapshots {

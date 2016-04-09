@@ -36,7 +36,7 @@ func (p *AwsProvider) ListVolumes(logger lxlog.Logger) ([]*types.Volume, error) 
 		}
 		if len(ec2Volume.Attachments) > 0 {
 			if len(ec2Volume.Attachments) > 1 {
-				return lxerrors.New("ec2 reports volume to have >1 attachments. wut", nil)
+				return nil, lxerrors.New("ec2 reports volume to have >1 attachments. wut", nil)
 			}
 			volume.Attachment = *ec2Volume.Attachments[0].InstanceId
 		} else {
