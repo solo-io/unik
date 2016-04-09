@@ -1,6 +1,9 @@
 package compilers
 
 import (
+	"archive/tar"
+	"io"
+
 	"github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/container"
@@ -15,9 +18,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"mime/multipart"
-	"path"
 	"os"
+	"path"
 )
 
 // uses rump docker conter container
@@ -29,26 +31,58 @@ type RunmpCompiler struct {
 	CreateImage func(kernel string, mntPoints []string) (*uniktypes.RawImage, error)
 }
 
-func (r *RunmpCompiler) CompileRawImage(sourceTar multipart.File, tarHeader *multipart.FileHeader, mntPoints []string) (*uniktypes.RawImage, error) {
+func (r *RunmpCompiler) CompileRawImage(sourceTar io.ReadCloser, mntPoints []string) (*uniktypes.RawImage, error) {
 
-	localFolder, err := ioutil.TempDir("","")
+	localFolder, err := ioutil.TempDir("", "")
 	if err != nil {
 		return nil, err
 	}
-    defer os.RemoveAll(localFolder)
-   
-   // TODO: need to extract tar file there..
-   
-	err = r.runContainer(localFolder)
-	if err != nil {
+	defer os.RemoveAll(localFolder)
+
+	if err := r.extractTar(sourceTar, localFolder); err != nil {
+		return nil, err
+	}
+
+	if err := r.runContainer(localFolder); err != nil {
 		return nil, err
 	}
 
 	// now we should program.bin
-
 	resultFile := path.Join(localFolder, "program.bin")
 
 	return r.CreateImage(resultFile, mntPoints)
+}
+
+func (r *RunmpCompiler) extractTar(tarArchive io.ReadCloser, localFolder string) error {
+	tr := tar.NewReader(tarArchive)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			// end of tar archive
+			break
+		}
+		if err != nil {
+			return err
+		}
+		log.WithField("file", hdr.Name).Debug("Extracting file")
+
+		dir, _ := path.Split(hdr.Name)
+		os.MkdirAll(path.Join(localFolder, dir), 0755)
+
+		outputFile, err := os.Create(path.Join(localFolder, hdr.Name))
+		if err != nil {
+			return err
+		}
+
+		if _, err := io.Copy(outputFile, tr); err != nil {
+			outputFile.Close()
+			return err
+		}
+		outputFile.Close()
+
+	}
+
+	return nil
 }
 
 func (r *RunmpCompiler) runContainer(localFolder string) error {
@@ -63,23 +97,20 @@ func (r *RunmpCompiler) runContainer(localFolder string) error {
 	config := &container.Config{
 		Image: r.DockerImage,
 	}
-	var hostConfig *container.HostConfig = &container.HostConfig{
+	hostConfig := &container.HostConfig{
 		Binds: binds,
 	}
-	var networkingConfig *network.NetworkingConfig = &network.NetworkingConfig{}
+	networkingConfig := &network.NetworkingConfig{}
 	containerName := ""
-	container, err := cli.ContainerCreate(context.Background(), config, hostConfig, networkingConfig, containerName)
 
+	container, err := cli.ContainerCreate(context.Background(), config, hostConfig, networkingConfig, containerName)
 	if err != nil {
 		log.WithField("err", err).Error("Error creating container")
 		return err
 	}
-
 	defer cli.ContainerRemove(context.Background(), types.ContainerRemoveOptions{ContainerID: container.ID})
 
-	err = cli.ContainerStart(context.Background(), container.ID)
-
-	if err != nil {
+	if err := cli.ContainerStart(context.Background(), container.ID); err != nil {
 		log.WithField("err", err).Error("ContainerStart")
 		return err
 	}
@@ -90,6 +121,7 @@ func (r *RunmpCompiler) runContainer(localFolder string) error {
 	}
 
 	if status != 0 {
+		log.WithField("status", status).Error("Container exit status non zero")
 
 		options := types.ContainerLogsOptions{
 			ContainerID: container.ID,
@@ -99,16 +131,15 @@ func (r *RunmpCompiler) runContainer(localFolder string) error {
 			Tail:        "all",
 		}
 		reader, err := cli.ContainerLogs(context.Background(), options)
-
 		if err != nil {
 			log.WithField("err", err).Error("ContainerLogs")
 			return err
 		}
 		defer reader.Close()
 
-		res, _ := ioutil.ReadAll(reader)
-		fmt.Print("output:")
-		fmt.Print(string(res))
+		if res, err := ioutil.ReadAll(reader); err != nil {
+			log.Error(string(res))
+		}
 
 		return errors.New("Returned non zero status")
 	}
