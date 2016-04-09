@@ -7,5 +7,5 @@ import (
 )
 
 type Compiler interface {
-	CompileRawImage(sourceTar io.ReadCloser, mntPoints []string) (*types.RawImage, error)
+	CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (*types.RawImage, error)
 }
