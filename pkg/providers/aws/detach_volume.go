@@ -1,11 +1,11 @@
 package aws
 
 import (
-	"github.com/layer-x/layerx-commons/lxlog"
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/layer-x/layerx-commons/lxlog"
 )
 
 func (p *AwsProvider) DetachVolume(logger lxlog.Logger, id string) error {

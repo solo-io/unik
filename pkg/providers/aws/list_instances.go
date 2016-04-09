@@ -1,11 +1,11 @@
 package aws
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxlog"
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/layer-x/layerx-commons/lxlog"
 )
 
 const UNIK_INSTANCE_ID = "UNIK_INSTANCE_ID"
@@ -37,7 +37,7 @@ func (p *AwsProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance, err
 			}
 			instance.State = parseInstanceState(ec2Instance.State)
 			instance.IpAddress = *ec2Instance.PublicIpAddress
-			p.State.ModifyInstances(func(instances map[string]*types.Instance) error{
+			p.State.ModifyInstances(func(instances map[string]*types.Instance) error {
 				instances[instance.Id] = instance
 				return nil
 			})
@@ -60,7 +60,7 @@ func parseInstanceState(ec2State *ec2.InstanceState) types.InstanceState {
 	if ec2State == nil {
 		return types.InstanceState_Unknown
 	}
-	switch (*ec2State.Name) {
+	switch *ec2State.Name {
 	case "running":
 		return types.InstanceState_Running
 	case "pending":

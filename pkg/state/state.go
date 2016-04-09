@@ -1,13 +1,13 @@
 package state
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"sync"
 	"encoding/json"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
-	"io/ioutil"
+	"sync"
 )
 
 type State interface {
@@ -22,26 +22,26 @@ type State interface {
 }
 
 type memoryState struct {
-	imagesLock *sync.Mutex
+	imagesLock    *sync.Mutex
 	instancesLock *sync.Mutex
-	volumesLock *sync.Mutex
-	saveLock   *sync.Mutex
-	saveFile   string
-	Images     map[string]*types.Image    `json:"Images"`
-	Instances  map[string]*types.Instance `json:"Instances"`
-	Volumes    map[string]*types.Volume   `json:"Volumes"`
+	volumesLock   *sync.Mutex
+	saveLock      *sync.Mutex
+	saveFile      string
+	Images        map[string]*types.Image    `json:"Images"`
+	Instances     map[string]*types.Instance `json:"Instances"`
+	Volumes       map[string]*types.Volume   `json:"Volumes"`
 }
 
 func NewMemoryState(saveFile string) *memoryState {
 	return &memoryState{
-		imagesLock: &sync.Mutex{},
+		imagesLock:    &sync.Mutex{},
 		instancesLock: &sync.Mutex{},
-		volumesLock: &sync.Mutex{},
-		saveLock: &sync.Mutex{},
-		saveFile: saveFile,
-		Images: make(map[string]*types.Image),
-		Instances: make(map[string]*types.Instance),
-		Volumes: make(map[string]*types.Volume),
+		volumesLock:   &sync.Mutex{},
+		saveLock:      &sync.Mutex{},
+		saveFile:      saveFile,
+		Images:        make(map[string]*types.Image),
+		Instances:     make(map[string]*types.Instance),
+		Volumes:       make(map[string]*types.Volume),
 	}
 }
 
@@ -57,10 +57,10 @@ func (s *memoryState) GetImages() map[string]*types.Image {
 		}
 
 		imageCopy := &types.Image{
-			Id: image.Id,
-			Name: image.Name,
+			Id:             image.Id,
+			Name:           image.Name,
 			DeviceMappings: deviceMappingsCopy,
-			SizeMb: image.SizeMb,
+			SizeMb:         image.SizeMb,
 			Infrastructure: image.Infrastructure,
 		}
 		imagesCopy[id] = imageCopy
@@ -72,11 +72,11 @@ func (s *memoryState) GetInstances() map[string]*types.Instance {
 	instancesCopy := make(map[string]*types.Instance)
 	for id, instance := range s.Instances {
 		instanceCopy := &types.Instance{
-			Id: instance.Id,
-			ImageId: instance.ImageId,
+			Id:             instance.Id,
+			ImageId:        instance.ImageId,
 			Infrastructure: instance.Infrastructure,
-			Name: instance.Name,
-			State: instance.State,
+			Name:           instance.Name,
+			State:          instance.State,
 		}
 		instancesCopy[id] = instanceCopy
 	}
@@ -87,10 +87,10 @@ func (s *memoryState) GetVolumes() map[string]*types.Volume {
 	volumesCopy := make(map[string]*types.Volume)
 	for id, volume := range s.Volumes {
 		volumeCopy := &types.Volume{
-			Id: volume.Id,
-			Name: volume.Name,
-			SizeMb: volume.SizeMb,
-			Attachment: volume.Attachment,
+			Id:             volume.Id,
+			Name:           volume.Name,
+			SizeMb:         volume.SizeMb,
+			Attachment:     volume.Attachment,
 			Infrastructure: volume.Infrastructure,
 		}
 		volumesCopy[id] = volumeCopy

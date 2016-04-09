@@ -15,14 +15,14 @@ import (
 const awsStateFile = "/var/unik/aws_state.json"
 
 type AwsProvider struct {
-	config  config.Aws  `json:"Config"`
-	State   state.State `json:"State"`
+	config config.Aws  `json:"Config"`
+	State  state.State `json:"State"`
 }
 
 func NewAwsProvier(config config.Aws) *AwsProvider {
 	return &AwsProvider{
 		config: config,
-		State: state.NewMemoryState(awsStateFile),
+		State:  state.NewMemoryState(awsStateFile),
 	}
 }
 
