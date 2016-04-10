@@ -54,7 +54,7 @@ func (p *AwsProvider) DeleteImage(logger lxlog.Logger, id string, force bool) er
 		return lxerrors.New("failed deleting volumme "+*snap.VolumeId, err)
 	}
 
-	return p.State.ModifyImages(func(images map[string]*types.Image) error {
+	return p.state.ModifyImages(func(images map[string]*types.Image) error {
 		delete(images, image.Id)
 		return nil
 	})

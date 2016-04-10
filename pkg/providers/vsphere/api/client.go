@@ -336,7 +336,7 @@ func (vc *VsphereClient) AttachVmdk(logger lxlog.Logger, vmName, vmdkPath string
 		password,
 		vmName,
 		"[datastore1] " + vmdkPath,
-		"200", TODO: is this right?
+		"200", //TODO: is this right?
 	)
 	logger.WithFields(lxlog.Fields{
 		"command": cmd.Args,

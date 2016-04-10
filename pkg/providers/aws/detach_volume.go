@@ -21,7 +21,7 @@ func (p *AwsProvider) DetachVolume(logger lxlog.Logger, id string) error {
 	if err != nil {
 		return lxerrors.New("failed to detach volume "+volume.Id, err)
 	}
-	return p.State.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+	return p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volume, ok := volumes[volume.Id]
 		if !ok {
 			return lxerrors.New("no record of "+volume.Id+" in the state", nil)

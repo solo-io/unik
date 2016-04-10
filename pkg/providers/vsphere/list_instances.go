@@ -59,7 +59,7 @@ func (p *VsphereProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance,
 			logger.WithFields(lxlog.Fields{"vm": vm}).Warnf("vm found, cannot identify instance id")
 			continue
 		}
-		instance, ok := p.State.GetInstances()[instanceId]
+		instance, ok := p.state.GetInstances()[instanceId]
 		if !ok {
 			logger.WithFields(lxlog.Fields{"vm": vm, "instance-id": instanceId}).Warnf("vm found, cannot identify instance id")
 			continue
@@ -77,18 +77,12 @@ func (p *VsphereProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance,
 			instance.State = types.InstanceState_Unknown
 			break
 		}
-		p.State.ModifyInstances(func(instances map[string]*types.Instance) error {
+		p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 			instances[instance.Id] = instance
+			return nil
 		})
 
-		for _, registeredUnikInstance := range unikState.UnikInstances {
-			if instance.Id == registeredUnikInstance.Id {
-				instance.PublicIp = registeredUnikInstance.PublicIp
-				instance.PrivateIp = registeredUnikInstance.PrivateIp
-				break
-			}
-		}
-		unikInstances = append(unikInstances, &instance)
+		instances = append(instances, instance)
 	}
 	return instances, nil
 }

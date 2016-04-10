@@ -20,7 +20,7 @@ func (p *AwsProvider) DeleteVolume(logger lxlog.Logger, id string, force bool) e
 	if err != nil {
 		return lxerrors.New("failed to terminate volume "+volume.Id, err)
 	}
-	return p.State.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+	return p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		delete(volumes, volume.Id)
 		return nil
 	})

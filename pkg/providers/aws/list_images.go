@@ -29,7 +29,7 @@ func (p *AwsProvider) ListImages(logger lxlog.Logger) ([]*types.Image, error) {
 		if imageId == "" {
 			continue
 		}
-		image, ok := p.State.GetImages()[imageId]
+		image, ok := p.state.GetImages()[imageId]
 		if !ok {
 			logger.WithFields(lxlog.Fields{"ec2Image": ec2Image}).Errorf("found an image that unik has no record of")
 			continue

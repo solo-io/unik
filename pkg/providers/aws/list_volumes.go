@@ -29,7 +29,7 @@ func (p *AwsProvider) ListVolumes(logger lxlog.Logger) ([]*types.Volume, error) 
 		if volumeId == "" {
 			continue
 		}
-		volume, ok := p.State.GetVolumes()[volumeId]
+		volume, ok := p.state.GetVolumes()[volumeId]
 		if !ok {
 			logger.WithFields(lxlog.Fields{"ec2Volume": ec2Volume}).Errorf("found a volume that unik has no record of")
 			continue
@@ -42,7 +42,7 @@ func (p *AwsProvider) ListVolumes(logger lxlog.Logger) ([]*types.Volume, error) 
 		} else {
 			volume.Attachment = ""
 		}
-		p.State.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+		p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 			volumes[volume.Id] = volume
 			return nil
 		})
