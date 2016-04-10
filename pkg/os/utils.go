@@ -114,33 +114,37 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, comma
 	}
 	defer Umount(mntPoint)
 
-	grubPath := path.Join(mntPoint, "boot", "grub")
-	os.MkdirAll(grubPath, 0777)
-
-	// copy program.bin.. skip that for now
-	kernelDst := path.Join(mntPoint, "boot", ProgramName)
-	log.WithFields(log.Fields{"src": progPath, "dst": kernelDst}).Debug("copying file")
-	err = CopyFile(progPath, kernelDst)
-	if err != nil {
-		return err
-	}
-	err = writeBootTemplate(path.Join(grubPath, "menu.lst"), "(hd0,0)", commandline)
-	if err != nil {
-		return err
-	}
-
-	err = writeBootTemplate(path.Join(grubPath, "grub.conf"), "(hd0,0)", commandline)
-	if err != nil {
-		return err
-	}
-
-	err = writeDeviceMap(path.Join(grubPath, "map"), rootDevice.Name())
-	if err != nil {
-		return err
-	}
+	PrepareGrub(mntPoint, rootDevice.Name(), progPath, commandline)
 
 	err = RunLogCommand("grub-install", "--no-floppy", "--root-directory="+mntPoint, rootDevice.Name())
 	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func PrepareGrub(folder, rootDeviceName, kernel, commandline string) error {
+	grubPath := path.Join(folder, "boot", "grub")
+	kernelDst := path.Join(folder, "boot", ProgramName)
+
+	os.MkdirAll(grubPath, 0777)
+
+	// copy program.bin.. skip that for now
+	log.WithFields(log.Fields{"src": kernel, "dst": kernelDst}).Debug("copying file")
+
+	if err := CopyFile(kernel, kernelDst); err != nil {
+		return err
+	}
+
+	if err := writeBootTemplate(path.Join(grubPath, "menu.lst"), "(hd0,0)", commandline); err != nil {
+		return err
+	}
+
+	if err := writeBootTemplate(path.Join(grubPath, "grub.conf"), "(hd0,0)", commandline); err != nil {
+		return err
+	}
+
+	if err := writeDeviceMap(path.Join(grubPath, "map"), rootDeviceName); err != nil {
 		return err
 	}
 	return nil
@@ -235,7 +239,7 @@ func CopyToImgFile(folder, imgfile string) error {
 
 }
 
-func copyToPart(folder string, part Part) error {
+func copyToPart(folder string, part Resource) error {
 
 	imgLodName, err := part.Acquire()
 	if err != nil {
@@ -279,7 +283,8 @@ func CreatePartitionedVolumes(imgFile string, volumes map[string]types.RawVolume
 	}
 	defer imgLo.Release()
 
-	p := &DiskLabelPartioner{imgLodName.Name()}
+	var p Partitioner
+	p = &DiskLabelPartioner{imgLodName.Name()}
 
 	p.MakeTable()
 	var start Bytes = firstPartFffest
@@ -307,4 +312,72 @@ func CreatePartitionedVolumes(imgFile string, volumes map[string]types.RawVolume
 	}
 
 	return orderedKeys, nil
+}
+
+func CreateVolumes(imgFile string, volumes []types.RawVolume, newPartitioner func(device string) Partitioner) error {
+
+	var sizes []Bytes
+
+	ext2Overhead := MegaBytes(2).ToBytes()
+	firstPartOffest := MegaBytes(2).ToBytes()
+	var totalSize Bytes = 0
+	for _, v := range volumes {
+		if v.Size == 0 {
+			cursize, err := GetDirSize(v.Path)
+			if err != nil {
+				return err
+			}
+			sizes = append(sizes, Bytes(cursize)+ext2Overhead)
+		} else {
+			sizes = append(sizes, Bytes(v.Size))
+		}
+		totalSize += sizes[len(sizes)-1]
+	}
+	sizeDrive := Bytes((SectorSize + totalSize + totalSize/10) &^ (SectorSize - 1))
+	sizeDrive += MegaBytes(4).ToBytes()
+
+	log.WithFields(log.Fields{"imgFile": imgFile, "size": totalSize.ToPartedFormat()}).Debug("Creating image file")
+	err := createSparseFile(imgFile, sizeDrive)
+	if err != nil {
+		return err
+	}
+
+	imgLo := NewLoDevice(imgFile)
+	imgLodName, err := imgLo.Acquire()
+	if err != nil {
+		return err
+	}
+	defer imgLo.Release()
+
+	p := newPartitioner(imgLodName.Name())
+
+	p.MakeTable()
+	var start Bytes = firstPartOffest
+	for _, curSize := range sizes {
+		end := start + curSize
+		log.WithFields(log.Fields{"start": start, "end": end}).Debug("Creating partition")
+		err := p.MakePart("ext2", start, end)
+		if err != nil {
+			return err
+		}
+		curParts, err := ListParts(imgLodName)
+		if err != nil {
+			return err
+		}
+		start = curParts[len(curParts)-1].Offset().ToBytes() + curParts[len(curParts)-1].Size().ToBytes()
+	}
+
+	parts, err := ListParts(imgLodName)
+
+	if len(parts) != len(volumes) {
+		return errors.New("Not enough parts created!")
+	}
+
+	log.WithFields(log.Fields{"parts": parts, "volsize": sizes}).Debug("Creating volumes")
+	for i, v := range volumes {
+
+		copyToPart(v.Path, parts[i])
+	}
+
+	return nil
 }

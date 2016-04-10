@@ -13,6 +13,7 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -21,14 +22,13 @@ import (
 	"math/rand"
 
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+
 	"errors"
 )
 
 func init() {
-    rand.Seed(time.Now().UnixNano())
+	rand.Seed(time.Now().UnixNano())
 }
-
 
 const DiskImageRaw = "RAW"
 
@@ -65,7 +65,6 @@ func UploadToAws(s3svc *s3.S3, body io.ReadSeeker, size int64, bucket, path stri
 	}
 	return nil
 }
-
 func CreateDataVolume(s3svc *s3.S3, ec2svc *ec2.EC2, folder string, az string) (*string, error) {
 	dir, err := ioutil.TempDir("", "")
 	if err != nil {
@@ -74,18 +73,25 @@ func CreateDataVolume(s3svc *s3.S3, ec2svc *ec2.EC2, folder string, az string) (
 	defer os.RemoveAll(dir)
 	imgFile := path.Join(dir, "vol.img")
 
-	unikos.CreateSingleVolume(imgFile, types.RawVolume{Path: folder})
+	// only one partition - creat msdos partition which is most supported
+	partitioner := func(device string) unikos.Partitioner { return &unikos.MsDosPartioner{Device: device} }
+	unikos.CreateVolumes(imgFile, []types.RawVolume{types.RawVolume{Path: folder}}, partitioner)
 	log.WithFields(log.Fields{"imgFile": imgFile}).Debug("Created temp image")
+
+	return CreateDataVolumeFromRawImage(s3svc, ec2svc, imgFile, az)
+
+}
+func CreateDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string, az string) (*string, error) {
 
 	fileInfo, err := os.Stat(imgFile)
 	if err != nil {
 		return nil, err
 	}
+
 	// upload the image file to aws
 	bucket := fmt.Sprintf("unik-tmp-%d", rand.Int63())
 
-	err = CreateBucket(s3svc, bucket)
-	if err != nil {
+	if err := CreateBucket(s3svc, bucket); err != nil {
 		return nil, err
 	}
 	defer DeleteBucket(s3svc, bucket)
@@ -94,8 +100,7 @@ func CreateDataVolume(s3svc *s3.S3, ec2svc *ec2.EC2, folder string, az string) (
 
 	log.Debug("Uploading image to aws")
 
-	err = UploadFileToAws(s3svc, imgFile, bucket, pathInBucket)
-	if err != nil {
+	if err := UploadFileToAws(s3svc, imgFile, bucket, pathInBucket); err != nil {
 		return nil, err
 	}
 
@@ -239,15 +244,15 @@ func CreateDataVolume(s3svc *s3.S3, ec2svc *ec2.EC2, folder string, az string) (
 
 	log.WithFields(log.Fields{"task": *convTaskOutput}).Debug("Convertion task result")
 
-    if len(convTaskOutput.ConversionTasks) != 1 {
-        return nil, errors.New("Unexpected number of tasks")
-    } 
-    convTask := convTaskOutput.ConversionTasks[0]
-    
-    if convTask.ImportVolume == nil {
-        return nil, errors.New("No volume information")
-    } 
-    
+	if len(convTaskOutput.ConversionTasks) != 1 {
+		return nil, errors.New("Unexpected number of tasks")
+	}
+	convTask := convTaskOutput.ConversionTasks[0]
+
+	if convTask.ImportVolume == nil {
+		return nil, errors.New("No volume information")
+	}
+
 	return convTask.ImportVolume.Volume.Id, nil
 
 }

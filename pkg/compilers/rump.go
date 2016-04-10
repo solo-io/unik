@@ -126,6 +126,8 @@ func (r *RunmpCompiler) runContainer(localFolder string) error {
 	}
 	defer cli.ContainerRemove(context.Background(), types.ContainerRemoveOptions{ContainerID: container.ID})
 
+	log.WithField("id", container.ID).Error("Created container")
+
 	if err := cli.ContainerStart(context.Background(), container.ID); err != nil {
 		log.WithField("err", err).Error("ContainerStart")
 		return err
