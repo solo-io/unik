@@ -2,19 +2,21 @@ package vsphere
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	"github.com/emc-advanced-dev/unik/pkg/state"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere/api"
 	"net/url"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"strings"
+	"os"
 )
 
-const awsStateFile = "/var/unik/aws_state.json"
+var vsphereStateFile = os.Getenv("HOME")+"/.unik/vsphere/state.json"
+var vsphereImagesDirectory = os.Getenv("HOME")+"/.unik/vsphere/images/"
+var vsphereVolumesDirectory = os.Getenv("HOME")+"/.unik/vsphere/volumes/"
 
 type VsphereProvider struct {
-	config config.Vsphere `json:"Config"`
-	State  state.State    `json:"State"`
-	u      url.URL
+	config      config.Vsphere
+	state       vsphereState
+	u           url.URL
 }
 
 func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
@@ -23,9 +25,12 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 	if err != nil {
 		return nil, lxerrors.New("parsing vsphere url", err)
 	}
+	os.MkdirAll(vsphereImagesDirectory, 0644)
+	os.MkdirAll(vsphereVolumesDirectory, 0644)
+
 	return &VsphereProvider{
 		config: config,
-		State:  state.NewMemoryState(awsStateFile),
+		state:  newVsphereState(vsphereStateFile),
 		u: u,
 	}
 }

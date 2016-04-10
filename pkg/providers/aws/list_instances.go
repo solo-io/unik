@@ -30,14 +30,14 @@ func (p *AwsProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance, err
 			if instanceId == "" {
 				continue
 			}
-			instance, ok := p.State.GetInstances()[instanceId]
+			instance, ok := p.state.GetInstances()[instanceId]
 			if !ok {
 				logger.WithFields(lxlog.Fields{"ec2Instance": ec2Instance}).Errorf("found an instance that unik has no record of")
 				continue
 			}
 			instance.State = parseInstanceState(ec2Instance.State)
 			instance.IpAddress = *ec2Instance.PublicIpAddress
-			p.State.ModifyInstances(func(instances map[string]*types.Instance) error {
+			p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 				instances[instance.Id] = instance
 				return nil
 			})

@@ -1,4 +1,4 @@
-package aws
+package vsphere
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
@@ -6,6 +6,6 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 )
 
-func (p *AwsProvider) GetImage(logger lxlog.Logger, nameOrIdPrefix string) (*types.Image, error) {
+func (p *VsphereProvider) GetImage(logger lxlog.Logger, nameOrIdPrefix string) (*types.Image, error) {
 	return common.GetImage(logger, p, nameOrIdPrefix)
 }

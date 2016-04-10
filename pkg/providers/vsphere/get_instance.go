@@ -1,4 +1,4 @@
-package aws
+package vsphere
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
@@ -6,6 +6,6 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 )
 
-func (p *AwsProvider) GetInstance(logger lxlog.Logger, nameOrIdPrefix string) (*types.Instance, error) {
+func (p *VsphereProvider) GetInstance(logger lxlog.Logger, nameOrIdPrefix string) (*types.Instance, error) {
 	return common.GetInstance(logger, p, nameOrIdPrefix)
 }

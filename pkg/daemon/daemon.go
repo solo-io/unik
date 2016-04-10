@@ -169,13 +169,14 @@ func (d *UnikDaemon) registerHandlers() {
 			logger.WithFields(lxlog.Fields{
 				"form": req.Form,
 			}).Debugf("parsing form file marked 'tarfile'")
-			sourceTar, header, err := req.FormFile("tarfile")
+			sourceTar, _, err := req.FormFile("tarfile")
 			if err != nil {
 				return nil, err
 			}
 			defer sourceTar.Close()
 			force := req.FormValue("force")
 			unikernelType := req.FormValue("type")
+			args := req.FormValue("args")
 			providerType := req.FormValue("provider")
 			if _, ok := d.providers[providerType]; !ok {
 				return nil, lxerrors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
@@ -190,13 +191,13 @@ func (d *UnikDaemon) registerHandlers() {
 
 			compileFunc := func() (*types.RawImage, error) {
 				logger.WithFields(lxlog.Fields{
-					"source-tar":   header.Filename,
 					"force":        force,
 					"mount-points": mountPoints,
 					"name":         name,
+					"args":		args,
 					"compiler":     compilerMode,
 				}).Debugf("compiling raw image")
-				rawImage, err := compiler.CompileRawImage(sourceTar, header, mountPoints)
+				rawImage, err := compiler.CompileRawImage(sourceTar, args, mountPoints)
 				if err != nil {
 					return nil, lxerrors.New("failed to compile raw image", err)
 				}
