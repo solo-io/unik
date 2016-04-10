@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-
+	os.Setenv("TMPDIR", "/Users/kohavy/tmp")
 	log.SetLevel(log.DebugLevel)
 
 	r := compilers.RunmpCompiler{
@@ -20,7 +20,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	img, err := r.CompileRawImage(f, "", []string{})
+	img, err := r.CompileRawImage(f, "", []string{"/yuval"})
 	if err != nil {
 		panic(err)
 	}
