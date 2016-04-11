@@ -29,7 +29,7 @@ type UnikDaemon struct {
 const (
 	aws     = "aws"
 	vsphere = "vsphere"
-	vbox    = "vbox"
+	virtualbox = "virtualbox"
 )
 
 func NewAwsProvider(aws config.Aws) providers.Provider {
@@ -40,7 +40,7 @@ func NewVsphereProvider(aws config.Vsphere) providers.Provider {
 	return nil
 }
 
-func NewVirtualboxProvider(aws config.Vbox) providers.Provider {
+func NewVirtualboxProvider(aws config.Virtualbox) providers.Provider {
 	return nil
 }
 
@@ -55,8 +55,8 @@ func NewUnikDaemon(config config.UnikConfig) *UnikDaemon {
 		providers[vsphere] = NewVsphereProvider(vsphereConfig)
 		break
 	}
-	for _, vboxConfig := range config.Config.Providers.Vbox {
-		providers[vbox] = NewVirtualboxProvider(vboxConfig)
+	for _, virtualboxConfig := range config.Config.Providers.Virtualbox {
+		providers[virtualbox] = NewVirtualboxProvider(virtualboxConfig)
 		break
 	}
 	return &UnikDaemon{

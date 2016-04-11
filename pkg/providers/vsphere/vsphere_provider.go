@@ -7,6 +7,7 @@ import (
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"strings"
 	"os"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 )
 
 var vsphereStateFile = os.Getenv("HOME")+"/.unik/vsphere/state.json"
@@ -15,7 +16,7 @@ var vsphereVolumesDirectory = os.Getenv("HOME")+"/.unik/vsphere/volumes/"
 
 type VsphereProvider struct {
 	config      config.Vsphere
-	state       vsphereState
+	state       common.LocalStorageState
 	u           url.URL
 }
 
@@ -30,7 +31,7 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 
 	return &VsphereProvider{
 		config: config,
-		state:  newVsphereState(vsphereStateFile),
+		state:  common.NewLocalStorageState(vsphereStateFile),
 		u: u,
 	}
 }

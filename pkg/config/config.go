@@ -8,9 +8,9 @@ type Config struct {
 	Providers Providers `yaml:"providers"`
 }
 type Providers struct {
-	Aws     []Aws     `yaml:"aws"`
-	Vsphere []Vsphere `yaml:"vsphere"`
-	Vbox    []Vbox    `yaml:"vbox"`
+	Aws        []Aws     `yaml:"aws"`
+	Vsphere    []Vsphere `yaml:"vsphere"`
+	Virtualbox []Virtualbox    `yaml:"virtualbox"`
 }
 
 type Aws struct {
@@ -28,7 +28,7 @@ type Vsphere struct {
 	VsphereURL      string `yaml:"vsphere_url"`
 }
 
-type Vbox struct {
+type Virtualbox struct {
 	Name              string `yaml:"name"`
 	SomethingGoesHere string `yaml:"something"`
 }
