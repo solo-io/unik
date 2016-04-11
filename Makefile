@@ -24,12 +24,16 @@ define gobuild
 cd $@ && go build
 endef
 
+define mvnpackage
+cd $@ && mvn package
+endef
+
 define gobuild-linux
 cd $@ && GOOS=linux go build
 endef
 
 
-SUBDIRS = cmd/boot-creator cmd/image-creator cmd/stager cmd/provider cmd/volume-uploader cmd/daemon
+SUBDIRS = cmd/boot-creator cmd/image-creator cmd/stager cmd/provider cmd/volume-uploader cmd/daemon cmd/vsphere-client
 
 all: $(SUBDIRS)
 .PHONY: all $(SUBDIRS)
@@ -53,6 +57,10 @@ cmd/boot-creator:
 
 cmd/volume-uploader:
 	$(gobuild)
+
+cmd/vsphere-client:
+    $(mvnpackage)
+    $(cmdbuildcontainer)
 
 # rump compilers - these produce a .bin unikernel
 
