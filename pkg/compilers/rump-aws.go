@@ -20,7 +20,7 @@ func CreateImageAws(kernel string, args string, mntPoints []string) (*uniktypes.
 	res := &uniktypes.RawImage{}
 	volIndex := 0
 	// add root -> sda1 mapping
-	res.DeviceMappings = append(res.DeviceMappings, &uniktypes.DeviceMapping{MountPoint: "/", DeviceName: "sda1"})
+	res.DeviceMappings = append(res.DeviceMappings, &uniktypes.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"})
 
 	for _, mntPoint := range mntPoints {
 		// start from sdb; sda is for root.
@@ -34,7 +34,7 @@ func CreateImageAws(kernel string, args string, mntPoints []string) (*uniktypes.
 		}
 
 		c.Blk = append(c.Blk, blk)
-		res.DeviceMappings = append(res.DeviceMappings, &uniktypes.DeviceMapping{MountPoint: mntPoint, DeviceName: deviceMapped})
+		res.DeviceMappings = append(res.DeviceMappings, &uniktypes.DeviceMapping{MountPoint: mntPoint, DeviceName: "/dev/" + deviceMapped})
 	}
 
 	// aws network
