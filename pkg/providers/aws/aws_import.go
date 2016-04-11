@@ -65,10 +65,10 @@ func uploadToAws(s3svc *s3.S3, body io.ReadSeeker, size int64, bucket, path stri
 	}
 	return nil
 }
-func createDataVolume(s3svc *s3.S3, ec2svc *ec2.EC2, folder string, az string) (*string, error) {
+func createDataVolume(s3svc *s3.S3, ec2svc *ec2.EC2, folder string, az string) (string, error) {
 	dir, err := ioutil.TempDir("", "")
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer os.RemoveAll(dir)
 	imgFile := path.Join(dir, "vol.img")

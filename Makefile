@@ -29,7 +29,7 @@ cd $@ && GOOS=linux go build
 endef
 
 
-SUBDIRS = cmd/boot-creator cmd/image-creator cmd/stager cmd/volume-uploader cmd/daemon
+SUBDIRS = cmd/boot-creator cmd/image-creator cmd/stager cmd/provider cmd/volume-uploader cmd/daemon
 
 all: $(SUBDIRS)
 .PHONY: all $(SUBDIRS)
@@ -39,6 +39,9 @@ cmd/daemon:
 	$(cmdbuildcontainer)
 
 cmd/stager:
+	$(gobuild)
+
+cmd/provider:
 	$(gobuild)
 
 cmd/image-creator:
