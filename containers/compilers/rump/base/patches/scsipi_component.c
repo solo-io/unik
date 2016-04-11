@@ -17,7 +17,11 @@ RUMP_COMPONENT(RUMP_COMPONENT_DEV)
 {
 	extern struct bdevsw sd_bdevsw, cd_bdevsw;
 	extern struct cdevsw sd_cdevsw, cd_cdevsw;
+    int i;
 	devmajor_t bmaj, cmaj;
+    
+    char[] bDevice = "/dev/sd1";
+    char[] cDevice = "/dev/rsd1";
 
 	config_init_component(cfdriver_ioconf_scsipi,
 	    cfattach_ioconf_scsipi, cfdata_ioconf_scsipi);
@@ -25,16 +29,16 @@ RUMP_COMPONENT(RUMP_COMPONENT_DEV)
 	bmaj = cmaj = -1;
 	FLAWLESSCALL(devsw_attach("sd", &sd_bdevsw, &bmaj, &sd_cdevsw, &cmaj));
 
-  FLAWLESSCALL(rump_vfs_makedevnodes(S_IFBLK, "/dev/sd0", 'a',
-      bmaj, 0, 8));
-  FLAWLESSCALL(rump_vfs_makedevnodes(S_IFCHR, "/dev/rsd0", 'a',
-      cmaj, 0, 8));
-
-	FLAWLESSCALL(rump_vfs_makedevnodes(S_IFBLK, "/dev/sd1", 'a',
-	    bmaj, MAXPARTITIONS*1, 8));
-	FLAWLESSCALL(rump_vfs_makedevnodes(S_IFCHR, "/dev/rsd1", 'a',
-	    cmaj, MAXPARTITIONS*1, 8));
-
+    for (i=0; i < 8; i++) {
+        bDevice[7] = '1' + i;
+        cDevice[8] = '1' + i;
+    
+        FLAWLESSCALL(rump_vfs_makedevnodes(S_IFBLK, bDevice, 'a',
+            bmaj, MAXPARTITIONS*i, 8));
+        FLAWLESSCALL(rump_vfs_makedevnodes(S_IFCHR, cDevice, 'a',
+            cmaj, MAXPARTITIONS*i, 8));
+    }
+    
 	bmaj = cmaj = -1;
 	FLAWLESSCALL(devsw_attach("cd", &cd_bdevsw, &bmaj, &cd_cdevsw, &cmaj));
 
