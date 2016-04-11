@@ -59,8 +59,8 @@ cmd/volume-uploader:
 	$(gobuild)
 
 cmd/vsphere-client:
-    $(mvnpackage)
-    $(cmdbuildcontainer)
+	$(mvnpackage)
+	$(cmdbuildcontainer)
 
 # rump compilers - these produce a .bin unikernel
 
