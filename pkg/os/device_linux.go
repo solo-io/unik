@@ -304,6 +304,7 @@ func (p *DeviceMapperDevice) Get() BlockDevice {
 	return BlockDevice(newDevice)
 }
 
+// TODO: change this to api; like in here: https://www.versioneye.com/python/losetup/2.0.7 or here https://github.com/karelzak/util-linux/blob/master/sys-utils/losetup.c
 type LoDevice struct {
 	device        string
 	createdDevice BlockDevice
@@ -321,7 +322,6 @@ func (p *LoDevice) Acquire() (BlockDevice, error) {
 
 	if err != nil {
 		log.WithFields(log.Fields{"cmd": "losetup", "out": string(out), "device": p.device}).Debug("losetup -f failed")
-
 		return BlockDevice(""), err
 	}
 	outString := strings.TrimSpace(string(out))

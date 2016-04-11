@@ -1,16 +1,14 @@
-// +build linux
-
 package main
 
 import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
 	"path"
-    "os"
 	"strconv"
 	"strings"
-    
+
 	log "github.com/Sirupsen/logrus"
 
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
@@ -28,10 +26,10 @@ func (m *volumeslice) String() string {
 func (m *volumeslice) Set(value string) error {
 	volparts := strings.Split(value, ",")
 
-	if (len(volparts) != 1) && (len(volparts) != 2) {    
+	if (len(volparts) != 1) && (len(volparts) != 2) {
 		return errors.New("bad format")
 	}
-    
+
 	folder := volparts[0]
 
 	var size int64
@@ -43,33 +41,33 @@ func (m *volumeslice) Set(value string) error {
 	return nil
 }
 
-func  verifyPreConditions()  {
-    _, err := os.Stat("/dev/loop0") 
-    if os.IsNotExist(err) {
-        log.Fatal("No loop device found. if running from docker use \"--privileged -v /dev/:/dev/\"")
-    }
+func verifyPreConditions() {
+	_, err := os.Stat("/dev/loop0")
+	if os.IsNotExist(err) {
+		log.Fatal("No loop device found. if running from docker use \"--privileged -v /dev/:/dev/\"")
+	}
 }
 func main() {
 	log.SetLevel(log.DebugLevel)
-    
+
 	var volumes volumeslice
 	flag.Var(&volumes, "v", "volumes folder[,size]")
 	buildcontextdir := flag.String("d", "/opt/vol", "build context. relative volume names are relative to that")
 
-    flag.Parse()
-    
-    if len(volumes) == 0 {
-        log.Fatal("No volumes provided")
-    }
-    
+	flag.Parse()
+
+	if len(volumes) == 0 {
+		log.Fatal("No volumes provided")
+	}
+
 	for i := range volumes {
 		volumes[i].Path = path.Join(*buildcontextdir, volumes[i].Path)
 	}
 
 	imgFile := path.Join(*buildcontextdir, "vol.img")
 	diskLabelGen := func(device string) unikos.Partitioner { return &unikos.DiskLabelPartioner{device} }
-    
-    verifyPreConditions()
+
+	verifyPreConditions()
 	// rump so we use disklabel
 	err := unikos.CreateVolumes(imgFile, []types.RawVolume(volumes), diskLabelGen)
 	if err != nil {

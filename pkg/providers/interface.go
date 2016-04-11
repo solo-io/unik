@@ -2,9 +2,10 @@ package providers
 
 import (
 	"errors"
+	"mime/multipart"
+
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxlog"
-	"mime/multipart"
 )
 
 type Provider interface {
@@ -48,7 +49,7 @@ func (providers Providers) ProviderForImage(logger lxlog.Logger, imageId string)
 			return provider, nil
 		}
 	}
-	return errors.New("provider not found for image " + imageId)
+	return nil, errors.New("provider not found for image " + imageId)
 }
 
 func (providers Providers) ProviderForInstance(logger lxlog.Logger, instanceId string) (Provider, error) {
@@ -58,7 +59,7 @@ func (providers Providers) ProviderForInstance(logger lxlog.Logger, instanceId s
 			return provider, nil
 		}
 	}
-	return errors.New("provider not found for instance " + instanceId)
+	return nil, errors.New("provider not found for instance " + instanceId)
 }
 
 func (providers Providers) ProviderForVolume(logger lxlog.Logger, volumeId string) (Provider, error) {
@@ -68,5 +69,5 @@ func (providers Providers) ProviderForVolume(logger lxlog.Logger, volumeId strin
 			return provider, nil
 		}
 	}
-	return errors.New("provider not found for volume " + volumeId)
+	return nil, errors.New("provider not found for volume " + volumeId)
 }

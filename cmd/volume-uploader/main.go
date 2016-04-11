@@ -1,10 +1,12 @@
 package main
 
 import (
+	"flag"
+
 	unikaws "github.com/emc-advanced-dev/unik/pkg/providers/aws"
-    
+
 	log "github.com/Sirupsen/logrus"
-    
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -12,26 +14,29 @@ import (
 )
 
 func main() {
-    
+
 	log.SetLevel(log.DebugLevel)
-    
+
+	region := flag.String("r", "us-west-1", "region")
+	az := flag.String("a", "us-west-1b", "availability zone")
+	imgFile := flag.String("f", nil, "Image file")
+
+	flag.Parse()
+
+	if imgFile == nil {
+		log.Fatal("Must provide image file")
+	}
+
 	var awsSession = session.New()
-	// var meta = ec2metadata.New(awsSession)
 
-	// region, err := meta.Region()
-    region := "us-west-1"
-    // bucket := "unikilicious"
-    az := "us-west-1b" 
-    folder := "/Users/kohavy/Work/unik/cmd/volume-uploader"
-    
-    config :=  &aws.Config{Region: aws.String(region)}
-    ec2svc := ec2.New(awsSession, config)
-    s3svc := s3.New(awsSession, config)
+	config := &aws.Config{Region: region}
+	ec2svc := ec2.New(awsSession, config)
+	s3svc := s3.New(awsSession, config)
 
-    _, err := unikaws.CreateDataVolume(s3svc, ec2svc, folder, az)
-    
-    if err != nil {
-        panic(err)
-    }
-    
+	_, err := unikaws.CreateDataVolumeFromRawImage(s3svc, ec2svc, *imgFile, *az)
+
+	if err != nil {
+		panic(err)
+	}
+
 }

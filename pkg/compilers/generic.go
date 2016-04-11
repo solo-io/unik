@@ -15,7 +15,7 @@ func BuildBootableImage(kernel, cmdline string) (string, error) {
 
 	size := unikos.MegaBytes(100)
 
-	if err := unikos.CreateBootImageWithSize(rootFileName, kernel, cmdline, size); err != nil {
+	if err := unikos.CreateBootImageWithSize(rootFileName, size, kernel, cmdline); err != nil {
 		return "", err
 	}
 

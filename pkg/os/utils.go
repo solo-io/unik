@@ -44,11 +44,12 @@ func createSparseFile(filename string, size DiskSize) error {
 	return nil
 }
 
-func CreateBootImageWithSize(rootFile, progPath, commandline string, size DiskSize) error {
+func CreateBootImageWithSize(rootFile string, size DiskSize, progPath, commandline string) error {
 	err := createSparseFile(rootFile, size)
 	if err != nil {
 		return err
 	}
+	log.WithFields(log.Fields{"imgFile": rootFile}).Debug("created sparse file")
 
 	return CreateBootImageOnFile(rootFile, size, progPath, commandline)
 }
@@ -60,12 +61,15 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, comma
 		return err
 	}
 
+	log.WithFields(log.Fields{"imgFile": rootFile}).Debug("attaching sparse file")
 	rootLo := NewLoDevice(rootFile)
 	rootLodName, err := rootLo.Acquire()
 	if err != nil {
 		return err
 	}
 	defer rootLo.Release()
+
+	log.Debug("device mapping to 'hda'")
 
 	// use device mapper to rename the lo device to something that grub likes more.
 	// like hda!
@@ -76,6 +80,8 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, comma
 		return err
 	}
 	defer rootBlkDev.Release()
+
+	log.Debug("partitioning")
 
 	p := &MsDosPartioner{rootDevice.Name()}
 	p.MakeTable()
@@ -144,7 +150,7 @@ func PrepareGrub(folder, rootDeviceName, kernel, commandline string) error {
 		return err
 	}
 
-	if err := writeDeviceMap(path.Join(grubPath, "map"), rootDeviceName); err != nil {
+	if err := writeDeviceMap(path.Join(grubPath, "device.map"), rootDeviceName); err != nil {
 		return err
 	}
 	return nil
@@ -316,11 +322,18 @@ func CreatePartitionedVolumes(imgFile string, volumes map[string]types.RawVolume
 
 func CreateVolumes(imgFile string, volumes []types.RawVolume, newPartitioner func(device string) Partitioner) error {
 
+	if len(volumes) == 0 {
+		return nil
+	}
+
 	var sizes []Bytes
 
 	ext2Overhead := MegaBytes(2).ToBytes()
 	firstPartOffest := MegaBytes(2).ToBytes()
 	var totalSize Bytes = 0
+
+	log.Debug("Calculating sizes")
+
 	for _, v := range volumes {
 		if v.Size == 0 {
 			cursize, err := GetDirSize(v.Path)
