@@ -36,7 +36,6 @@ all: $(SUBDIRS)
 
 cmd/daemon:
 	$(gobuild)
-	$(cmdbuildcontainer)
 
 cmd/stager:
 	$(gobuild)
