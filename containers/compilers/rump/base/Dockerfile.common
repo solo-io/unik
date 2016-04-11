@@ -1,0 +1,11 @@
+FROM ubuntu
+
+RUN sudo sudo apt-get update -y  && sudo apt-get install libxen-dev curl git build-essential -y && sudo apt-get clean -y && sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV DESTDIR=/usr/local
+
+RUN cd /opt && \
+    git clone --recursive https://github.com/rumpkernel/rumprun
+
+VOLUME /opt/code
+WORKDIR /opt/code
