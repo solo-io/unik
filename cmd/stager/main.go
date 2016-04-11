@@ -13,14 +13,14 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 
 	r := compilers.RunmpCompiler{
-		DockerImage: "rumpcompiler-go-xen",
-		CreateImage: compilers.CreateImageAws,
+		DockerImage: "rumpcompiler-go-hw",
+		CreateImage: compilers.CreateImageVirtualBox,
 	}
 	f, err := os.Open("a.tar")
 	if err != nil {
 		panic(err)
 	}
-	img, err := r.CompileRawImage(f, "", []string{"/yuval"})
+	img, err := r.CompileRawImage(f, "", []string{})
 	if err != nil {
 		panic(err)
 	}
