@@ -30,26 +30,22 @@ func (p *AwsProvider) DeleteImage(logger lxlog.Logger, id string, force bool) er
 		}
 	}
 
-	svc := p.newEC2(logger)
-	describeSnapshotsOutput, err := svc.DescribeSnapshots(&ec2.DescribeSnapshotsInput{})
-	if err != nil {
-		return lxerrors.New("getting ec2 snapshot list", err)
-	}
-	snap, err := getSnapshotForImage(describeSnapshotsOutput, image.Id)
+	ec2svc := p.newEC2(logger)
+	snap, err := getSnapshotForImage(ec2svc, image.Id)
 	if err != nil {
 		return err
 	}
 	deleteSnapshotParam := &ec2.DeleteSnapshotInput{
 		SnapshotId: aws.String(*snap.SnapshotId),
 	}
-	_, err = svc.DeleteSnapshot(deleteSnapshotParam)
+	_, err = ec2svc.DeleteSnapshot(deleteSnapshotParam)
 	if err != nil {
 		return lxerrors.New("failed deleting snapshot "+*snap.SnapshotId, err)
 	}
 	deleteVolumeParam := &ec2.DeleteVolumeInput{
 		VolumeId: aws.String(*snap.VolumeId),
 	}
-	_, err = svc.DeleteVolume(deleteVolumeParam)
+	_, err = ec2svc.DeleteVolume(deleteVolumeParam)
 	if err != nil {
 		return lxerrors.New("failed deleting volumme "+*snap.VolumeId, err)
 	}
@@ -60,8 +56,12 @@ func (p *AwsProvider) DeleteImage(logger lxlog.Logger, id string, force bool) er
 	})
 }
 
-//TODO: make sure we tag the snapshot when we tag the ami
-func getSnapshotForImage(describeSnapshotsOutput *ec2.DescribeSnapshotsOutput, imageId string) (*ec2.Snapshot, error) {
+func getSnapshotForImage(ec2svc *ec2.EC2, imageId string) (*ec2.Snapshot, error) {
+	describeSnapshotsOutput, err := ec2svc.DescribeSnapshots(&ec2.DescribeSnapshotsInput{})
+	if err != nil {
+		return nil, lxerrors.New("getting ec2 snapshot list", err)
+	}
+
 	for _, snapshot := range describeSnapshotsOutput.Snapshots {
 		for _, tag := range snapshot.Tags {
 			if *tag.Key == UNIK_IMAGE_ID && *tag.Value == imageId {

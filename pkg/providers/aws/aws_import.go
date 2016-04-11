@@ -65,6 +65,7 @@ func uploadToAws(s3svc *s3.S3, body io.ReadSeeker, size int64, bucket, path stri
 	}
 	return nil
 }
+
 func createDataVolume(s3svc *s3.S3, ec2svc *ec2.EC2, folder string, az string) (string, error) {
 	dir, err := ioutil.TempDir("", "")
 	if err != nil {
@@ -81,6 +82,7 @@ func createDataVolume(s3svc *s3.S3, ec2svc *ec2.EC2, folder string, az string) (
 	return createDataVolumeFromRawImage(s3svc, ec2svc, imgFile, az)
 
 }
+
 func createDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string, az string) (string, error) {
 
 	fileInfo, err := os.Stat(imgFile)

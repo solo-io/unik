@@ -5,6 +5,7 @@ import (
 	"io"
 
 	uniktypes "github.com/emc-advanced-dev/unik/pkg/types"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 
 	"fmt"
 	"io/ioutil"
@@ -29,7 +30,7 @@ func (r *RunmpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mn
 	}
 	defer os.RemoveAll(localFolder)
 
-	if err := ExtractTar(sourceTar, localFolder); err != nil {
+	if err := unikos.ExtractTar(sourceTar, localFolder); err != nil {
 		return nil, err
 	}
 
@@ -44,7 +45,7 @@ func (r *RunmpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mn
 }
 
 // rump special json
-func ToRumpJson(c RumpConfig) (string, error) {
+func ToRumpJson(c rumpConfig) (string, error) {
 
 	blk := c.Blk
 	c.Blk = nil

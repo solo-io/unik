@@ -2,9 +2,9 @@ package providers
 
 import (
 	"errors"
-	"mime/multipart"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxlog"
+	"io"
 )
 
 type Provider interface {
@@ -23,7 +23,7 @@ type Provider interface {
 	StopInstance(logger lxlog.Logger, id string) error
 	GetInstanceLogs(logger lxlog.Logger, id string) (string, error)
 	//Volumes
-	CreateVolume(logger lxlog.Logger, name string, dataTar multipart.File, tarHeader *multipart.FileHeader, size int) (*types.Volume, error)
+	CreateVolume(logger lxlog.Logger, name string, sourceTar io.ReadCloser, size int) (*types.Volume, error)
 	CreateEmptyVolume(logger lxlog.Logger, name string, size int) (*types.Volume, error)
 	ListVolumes(logger lxlog.Logger) ([]*types.Volume, error)
 	GetVolume(logger lxlog.Logger, nameOrIdPrefix string) (*types.Volume, error)

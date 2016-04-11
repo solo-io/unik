@@ -24,6 +24,23 @@ var kernelIdMap = map[string]string{
 }
 
 func (p *AwsProvider) Stage(logger lxlog.Logger, name string, rawImage *types.RawImage, force bool) (_ *types.Image, err error) {
+	images, err := p.ListImages(logger)
+	if err != nil {
+		return nil, lxerrors.New("retrieving image list for existing image", err)
+	}
+	for _, image := range images {
+		if image.Name == name {
+			if !force {
+				return nil, lxerrors.New("an image already exists with name '"+name+"', try again with --force", nil)
+			} else {
+				err = p.DeleteImage(logger, image.Id, true)
+				if err != nil {
+					return nil, lxerrors.New("removing previously existing image", err)
+				}
+			}
+		}
+	}
+
 	var snapshotId, volumeId string
 	s3svc := p.newS3(logger)
 	ec2svc := p.newEC2(logger)
@@ -60,6 +77,14 @@ func (p *AwsProvider) Stage(logger lxlog.Logger, name string, rawImage *types.Ra
 		return nil, lxerrors.New("creating aws snapshot", err)
 	}
 	snapshotId = *createSnapshotOutput.SnapshotId
+
+	snapDesc := &ec2.DescribeSnapshotsInput{
+		SnapshotIds: []*string{aws.String(snapshotId)},
+	}
+	err = ec2svc.WaitUntilSnapshotCompleted(snapDesc)
+	if err != nil {
+		return nil, lxerrors.New("waiting for snapshot to complete", err)
+	}
 
 	blockDeviceMappings := []*ec2.BlockDeviceMapping{}
 	rootDeviceName := ""
@@ -106,6 +131,26 @@ func (p *AwsProvider) Stage(logger lxlog.Logger, name string, rawImage *types.Ra
 		return nil, lxerrors.New("registering snapshot as image", err)
 	}
 
+	imageId := *registerImageOutput.ImageId
+
+	tagObjects := &ec2.CreateTagsInput{
+		Resources: []*string{
+			aws.String(imageId),
+			aws.String(snapshotId),
+			aws.String(volumeId),
+		},
+		Tags: []*ec2.Tag{
+			&ec2.Tag{
+				Key:  aws.String(UNIK_IMAGE_ID),
+				Value: aws.String(imageId),
+			},
+		},
+	}
+	_, err = ec2svc.CreateTags(tagObjects)
+	if err != nil {
+		return nil, lxerrors.New("tagging snapshot, image, and volume", err)
+	}
+
 	rawImageFile, err := os.Stat(rawImage.LocalImagePath)
 	if err != nil {
 		return nil, lxerrors.New("statting raw image file", err)
@@ -113,13 +158,19 @@ func (p *AwsProvider) Stage(logger lxlog.Logger, name string, rawImage *types.Ra
 	sizeMb := rawImageFile.Size() >> 20
 
 	image := &types.Image{
-		Id: *registerImageOutput.ImageId,
+		Id: imageId,
 		Name: name,
 		DeviceMappings: rawImage.DeviceMappings,
 		SizeMb: sizeMb,
 		Infrastructure: types.Infrastructure_AWS,
 		Created: time.Now(),
 	}
+
+	p.state.ModifyImages(func(images map[string]*types.Image) error {
+		images[imageId] = image
+		return nil
+	})
+
 	logger.WithFields(lxlog.Fields{"image": image}).Infof("image created succesfully")
 	return image, nil
 }

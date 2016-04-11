@@ -46,18 +46,10 @@ func (s *memoryState) GetImages() map[string]*types.Image {
 	defer s.imagesLock.RUnlock()
 	imagesCopy := make(map[string]*types.Image)
 	for id, image := range s.Images {
-		deviceMappingsCopy := []*types.DeviceMapping{}
-		for _, deviceMapping := range image.DeviceMappings {
-			deviceMappingsCopy = append(deviceMappingsCopy, &types.DeviceMapping{
-				MountPoint: deviceMapping.MountPoint,
-				DeviceName: deviceMapping.DeviceName,
-			})
-		}
-
 		imageCopy := &types.Image{
 			Id:             image.Id,
 			Name:           image.Name,
-			DeviceMappings: deviceMappingsCopy,
+			DeviceMappings: image.DeviceMappings,
 			SizeMb:         image.SizeMb,
 			Infrastructure: image.Infrastructure,
 			Created:        image.Created,
@@ -78,6 +70,7 @@ func (s *memoryState) GetInstances() map[string]*types.Instance {
 			Infrastructure: instance.Infrastructure,
 			Name:           instance.Name,
 			State:          instance.State,
+			Created:          instance.Created,
 		}
 		instancesCopy[id] = instanceCopy
 	}
@@ -95,6 +88,7 @@ func (s *memoryState) GetVolumes() map[string]*types.Volume {
 			SizeMb:         volume.SizeMb,
 			Attachment:     volume.Attachment,
 			Infrastructure: volume.Infrastructure,
+			Created: volume.Created,
 		}
 		volumesCopy[id] = volumeCopy
 	}

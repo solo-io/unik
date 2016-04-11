@@ -23,7 +23,7 @@ const (
 type Image struct {
 	Id             string           `json:"Id"`
 	Name           string           `json:"Name"`
-	DeviceMappings []*DeviceMapping `json:"DeviceMappings"`
+	DeviceMappings []DeviceMapping `json:"DeviceMappings"`
 	SizeMb         int64            `json:"SizeMb"`
 	Infrastructure Infrastructure   `json:"Infrastructure"`
 	Created	       time.Time	`json:"Created"`
@@ -35,7 +35,7 @@ type Instance struct {
 	State          InstanceState `json:"State"`
 	IpAddress      string        `json:"IpAddress"`
 	ImageId        string        `json:"ImageId"`
-	Infrastructure string        `json:"Infrastructure"`
+	Infrastructure Infrastructure        `json:"Infrastructure"`
 	Created	       time.Time	`json:"Created"`
 }
 
@@ -55,7 +55,7 @@ type DeviceMapping struct {
 
 type RawImage struct {
 	LocalImagePath string           `json:"LocalImagePath"`
-	DeviceMappings []*DeviceMapping `json:"DeviceMappings"`
+	DeviceMappings []DeviceMapping `json:"DeviceMappings"`
 }
 
 type RawVolume struct {

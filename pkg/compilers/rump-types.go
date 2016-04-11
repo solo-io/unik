@@ -1,6 +1,6 @@
 package compilers
 
-type Blk struct {
+type blk struct {
 	Source     string `json:"source"`
 	Path       string `json:"path"`
 	FSType     string `json:"fstype"`
@@ -15,7 +15,7 @@ const (
 	DHCP   Method = "dhcp"
 )
 
-type Net struct {
+type net struct {
 	If     string `json:"if,omitempty"`
 	Type   string `json:"type,omitempty"`
 	Method Method `json:"method,omitempty"`
@@ -24,8 +24,8 @@ type Net struct {
 	Cloner string `json:"cloner,omitempty"`
 }
 
-type RumpConfig struct {
+type rumpConfig struct {
 	Cmdline string `json:"cmdline"`
-	Net     *Net   `json:"net,omitempty"`
-	Blk     []Blk  `json:"blk,omitempty"`
+	Net     *net   `json:"net,omitempty"`
+	Blk     []blk  `json:"blk,omitempty"`
 }

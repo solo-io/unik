@@ -52,9 +52,14 @@ func (p *AwsProvider) newS3(logger lxlog.Logger) *s3.S3 {
 	return s3.New(sess)
 }
 
+//todo: remove:!!
 func (p *AwsProvider) newMetadata() *ec2metadata.EC2Metadata {
 	return ec2metadata.New(session.New(&aws.Config{
 		Region:      aws.String(p.config.Region),
 		Credentials: credentials.NewStaticCredentials(p.config.AwsAccessKeyID, p.config.AwsSecretAcessKey, ""),
 	}))
+}
+
+func (p *AwsProvider) Save() error {
+	return p.state.Save()
 }
