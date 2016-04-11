@@ -1,9 +1,10 @@
 package compilers
 
 import (
-	"encoding/json"
+	"archive/tar"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -116,35 +117,54 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool) error
 	return nil
 }
 
-// rump special json
-func ToRumpJson(c RumpConfig) (string, error) {
-
-	blk := c.Blk
-	c.Blk = nil
-
-	jsonConfig, err := json.Marshal(c)
-	if err != nil {
-		return "", err
-	}
-
-	blks := ""
-	for _, b := range blk {
-
-		blkjson, err := json.Marshal(b)
-		if err != nil {
-			return "", err
+func ExtractTar(tarArchive io.ReadCloser, localFolder string) error {
+	tr := tar.NewReader(tarArchive)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			// end of tar archive
+			break
 		}
-		blks += fmt.Sprintf("\"blk\": %s,", string(blkjson))
+		if err != nil {
+			return err
+		}
+		log.WithField("file", hdr.Name).Debug("Extracting file")
+		switch hdr.Typeflag {
+		case tar.TypeDir:
+			err = os.MkdirAll(path.Join(localFolder, hdr.Name), 0755)
+
+			if err != nil {
+				return err
+			}
+
+		case tar.TypeReg:
+			fallthrough
+		case tar.TypeRegA:
+			dir, _ := path.Split(hdr.Name)
+			if err := os.MkdirAll(path.Join(localFolder, dir), 0755); err != nil {
+				return err
+			}
+
+			outputFile, err := os.Create(path.Join(localFolder, hdr.Name))
+			if err != nil {
+				return err
+			}
+
+			if _, err := io.Copy(outputFile, tr); err != nil {
+				outputFile.Close()
+				return err
+			}
+			outputFile.Close()
+
+		default:
+			return errors.New("Unsupported file type in tar")
+		}
 	}
-	var jsonString string
-	if len(blks) > 0 {
 
-		jsonString = string(jsonConfig[:len(jsonConfig)-1]) + "," + blks[:len(blks)-1] + "}"
+	return nil
+}
 
-	} else {
-		jsonString = string(jsonConfig)
-	}
+func (r *RunmpCompiler) runContainer(localFolder string) error {
 
-	return jsonString, nil
-
+	return RunContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false)
 }

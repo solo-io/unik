@@ -1,14 +1,11 @@
 package compilers
 
 import (
-	"archive/tar"
+	"encoding/json"
 	"io"
 
 	uniktypes "github.com/emc-advanced-dev/unik/pkg/types"
 
-	log "github.com/Sirupsen/logrus"
-
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -32,7 +29,7 @@ func (r *RunmpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mn
 	}
 	defer os.RemoveAll(localFolder)
 
-	if err := r.extractTar(sourceTar, localFolder); err != nil {
+	if err := ExtractTar(sourceTar, localFolder); err != nil {
 		return nil, err
 	}
 
@@ -46,54 +43,35 @@ func (r *RunmpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mn
 	return r.CreateImage(resultFile, args, mntPoints)
 }
 
-func (r *RunmpCompiler) extractTar(tarArchive io.ReadCloser, localFolder string) error {
-	tr := tar.NewReader(tarArchive)
-	for {
-		hdr, err := tr.Next()
-		if err == io.EOF {
-			// end of tar archive
-			break
-		}
-		if err != nil {
-			return err
-		}
-		log.WithField("file", hdr.Name).Debug("Extracting file")
-		switch hdr.Typeflag {
-		case tar.TypeDir:
-			err = os.MkdirAll(path.Join(localFolder, hdr.Name), 0755)
+// rump special json
+func ToRumpJson(c RumpConfig) (string, error) {
 
-			if err != nil {
-				return err
-			}
+	blk := c.Blk
+	c.Blk = nil
 
-		case tar.TypeReg:
-			fallthrough
-		case tar.TypeRegA:
-			dir, _ := path.Split(hdr.Name)
-			if err := os.MkdirAll(path.Join(localFolder, dir), 0755); err != nil {
-				return err
-			}
-
-			outputFile, err := os.Create(path.Join(localFolder, hdr.Name))
-			if err != nil {
-				return err
-			}
-
-			if _, err := io.Copy(outputFile, tr); err != nil {
-				outputFile.Close()
-				return err
-			}
-			outputFile.Close()
-
-		default:
-			return errors.New("Unsupported file type in tar")
-		}
+	jsonConfig, err := json.Marshal(c)
+	if err != nil {
+		return "", err
 	}
 
-	return nil
-}
+	blks := ""
+	for _, b := range blk {
 
-func (r *RunmpCompiler) runContainer(localFolder string) error {
+		blkjson, err := json.Marshal(b)
+		if err != nil {
+			return "", err
+		}
+		blks += fmt.Sprintf("\"blk\": %s,", string(blkjson))
+	}
+	var jsonString string
+	if len(blks) > 0 {
 
-	return RunContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false)
+		jsonString = string(jsonConfig[:len(jsonConfig)-1]) + "," + blks[:len(blks)-1] + "}"
+
+	} else {
+		jsonString = string(jsonConfig)
+	}
+
+	return jsonString, nil
+
 }
