@@ -1,13 +1,23 @@
 package types
 
+import "time"
+
 type InstanceState string
 
 const (
-	InstanceState_Running     = "InstanceState_Running"
-	InstanceState_Stopped     = "InstanceState_Stopped"
-	InstanceState_Terminating = "InstanceState_Terminating"
-	InstanceState_Pending     = "InstanceState_Pending"
-	InstanceState_Unknown     = "InstanceState_Unknown"
+	InstanceState_Running     InstanceState = "InstanceState_Running"
+	InstanceState_Stopped     InstanceState = "InstanceState_Stopped"
+	InstanceState_Terminating InstanceState = "InstanceState_Terminating"
+	InstanceState_Pending     InstanceState = "InstanceState_Pending"
+	InstanceState_Unknown     InstanceState = "InstanceState_Unknown"
+)
+
+type Infrastructure string
+
+const (
+	Infrastructure_AWS Infrastructure = "Infrastructure_AWS"
+	Infrastructure_VSPHERE Infrastructure = "Infrastructure_VSPHERE"
+	Infrastructure_VIRTUALBOX Infrastructure = "Infrastructure_VIRTUALBOX"
 )
 
 type Image struct {
@@ -15,7 +25,8 @@ type Image struct {
 	Name           string           `json:"Name"`
 	DeviceMappings []*DeviceMapping `json:"DeviceMappings"`
 	SizeMb         int64            `json:"SizeMb"`
-	Infrastructure string           `json:"Infrastructure"`
+	Infrastructure Infrastructure   `json:"Infrastructure"`
+	Created	       time.Time	`json:"Created"`
 }
 
 type Instance struct {
@@ -25,6 +36,7 @@ type Instance struct {
 	IpAddress      string        `json:"IpAddress"`
 	ImageId        string        `json:"ImageId"`
 	Infrastructure string        `json:"Infrastructure"`
+	Created	       time.Time	`json:"Created"`
 }
 
 type Volume struct {
@@ -33,6 +45,7 @@ type Volume struct {
 	SizeMb         int64  `json:"SizeMb"`
 	Attachment     string `json:"Attachment"` //instanceId
 	Infrastructure string `json:"Infrastructure"`
+	Created	       time.Time	`json:"Created"`
 }
 
 type DeviceMapping struct {

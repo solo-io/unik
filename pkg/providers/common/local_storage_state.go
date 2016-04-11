@@ -15,9 +15,9 @@ type LocalStorageState struct {
 	BaseState       state.State	`json:"BaseState"`
 	ImagePaths      map[string]string `json:"ImagePaths"`
 	VolumePaths     map[string]string `json:"VolumePaths"`
-	saveLock        *sync.Mutex
-	imagePathsLock  *sync.Mutex
-	volumePathsLock *sync.Mutex
+	saveLock        sync.Mutex
+	imagePathsLock  sync.RWMutex
+	volumePathsLock sync.RWMutex
 	saveFile        string
 }
 
@@ -26,9 +26,6 @@ func NewLocalStorageState(saveFile string) *LocalStorageState {
 		BaseState: state.NewMemoryState(""),
 		ImagePaths: make(map[string]string),
 		VolumePaths: make(map[string]string),
-		saveLock:      &sync.Mutex{},
-		imagePathsLock:      &sync.Mutex{},
-		volumePathsLock:      &sync.Mutex{},
 		saveFile:      saveFile,
 	}
 }
@@ -47,10 +44,14 @@ func (s *LocalStorageState) GetVolumes() map[string]*types.Volume {
 }
 
 func (s *LocalStorageState) GetImagePaths() map[string]string {
+	s.imagePathsLock.RLock()
+	defer s.imagePathsLock.RUnlock()
 	return s.ImagePaths
 }
 
 func (s *LocalStorageState) GetVolumePaths() map[string]string {
+	s.volumePathsLock.RLock()
+	defer s.volumePathsLock.RUnlock()
 	return s.VolumePaths
 }
 

@@ -3,14 +3,14 @@ package providers
 import (
 	"errors"
 	"mime/multipart"
-
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxlog"
 )
 
 type Provider interface {
 	//Images
-	Stage(logger lxlog.Logger, name string, compileFunc func() (*types.RawImage, error), force bool) (*types.Image, error)
+	//TODO: create provider for each request, put logger inside of provider so we can clean up interface
+	Stage(logger lxlog.Logger, name string, rawImage *types.RawImage, force bool) (*types.Image, error)
 	ListImages(logger lxlog.Logger) ([]*types.Image, error)
 	GetImage(logger lxlog.Logger, nameOrIdPrefix string) (*types.Image, error)
 	DeleteImage(logger lxlog.Logger, id string, force bool) error

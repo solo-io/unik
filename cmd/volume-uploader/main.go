@@ -33,7 +33,7 @@ func main() {
 	ec2svc := ec2.New(awsSession, config)
 	s3svc := s3.New(awsSession, config)
 
-	_, err := unikaws.CreateDataVolumeFromRawImage(s3svc, ec2svc, *imgFile, *az)
+	_, err := unikaws.createDataVolumeFromRawImage(s3svc, ec2svc, *imgFile, *az)
 
 	if err != nil {
 		panic(err)

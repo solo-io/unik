@@ -189,22 +189,19 @@ func (d *UnikDaemon) registerHandlers() {
 			}
 			mountPoints := strings.Split(req.FormValue("mounts"), ",")
 
-			compileFunc := func() (*types.RawImage, error) {
-				logger.WithFields(lxlog.Fields{
-					"force":        force,
-					"mount-points": mountPoints,
-					"name":         name,
-					"args":		args,
-					"compiler":     compilerMode,
-				}).Debugf("compiling raw image")
-				rawImage, err := compiler.CompileRawImage(sourceTar, args, mountPoints)
-				if err != nil {
-					return nil, lxerrors.New("failed to compile raw image", err)
-				}
-				return rawImage, nil
+			logger.WithFields(lxlog.Fields{
+				"force":        force,
+				"mount-points": mountPoints,
+				"name":         name,
+				"args":		args,
+				"compiler":     compilerMode,
+			}).Debugf("compiling raw image")
+			rawImage, err := compiler.CompileRawImage(sourceTar, args, mountPoints)
+			if err != nil {
+				return lxerrors.New("failed to compile raw image", err)
 			}
 
-			image, err := d.providers[providerType].Stage(logger, name, compileFunc, force)
+			image, err := d.providers[providerType].Stage(logger, name, rawImage, force)
 			if err != nil {
 				return nil, lxerrors.New("failed staging image", err)
 			}

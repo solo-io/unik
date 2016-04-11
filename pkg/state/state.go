@@ -22,10 +22,10 @@ type State interface {
 }
 
 type memoryState struct {
-	imagesLock    *sync.Mutex
-	instancesLock *sync.Mutex
-	volumesLock   *sync.Mutex
-	saveLock      *sync.Mutex
+	imagesLock    sync.RWMutex
+	instancesLock sync.RWMutex
+	volumesLock   sync.RWMutex
+	saveLock      sync.Mutex
 	saveFile      string
 	Images        map[string]*types.Image    `json:"Images"`
 	Instances     map[string]*types.Instance `json:"Instances"`
@@ -34,10 +34,6 @@ type memoryState struct {
 
 func NewMemoryState(saveFile string) *memoryState {
 	return &memoryState{
-		imagesLock:    &sync.Mutex{},
-		instancesLock: &sync.Mutex{},
-		volumesLock:   &sync.Mutex{},
-		saveLock:      &sync.Mutex{},
 		saveFile:      saveFile,
 		Images:        make(map[string]*types.Image),
 		Instances:     make(map[string]*types.Instance),
@@ -46,6 +42,8 @@ func NewMemoryState(saveFile string) *memoryState {
 }
 
 func (s *memoryState) GetImages() map[string]*types.Image {
+	s.imagesLock.RLock()
+	defer s.imagesLock.RUnlock()
 	imagesCopy := make(map[string]*types.Image)
 	for id, image := range s.Images {
 		deviceMappingsCopy := []*types.DeviceMapping{}
@@ -62,6 +60,7 @@ func (s *memoryState) GetImages() map[string]*types.Image {
 			DeviceMappings: deviceMappingsCopy,
 			SizeMb:         image.SizeMb,
 			Infrastructure: image.Infrastructure,
+			Created:        image.Created,
 		}
 		imagesCopy[id] = imageCopy
 	}
@@ -69,6 +68,8 @@ func (s *memoryState) GetImages() map[string]*types.Image {
 }
 
 func (s *memoryState) GetInstances() map[string]*types.Instance {
+	s.instancesLock.RLock()
+	defer s.instancesLock.RUnlock()
 	instancesCopy := make(map[string]*types.Instance)
 	for id, instance := range s.Instances {
 		instanceCopy := &types.Instance{
@@ -84,6 +85,8 @@ func (s *memoryState) GetInstances() map[string]*types.Instance {
 }
 
 func (s *memoryState) GetVolumes() map[string]*types.Volume {
+	s.volumesLock.RLock()
+	defer s.volumesLock.RUnlock()
 	volumesCopy := make(map[string]*types.Volume)
 	for id, volume := range s.Volumes {
 		volumeCopy := &types.Volume{
