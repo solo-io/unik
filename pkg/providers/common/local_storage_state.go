@@ -69,13 +69,13 @@ func (s *LocalStorageState) ModifyVolumes(modify func(volumes map[string]*types.
 func (s *LocalStorageState) ModifyImagePaths(modify func(imagePaths map[string]string) error) error {
 	s.imagePathsLock.Lock()
 	defer s.imagePathsLock.Unlock()
-	return s.BaseState.ModifyInstances(modify)
+	return modify(s.ImagePaths)
 }
 
 func (s *LocalStorageState) ModifyVolumePaths(modify func(imagePaths map[string]string) error) error {
 	s.imagePathsLock.Lock()
 	defer s.imagePathsLock.Unlock()
-	return s.BaseState.ModifyInstances(modify)
+	return modify(s.VolumePaths)
 }
 
 func (s *LocalStorageState) Save() error {
