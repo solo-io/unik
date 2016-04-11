@@ -39,7 +39,7 @@ cmd/daemon:
 	$(cmdbuildcontainer)
 
 cmd/stager:
-	cd $@ && $(gobuild)
+	$(gobuild)
 
 cmd/image-creator:
 	$(gobuild-linux)

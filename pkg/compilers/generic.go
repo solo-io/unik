@@ -32,8 +32,9 @@ func BuildBootableImage(kernel, cmdline string) (string, error) {
 		return "", err
 	}
 
-	cmds := []string{"-d", "/opt/vol", "-p", kernelBaseName, "-a", cmdline}
-	binds := []string{directory + ":/opt/vol/"}
+	const contextDir = "/opt/vol/"
+	cmds := []string{"-d", contextDir, "-p", kernelBaseName, "-a", cmdline}
+	binds := []string{directory + ":" + contextDir, "/dev/:/dev/"}
 
 	if err := RunContainer("boot-creator", cmds, binds, true); err != nil {
 		return "", err
