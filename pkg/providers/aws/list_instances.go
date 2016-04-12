@@ -26,9 +26,11 @@ func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 	updatedInstances := []*types.Instance{}
 	for _, reservation := range output.Reservations {
 		for _, ec2Instance := range reservation.Instances {
+			logrus.WithField("ec2instance", ec2Instance).Debugf("aws returned instance %s", *ec2Instance.InstanceId)
 			instanceId := parseInstanceId(ec2Instance)
 			instanceState := parseInstanceState(ec2Instance.State)
-			if instanceId == "" || instanceState != types.InstanceState_Unknown {
+			if instanceId == "" || instanceState == types.InstanceState_Unknown {
+				logrus.Warnf("instance %s state is %s or does not belong to unik, moving on", instanceId, *ec2Instance.State.Name)
 				continue
 			}
 			instance, ok := p.state.GetInstances()[instanceId]

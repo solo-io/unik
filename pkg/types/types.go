@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"time"
+	"fmt"
+)
 
 type InstanceState string
 
@@ -28,6 +31,13 @@ type Image struct {
 	Created	       time.Time	`json:"Created"`
 }
 
+func (image *Image) String() string {
+	if image == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%-v", *image)
+}
+
 type Instance struct {
 	Id             string        `json:"Id"`
 	Name           string        `json:"Name"`
@@ -38,6 +48,13 @@ type Instance struct {
 	Created	       time.Time	`json:"Created"`
 }
 
+func (instance *Instance) String() string {
+	if instance == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%+v", *instance)
+}
+
 type Volume struct {
 	Id             string `json:"Id"`
 	Name           string `json:"Name"`
@@ -45,6 +62,13 @@ type Volume struct {
 	Attachment     string `json:"Attachment"` //instanceId
 	Infrastructure string `json:"Infrastructure"`
 	Created	       time.Time	`json:"Created"`
+}
+
+func (volume *Volume) String() string {
+	if volume == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%+v", *volume)
 }
 
 type DeviceMapping struct {
