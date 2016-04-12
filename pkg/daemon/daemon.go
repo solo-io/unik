@@ -33,6 +33,8 @@ const (
 	virtualbox = "virtualbox"
 )
 
+const BEGIN_JSON_DATA = "BEGIN_JSON_DATA"
+
 func NewAwsProvider(aws config.Aws) providers.Provider {
 	return nil
 }
@@ -97,7 +99,7 @@ func (d *UnikDaemon) registerHandlers() {
 				return
 			}
 			if jsonObject != nil {
-				httpOutStream.Write([]byte("BEGIN_JSON_DATA\n"))
+				httpOutStream.Write([]byte(BEGIN_JSON_DATA+"\n"))
 				data, err := json.Marshal(jsonObject)
 				if err != nil {
 					lxmartini.Respond(res, lxerrors.New("could not marshal message to json", err))
