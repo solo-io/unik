@@ -139,6 +139,15 @@ func main() {
 		}
 		logrus.Infof("deleted image %s", imageId)
 		break
+	case "create-volume":
+		imageId := *arg
+		err = p.DeleteImage(imageId, true)
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		logrus.Infof("deleted image %s", imageId)
+		break
 	}
 
 }
