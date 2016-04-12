@@ -2,16 +2,17 @@ package virtualboxclient
 
 import (
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"os/exec"
 	"strings"
 	"github.com/pwnall/vbox"
 	"net/url"
 	"fmt"
 	"time"
+	"github.com/Sirupsen/logrus"
+	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
 )
 
-func Vms(logger lxlog.Logger) ([]vbox.Machine, error) {
+func Vms() ([]vbox.Machine, error) {
 	vms, err := vbox.GetMachines()
 	if err != nil {
 		return nil, lxerrors.New("getting vm list from virtualbox", err)
@@ -19,7 +20,7 @@ func Vms(logger lxlog.Logger) ([]vbox.Machine, error) {
 	return vms, nil
 }
 
-func CreateVm(logger lxlog.Logger, vmName string) error {
+func CreateVm(vmName string) error {
 	vm, err := vbox.CreateMachine(vmName, "Other", "")
 	if err != nil {
 		return lxerrors.New("creating vm", err)
@@ -31,7 +32,7 @@ func CreateVm(logger lxlog.Logger, vmName string) error {
 	return nil
 }
 
-func DestroyVm(logger lxlog.Logger, vmName string) error {
+func DestroyVm(vmName string) error {
 	vm, err := vbox.FindMachine(vmName)
 	if err != nil {
 		return lxerrors.New("finding machine "+vmName, err)
@@ -52,7 +53,7 @@ func DestroyVm(logger lxlog.Logger, vmName string) error {
 	if err != nil {
 		return lxerrors.New("could not get progress percent", err)
 	}
-	logger.Debugf("finished deleting media config for %s: %v percent", vmName, percent)
+	logrus.Debugf("finished deleting media config for %s: %v percent", vmName, percent)
 
 	if percent != 100 {
 		return lxerrors.New("config deletion stopped at "+fmt.Sprintf("%v", percent), err)
@@ -67,7 +68,7 @@ func DestroyVm(logger lxlog.Logger, vmName string) error {
 	return nil
 }
 
-func PowerOnVm(logger lxlog.Logger, vmName string) error {
+func PowerOnVm(vmName string) error {
 	machine, err := vbox.FindMachine(vmName)
 	if err != nil {
 		return lxerrors.New("finding machine "+vmName, err)
@@ -87,16 +88,16 @@ func PowerOnVm(logger lxlog.Logger, vmName string) error {
 	defer progress.Release()
 	defer func() {
 		if err = session.UnlockMachine(); err != nil {
-			logger.WithErr(err).Errorf("failed to unlock machine %s", vmName)
+			logrus.WithError(err).Errorf("failed to unlock machine %s", vmName)
 			return
 		}
 		for {
 			state, err := session.GetState()
 			if err != nil {
-				logger.WithErr(err).Errorf("getting session state")
+				logrus.WithError(err).Errorf("getting session state")
 				return
 			}
-			logger.Debugf("Session state: %s for vm %s", state, vmName)
+			logrus.Debugf("Session state: %s for vm %s", state, vmName)
 			if state == vbox.SessionState_Unlocked {
 				break
 			}
@@ -124,7 +125,7 @@ func PowerOnVm(logger lxlog.Logger, vmName string) error {
 	return nil
 }
 
-func PowerOffVm(logger lxlog.Logger, vmName string) error {
+func PowerOffVm(vmName string) error {
 	cmd := exec.Command("docker", "run", "--rm",
 		"vsphere-client",
 		"govc",
@@ -134,10 +135,10 @@ func PowerOffVm(logger lxlog.Logger, vmName string) error {
 		"-u", formatUrl(vc.u),
 		vmName,
 	)
-	logger.WithFields(lxlog.Fields{
+	logrus.WithFields(logrus.Fields{
 		"command": cmd.Args,
 	}).Debugf("running govc command")
-	logger.LogCommand(cmd, true)
+	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
 		return lxerrors.New("failed running govc vm.power (off)", err)
@@ -145,7 +146,7 @@ func PowerOffVm(logger lxlog.Logger, vmName string) error {
 	return nil
 }
 
-func AttachVmdk(logger lxlog.Logger, vmName, vmdkPath string) error {
+func AttachVmdk(vmName, vmdkPath string) error {
 	password, _ := vc.u.User.Password()
 	cmd := exec.Command("docker", "run", "--rm",
 		"vsphere-client",
@@ -160,10 +161,10 @@ func AttachVmdk(logger lxlog.Logger, vmName, vmdkPath string) error {
 		"[datastore1] " + vmdkPath,
 		"200", //TODO: is this right?
 	)
-	logger.WithFields(lxlog.Fields{
+	logrus.WithFields(logrus.Fields{
 		"command": cmd.Args,
 	}).Debugf("running vsphere-client.jar command")
-	logger.LogCommand(cmd, true)
+	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
 		return lxerrors.New("failed running vsphere-client.jar AttachVmdk", err)

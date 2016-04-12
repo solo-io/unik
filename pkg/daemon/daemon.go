@@ -10,9 +10,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/go-martini/martini"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"github.com/layer-x/layerx-commons/lxmartini"
-	"github.com/pborman/uuid"
 	"io"
 	"net/http"
 	"strconv"
@@ -74,24 +72,15 @@ func (d *UnikDaemon) Run(port int) {
 }
 
 func (d *UnikDaemon) registerHandlers() {
-	streamOrRespond := func(res http.ResponseWriter, req *http.Request, actionName string, action func(logger lxlog.Logger) (interface{}, error)) {
+	streamOrRespond := func(res http.ResponseWriter, req *http.Request, actionName string, action func() (interface{}, error)) {
 		verbose := req.URL.Query().Get("verbose")
-		logger := lxlog.New(actionName)
 		if strings.ToLower(verbose) == "true" {
-			oldHooks := logrus.StandardLogger().Hooks
-			defer func(){
-				logrus.StandardLogger().Hooks = oldHooks
-			}()
 			httpOutStream := ioutils.NewWriteFlusher(res)
-			logrus.AddHook(NewUnikLogrusHook(httpOutStream, actionName))
-			uuid := uuid.New()
-			logger.AddWriter(uuid, lxlog.DebugLevel, httpOutStream)
-			defer logger.DeleteWriter(uuid)
 
-			jsonObject, err := action(logger)
+			jsonObject, err := action()
 			if err != nil {
-				lxmartini.Respond(res, err)
-				logger.WithErr(err).Errorf("error performing action")
+				respond(res, err)
+				logrus.WithError(err).Errorf("error performing action")
 				return
 			}
 			if text, ok := jsonObject.(string); ok {
@@ -102,13 +91,13 @@ func (d *UnikDaemon) registerHandlers() {
 				httpOutStream.Write([]byte(BEGIN_JSON_DATA+"\n"))
 				data, err := json.Marshal(jsonObject)
 				if err != nil {
-					lxmartini.Respond(res, lxerrors.New("could not marshal message to json", err))
+					respond(res, lxerrors.New("could not marshal message to json", err))
 					return
 				}
 				data = append(data, byte('\n'))
 				_, err = httpOutStream.Write(data)
 				if err != nil {
-					lxmartini.Respond(res, lxerrors.New("could not write data", err))
+					respond(res, lxerrors.New("could not write data", err))
 					return
 				}
 				return
@@ -116,14 +105,14 @@ func (d *UnikDaemon) registerHandlers() {
 				res.WriteHeader(http.StatusNoContent)
 			}
 		} else {
-			jsonObject, err := action(logger)
+			jsonObject, err := action()
 			if err != nil {
-				lxmartini.Respond(res, err)
-				logger.WithErr(err).Errorf("error performing action")
+				respond(res, err)
+				logrus.WithError(err).Errorf("error performing action")
 				return
 			}
 			if jsonObject != nil {
-				lxmartini.Respond(res, jsonObject)
+				respond(res, jsonObject)
 			} else {
 				res.WriteHeader(http.StatusNoContent)
 			}
@@ -132,29 +121,29 @@ func (d *UnikDaemon) registerHandlers() {
 
 	//images
 	d.server.Get("/images", func(res http.ResponseWriter, req *http.Request) {
-		streamOrRespond(res, req, "get-images", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "get-images", func() (interface{}, error) {
 			allImages := []*types.Image{}
 			for _, provider := range d.providers {
-				images, err := provider.ListImages(logger)
+				images, err := provider.ListImages()
 				if err != nil {
 					return nil, lxerrors.New("could not get image list", err)
 				}
 				allImages = append(allImages, images...)
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"images": allImages,
 			}).Debugf("Listing all images")
 			return allImages, nil
 		})
 	})
 	d.server.Get("/images/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "get-images", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "get-images", func() (interface{}, error) {
 			imageName := params["image_name"]
-			provider, err := d.providers.ProviderForImage(logger, imageName)
+			provider, err := d.providers.ProviderForImage(imageName)
 			if err != nil {
 				return nil, err
 			}
-			image, err := provider.GetImage(logger, imageName)
+			image, err := provider.GetImage(imageName)
 			if err != nil {
 				return nil, err
 			}
@@ -162,7 +151,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Post("/images/:name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "build-image", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "build-image", func() (interface{}, error) {
 			name := params["name"]
 			if name == "" {
 				return nil, lxerrors.New("image must be named", nil)
@@ -171,10 +160,10 @@ func (d *UnikDaemon) registerHandlers() {
 			if err != nil {
 				return nil, err
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"req": req,
 			}).Debugf("parsing multipart form")
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"form": req.Form,
 			}).Debugf("parsing form file marked 'tarfile'")
 			sourceTar, _, err := req.FormFile("tarfile")
@@ -201,7 +190,7 @@ func (d *UnikDaemon) registerHandlers() {
 			}
 			mountPoints := strings.Split(req.FormValue("mounts"), ",")
 
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"force":        force,
 				"mount-points": mountPoints,
 				"name":         name,
@@ -213,7 +202,7 @@ func (d *UnikDaemon) registerHandlers() {
 				return nil, lxerrors.New("failed to compile raw image", err)
 			}
 
-			image, err := d.providers[providerType].Stage(logger, name, rawImage, force)
+			image, err := d.providers[providerType].Stage(name, rawImage, force)
 			if err != nil {
 				return nil, lxerrors.New("failed staging image", err)
 			}
@@ -221,27 +210,27 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Delete("/images/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "delete-unikernel", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "delete-unikernel", func() (interface{}, error) {
 			imageName := params["image_name"]
 			if imageName == "" {
-				logger.WithFields(lxlog.Fields{
+				logrus.WithFields(logrus.Fields{
 					"request": fmt.Sprintf("%v", req),
 				}).Errorf("image must be named")
 				return nil, lxerrors.New("image must be named", nil)
 			}
 			forceStr := req.URL.Query().Get("force")
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"request": req,
 			}).Infof("deleting instance " + imageName)
 			force := false
 			if strings.ToLower(forceStr) == "true" {
 				force = true
 			}
-			provider, err := d.providers.ProviderForImage(logger, imageName)
+			provider, err := d.providers.ProviderForImage(imageName)
 			if err != nil {
 				return nil, err
 			}
-			err = provider.DeleteImage(logger, imageName, force)
+			err = provider.DeleteImage(imageName, force)
 			if err != nil {
 				return nil, err
 			}
@@ -251,30 +240,30 @@ func (d *UnikDaemon) registerHandlers() {
 
 	//Instances
 	d.server.Get("/instances", func(res http.ResponseWriter, req *http.Request) {
-		streamOrRespond(res, req, "get-instances", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "get-instances", func() (interface{}, error) {
 			allInstances := []*types.Instance{}
 			for _, provider := range d.providers {
-				instances, err := provider.ListInstances(logger)
+				instances, err := provider.ListInstances()
 				if err != nil {
-					logger.WithErr(err).Errorf("could not get instance list")
+					logrus.WithError(err).Errorf("could not get instance list")
 				} else {
 					allInstances = append(allInstances, instances...)
 				}
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"instances": allInstances,
 			}).Debugf("Listing all instances")
 			return allInstances, nil
 		})
 	})
 	d.server.Get("/instances/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "get-instances", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "get-instances", func() (interface{}, error) {
 			instanceId := params["instance_id"]
-			provider, err := d.providers.ProviderForInstance(logger, instanceId)
+			provider, err := d.providers.ProviderForInstance(instanceId)
 			if err != nil {
 				return nil, err
 			}
-			instance, err := provider.GetInstance(logger, instanceId)
+			instance, err := provider.GetInstance(instanceId)
 			if err != nil {
 				return nil, err
 			}
@@ -282,16 +271,16 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Delete("/instances/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "delete-instance", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "delete-instance", func() (interface{}, error) {
 			instanceId := params["instance_id"]
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"request": req,
 			}).Infof("deleting instance " + instanceId)
-			provider, err := d.providers.ProviderForInstance(logger, instanceId)
+			provider, err := d.providers.ProviderForInstance(instanceId)
 			if err != nil {
 				return nil, err
 			}
-			err = provider.DeleteInstance(logger, instanceId)
+			err = provider.DeleteInstance(instanceId)
 			if err != nil {
 				return nil, err
 			}
@@ -299,11 +288,11 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Get("/instances/:instance_id/logs", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "get-instance-logs", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "get-instance-logs", func() (interface{}, error) {
 			instanceId := params["instance_id"]
 			follow := req.URL.Query().Get("follow")
 			res.Write([]byte("getting logs for " + instanceId + "...\n"))
-			provider, err := d.providers.ProviderForInstance(logger, instanceId)
+			provider, err := d.providers.ProviderForInstance(instanceId)
 			if err != nil {
 				return nil, err
 			}
@@ -316,22 +305,22 @@ func (d *UnikDaemon) registerHandlers() {
 
 				deleteOnDisconnect := req.URL.Query().Get("delete")
 				if strings.ToLower(deleteOnDisconnect) == "true" {
-					defer provider.DeleteInstance(logger, instanceId)
+					defer provider.DeleteInstance(instanceId)
 				}
 
 				output := ioutils.NewWriteFlusher(res)
 				logFn := func() (string, error) {
-					return provider.GetInstanceLogs(logger, instanceId)
+					return provider.GetInstanceLogs(instanceId)
 				}
 				err := streamOutput(logFn, output)
 				if err != nil {
-					logger.WithErr(err).WithFields(lxlog.Fields{
+					logrus.WithError(err).WithFields(logrus.Fields{
 						"instanceId": instanceId,
 					}).Warnf("streaming logs stopped")
 				}
 				return nil, nil
 			}
-			logs, err := provider.GetInstanceLogs(logger, instanceId)
+			logs, err := provider.GetInstanceLogs(instanceId)
 			if err != nil {
 				return nil, lxerrors.New("failed to perform get logs request", err)
 			}
@@ -339,8 +328,8 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Post("/instances/:image_name/run", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "run-instance", func(logger lxlog.Logger) (interface{}, error) {
-			logger.WithFields(lxlog.Fields{
+		streamOrRespond(res, req, "run-instance", func() (interface{}, error) {
+			logrus.WithFields(logrus.Fields{
 				"request": req, "query": req.URL.Query(),
 			}).Debugf("recieved run request")
 			imageName := params["image_name"]
@@ -365,7 +354,7 @@ func (d *UnikDaemon) registerHandlers() {
 				for _, envPair := range envPairs {
 					splitEnv := strings.Split(envPair, envPairDelimiter)
 					if len(splitEnv) != 2 {
-						logger.WithFields(lxlog.Fields{
+						logrus.WithFields(logrus.Fields{
 							"envPair": envPair,
 						}).Warnf("was given a env string with an invalid format, ignoring")
 						continue
@@ -383,7 +372,7 @@ func (d *UnikDaemon) registerHandlers() {
 				for _, mountVolumePair := range mountVolumePairs {
 					mountVolumeTuple := strings.Split(mountVolumePair, ":")
 					if len(mountVolumeTuple) != 2 {
-						logger.WithFields(lxlog.Fields{
+						logrus.WithFields(logrus.Fields{
 							"mountVolumePair": mountVolumePair,
 						}).Warnf("was given a mount-volume pair string with an invalid format, ignoring")
 						continue
@@ -392,12 +381,12 @@ func (d *UnikDaemon) registerHandlers() {
 				}
 			}
 
-			provider, err := d.providers.ProviderForImage(logger, imageName)
+			provider, err := d.providers.ProviderForImage(imageName)
 			if err != nil {
 				return nil, err
 			}
 
-			instance, err := provider.RunInstance(logger, instanceName, imageName, mntPointsToVolumeIds, env)
+			instance, err := provider.RunInstance(instanceName, imageName, mntPointsToVolumeIds, env)
 			if err != nil {
 				return nil, err
 			}
@@ -405,16 +394,16 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Put("/instances/:instance_id/start", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "start-instance", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "start-instance", func() (interface{}, error) {
 			instanceId := params["instance_id"]
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"request": req,
 			}).Infof("starting instance " + instanceId)
-			provider, err := d.providers.ProviderForInstance(logger, instanceId)
+			provider, err := d.providers.ProviderForInstance(instanceId)
 			if err != nil {
 				return nil, err
 			}
-			err = provider.StartInstance(logger, instanceId)
+			err = provider.StartInstance(instanceId)
 			if err != nil {
 				return nil, lxerrors.New("could not start instance "+instanceId, err)
 			}
@@ -422,16 +411,16 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Put("/instances/:instance_id/stop", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "stop-instance", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "stop-instance", func() (interface{}, error) {
 			instanceId := params["instance_id"]
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"request": req,
 			}).Infof("stopping instance " + instanceId)
-			provider, err := d.providers.ProviderForInstance(logger, instanceId)
+			provider, err := d.providers.ProviderForInstance(instanceId)
 			if err != nil {
 				return nil, err
 			}
-			err = provider.StopInstance(logger, instanceId)
+			err = provider.StopInstance(instanceId)
 			if err != nil {
 				return nil, lxerrors.New("could not stop instance "+instanceId, err)
 			}
@@ -441,47 +430,47 @@ func (d *UnikDaemon) registerHandlers() {
 
 	//Volumes
 	d.server.Get("/volumes", func(res http.ResponseWriter, req *http.Request) {
-		streamOrRespond(res, req, "get-volumes", func(logger lxlog.Logger) (interface{}, error) {
-			logger.Debugf("listing volumes started")
+		streamOrRespond(res, req, "get-volumes", func() (interface{}, error) {
+			logrus.Debugf("listing volumes started")
 			allVolumes := []*types.Volume{}
 			for _, provider := range d.providers {
-				volumes, err := provider.ListVolumes(logger)
+				volumes, err := provider.ListVolumes()
 				if err != nil {
 					return nil, lxerrors.New("could not retrieve volumes", err)
 				}
 				allVolumes = append(allVolumes, volumes...)
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"volumes": allVolumes,
 			}).Infof("volumes")
 			return allVolumes, nil
 		})
 	})
 	d.server.Get("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "delete-volume", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "delete-volume", func() (interface{}, error) {
 			volumeName := params["volume_name"]
-			provider, err := d.providers.ProviderForVolume(logger, volumeName)
+			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {
 				return nil, err
 			}
-			volume, err := provider.GetVolume(logger, volumeName)
+			volume, err := provider.GetVolume(volumeName)
 			if err != nil {
 				return nil, lxerrors.New("could not get volume", err)
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"volume": volume,
 			}).Infof("volume retrieved")
 			return volume, nil
 		})
 	})
 	d.server.Post("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "create-volume", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "create-volume", func() (interface{}, error) {
 			volumeName := params["volume_name"]
 			err := req.ParseMultipartForm(0)
 			if err != nil {
 				return nil, err
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"req": req,
 			}).Debugf("parsing multipart form")
 
@@ -496,44 +485,44 @@ func (d *UnikDaemon) registerHandlers() {
 				return nil, lxerrors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
 			}
 
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"form": req.Form,
 			}).Debugf("seeking form file marked 'tarfile'")
 			dataTar, header, err := req.FormFile("tarfile")
 			if err != nil {
-				logger.WithFields(lxlog.Fields{
+				logrus.WithFields(logrus.Fields{
 					"size": size,
 					"name": volumeName,
-				}).WithErr(err).Debugf("creating empty volume started")
-				volume, err := d.providers[providerType].CreateEmptyVolume(logger, volumeName, size)
+				}).WithError(err).Debugf("creating empty volume started")
+				volume, err := d.providers[providerType].CreateEmptyVolume(volumeName, size)
 				if err != nil {
 					return nil, lxerrors.New("creating volume", err)
 				}
-				logger.WithFields(lxlog.Fields{
+				logrus.WithFields(logrus.Fields{
 					"volume": volume,
 				}).Infof("volume created")
 				return volume, nil
 			}
 			defer dataTar.Close()
 
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"tarred-data": header.Filename,
 				"name":        volumeName,
 			}).Debugf("creating volume started")
-			volume, err := d.providers[providerType].CreateVolume(logger, volumeName, dataTar, size)
+			volume, err := d.providers[providerType].CreateVolume(volumeName, dataTar, size)
 			if err != nil {
 				return nil, lxerrors.New("could not create volume", err)
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"volume": volume,
 			}).Infof("volume created")
 			return volume, nil
 		})
 	})
 	d.server.Delete("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "delete-volume", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "delete-volume", func() (interface{}, error) {
 			volumeName := params["volume_name"]
-			provider, err := d.providers.ProviderForVolume(logger, volumeName)
+			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {
 				return nil, err
 			}
@@ -543,23 +532,23 @@ func (d *UnikDaemon) registerHandlers() {
 				force = true
 			}
 
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"force": force, "name": volumeName,
 			}).Debugf("deleting volume started")
-			err = provider.DeleteVolume(logger, volumeName, force)
+			err = provider.DeleteVolume(volumeName, force)
 			if err != nil {
 				return nil, lxerrors.New("could not delete volume", err)
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"volume": volumeName,
 			}).Infof("volume deleted")
 			return volumeName, nil
 		})
 	})
 	d.server.Post("/volumes/:volume_name/attach/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "attach-volume", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "attach-volume", func() (interface{}, error) {
 			volumeName := params["volume_name"]
-			provider, err := d.providers.ProviderForVolume(logger, volumeName)
+			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {
 				return nil, err
 			}
@@ -568,16 +557,16 @@ func (d *UnikDaemon) registerHandlers() {
 			if mount == "" {
 				return nil, lxerrors.New("must provide a mount point in URL query", nil)
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"instance": instanceId,
 				"volume":   volumeName,
 				"mount":    mount,
 			}).Debugf("attaching volume to instance")
-			err = provider.AttachVolume(logger, volumeName, instanceId, mount)
+			err = provider.AttachVolume(volumeName, instanceId, mount)
 			if err != nil {
 				return nil, lxerrors.New("could not attach volume to instance", err)
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"instance": instanceId,
 				"volume":   volumeName,
 				"mount":    mount,
@@ -586,20 +575,20 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Post("/volumes/:volume_name/detach", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "detach-volume", func(logger lxlog.Logger) (interface{}, error) {
+		streamOrRespond(res, req, "detach-volume", func() (interface{}, error) {
 			volumeName := params["volume_name"]
-			provider, err := d.providers.ProviderForVolume(logger, volumeName)
+			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {
 				return nil, err
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"volume": volumeName,
 			}).Debugf("detaching volume from any instance")
-			err = provider.DetachVolume(logger, volumeName)
+			err = provider.DetachVolume(volumeName)
 			if err != nil {
 				return nil, lxerrors.New("could not detach volume from instance", err)
 			}
-			logger.WithFields(lxlog.Fields{
+			logrus.WithFields(logrus.Fields{
 				"volume": volumeName,
 			}).Infof("volume detached")
 			return volumeName, nil
@@ -645,4 +634,30 @@ func streamOutput(outputFunc func() (string, error), w io.Writer) error {
 
 func getCompilerMode(stagerMode, unikernelType string) string {
 	return fmt.Sprintf("%s-%s", stagerMode, unikernelType)
+}
+
+func respond(res http.ResponseWriter, message interface{}) error {
+	switch message.(type){
+	case string:
+		messageString := message.(string)
+		data := []byte(messageString)
+		_, err := res.Write(data)
+		if err != nil {
+			return lxerrors.New("writing data", err)
+		}
+		return nil
+	case error:
+		responseError := message.(error)
+		http.Error(res, responseError.Error(), http.StatusInternalServerError)
+		return nil
+	}
+	data, err := json.Marshal(message)
+	if err != nil {
+		return lxerrors.New("marshalling message to json", err)
+	}
+	_, err = res.Write(data)
+	if err != nil {
+		return lxerrors.New("writing data", err)
+	}
+	return nil
 }

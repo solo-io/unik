@@ -7,13 +7,13 @@ import (
 	"github.com/docker/engine-api/types/network"
 	"github.com/docker/engine-api/types/strslice"
 	"golang.org/x/net/context"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"io/ioutil"
 	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/Sirupsen/logrus"
 )
 
 
-func RunContainer(logger lxlog.Logger, imageName string, cmds, binds []string, privileged bool) error {
+func RunContainer(imageName string, cmds, binds []string, privileged bool) error {
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		return err
@@ -32,15 +32,15 @@ func RunContainer(logger lxlog.Logger, imageName string, cmds, binds []string, p
 
 	container, err := cli.ContainerCreate(context.Background(), config, hostConfig, networkingConfig, containerName)
 	if err != nil {
-		logger.WithErr(err).Errorf("Error creating container")
+		logrus.WithError(err).Errorf("Error creating container")
 		return err
 	}
 	defer cli.ContainerRemove(context.Background(), types.ContainerRemoveOptions{ContainerID: container.ID})
 
-	logger.WithField("id", container.ID).Errorf("Created container")
+	logrus.WithField("id", container.ID).Errorf("Created container")
 
 	if err := cli.ContainerStart(context.Background(), container.ID); err != nil {
-		logger.WithErr(err).Errorf("ContainerStart")
+		logrus.WithError(err).Errorf("ContainerStart")
 		return err
 	}
 
@@ -50,7 +50,7 @@ func RunContainer(logger lxlog.Logger, imageName string, cmds, binds []string, p
 	}
 
 	if status != 0 {
-		logger.WithField("status", status).Errorf("Container exit status non zero")
+		logrus.WithField("status", status).Errorf("Container exit status non zero")
 
 		options := types.ContainerLogsOptions{
 			ContainerID: container.ID,
@@ -61,15 +61,15 @@ func RunContainer(logger lxlog.Logger, imageName string, cmds, binds []string, p
 		}
 		reader, err := cli.ContainerLogs(context.Background(), options)
 		if err != nil {
-			logger.WithErr(err).Errorf("ContainerLogs")
+			logrus.WithError(err).Errorf("ContainerLogs")
 			return err
 		}
 		defer reader.Close()
 
 		if res, err := ioutil.ReadAll(reader); err == nil {
-			logger.Errorf(string(res))
+			logrus.Errorf(string(res))
 		} else {
-			logger.WithErr(err).Warnf("failed to get logs")
+			logrus.WithError(err).Warnf("failed to get logs")
 		}
 
 		return lxerrors.New("Returned non zero status", nil)

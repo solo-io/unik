@@ -5,12 +5,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
+	"github.com/Sirupsen/logrus"
 )
 
 const UNIK_VOLUME_ID = "UNIK_VOLUME_ID"
 
-func (p *AwsProvider) ListVolumes(logger lxlog.Logger) ([]*types.Volume, error) {
+func (p *AwsProvider) ListVolumes() ([]*types.Volume, error) {
 	param := &ec2.DescribeVolumesInput{
 		Filters: []*ec2.Filter{
 			&ec2.Filter{
@@ -19,7 +19,7 @@ func (p *AwsProvider) ListVolumes(logger lxlog.Logger) ([]*types.Volume, error) 
 			},
 		},
 	}
-	output, err := p.newEC2(logger).DescribeVolumes(param)
+	output, err := p.newEC2().DescribeVolumes(param)
 	if err != nil {
 		return nil, lxerrors.New("running ec2 describe volumes ", err)
 	}
@@ -31,7 +31,7 @@ func (p *AwsProvider) ListVolumes(logger lxlog.Logger) ([]*types.Volume, error) 
 		}
 		volume, ok := p.state.GetVolumes()[volumeId]
 		if !ok {
-			logger.WithFields(lxlog.Fields{"ec2Volume": ec2Volume}).Errorf("found a volume that unik has no record of")
+			logrus.WithFields(logrus.Fields{"ec2Volume": ec2Volume}).Errorf("found a volume that unik has no record of")
 			continue
 		}
 		if len(ec2Volume.Attachments) > 0 {

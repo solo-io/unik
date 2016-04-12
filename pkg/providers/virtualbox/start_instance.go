@@ -1,18 +1,16 @@
 package virtualbox
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
 )
 
-func (p *VirtualboxProvider) StartInstance(logger lxlog.Logger, id string) error {
-	instance, err := p.GetInstance(logger, id)
+func (p *VirtualboxProvider) StartInstance(id string) error {
+	instance, err := p.GetInstance(id)
 	if err != nil {
 		return lxerrors.New("retrieving instance "+id, err)
 	}
 	c := p.getClient()
-	err = c.PowerOnVm(logger, id)
+	err = c.PowerOnVm(id)
 	if err != nil {
 		return lxerrors.New("failed to start instance "+instance.Id, err)
 	}

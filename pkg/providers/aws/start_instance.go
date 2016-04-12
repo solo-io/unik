@@ -4,11 +4,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
 )
 
-func (p *AwsProvider) StartInstance(logger lxlog.Logger, id string) error {
-	instance, err := p.GetInstance(logger, id)
+func (p *AwsProvider) StartInstance(id string) error {
+	instance, err := p.GetInstance(id)
 	if err != nil {
 		return lxerrors.New("retrieving instance "+id, err)
 	}
@@ -17,7 +16,7 @@ func (p *AwsProvider) StartInstance(logger lxlog.Logger, id string) error {
 			aws.String(instance.Id),
 		},
 	}
-	_, err = p.newEC2(logger).StartInstances(param)
+	_, err = p.newEC2().StartInstances(param)
 	if err != nil {
 		return lxerrors.New("failed to start instance "+instance.Id, err)
 	}

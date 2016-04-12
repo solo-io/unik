@@ -2,14 +2,13 @@ package common
 
 import (
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"github.com/emc-advanced-dev/unik/pkg/providers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"strings"
 )
 
-func GetInstance(logger lxlog.Logger, p providers.Provider, nameOrIdPrefix string) (*types.Instance, error) {
-	instances, err := p.ListInstances(logger)
+func GetInstance(p providers.Provider, nameOrIdPrefix string) (*types.Instance, error) {
+	instances, err := p.ListInstances()
 	if err != nil {
 		return nil, lxerrors.New("retrieving instance list", err)
 	}

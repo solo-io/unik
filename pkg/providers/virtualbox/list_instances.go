@@ -2,14 +2,14 @@ package virtualbox
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	vspheretypes "github.com/vmware/govmomi/vim25/types"
+	"github.com/Sirupsen/logrus"
 )
 
-func (p *VirtualboxProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance, error) {
+func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 	c := p.getClient()
-	vms, err := c.Vms(logger)
+	vms, err := c.Vms()
 	if err != nil {
 		return nil, lxerrors.New("getting vsphere vms", err)
 	}
@@ -56,12 +56,12 @@ func (p *VirtualboxProvider) ListInstances(logger lxlog.Logger) ([]*types.Instan
 			}
 		}
 		if instanceId == "" {
-			logger.WithFields(lxlog.Fields{"vm": vm}).Warnf("vm found, cannot identify instance id")
+			logrus.WithFields(logrus.Fields{"vm": vm}).Warnf("vm found, cannot identify instance id")
 			continue
 		}
 		instance, ok := p.state.GetInstances()[instanceId]
 		if !ok {
-			logger.WithFields(lxlog.Fields{"vm": vm, "instance-id": instanceId}).Warnf("vm found, cannot identify instance id")
+			logrus.WithFields(logrus.Fields{"vm": vm, "instance-id": instanceId}).Warnf("vm found, cannot identify instance id")
 			continue
 		}
 

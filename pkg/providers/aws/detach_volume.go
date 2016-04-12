@@ -5,11 +5,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
 )
 
-func (p *AwsProvider) DetachVolume(logger lxlog.Logger, id string) error {
-	volume, err := p.GetVolume(logger, id)
+func (p *AwsProvider) DetachVolume(id string) error {
+	volume, err := p.GetVolume(id)
 	if err != nil {
 		return lxerrors.New("retrieving volume "+id, err)
 	}
@@ -17,7 +16,7 @@ func (p *AwsProvider) DetachVolume(logger lxlog.Logger, id string) error {
 		VolumeId: aws.String(volume.Id),
 		Force: aws.Bool(true),
 	}
-	_, err = p.newEC2(logger).DetachVolume(param)
+	_, err = p.newEC2().DetachVolume(param)
 	if err != nil {
 		return lxerrors.New("failed to detach volume "+volume.Id, err)
 	}

@@ -5,12 +5,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
+	"github.com/Sirupsen/logrus"
 )
 
 const UNIK_IMAGE_ID = "UNIK_IMAGE_ID"
 
-func (p *AwsProvider) ListImages(logger lxlog.Logger) ([]*types.Image, error) {
+func (p *AwsProvider) ListImages() ([]*types.Image, error) {
 	param := &ec2.DescribeImagesInput{
 		Filters: []*ec2.Filter{
 			&ec2.Filter{
@@ -19,7 +19,7 @@ func (p *AwsProvider) ListImages(logger lxlog.Logger) ([]*types.Image, error) {
 			},
 		},
 	}
-	output, err := p.newEC2(logger).DescribeImages(param)
+	output, err := p.newEC2().DescribeImages(param)
 	if err != nil {
 		return nil, lxerrors.New("running ec2 describe images ", err)
 	}
@@ -31,7 +31,7 @@ func (p *AwsProvider) ListImages(logger lxlog.Logger) ([]*types.Image, error) {
 		}
 		image, ok := p.state.GetImages()[imageId]
 		if !ok {
-			logger.WithFields(lxlog.Fields{"ec2Image": ec2Image}).Errorf("found an image that unik has no record of")
+			logrus.WithFields(logrus.Fields{"ec2Image": ec2Image}).Errorf("found an image that unik has no record of")
 			continue
 		}
 		images = append(images, image)

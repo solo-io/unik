@@ -1,16 +1,13 @@
 package virtualbox
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"os"
 )
 
-func (p *VirtualboxProvider) DeleteVolume(logger lxlog.Logger, id string, force bool) error {
-	volume, err := p.GetVolume(logger, id)
+func (p *VirtualboxProvider) DeleteVolume(id string, force bool) error {
+	volume, err := p.GetVolume(id)
 	if err != nil {
 		return lxerrors.New("retrieving volume "+id, err)
 	}

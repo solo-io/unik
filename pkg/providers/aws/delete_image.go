@@ -5,15 +5,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
 )
 
-func (p *AwsProvider) DeleteImage(logger lxlog.Logger, id string, force bool) error {
-	image, err := p.GetImage(logger, id)
+func (p *AwsProvider) DeleteImage(id string, force bool) error {
+	image, err := p.GetImage(id)
 	if err != nil {
 		return lxerrors.New("retrieving image", err)
 	}
-	instances, err := p.ListInstances(logger)
+	instances, err := p.ListInstances()
 	if err != nil {
 		return lxerrors.New("retrieving list of instances", err)
 	}
@@ -22,7 +21,7 @@ func (p *AwsProvider) DeleteImage(logger lxlog.Logger, id string, force bool) er
 			if !force {
 				return lxerrors.New("instance "+instance.Id+" found which uses image "+image.Id+"; try again with force=true", nil)
 			} else {
-				err = p.DeleteInstance(logger, instance.Id)
+				err = p.DeleteInstance(instance.Id)
 				if err != nil {
 					return lxerrors.New("failed to delete instance "+instance.Id+" which is using image "+image.Id, err)
 				}
@@ -30,7 +29,7 @@ func (p *AwsProvider) DeleteImage(logger lxlog.Logger, id string, force bool) er
 		}
 	}
 
-	ec2svc := p.newEC2(logger)
+	ec2svc := p.newEC2()
 	snap, err := getSnapshotForImage(ec2svc, image.Id)
 	if err != nil {
 		return err

@@ -2,14 +2,14 @@ package vsphere
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	vspheretypes "github.com/vmware/govmomi/vim25/types"
+	"github.com/Sirupsen/logrus"
 )
 
-func (p *VsphereProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance, error) {
+func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 	c := p.getClient()
-	vms, err := c.Vms(logger)
+	vms, err := c.Vms()
 	if err != nil {
 		return nil, lxerrors.New("getting vsphere vms", err)
 	}
@@ -56,12 +56,12 @@ func (p *VsphereProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance,
 			}
 		}
 		if macAddr == "" {
-			logger.WithFields(lxlog.Fields{"vm": vm}).Warnf("vm found, cannot identify mac addr")
+			logrus.WithFields(logrus.Fields{"vm": vm}).Warnf("vm found, cannot identify mac addr")
 			continue
 		}
 		instance, ok := p.state.GetInstances()[vm.Config.InstanceUuid]
 		if !ok {
-			logger.WithFields(lxlog.Fields{"vm": vm, "instance-id": vm.Config.InstanceUuid}).Warnf("vm found, cannot identify instance id")
+			logrus.WithFields(logrus.Fields{"vm": vm, "instance-id": vm.Config.InstanceUuid}).Warnf("vm found, cannot identify instance id")
 			continue
 		}
 

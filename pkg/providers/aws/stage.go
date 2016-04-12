@@ -2,12 +2,12 @@ package aws
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"os"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/aws"
 	"time"
+	"github.com/Sirupsen/logrus"
 )
 
 var kernelIdMap = map[string]string{
@@ -23,8 +23,8 @@ var kernelIdMap = map[string]string{
 	"us-west-2":      "aki-fc8f11cc",
 }
 
-func (p *AwsProvider) Stage(logger lxlog.Logger, name string, rawImage *types.RawImage, force bool) (_ *types.Image, err error) {
-	images, err := p.ListImages(logger)
+func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (_ *types.Image, err error) {
+	images, err := p.ListImages()
 	if err != nil {
 		return nil, lxerrors.New("retrieving image list for existing image", err)
 	}
@@ -33,7 +33,7 @@ func (p *AwsProvider) Stage(logger lxlog.Logger, name string, rawImage *types.Ra
 			if !force {
 				return nil, lxerrors.New("an image already exists with name '"+name+"', try again with --force", nil)
 			} else {
-				err = p.DeleteImage(logger, image.Id, true)
+				err = p.DeleteImage(image.Id, true)
 				if err != nil {
 					return nil, lxerrors.New("removing previously existing image", err)
 				}
@@ -42,24 +42,24 @@ func (p *AwsProvider) Stage(logger lxlog.Logger, name string, rawImage *types.Ra
 	}
 
 	var snapshotId, volumeId string
-	s3svc := p.newS3(logger)
-	ec2svc := p.newEC2(logger)
+	s3svc := p.newS3()
+	ec2svc := p.newEC2()
 	defer func() {
 		if err != nil {
-			logger.WithErr(err).Errorf("aws staging encountered an error")
+			logrus.WithError(err).Errorf("aws staging encountered an error")
 			if snapshotId != "" {
-				logger.Warnf("cleaning up snapshot %s", snapshotId)
+				logrus.Warnf("cleaning up snapshot %s", snapshotId)
 				deleteSnapshot(ec2svc, snapshotId)
 			}
 			if volumeId != "" {
-				logger.Warnf("cleaning up volume %s", volumeId)
+				logrus.Warnf("cleaning up volume %s", volumeId)
 				deleteVolume(ec2svc, volumeId)
 			}
 		}
 	}()
 
 	defer func() {
-		logger.Debugf("cleaninng up image %s", rawImage.LocalImagePath)
+		logrus.Debugf("cleaninng up image %s", rawImage.LocalImagePath)
 		os.Remove(rawImage.LocalImagePath)
 	}()
 
@@ -108,7 +108,7 @@ func (p *AwsProvider) Stage(logger lxlog.Logger, name string, rawImage *types.Ra
 	virtualizationType := "paravirtual"
 	kernelId := kernelIdMap[p.config.Region]
 
-	logger.WithFields(lxlog.Fields{
+	logrus.WithFields(logrus.Fields{
 		"name": name,
 		"architecture": architecture,
 		"virtualization-type": virtualizationType,
@@ -144,6 +144,10 @@ func (p *AwsProvider) Stage(logger lxlog.Logger, name string, rawImage *types.Ra
 				Key:  aws.String(UNIK_IMAGE_ID),
 				Value: aws.String(imageId),
 			},
+			&ec2.Tag{
+				Key: aws.String("Name"),
+				Value: aws.String(name),
+			},
 		},
 	}
 	_, err = ec2svc.CreateTags(tagObjects)
@@ -171,6 +175,6 @@ func (p *AwsProvider) Stage(logger lxlog.Logger, name string, rawImage *types.Ra
 		return nil
 	})
 
-	logger.WithFields(lxlog.Fields{"image": image}).Infof("image created succesfully")
+	logrus.WithFields(logrus.Fields{"image": image}).Infof("image created succesfully")
 	return image, nil
 }

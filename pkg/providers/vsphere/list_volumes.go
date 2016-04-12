@@ -2,10 +2,9 @@ package vsphere
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxlog"
 )
 
-func (p *VsphereProvider) ListVolumes(logger lxlog.Logger) ([]*types.Volume, error) {
+func (p *VsphereProvider) ListVolumes() ([]*types.Volume, error) {
 	volumes := []*types.Volume{}
 	for _, volume := range p.state.GetVolumes() {
 		volumes = append(volumes, volume)

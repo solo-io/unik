@@ -5,12 +5,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
+	"github.com/Sirupsen/logrus"
 )
 
 const UNIK_INSTANCE_ID = "UNIK_INSTANCE_ID"
 
-func (p *AwsProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance, error) {
+func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 	param := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
 			&ec2.Filter{
@@ -19,7 +19,7 @@ func (p *AwsProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance, err
 			},
 		},
 	}
-	output, err := p.newEC2(logger).DescribeInstances(param)
+	output, err := p.newEC2().DescribeInstances(param)
 	if err != nil {
 		return nil, lxerrors.New("running ec2 describe instances ", err)
 	}
@@ -32,7 +32,7 @@ func (p *AwsProvider) ListInstances(logger lxlog.Logger) ([]*types.Instance, err
 			}
 			instance, ok := p.state.GetInstances()[instanceId]
 			if !ok {
-				logger.WithFields(lxlog.Fields{"ec2Instance": ec2Instance}).Errorf("found an instance that unik has no record of")
+				logrus.WithFields(logrus.Fields{"ec2Instance": ec2Instance}).Errorf("found an instance that unik has no record of")
 				continue
 			}
 			instance.State = parseInstanceState(ec2Instance.State)

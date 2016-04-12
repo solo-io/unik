@@ -5,12 +5,12 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
-	"github.com/layer-x/layerx-commons/lxlog"
+	"github.com/Sirupsen/logrus"
 )
 
 const UnikLogsPort = 9876
 
-func GetInstanceLogs(logger lxlog.Logger, instance *types.Instance) (string, error) {
+func GetInstanceLogs(instance *types.Instance) (string, error) {
 	if instance.IpAddress == "" {
 		return "", lxerrors.New("instance has not been assigned a public ip address", nil)
 	}
@@ -18,6 +18,6 @@ func GetInstanceLogs(logger lxlog.Logger, instance *types.Instance) (string, err
 	if err != nil {
 		return "", lxerrors.New("faiiled to connect to instance at "+instance.IpAddress+" for logs", err)
 	}
-	logger.WithFields(lxlog.Fields{"response-length": len(body), "instance": instance}).Debugf("received stdout from instance")
+	logrus.WithFields(logrus.Fields{"response-length": len(body), "instance": instance}).Debugf("received stdout from instance")
 	return string(body), nil
 }

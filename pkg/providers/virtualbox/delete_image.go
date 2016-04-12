@@ -3,16 +3,15 @@ package virtualbox
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"os"
 )
 
-func (p *VirtualboxProvider) DeleteImage(logger lxlog.Logger, id string, force bool) error {
-	image, err := p.GetImage(logger, id)
+func (p *VirtualboxProvider) DeleteImage(id string, force bool) error {
+	image, err := p.GetImage(id)
 	if err != nil {
 		return lxerrors.New("retrieving image", err)
 	}
-	instances, err := p.ListInstances(logger)
+	instances, err := p.ListInstances()
 	if err != nil {
 		return lxerrors.New("retrieving list of instances", err)
 	}
@@ -21,7 +20,7 @@ func (p *VirtualboxProvider) DeleteImage(logger lxlog.Logger, id string, force b
 			if !force {
 				return lxerrors.New("instance "+instance.Id+" found which uses image "+image.Id+"; try again with force=true", nil)
 			} else {
-				err = p.DeleteInstance(logger, instance.Id)
+				err = p.DeleteInstance(instance.Id)
 				if err != nil {
 					return lxerrors.New("failed to delete instance "+instance.Id+" which is using image "+image.Id, err)
 				}

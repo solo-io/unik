@@ -1,7 +1,6 @@
 package aws
 
 import (
-	"github.com/layer-x/layerx-commons/lxlog"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -9,23 +8,24 @@ import (
 	"encoding/json"
 	"encoding/base64"
 	"time"
+	"github.com/Sirupsen/logrus"
 )
 
-func (p *AwsProvider) RunInstance(logger lxlog.Logger, name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
-	logger.WithFields(lxlog.Fields{
+func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
+	logrus.WithFields(logrus.Fields{
 	"image-id": imageId,
 		"mounts": mntPointsToVolumeIds,
 		"env": env,
 	}).Infof("running instance %s", name)
 
 	var instanceId string
-	ec2svc := p.newEC2(logger)
+	ec2svc := p.newEC2()
 
 	defer func(){
 		if err != nil {
-			logger.WithErr(err).Errorf("aws running instance encountered an error")
+			logrus.WithError(err).Errorf("aws running instance encountered an error")
 			if instanceId != "" {
-				logger.Warnf("cleaning up instance %s", instanceId)
+				logrus.Warnf("cleaning up instance %s", instanceId)
 				terminateInstanceInput := &ec2.TerminateInstancesInput{
 					InstanceIds: []*string{aws.String(instanceId)},
 				}
@@ -34,11 +34,11 @@ func (p *AwsProvider) RunInstance(logger lxlog.Logger, name, imageId string, mnt
 		}
 	}()
 
-	image, err := p.GetImage(logger, imageId)
+	image, err := p.GetImage(imageId)
 	if err != nil {
 		return nil, lxerrors.New("getting image", err)
 	}
-	err = verifyMntsInput(logger, image, mntPointsToVolumeIds)
+	err = verifyMntsInput(image, mntPointsToVolumeIds)
 	if err != nil {
 		return nil, err
 	}
@@ -60,30 +60,30 @@ func (p *AwsProvider) RunInstance(logger lxlog.Logger, name, imageId string, mnt
 		return nil, lxerrors.New("failed to run instance", err)
 	}
 	if len(runInstanceOutput.Instances) < 1 {
-		logger.WithFields(lxlog.Fields{"output": runInstanceOutput}).Errorf("run instance %s failed, produced %v instances, expected 1", name, len(runInstanceOutput.Instances))
+		logrus.WithFields(logrus.Fields{"output": runInstanceOutput}).Errorf("run instance %s failed, produced %v instances, expected 1", name, len(runInstanceOutput.Instances))
 		return nil, lxerrors.New("expected 1 instance to be created", nil)
 	}
 	instanceId = *runInstanceOutput.Instances[0].InstanceId
 
 	if len(runInstanceOutput.Instances) > 1 {
-		logger.WithFields(lxlog.Fields{"output": runInstanceOutput}).Errorf("run instance %s failed, produced %v instances, expected 1", name, len(runInstanceOutput.Instances))
+		logrus.WithFields(logrus.Fields{"output": runInstanceOutput}).Errorf("run instance %s failed, produced %v instances, expected 1", name, len(runInstanceOutput.Instances))
 		return nil, lxerrors.New("expected 1 instance to be created", nil)
 	}
 
 	if len(mntPointsToVolumeIds) > 0 {
-		logger.Debugf("stopping instance for volume attach")
-		err = p.StopInstance(logger, instanceId)
+		logrus.Debugf("stopping instance for volume attach")
+		err = p.StopInstance(instanceId)
 		if err != nil {
 			return nil, lxerrors.New("failed to stop instance for attachin volumes", err)
 		}
 		for mountPoint, volumeId := range mntPointsToVolumeIds {
-			logger.WithFields(lxlog.Fields{"volume-id": volumeId}).Debugf("attaching volume %s to intance %s", volumeId, instanceId)
-			err = p.AttachVolume(logger, volumeId, instanceId, mountPoint)
+			logrus.WithFields(logrus.Fields{"volume-id": volumeId}).Debugf("attaching volume %s to intance %s", volumeId, instanceId)
+			err = p.AttachVolume(volumeId, instanceId, mountPoint)
 			if err != nil {
 				return nil, lxerrors.New("attaching volume to instance", err)
 			}
 		}
-		err = p.StartInstance(logger, instanceId)
+		err = p.StartInstance(instanceId)
 		if err != nil {
 			return nil, lxerrors.New("starting instance after volume attach", err)
 		}
@@ -123,12 +123,12 @@ func (p *AwsProvider) RunInstance(logger lxlog.Logger, name, imageId string, mnt
 		return nil
 	})
 
-	logger.WithFields(lxlog.Fields{"instance": instance}).Infof("instance created succesfully")
+	logrus.WithFields(logrus.Fields{"instance": instance}).Infof("instance created succesfully")
 
 	return instance, nil
 }
 
-func verifyMntsInput(logger lxlog.Logger, image *types.Image, mntPointsToVolumeIds map[string]string) error {
+func verifyMntsInput(image *types.Image, mntPointsToVolumeIds map[string]string) error {
 	for _, deviceMapping := range image.DeviceMappings {
 		if deviceMapping.MountPoint == "/" {
 			//ignore boot mount point
@@ -136,7 +136,7 @@ func verifyMntsInput(logger lxlog.Logger, image *types.Image, mntPointsToVolumeI
 		}
 		_, ok := mntPointsToVolumeIds[deviceMapping.MountPoint]
 		if !ok {
-			logger.WithFields(lxlog.Fields{"required-device-mappings": image.DeviceMappings}).Errorf("requied mount point missing: %s", deviceMapping.MountPoint)
+			logrus.WithFields(logrus.Fields{"required-device-mappings": image.DeviceMappings}).Errorf("requied mount point missing: %s", deviceMapping.MountPoint)
 			return lxerrors.New("required mount point missing from input", nil)
 		}
 	}

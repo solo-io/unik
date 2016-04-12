@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"os"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"time"
+	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
 )
 
 func main() {
 	os.Setenv("TMPDIR", "/Users/pivotal/tmp/uniktest")
-	log.SetLevel(log.DebugLevel)
+	logrus.SetLevel(logrus.DebugLevel)
+	logrus.AddHook(&uniklog.AddTraceHook{true})
 
 	r := compilers.RunmpCompiler{
 		DockerImage: "rumpcompiler-go-xen",
@@ -22,12 +23,12 @@ func main() {
 	}
 	f, err := os.Open("a.tar")
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 		return
 	}
 	rawimg, err := r.CompileRawImage(f, "", []string{})
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 		return
 	}
 	c := config.Aws{
@@ -38,6 +39,13 @@ func main() {
 		Zone: os.Getenv("AWS_AVAILABILITY_ZONE"),
 	}
 	p := aws.NewAwsProvier(c)
+	err = p.Load()
+	if err != nil {
+		logrus.WithError(err).Error("failed to load state")
+	} else {
+		logrus.Info("state loaded")
+	}
+	saveState(p)
 	defer func() {
 		saveState(p)
 	}()
@@ -49,13 +57,10 @@ func main() {
 		}
 	}()
 
-
-	logger := lxlog.New("scott")
-	logger.SetLogLevel(lxlog.DebugLevel)
-
-	img, err := p.Stage(logger, "test-scott", rawimg, true)
+	img, err := p.Stage("test-scott", rawimg, true)
 	if err != nil {
-
+		logrus.Error(err)
+		return
 	}
 	fmt.Print(img)
 	fmt.Println()
@@ -63,42 +68,42 @@ func main() {
 	env := make(map[string]string)
 	env["FOO"] = "BAR"
 
-	instance, err := p.RunInstance(logger, "test-scott-instance-1", img.Id, nil, env)
+	instance, err := p.RunInstance("test-scott-instance-1", img.Id, nil, env)
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 		return
 	}
 	fmt.Print(instance)
 	fmt.Println()
 
-	images, err := p.ListImages(logger)
+	images, err := p.ListImages()
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 		return
 	}
 	fmt.Print(images)
 	fmt.Println()
 
-	instances, err := p.ListInstances(logger)
+	instances, err := p.ListInstances()
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 		return
 	}
 	fmt.Print(instances)
 	fmt.Println()
 
 	for _, instance := range instances {
-		err = p.DeleteInstance(logger, instance.Id)
+		err = p.DeleteInstance(instance.Id)
 		if err != nil {
-			log.Error(err)
+			logrus.Error(err)
 			return
 		}
 	}
 
 	for _, image := range images {
-		err = p.DeleteImage(logger, image.Id, false)
+		err = p.DeleteImage(image.Id, false)
 		if err != nil {
-			log.Error(err)
+			logrus.Error(err)
 			return
 		}
 	}
@@ -107,8 +112,8 @@ func main() {
 func saveState(p *aws.AwsProvider) {
 	err := p.Save()
 	if err != nil {
-		log.WithError(err).Error("failed to save")
+		logrus.WithError(err).Fatalf("failed to save")
 	} else {
-		log.Info("saved state")
+		logrus.Info("saved state")
 	}
 }

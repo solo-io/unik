@@ -3,33 +3,32 @@ package providers
 import (
 	"errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxlog"
 	"io"
 )
 
 type Provider interface {
 	//Images
 	//TODO: create provider for each request, put logger inside of provider so we can clean up interface
-	Stage(logger lxlog.Logger, name string, rawImage *types.RawImage, force bool) (*types.Image, error)
-	ListImages(logger lxlog.Logger) ([]*types.Image, error)
-	GetImage(logger lxlog.Logger, nameOrIdPrefix string) (*types.Image, error)
-	DeleteImage(logger lxlog.Logger, id string, force bool) error
+	Stage(name string, rawImage *types.RawImage, force bool) (*types.Image, error)
+	ListImages() ([]*types.Image, error)
+	GetImage(nameOrIdPrefix string) (*types.Image, error)
+	DeleteImage(id string, force bool) error
 	//Instances
-	RunInstance(logger lxlog.Logger, name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (*types.Instance, error)
-	ListInstances(logger lxlog.Logger) ([]*types.Instance, error)
-	GetInstance(logger lxlog.Logger, nameOrIdPrefix string) (*types.Instance, error)
-	DeleteInstance(logger lxlog.Logger, id string) error
-	StartInstance(logger lxlog.Logger, id string) error
-	StopInstance(logger lxlog.Logger, id string) error
-	GetInstanceLogs(logger lxlog.Logger, id string) (string, error)
+	RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (*types.Instance, error)
+	ListInstances() ([]*types.Instance, error)
+	GetInstance(nameOrIdPrefix string) (*types.Instance, error)
+	DeleteInstance(id string) error
+	StartInstance(id string) error
+	StopInstance(id string) error
+	GetInstanceLogs(id string) (string, error)
 	//Volumes
-	CreateVolume(logger lxlog.Logger, name string, sourceTar io.ReadCloser, size int) (*types.Volume, error)
-	CreateEmptyVolume(logger lxlog.Logger, name string, size int) (*types.Volume, error)
-	ListVolumes(logger lxlog.Logger) ([]*types.Volume, error)
-	GetVolume(logger lxlog.Logger, nameOrIdPrefix string) (*types.Volume, error)
-	DeleteVolume(logger lxlog.Logger, id string, force bool) error
-	AttachVolume(logger lxlog.Logger, id, instanceId, mntPoint string) error
-	DetachVolume(logger lxlog.Logger, id string) error
+	CreateVolume(name string, sourceTar io.ReadCloser, size int) (*types.Volume, error)
+	CreateEmptyVolume(name string, size int) (*types.Volume, error)
+	ListVolumes() ([]*types.Volume, error)
+	GetVolume(nameOrIdPrefix string) (*types.Volume, error)
+	DeleteVolume(id string, force bool) error
+	AttachVolume(id, instanceId, mntPoint string) error
+	DetachVolume(id string) error
 }
 
 type Providers map[string]Provider
@@ -42,9 +41,9 @@ func (providers Providers) Keys() []string {
 	return keys
 }
 
-func (providers Providers) ProviderForImage(logger lxlog.Logger, imageId string) (Provider, error) {
+func (providers Providers) ProviderForImage(imageId string) (Provider, error) {
 	for _, provider := range providers {
-		_, err := provider.GetImage(logger, imageId)
+		_, err := provider.GetImage(imageId)
 		if err == nil {
 			return provider, nil
 		}
@@ -52,9 +51,9 @@ func (providers Providers) ProviderForImage(logger lxlog.Logger, imageId string)
 	return nil, errors.New("provider not found for image " + imageId)
 }
 
-func (providers Providers) ProviderForInstance(logger lxlog.Logger, instanceId string) (Provider, error) {
+func (providers Providers) ProviderForInstance(instanceId string) (Provider, error) {
 	for _, provider := range providers {
-		_, err := provider.GetInstance(logger, instanceId)
+		_, err := provider.GetInstance(instanceId)
 		if err == nil {
 			return provider, nil
 		}
@@ -62,9 +61,9 @@ func (providers Providers) ProviderForInstance(logger lxlog.Logger, instanceId s
 	return nil, errors.New("provider not found for instance " + instanceId)
 }
 
-func (providers Providers) ProviderForVolume(logger lxlog.Logger, volumeId string) (Provider, error) {
+func (providers Providers) ProviderForVolume(volumeId string) (Provider, error) {
 	for _, provider := range providers {
-		_, err := provider.GetVolume(logger, volumeId)
+		_, err := provider.GetVolume(volumeId)
 		if err == nil {
 			return provider, nil
 		}
