@@ -14,7 +14,7 @@ func main() {
 
 	r := compilers.RunmpCompiler{
 		DockerImage: "rumpcompiler-go-hw",
-		CreateImage: compilers.CreateImageVirtualBox,
+		CreateImage: compilers.CreateImageVmware,
 	}
 	f, err := os.Open("a.tar")
 	if err != nil {

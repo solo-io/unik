@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os/exec"
+	"github.com/emc-advanced-dev/unik/pkg/daemon"
 )
 
 func main() {
@@ -40,5 +41,5 @@ func main() {
 	}
 
 	unikDaemon := daemon.NewUnikDaemon(config)
-	unikDaemon.Run(logger, *port)
+	unikDaemon.Run(*port)
 }

@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"github.com/Sirupsen/logrus"
 )
 
 type UnikDaemon struct {
@@ -66,7 +67,7 @@ func NewUnikDaemon(config config.UnikConfig) *UnikDaemon {
 	}
 }
 
-func (d *UnikDaemon) Start(port int) {
+func (d *UnikDaemon) Run(port int) {
 	d.server.RunOnAddr(fmt.Sprintf(":%v", port))
 }
 
@@ -75,7 +76,12 @@ func (d *UnikDaemon) registerHandlers() {
 		verbose := req.URL.Query().Get("verbose")
 		logger := lxlog.New(actionName)
 		if strings.ToLower(verbose) == "true" {
+			oldHooks := logrus.StandardLogger().Hooks
+			defer func(){
+				logrus.StandardLogger().Hooks = oldHooks
+			}()
 			httpOutStream := ioutils.NewWriteFlusher(res)
+			logrus.AddHook(NewUnikLogrusHook(httpOutStream, actionName))
 			uuid := uuid.New()
 			logger.AddWriter(uuid, lxlog.DebugLevel, httpOutStream)
 			defer logger.DeleteWriter(uuid)
@@ -174,7 +180,11 @@ func (d *UnikDaemon) registerHandlers() {
 				return nil, err
 			}
 			defer sourceTar.Close()
-			force := req.FormValue("force")
+			forceStr := req.FormValue("force")
+			var force bool
+			if strings.ToLower(forceStr) == "true" {
+				force = true
+			}
 			unikernelType := req.FormValue("type")
 			args := req.FormValue("args")
 			providerType := req.FormValue("provider")
@@ -198,7 +208,7 @@ func (d *UnikDaemon) registerHandlers() {
 			}).Debugf("compiling raw image")
 			rawImage, err := compiler.CompileRawImage(sourceTar, args, mountPoints)
 			if err != nil {
-				return lxerrors.New("failed to compile raw image", err)
+				return nil, lxerrors.New("failed to compile raw image", err)
 			}
 
 			image, err := d.providers[providerType].Stage(logger, name, rawImage, force)
@@ -500,7 +510,7 @@ func (d *UnikDaemon) registerHandlers() {
 				logger.WithFields(lxlog.Fields{
 					"volume": volume,
 				}).Infof("volume created")
-				return volume
+				return volume, nil
 			}
 			defer dataTar.Close()
 
@@ -508,7 +518,7 @@ func (d *UnikDaemon) registerHandlers() {
 				"tarred-data": header.Filename,
 				"name":        volumeName,
 			}).Debugf("creating volume started")
-			volume, err := d.providers[providerType].CreateVolume(logger, volumeName, dataTar, header, size)
+			volume, err := d.providers[providerType].CreateVolume(logger, volumeName, dataTar, size)
 			if err != nil {
 				return nil, lxerrors.New("could not create volume", err)
 			}

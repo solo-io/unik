@@ -9,6 +9,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/layer-x/layerx-commons/lxlog"
+	"time"
 )
 
 func main() {
@@ -21,11 +22,13 @@ func main() {
 	}
 	f, err := os.Open("a.tar")
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 	rawimg, err := r.CompileRawImage(f, "", []string{})
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 	c := config.Aws{
 		Name: "aws-provider",
@@ -36,9 +39,13 @@ func main() {
 	}
 	p := aws.NewAwsProvier(c)
 	defer func() {
-		err = p.Save()
-		if err != nil {
-			log.WithError(err).Error("failed to save")
+		saveState(p)
+	}()
+
+	go func(){
+		for {
+			saveState(p)
+			time.Sleep(5000 * time.Millisecond)
 		}
 	}()
 
@@ -48,7 +55,7 @@ func main() {
 
 	img, err := p.Stage(logger, "test-scott", rawimg, true)
 	if err != nil {
-		log.Fatal(err)
+
 	}
 	fmt.Print(img)
 	fmt.Println()
@@ -58,21 +65,24 @@ func main() {
 
 	instance, err := p.RunInstance(logger, "test-scott-instance-1", img.Id, nil, env)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 	fmt.Print(instance)
 	fmt.Println()
 
 	images, err := p.ListImages(logger)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 	fmt.Print(images)
 	fmt.Println()
 
 	instances, err := p.ListInstances(logger)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 	fmt.Print(instances)
 	fmt.Println()
@@ -80,15 +90,25 @@ func main() {
 	for _, instance := range instances {
 		err = p.DeleteInstance(logger, instance.Id)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 	}
 
 	for _, image := range images {
 		err = p.DeleteImage(logger, image.Id, false)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 	}
+}
 
+func saveState(p *aws.AwsProvider) {
+	err := p.Save()
+	if err != nil {
+		log.WithError(err).Error("failed to save")
+	} else {
+		log.Info("saved state")
+	}
 }
