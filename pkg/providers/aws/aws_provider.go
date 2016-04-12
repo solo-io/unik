@@ -14,7 +14,7 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-var awsStateFile = os.Getenv("HOME")+"/.unik/aws/state.json"
+var AwsStateFile = os.Getenv("HOME")+"/.unik/aws/state.json"
 
 type AwsProvider struct {
 	config config.Aws
@@ -22,11 +22,16 @@ type AwsProvider struct {
 }
 
 func NewAwsProvier(config config.Aws) *AwsProvider {
-	logrus.Infof("state file: %s", awsStateFile)
+	logrus.Infof("state file: %s", AwsStateFile)
 	return &AwsProvider{
 		config: config,
-		state:  state.NewMemoryState(awsStateFile),
+		state:  state.NewBasicState(AwsStateFile),
 	}
+}
+
+func (p *AwsProvider) WithState(state state.State) *AwsProvider {
+	p.state = state
+	return p
 }
 
 func (p *AwsProvider) newEC2() *ec2.EC2 {
@@ -57,12 +62,4 @@ func (p *AwsProvider) newMetadata() *ec2metadata.EC2Metadata {
 		Region:      aws.String(p.config.Region),
 		Credentials: credentials.NewStaticCredentials(p.config.AwsAccessKeyID, p.config.AwsSecretAcessKey, ""),
 	}))
-}
-
-func (p *AwsProvider) Save() error {
-	return p.state.Save()
-}
-
-func (p *AwsProvider) Load() error {
-	return p.state.Load()
 }

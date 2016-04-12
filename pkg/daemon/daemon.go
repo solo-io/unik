@@ -72,7 +72,7 @@ func (d *UnikDaemon) Run(port int) {
 }
 
 func (d *UnikDaemon) registerHandlers() {
-	streamOrRespond := func(res http.ResponseWriter, req *http.Request, actionName string, action func() (interface{}, error)) {
+	streamOrRespond := func(res http.ResponseWriter, req *http.Request, action func() (interface{}, error)) {
 		verbose := req.URL.Query().Get("verbose")
 		if strings.ToLower(verbose) == "true" {
 			httpOutStream := ioutils.NewWriteFlusher(res)
@@ -121,7 +121,7 @@ func (d *UnikDaemon) registerHandlers() {
 
 	//images
 	d.server.Get("/images", func(res http.ResponseWriter, req *http.Request) {
-		streamOrRespond(res, req, "get-images", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			allImages := []*types.Image{}
 			for _, provider := range d.providers {
 				images, err := provider.ListImages()
@@ -137,7 +137,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Get("/images/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "get-images", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			imageName := params["image_name"]
 			provider, err := d.providers.ProviderForImage(imageName)
 			if err != nil {
@@ -151,7 +151,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Post("/images/:name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "build-image", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			name := params["name"]
 			if name == "" {
 				return nil, lxerrors.New("image must be named", nil)
@@ -210,7 +210,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Delete("/images/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "delete-unikernel", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			imageName := params["image_name"]
 			if imageName == "" {
 				logrus.WithFields(logrus.Fields{
@@ -240,7 +240,7 @@ func (d *UnikDaemon) registerHandlers() {
 
 	//Instances
 	d.server.Get("/instances", func(res http.ResponseWriter, req *http.Request) {
-		streamOrRespond(res, req, "get-instances", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			allInstances := []*types.Instance{}
 			for _, provider := range d.providers {
 				instances, err := provider.ListInstances()
@@ -257,7 +257,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Get("/instances/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "get-instances", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			instanceId := params["instance_id"]
 			provider, err := d.providers.ProviderForInstance(instanceId)
 			if err != nil {
@@ -271,7 +271,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Delete("/instances/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "delete-instance", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			instanceId := params["instance_id"]
 			logrus.WithFields(logrus.Fields{
 				"request": req,
@@ -288,7 +288,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Get("/instances/:instance_id/logs", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "get-instance-logs", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			instanceId := params["instance_id"]
 			follow := req.URL.Query().Get("follow")
 			res.Write([]byte("getting logs for " + instanceId + "...\n"))
@@ -328,7 +328,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Post("/instances/:image_name/run", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "run-instance", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			logrus.WithFields(logrus.Fields{
 				"request": req, "query": req.URL.Query(),
 			}).Debugf("recieved run request")
@@ -394,7 +394,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Put("/instances/:instance_id/start", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "start-instance", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			instanceId := params["instance_id"]
 			logrus.WithFields(logrus.Fields{
 				"request": req,
@@ -411,7 +411,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Put("/instances/:instance_id/stop", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "stop-instance", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			instanceId := params["instance_id"]
 			logrus.WithFields(logrus.Fields{
 				"request": req,
@@ -430,7 +430,7 @@ func (d *UnikDaemon) registerHandlers() {
 
 	//Volumes
 	d.server.Get("/volumes", func(res http.ResponseWriter, req *http.Request) {
-		streamOrRespond(res, req, "get-volumes", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			logrus.Debugf("listing volumes started")
 			allVolumes := []*types.Volume{}
 			for _, provider := range d.providers {
@@ -447,7 +447,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Get("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "delete-volume", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			volumeName := params["volume_name"]
 			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {
@@ -464,7 +464,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Post("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "create-volume", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			volumeName := params["volume_name"]
 			err := req.ParseMultipartForm(0)
 			if err != nil {
@@ -520,7 +520,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Delete("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "delete-volume", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			volumeName := params["volume_name"]
 			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {
@@ -546,7 +546,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Post("/volumes/:volume_name/attach/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "attach-volume", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			volumeName := params["volume_name"]
 			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {
@@ -575,7 +575,7 @@ func (d *UnikDaemon) registerHandlers() {
 		})
 	})
 	d.server.Post("/volumes/:volume_name/detach", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		streamOrRespond(res, req, "detach-volume", func() (interface{}, error) {
+		streamOrRespond(res, req, func() (interface{}, error) {
 			volumeName := params["volume_name"]
 			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {

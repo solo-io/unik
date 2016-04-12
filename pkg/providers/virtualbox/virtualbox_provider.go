@@ -7,6 +7,7 @@ import (
 	"os"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/pwnall/vbox"
+	"github.com/emc-advanced-dev/unik/pkg/state"
 )
 
 var virtualboxStateFile = os.Getenv("HOME")+"/.unik/virtualbox/state.json"
@@ -15,7 +16,7 @@ var virtualboxVolumesDirectory = os.Getenv("HOME")+"/.unik/virtualbox/volumes/"
 
 type VirtualboxProvider struct {
 	config config.Vsphere
-	state  common.LocalStorageState
+	state  state.LocalStorageState
 }
 
 func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error) {
@@ -29,7 +30,7 @@ func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error
 
 	return &VirtualboxProvider{
 		config: config,
-		state: common.NewLocalStorageState(virtualboxStateFile),
+		state: state.NewLocalStorageState(virtualboxStateFile),
 	}, nil
 }
 

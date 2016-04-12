@@ -8,12 +8,12 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	"time"
 	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
+	"github.com/emc-advanced-dev/unik/pkg/state"
 )
 
 func main() {
-	os.Setenv("TMPDIR", "/Users/pivotal/tmp/uniktest")
+	os.Setenv("TMPDIR", os.Getenv("HOME")+"/tmp/uniktest")
 	logrus.SetLevel(logrus.DebugLevel)
 	logrus.AddHook(&uniklog.AddTraceHook{true})
 
@@ -39,30 +39,20 @@ func main() {
 		Zone: os.Getenv("AWS_AVAILABILITY_ZONE"),
 	}
 	p := aws.NewAwsProvier(c)
-	err = p.Load()
+	state, err := state.BasicStateFromFile(aws.AwsStateFile)
 	if err != nil {
 		logrus.WithError(err).Error("failed to load state")
 	} else {
 		logrus.Info("state loaded")
+		p = p.WithState(state)
 	}
-	saveState(p)
-	defer func() {
-		saveState(p)
-	}()
-
-	go func(){
-		for {
-			saveState(p)
-			time.Sleep(5000 * time.Millisecond)
-		}
-	}()
 
 	img, err := p.Stage("test-scott", rawimg, true)
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
-	fmt.Print(img)
+	logrus.Infof("%+v", img)
 	fmt.Println()
 
 	env := make(map[string]string)
@@ -73,7 +63,7 @@ func main() {
 		logrus.Error(err)
 		return
 	}
-	fmt.Print(instance)
+	logrus.Infof("%+v", instance)
 	fmt.Println()
 
 	images, err := p.ListImages()
@@ -81,7 +71,7 @@ func main() {
 		logrus.Error(err)
 		return
 	}
-	fmt.Print(images)
+	logrus.Infof("%+v", images)
 	fmt.Println()
 
 	instances, err := p.ListInstances()
@@ -89,7 +79,7 @@ func main() {
 		logrus.Error(err)
 		return
 	}
-	fmt.Print(instances)
+	logrus.Infof("%+v", instances)
 	fmt.Println()
 
 	for _, instance := range instances {
@@ -106,14 +96,5 @@ func main() {
 			logrus.Error(err)
 			return
 		}
-	}
-}
-
-func saveState(p *aws.AwsProvider) {
-	err := p.Save()
-	if err != nil {
-		logrus.WithError(err).Fatalf("failed to save")
-	} else {
-		logrus.Info("saved state")
 	}
 }

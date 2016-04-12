@@ -38,15 +38,25 @@ func (p *VsphereProvider) DeleteImage(id string, force bool) error {
 		return lxerrors.New("deleing image file at " + imagePath, err)
 	}
 
-	p.state.ModifyImages(func(images map[string]*types.Image) error {
+	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
 		delete(images, image.Id)
 		return nil
 	})
+	if err != nil {
+		return nil, lxerrors.New("deleting image from state", err)
+	}
+	err = p.state.Save()
+	if err != nil {
+		return lxerrors.New("saving image to state", err)
+	}
 
-	p.state.ModifyImagePaths(func(imagePaths map[string]string) error {
+	err = p.state.ModifyImagePaths(func(imagePaths map[string]string) error {
 		delete(imagePath, image.Id)
 		return nil
 	})
+	if err != nil {
+		return nil, lxerrors.New("deleting path to image from state", err)
+	}
 
 	return nil
 }

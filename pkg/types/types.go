@@ -7,7 +7,6 @@ type InstanceState string
 const (
 	InstanceState_Running     InstanceState = "InstanceState_Running"
 	InstanceState_Stopped     InstanceState = "InstanceState_Stopped"
-	InstanceState_Terminating InstanceState = "InstanceState_Terminating"
 	InstanceState_Pending     InstanceState = "InstanceState_Pending"
 	InstanceState_Unknown     InstanceState = "InstanceState_Unknown"
 )

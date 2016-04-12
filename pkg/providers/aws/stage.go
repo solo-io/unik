@@ -33,6 +33,7 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 			if !force {
 				return nil, lxerrors.New("an image already exists with name '"+name+"', try again with --force", nil)
 			} else {
+				logrus.WithField("image", image).Warnf("force: deleting previous image with name "+name)
 				err = p.DeleteImage(image.Id, true)
 				if err != nil {
 					return nil, lxerrors.New("removing previously existing image", err)
@@ -59,15 +60,17 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 	}()
 
 	defer func() {
-		logrus.Debugf("cleaninng up image %s", rawImage.LocalImagePath)
+		logrus.Infof("cleaninng up image %s", rawImage.LocalImagePath)
 		os.Remove(rawImage.LocalImagePath)
 	}()
 
+	logrus.WithField("raw-image", rawImage).WithField("az", p.config.Zone).Infof("creating boot volume from raw image")
 	volumeId, err = createDataVolumeFromRawImage(s3svc, ec2svc, rawImage.LocalImagePath, p.config.Zone)
 	if err != nil {
 		return nil, lxerrors.New("creating aws boot volume", err)
 	}
 
+	logrus.WithField("volume-id", volumeId).Infof("creating snapshot from boot volume")
 	createSnasphotInput := &ec2.CreateSnapshotInput{
 		Description: aws.String("snapshot for unikernel image " + name),
 		VolumeId: aws.String(volumeId),
@@ -133,6 +136,7 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 
 	imageId := *registerImageOutput.ImageId
 
+	logrus.WithField("volume-id", volumeId).Infof("tagging image, snapshot, and volume with unikernel id")
 	tagObjects := &ec2.CreateTagsInput{
 		Resources: []*string{
 			aws.String(imageId),
@@ -170,10 +174,17 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 		Created: time.Now(),
 	}
 
-	p.state.ModifyImages(func(images map[string]*types.Image) error {
+	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
 		images[imageId] = image
 		return nil
 	})
+	if err != nil {
+		return nil, lxerrors.New("modifying image map in state", err)
+	}
+	err = p.state.Save()
+	if err != nil {
+		return nil, lxerrors.New("saving image to state", err)
+	}
 
 	logrus.WithFields(logrus.Fields{"image": image}).Infof("image created succesfully")
 	return image, nil

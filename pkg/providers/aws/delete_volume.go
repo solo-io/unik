@@ -19,8 +19,16 @@ func (p *AwsProvider) DeleteVolume(id string, force bool) error {
 	if err != nil {
 		return lxerrors.New("failed to terminate volume "+volume.Id, err)
 	}
-	return p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		delete(volumes, volume.Id)
 		return nil
 	})
+	if err != nil {
+		return lxerrors.New("modifying volume map in state", err)
+	}
+	err = p.state.Save()
+	if err != nil {
+		return lxerrors.New("saving volume to state", err)
+	}
+	return nil
 }

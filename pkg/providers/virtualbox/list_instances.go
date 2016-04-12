@@ -77,10 +77,13 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 			instance.State = types.InstanceState_Unknown
 			break
 		}
-		p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
+		err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 			instances[instance.Id] = instance
 			return nil
 		})
+		if err != nil {
+			return lxerrors.New("saving instance to state", err)
+		}
 
 		instances = append(instances, instance)
 	}

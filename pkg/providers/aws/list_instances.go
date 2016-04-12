@@ -27,7 +27,8 @@ func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 	for _, reservation := range output.Reservations {
 		for _, ec2Instance := range reservation.Instances {
 			instanceId := parseInstanceId(ec2Instance)
-			if instanceId == "" {
+			instanceState := parseInstanceState(ec2Instance.State)
+			if instanceId == "" || instanceState != types.InstanceState_Unknown {
 				continue
 			}
 			instance, ok := p.state.GetInstances()[instanceId]
@@ -35,12 +36,19 @@ func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 				logrus.WithFields(logrus.Fields{"ec2Instance": ec2Instance}).Errorf("found an instance that unik has no record of")
 				continue
 			}
-			instance.State = parseInstanceState(ec2Instance.State)
+			instance.State = instanceState
 			instance.IpAddress = *ec2Instance.PublicIpAddress
-			p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
+			err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 				instances[instance.Id] = instance
 				return nil
 			})
+			if err != nil {
+				return nil, lxerrors.New("modifying instance map in state", err)
+			}
+			err = p.state.Save()
+			if err != nil {
+				return nil, lxerrors.New("saving modified instance map to state", err)
+			}
 			updatedInstances = append(updatedInstances, instance)
 		}
 	}
@@ -61,16 +69,12 @@ func parseInstanceState(ec2State *ec2.InstanceState) types.InstanceState {
 		return types.InstanceState_Unknown
 	}
 	switch *ec2State.Name {
-	case "running":
+	case ec2.InstanceStateNameRunning:
 		return types.InstanceState_Running
-	case "pending":
+	case ec2.InstanceStateNamePending:
 		return types.InstanceState_Pending
-	case "stopped":
+	case ec2.InstanceStateNameStopped:
 		return types.InstanceState_Stopped
-	case "shutting-down":
-		return types.InstanceState_Stopped
-	case "terminated":
-		return types.InstanceState_Terminating
 	}
 	return types.InstanceState_Unknown
 }

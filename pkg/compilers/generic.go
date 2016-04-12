@@ -75,7 +75,7 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool) error
 	}
 	defer cli.ContainerRemove(context.Background(), types.ContainerRemoveOptions{ContainerID: container.ID})
 
-	log.WithFields(log.Fields{"id", container.ID, "cmd": cmds, "binds": binds}).Info("Created container")
+	log.WithFields(log.Fields{"id": container.ID, "cmd": cmds, "binds": binds}).Info("Created container")
 
 	if err := cli.ContainerStart(context.Background(), container.ID); err != nil {
 		log.WithField("err", err).Error("ContainerStart")

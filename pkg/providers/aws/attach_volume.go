@@ -41,7 +41,7 @@ func (p *AwsProvider) AttachVolume(id, instanceId, mntPoint string) error {
 	if err != nil {
 		return lxerrors.New("failed to attach volume "+volume.Id, err)
 	}
-	return p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volume, ok := volumes[volume.Id]
 		if !ok {
 			return lxerrors.New("no record of "+volume.Id+" in the state", nil)
@@ -49,4 +49,12 @@ func (p *AwsProvider) AttachVolume(id, instanceId, mntPoint string) error {
 		volume.Attachment = instance.Id
 		return nil
 	})
+	if err != nil {
+		return lxerrors.New("modifying volume map in state", err)
+	}
+	err = p.state.Save()
+	if err != nil {
+		return lxerrors.New("saving volume to state", err)
+	}
+	return nil
 }

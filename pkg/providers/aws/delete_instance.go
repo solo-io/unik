@@ -21,8 +21,16 @@ func (p *AwsProvider) DeleteInstance(id string) error {
 	if err != nil {
 		return lxerrors.New("failed to terminate instance "+instance.Id, err)
 	}
-	return p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
+	err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 		delete(instances, instance.Id)
 		return nil
 	})
+	if err != nil {
+		return lxerrors.New("modifying image map in state", err)
+	}
+	err = p.state.Save()
+	if err != nil {
+		return lxerrors.New("saving image to state", err)
+	}
+	return nil
 }

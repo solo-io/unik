@@ -118,10 +118,17 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 		Created: time.Now(),
 	}
 
-	p.state.ModifyInstances(func(instances map[string]*types.Instance) error{
+	err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error{
 		instances[instance.Id] = instance
 		return nil
 	})
+	if err != nil {
+		return nil, lxerrors.New("modifying instance map in state", err)
+	}
+	err = p.state.Save()
+	if err != nil {
+		return nil, lxerrors.New("saving instance volume map to state", err)
+	}
 
 	logrus.WithFields(logrus.Fields{"instance": instance}).Infof("instance created succesfully")
 

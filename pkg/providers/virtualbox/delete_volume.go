@@ -20,14 +20,18 @@ func (p *VirtualboxProvider) DeleteVolume(id string, force bool) error {
 		return lxerrors.New("could not delete volume at path "+volumePath, err)
 	}
 
-	p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		delete(volumes, volume.Id)
 		return nil
 	})
 
-	p.state.ModifyVolumePaths(func(volumePaths map[string]string) error {
+	err = p.state.ModifyVolumePaths(func(volumePaths map[string]string) error {
 		delete(volumePaths, volume.Id)
 		return nil
 	})
+	if err != nil {
+		return nil, lxerrors.New("deleting volume path from state", err)
+	}
+
 	return nil
 }

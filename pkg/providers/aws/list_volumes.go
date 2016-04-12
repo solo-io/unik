@@ -42,10 +42,17 @@ func (p *AwsProvider) ListVolumes() ([]*types.Volume, error) {
 		} else {
 			volume.Attachment = ""
 		}
-		p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+		err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 			volumes[volume.Id] = volume
 			return nil
 		})
+		if err != nil {
+			return nil, lxerrors.New("modifying volume map in state", err)
+		}
+		err = p.state.Save()
+		if err != nil {
+			return nil, lxerrors.New("saving modified volume map to state", err)
+		}
 		volumes = append(volumes, volume)
 	}
 	return volumes, nil

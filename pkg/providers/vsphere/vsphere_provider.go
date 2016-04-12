@@ -8,6 +8,7 @@ import (
 	"strings"
 	"os"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"github.com/emc-advanced-dev/unik/pkg/state"
 )
 
 var vsphereStateFile = os.Getenv("HOME")+"/.unik/vsphere/state.json"
@@ -16,7 +17,7 @@ var vsphereVolumesDirectory = os.Getenv("HOME")+"/.unik/vsphere/volumes/"
 
 type VsphereProvider struct {
 	config      config.Vsphere
-	state       common.LocalStorageState
+	state       state.LocalStorageState
 	u           url.URL
 }
 
@@ -31,7 +32,7 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 
 	return &VsphereProvider{
 		config: config,
-		state:  common.NewLocalStorageState(vsphereStateFile),
+		state:  state.NewLocalStorageState(vsphereStateFile),
 		u: u,
 	}
 }

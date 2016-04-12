@@ -30,6 +30,14 @@ func (p *AwsProvider) DeleteImage(id string, force bool) error {
 	}
 
 	ec2svc := p.newEC2()
+	deleteAmiParam := &ec2.DeregisterImageInput{
+		ImageId: aws.String(image.Id),
+	}
+	_, err = ec2svc.DeregisterImage(deleteAmiParam)
+	if err != nil {
+		return lxerrors.New("failed deleting image "+image.Id, err)
+	}
+
 	snap, err := getSnapshotForImage(ec2svc, image.Id)
 	if err != nil {
 		return err
@@ -49,10 +57,18 @@ func (p *AwsProvider) DeleteImage(id string, force bool) error {
 		return lxerrors.New("failed deleting volumme "+*snap.VolumeId, err)
 	}
 
-	return p.state.ModifyImages(func(images map[string]*types.Image) error {
+	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
 		delete(images, image.Id)
 		return nil
 	})
+	if err != nil {
+		return lxerrors.New("modifying image map in state", err)
+	}
+	err = p.state.Save()
+	if err != nil {
+		return lxerrors.New("saving image to state", err)
+	}
+	return nil
 }
 
 func getSnapshotForImage(ec2svc *ec2.EC2, imageId string) (*ec2.Snapshot, error) {
