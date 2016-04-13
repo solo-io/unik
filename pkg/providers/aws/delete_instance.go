@@ -30,7 +30,7 @@ func (p *AwsProvider) DeleteInstance(id string) error {
 	}
 	err = p.state.Save()
 	if err != nil {
-		return lxerrors.New("saving image to state", err)
+		return lxerrors.New("saving image map to state", err)
 	}
 	return nil
 }

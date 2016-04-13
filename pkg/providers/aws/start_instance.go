@@ -16,9 +16,17 @@ func (p *AwsProvider) StartInstance(id string) error {
 			aws.String(instance.Id),
 		},
 	}
-	_, err = p.newEC2().StartInstances(param)
+	ec2svc := p.newEC2()
+	_, err = ec2svc.StartInstances(param)
 	if err != nil {
 		return lxerrors.New("failed to start instance "+instance.Id, err)
+	}
+	waitParam := &ec2.DescribeInstancesInput{
+		InstanceIds: []*string{aws.String(instance.Id)},
+	}
+	err = ec2svc.WaitUntilInstanceRunning(waitParam)
+	if err != nil {
+		return lxerrors.New("waiting until instance running", err)
 	}
 	return nil
 }

@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"time"
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 )
 
 func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
@@ -30,6 +31,17 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 					InstanceIds: []*string{aws.String(instanceId)},
 				}
 				ec2svc.TerminateInstances(terminateInstanceInput)
+				cleanupErr := p.state.ModifyInstances(func(instances map[string]*types.Instance) error{
+					delete(instances, instanceId)
+					return nil
+				})
+				if cleanupErr != nil {
+					logrus.Error(lxerrors.New("modifying instance map in state", cleanupErr))
+				}
+				cleanupErr = p.state.Save()
+				if cleanupErr != nil {
+					logrus.Error(lxerrors.New("saving instance volume map to state", cleanupErr))
+				}
 			}
 		}
 	}()
@@ -38,9 +50,9 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 	if err != nil {
 		return nil, lxerrors.New("getting image", err)
 	}
-	err = verifyMntsInput(image, mntPointsToVolumeIds)
-	if err != nil {
-		return nil, err
+
+	if err := common.VerifyMntsInput(p, image, mntPointsToVolumeIds); err != nil {
+		return nil, lxerrors.New("invalid mapping for volume", err)
 	}
 
 	envData, err := json.Marshal(env)
@@ -52,6 +64,9 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 		ImageId: aws.String(image.Id),
 		MinCount: aws.Int64(1),
 		MaxCount: aws.Int64(1),
+		Placement: &ec2.Placement{
+			AvailabilityZone: aws.String(p.config.Zone),
+		},
 		UserData: aws.String(encodedData),
 	}
 
@@ -70,21 +85,45 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 		return nil, lxerrors.New("expected 1 instance to be created", nil)
 	}
 
+	//must add instance to state before attaching volumes
+	instance := &types.Instance{
+		Id: instanceId,
+		Name: name,
+		State: types.InstanceState_Pending,
+		Infrastructure: types.Infrastructure_AWS,
+		ImageId: image.Id,
+		Created: time.Now(),
+	}
+
+	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error{
+		instances[instance.Id] = instance
+		return nil
+	}); err != nil {
+		return nil, lxerrors.New("modifying instance map in state", err)
+	}
+	if err := p.state.Save(); err != nil {
+		return nil, lxerrors.New("saving instance volume map to state", err)
+	}
+
 	if len(mntPointsToVolumeIds) > 0 {
 		logrus.Debugf("stopping instance for volume attach")
-		err = p.StopInstance(instanceId)
-		if err != nil {
-			return nil, lxerrors.New("failed to stop instance for attachin volumes", err)
+		waitParam := &ec2.DescribeInstancesInput{
+			InstanceIds: []*string{aws.String(instanceId)},
+		}
+		logrus.Debugf("waiting for instance to reach running state")
+		if err := ec2svc.WaitUntilInstanceRunning(waitParam); err != nil {
+			return nil, lxerrors.New("waiting for instance to reach running state", err)
+		}
+		if err := p.StopInstance(instanceId); err != nil {
+			return nil, lxerrors.New("failed to stop instance for attaching volumes", err)
 		}
 		for mountPoint, volumeId := range mntPointsToVolumeIds {
 			logrus.WithFields(logrus.Fields{"volume-id": volumeId}).Debugf("attaching volume %s to intance %s", volumeId, instanceId)
-			err = p.AttachVolume(volumeId, instanceId, mountPoint)
-			if err != nil {
+			if err := p.AttachVolume(volumeId, instanceId, mountPoint); err != nil {
 				return nil, lxerrors.New("attaching volume to instance", err)
 			}
 		}
-		err = p.StartInstance(instanceId)
-		if err != nil {
+		if err := p.StartInstance(instanceId); err != nil {
 			return nil, lxerrors.New("starting instance after volume attach", err)
 		}
 	}
@@ -94,10 +133,6 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 			aws.String(instanceId),
 		},
 		Tags: []*ec2.Tag{
-			&ec2.Tag{
-				Key:  aws.String(UNIK_INSTANCE_ID),
-				Value: aws.String(instanceId),
-			},
 			&ec2.Tag{
 				Key:  aws.String("Name"),
 				Value: aws.String(name),
@@ -109,43 +144,8 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 		return nil, lxerrors.New("tagging snapshot, image, and volume", err)
 	}
 
-	instance := &types.Instance{
-		Id: instanceId,
-		Name: name,
-		State: types.InstanceState_Pending,
-		Infrastructure: types.Infrastructure_AWS,
-		ImageId: image.Id,
-		Created: time.Now(),
-	}
-
-	err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error{
-		instances[instance.Id] = instance
-		return nil
-	})
-	if err != nil {
-		return nil, lxerrors.New("modifying instance map in state", err)
-	}
-	err = p.state.Save()
-	if err != nil {
-		return nil, lxerrors.New("saving instance volume map to state", err)
-	}
-
 	logrus.WithFields(logrus.Fields{"instance": instance}).Infof("instance created succesfully")
 
 	return instance, nil
 }
 
-func verifyMntsInput(image *types.Image, mntPointsToVolumeIds map[string]string) error {
-	for _, deviceMapping := range image.DeviceMappings {
-		if deviceMapping.MountPoint == "/" {
-			//ignore boot mount point
-			continue
-		}
-		_, ok := mntPointsToVolumeIds[deviceMapping.MountPoint]
-		if !ok {
-			logrus.WithFields(logrus.Fields{"required-device-mappings": image.DeviceMappings}).Errorf("requied mount point missing: %s", deviceMapping.MountPoint)
-			return lxerrors.New("required mount point missing from input", nil)
-		}
-	}
-	return nil
-}

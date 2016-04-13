@@ -17,6 +17,8 @@ import (
 	"strings"
 	"time"
 	"github.com/Sirupsen/logrus"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"os"
 )
 
 type UnikDaemon struct {
@@ -488,28 +490,36 @@ func (d *UnikDaemon) registerHandlers() {
 			logrus.WithFields(logrus.Fields{
 				"form": req.Form,
 			}).Debugf("seeking form file marked 'tarfile'")
+
+			var imagePath string
+
 			dataTar, header, err := req.FormFile("tarfile")
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"size": size,
 					"name": volumeName,
 				}).WithError(err).Debugf("creating empty volume started")
-				volume, err := d.providers[providerType].CreateEmptyVolume(volumeName, size)
+				imagePath, err = unikos.BuildEmptyDataVolume(size)
 				if err != nil {
-					return nil, lxerrors.New("creating volume", err)
+					return nil, lxerrors.New("failed building raw image", err)
 				}
 				logrus.WithFields(logrus.Fields{
-					"volume": volume,
-				}).Infof("volume created")
-				return volume, nil
+					"image": imagePath,
+				}).Infof("raw image created")
+			} else {
+				defer dataTar.Close()
+				logrus.WithFields(logrus.Fields{
+					"tarred-data": header.Filename,
+					"name":        volumeName,
+				}).Debugf("creating volume started")
+				imagePath, err = unikos.BuildRawDataImage(dataTar, size)
+				if err != nil {
+					return nil, lxerrors.New("creating raw volume image", err)
+				}
 			}
-			defer dataTar.Close()
+			defer os.RemoveAll(imagePath)
 
-			logrus.WithFields(logrus.Fields{
-				"tarred-data": header.Filename,
-				"name":        volumeName,
-			}).Debugf("creating volume started")
-			volume, err := d.providers[providerType].CreateVolume(volumeName, dataTar, size)
+			volume, err := d.providers[providerType].CreateVolume(volumeName, imagePath)
 			if err != nil {
 				return nil, lxerrors.New("could not create volume", err)
 			}

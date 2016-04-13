@@ -183,7 +183,7 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 	}
 	err = p.state.Save()
 	if err != nil {
-		return nil, lxerrors.New("saving image to state", err)
+		return nil, lxerrors.New("saving image map to state", err)
 	}
 
 	logrus.WithFields(logrus.Fields{"image": image}).Infof("image created succesfully")

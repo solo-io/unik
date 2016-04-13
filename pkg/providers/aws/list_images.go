@@ -11,13 +11,12 @@ import (
 const UNIK_IMAGE_ID = "UNIK_IMAGE_ID"
 
 func (p *AwsProvider) ListImages() ([]*types.Image, error) {
+	imageIds := []*string{}
+	for imageId := range p.state.GetImages() {
+		imageIds = append(imageIds, aws.String(imageId))
+	}
 	param := &ec2.DescribeImagesInput{
-		Filters: []*ec2.Filter{
-			&ec2.Filter{
-				Name:   aws.String("tag-key"),
-				Values: []*string{aws.String(UNIK_IMAGE_ID)},
-			},
-		},
+		ImageIds: imageIds,
 	}
 	output, err := p.newEC2().DescribeImages(param)
 	if err != nil {
@@ -25,10 +24,7 @@ func (p *AwsProvider) ListImages() ([]*types.Image, error) {
 	}
 	images := []*types.Image{}
 	for _, ec2Image := range output.Images {
-		imageId := parseImageId(ec2Image)
-		if imageId == "" {
-			continue
-		}
+		imageId := *ec2Image.ImageId
 		image, ok := p.state.GetImages()[imageId]
 		if !ok {
 			logrus.WithFields(logrus.Fields{"ec2Image": ec2Image}).Errorf("found an image that unik has no record of")
@@ -37,13 +33,4 @@ func (p *AwsProvider) ListImages() ([]*types.Image, error) {
 		images = append(images, image)
 	}
 	return images, nil
-}
-
-func parseImageId(ec2Image *ec2.Image) string {
-	for _, tag := range ec2Image.Tags {
-		if *tag.Key == UNIK_IMAGE_ID {
-			return *tag.Value
-		}
-	}
-	return ""
 }

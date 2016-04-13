@@ -37,8 +37,7 @@ func main() {
 	buildCommand := exec.Command("make")
 	buildCommand.Dir = "../../containers/"
 	uniklog.LogCommand(buildCommand, true)
-	err := buildCommand.Run()
-	if err != nil {
+	if err := buildCommand.Run(); err != nil {
 		logrus.WithError(err).Fatalf("building containers")
 	}
 
@@ -50,8 +49,7 @@ func main() {
 	}
 
 	var config config.UnikConfig
-	err = yaml.Unmarshal(configData, &config)
-	if err != nil {
+	if err := yaml.Unmarshal(configData, &config); err != nil {
 		logrus.WithError(err).Fatalf("parsing conf.yml")
 	}
 

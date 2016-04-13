@@ -25,26 +25,24 @@ func dialTimeout(network, addr string) (net.Conn, error) {
 
 //export gomaincaller
 func gomaincaller() {
-	var instanceData UnikInstanceData
+	var env map[string]string
 
 	//make logs available via http request
 	logs := bytes.Buffer{}
-	err := teeStdout(&logs)
-	if err != nil {
+	if err := teeStdout(&logs); err != nil {
 		log.Fatal(err)
 	}
-	err = teeStderr(&logs)
-	if err != nil {
+	if err := teeStderr(&logs); err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Printf("Beginning bootstrap...")
 
 	retries := 0
-	err = errors.New("enter loop")
+	err := errors.New("enter loop")
 	for err != nil && retries < 3 {
 		fmt.Printf("listening for Unik backend UDP Heartbeat...")
-		err = bootstrapMulticast(instanceData)
+		err = bootstrapMulticast(env)
 		retries++
 		if err == nil {
 			fmt.Printf("multicast bootstrap finished!\n")
@@ -65,11 +63,11 @@ func gomaincaller() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = json.Unmarshal(data, &instanceData)
+			err = json.Unmarshal(data, &env)
 			if err != nil {
 				log.Fatal(err)
 			}
-			for key, value := range instanceData.Env {
+			for key, value := range env {
 				os.Setenv(key, value)
 			}
 			fmt.Printf("ec2 bootstrap finished!\n")
@@ -90,7 +88,7 @@ func gomaincaller() {
 	main()
 }
 
-func bootstrapMulticast(instanceData UnikInstanceData) error {
+func bootstrapMulticast(env map[string]string) error {
 	//get MAC Addr (needed for vsphere)
 	ifaces, err := net.Interfaces()
 	if err != nil {
@@ -116,11 +114,11 @@ func bootstrapMulticast(instanceData UnikInstanceData) error {
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(data, &instanceData)
+	err = json.Unmarshal(data, &env)
 	if err != nil {
 		return err
 	}
-	for key, value := range instanceData.Env {
+	for key, value := range env {
 		os.Setenv(key, value)
 	}
 	return nil
@@ -146,13 +144,6 @@ func getUnikIp() string {
 			return remoteAddr.IP.String()
 		}
 	}
-}
-
-//make sure this remains the same as defined in
-//github.com/layer-x/unik/pkg/daemon/ec2api/run_unik_instance.go
-type UnikInstanceData struct {
-	Tags map[string]string `json:"Tags"`
-	Env  map[string]string `json:"Env"`
 }
 
 func teeStdout(writer io.Writer) error {

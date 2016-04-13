@@ -6,6 +6,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 )
 
 func (p *AwsProvider) AttachVolume(id, instanceId, mntPoint string) error {
@@ -20,6 +21,9 @@ func (p *AwsProvider) AttachVolume(id, instanceId, mntPoint string) error {
 	image, err := p.GetImage(instance.ImageId)
 	if err != nil {
 		return lxerrors.New("retrieving image for instance", err)
+	}
+	if err := common.VerifyMntsInput(p, image, map[string]string{mntPoint: id}); err != nil {
+		return lxerrors.New("invalid mapping for volume", err)
 	}
 	deviceName := ""
 	for _, mapping := range image.DeviceMappings {

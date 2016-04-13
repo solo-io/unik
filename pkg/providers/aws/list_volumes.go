@@ -8,16 +8,13 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-const UNIK_VOLUME_ID = "UNIK_VOLUME_ID"
-
 func (p *AwsProvider) ListVolumes() ([]*types.Volume, error) {
+	volumeIds := []*string{}
+	for volumeId := range p.state.GetVolumes() {
+		volumeIds = append(volumeIds, aws.String(volumeId))
+	}
 	param := &ec2.DescribeVolumesInput{
-		Filters: []*ec2.Filter{
-			&ec2.Filter{
-				Name:   aws.String("tag-key"),
-				Values: []*string{aws.String(UNIK_VOLUME_ID)},
-			},
-		},
+		VolumeIds: volumeIds,
 	}
 	output, err := p.newEC2().DescribeVolumes(param)
 	if err != nil {
@@ -25,7 +22,7 @@ func (p *AwsProvider) ListVolumes() ([]*types.Volume, error) {
 	}
 	volumes := []*types.Volume{}
 	for _, ec2Volume := range output.Volumes {
-		volumeId := parseVolumeId(ec2Volume)
+		volumeId := *ec2Volume.VolumeId
 		if volumeId == "" {
 			continue
 		}
@@ -56,13 +53,4 @@ func (p *AwsProvider) ListVolumes() ([]*types.Volume, error) {
 		volumes = append(volumes, volume)
 	}
 	return volumes, nil
-}
-
-func parseVolumeId(ec2Volume *ec2.Volume) string {
-	for _, tag := range ec2Volume.Tags {
-		if *tag.Key == UNIK_VOLUME_ID {
-			return *tag.Value
-		}
-	}
-	return ""
 }

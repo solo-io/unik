@@ -16,9 +16,17 @@ func (p *AwsProvider) StopInstance(id string) error {
 			aws.String(instance.Id),
 		},
 	}
-	_, err = p.newEC2().StopInstances(param)
+	ec2svc := p.newEC2()
+	_, err = ec2svc.StopInstances(param)
 	if err != nil {
 		return lxerrors.New("failed to stop instance "+instance.Id, err)
+	}
+	waitParam := &ec2.DescribeInstancesInput{
+		InstanceIds: []*string{aws.String(instance.Id)},
+	}
+	err = ec2svc.WaitUntilInstanceStopped(waitParam)
+	if err != nil {
+		return lxerrors.New("waiting until instance stopped", err)
 	}
 	return nil
 }
