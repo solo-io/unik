@@ -211,21 +211,28 @@ func formatDeviceAndCopyContents(folder string, dev BlockDevice) error {
 
 func CreateSingleVolume(rootFile string, folder types.RawVolume) error {
 	ext2Overhead := MegaBytes(2).ToBytes()
-	size, err := GetDirSize(folder.Path)
-	if err != nil {
-		return err
+
+	size := folder.Size
+
+	if size == 0 {
+		var err error
+		size, err = GetDirSize(folder.Path)
+		if err != nil {
+			return err
+		}
 	}
+
 	// take a spare sizde and down to sector size
 	size = (SectorSize + size + size/10 + int64(ext2Overhead))
 	size &^= (SectorSize - 1)
 	// 10% buffer.. aligned to 512
 	sizeVolume := Bytes(size)
-	_, err = ToSectors(Bytes(size))
-	if err != nil {
+
+	if _, err := ToSectors(Bytes(size)); err != nil {
 		return err
 	}
-	err = createSparseFile(rootFile, sizeVolume)
-	if err != nil {
+
+	if err := createSparseFile(rootFile, sizeVolume); err != nil {
 		return err
 	}
 
