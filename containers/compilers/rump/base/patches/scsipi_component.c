@@ -20,8 +20,8 @@ RUMP_COMPONENT(RUMP_COMPONENT_DEV)
     int i;
 	devmajor_t bmaj, cmaj;
     
-    char[] bDevice = "/dev/sd1";
-    char[] cDevice = "/dev/rsd1";
+    char bDevice[] = "/dev/sd1";
+    char cDevice[] = "/dev/rsd1";
 
 	config_init_component(cfdriver_ioconf_scsipi,
 	    cfattach_ioconf_scsipi, cfdata_ioconf_scsipi);
