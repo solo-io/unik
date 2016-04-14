@@ -8,16 +8,13 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-const UNIK_INSTANCE_ID = "UNIK_INSTANCE_ID"
-
 func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
+	instanceIds := []*string{}
+	for instanceId := range p.state.GetInstances() {
+		instanceIds = append(instanceIds, aws.String(instanceId))
+	}
 	param := &ec2.DescribeInstancesInput{
-		Filters: []*ec2.Filter{
-			&ec2.Filter{
-				Name:   aws.String("tag-key"),
-				Values: []*string{aws.String(UNIK_INSTANCE_ID)},
-			},
-		},
+		InstanceIds: instanceIds,
 	}
 	output, err := p.newEC2().DescribeInstances(param)
 	if err != nil {
@@ -27,10 +24,32 @@ func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 	for _, reservation := range output.Reservations {
 		for _, ec2Instance := range reservation.Instances {
 			logrus.WithField("ec2instance", ec2Instance).Debugf("aws returned instance %s", *ec2Instance.InstanceId)
-			instanceId := parseInstanceId(ec2Instance)
+			var instanceId string
+			if ec2Instance.InstanceId != nil {
+				instanceId = *ec2Instance.InstanceId
+			}
+			if instanceId == "" {
+				logrus.Warnf("instance %v does not have readable instanceId, moving on", *ec2Instance)
+				continue
+			}
 			instanceState := parseInstanceState(ec2Instance.State)
-			if instanceId == "" || instanceState == types.InstanceState_Unknown {
-				logrus.Warnf("instance %s state is %s or does not belong to unik, moving on", instanceId, *ec2Instance.State.Name)
+			if instanceState == types.InstanceState_Unknown {
+				logrus.Warnf("instance %s state is unknown (%s), moving on", instanceId, *ec2Instance.State.Name)
+				continue
+			}
+			if instanceState == types.InstanceState_Terminated {
+				logrus.Warnf("instance %s state is terminated, removing it from state", instanceId)
+				err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
+					delete(instances, instanceId)
+					return nil
+				})
+				if err != nil {
+					return nil, lxerrors.New("modifying instance map in state", err)
+				}
+				err = p.state.Save()
+				if err != nil {
+					return nil, lxerrors.New("saving modified instance map to state", err)
+				}
 				continue
 			}
 			instance, ok := p.state.GetInstances()[instanceId]
@@ -39,7 +58,9 @@ func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 				continue
 			}
 			instance.State = instanceState
-			instance.IpAddress = *ec2Instance.PublicIpAddress
+			if ec2Instance.PublicIpAddress != nil {
+				instance.IpAddress = *ec2Instance.PublicIpAddress
+			}
 			err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 				instances[instance.Id] = instance
 				return nil
@@ -57,15 +78,6 @@ func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 	return updatedInstances, nil
 }
 
-func parseInstanceId(instance *ec2.Instance) string {
-	for _, tag := range instance.Tags {
-		if *tag.Key == UNIK_INSTANCE_ID {
-			return *tag.Value
-		}
-	}
-	return ""
-}
-
 func parseInstanceState(ec2State *ec2.InstanceState) types.InstanceState {
 	if ec2State == nil {
 		return types.InstanceState_Unknown
@@ -77,6 +89,8 @@ func parseInstanceState(ec2State *ec2.InstanceState) types.InstanceState {
 		return types.InstanceState_Pending
 	case ec2.InstanceStateNameStopped:
 		return types.InstanceState_Stopped
+	case ec2.InstanceStateNameTerminated:
+		return types.InstanceState_Terminated
 	}
 	return types.InstanceState_Unknown
 }

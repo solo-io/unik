@@ -9,8 +9,10 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"flag"
+	"strings"
 )
 
 func main() {
@@ -90,16 +92,14 @@ func main() {
 		fmt.Println()
 
 		for _, instance := range instances {
-			err = p.DeleteInstance(instance.Id)
-			if err != nil {
+			if err := p.DeleteInstance(instance.Id); err != nil {
 				logrus.Error(err)
 				return
 			}
 		}
 
 		for _, image := range images {
-			err = p.DeleteImage(image.Id, false)
-			if err != nil {
+			if err := p.DeleteImage(image.Id, false); err != nil {
 				logrus.Error(err)
 				return
 			}
@@ -113,6 +113,14 @@ func main() {
 		}
 		logrus.WithField("images", images).Infof("printing images")
 		break
+	case "list-volumes":
+		volumes, err := p.ListVolumes()
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		logrus.WithField("volumes", volumes).Infof("printing volumes")
+		break
 	case "list-instances":
 		instances, err := p.ListInstances()
 		if err != nil {
@@ -123,30 +131,137 @@ func main() {
 		break
 	case "delete-instance":
 		instanceId := *arg
-		err = p.DeleteInstance(instanceId)
-		if err != nil {
+		if err := p.DeleteInstance(instanceId); err != nil {
 			logrus.Error(err)
 			return
 		}
 		logrus.Infof("deleted instance %s", instanceId)
 		break
+	case "create-image":
+		r := compilers.RunmpCompiler{
+			DockerImage: "rumpcompiler-go-xen",
+			CreateImage: compilers.CreateImageAws,
+		}
+		f, err := os.Open("a.tar")
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		rawimg, err := r.CompileRawImage(f, "", []string{})
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+
+		img, err := p.Stage("test-scott", rawimg, true)
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		logrus.WithField("image", img).Infof("printing image")
+		break
+	case "create-image-with-volume":
+		name := *arg
+		r := compilers.RunmpCompiler{
+			DockerImage: "rumpcompiler-go-xen",
+			CreateImage: compilers.CreateImageAws,
+		}
+		f, err := os.Open("a.tar")
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		rawimg, err := r.CompileRawImage(f, "", []string{"/data"})
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+
+		img, err := p.Stage(name, rawimg, true)
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		logrus.WithField("image", img).Infof("printing image")
+		break
 	case "delete-image":
 		imageId := *arg
-		err = p.DeleteImage(imageId, true)
-		if err != nil {
+		if err := p.DeleteImage(imageId, true); err != nil {
 			logrus.Error(err)
 			return
 		}
 		logrus.Infof("deleted image %s", imageId)
 		break
 	case "create-volume":
-		imageId := *arg
-		err = p.DeleteImage(imageId, true)
+		name := *arg
+		f, err := os.Open("a.tar")
 		if err != nil {
 			logrus.Error(err)
 			return
 		}
-		logrus.Infof("deleted image %s", imageId)
+		imagePath, err := unikos.BuildRawDataImage(f, 0)
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		defer os.RemoveAll(imagePath)
+		logrus.Infof("built raw image %s", imagePath)
+		volume, err := p.CreateVolume(name, imagePath)
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		logrus.WithField("volume", volume).Infof("created volume %s", name)
+		break
+	case "run-instance":
+		name := strings.Split(*arg, ",")[0]
+		imageName := strings.Split(*arg, ",")[1]
+
+		instance, err := p.RunInstance(name, imageName, nil, nil)
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		logrus.WithField("instance", instance).Infof("instance %s", name)
+		break
+	case "get-instance":
+		instance, err := p.GetInstance(*arg)
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		logrus.WithField("instance", instance).Infof("instance %s", *arg)
+		break
+	case "run-instance-with-volume":
+		args := strings.Split(*arg, ",")
+		if len(args) != 4 {
+			logrus.Error("wrong args: "+*arg)
+			return
+		}
+		name := args[0]
+		imageName := args[1]
+		mntPoint := args[2]
+		volumeId := args[3]
+		mntsToVols := map[string]string{
+			mntPoint: volumeId,
+		}
+		instance, specErr := p.RunInstance(name, imageName, mntsToVols, nil)
+		if specErr != nil {
+			logrus.Error(specErr)
+			return
+		}
+		volume, err := p.GetVolume(volumeId)
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		updatedInstance, err := p.GetInstance(instance.Id)
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		logrus.WithField("volume", volume).Infof("attached volume")
+		logrus.WithField("updatedInstance", updatedInstance).Infof("updatedInstance %s", name)
 		break
 	}
 

@@ -3,7 +3,6 @@ package providers
 import (
 	"errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"io"
 )
 
 type Provider interface {
@@ -22,8 +21,7 @@ type Provider interface {
 	StopInstance(id string) error
 	GetInstanceLogs(id string) (string, error)
 	//Volumes
-	CreateVolume(name string, sourceTar io.ReadCloser, size int) (*types.Volume, error)
-	CreateEmptyVolume(name string, size int) (*types.Volume, error)
+	CreateVolume(name, imagePath string) (*types.Volume, error)
 	ListVolumes() ([]*types.Volume, error)
 	GetVolume(nameOrIdPrefix string) (*types.Volume, error)
 	DeleteVolume(id string, force bool) error

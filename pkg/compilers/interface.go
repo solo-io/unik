@@ -2,7 +2,6 @@ package compilers
 
 import (
 	"io"
-
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 

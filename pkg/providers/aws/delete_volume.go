@@ -28,7 +28,7 @@ func (p *AwsProvider) DeleteVolume(id string, force bool) error {
 	}
 	err = p.state.Save()
 	if err != nil {
-		return lxerrors.New("saving volume to state", err)
+		return lxerrors.New("saving volume map to state", err)
 	}
 	return nil
 }

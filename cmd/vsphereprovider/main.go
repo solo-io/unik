@@ -93,16 +93,14 @@ func main() {
 		fmt.Println()
 
 		for _, instance := range instances {
-			err = p.DeleteInstance(instance.Id)
-			if err != nil {
+			if err := p.DeleteInstance(instance.Id); err != nil {
 				logrus.Error(err)
 				return
 			}
 		}
 
 		for _, image := range images {
-			err = p.DeleteImage(image.Id, false)
-			if err != nil {
+			if err := p.DeleteImage(image.Id, false); err != nil {
 				logrus.Error(err)
 				return
 			}

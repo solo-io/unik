@@ -12,6 +12,7 @@ const (
 	InstanceState_Stopped     InstanceState = "InstanceState_Stopped"
 	InstanceState_Pending     InstanceState = "InstanceState_Pending"
 	InstanceState_Unknown     InstanceState = "InstanceState_Unknown"
+	InstanceState_Terminated     InstanceState = "InstanceState_Terminated"
 )
 
 type Infrastructure string
@@ -60,7 +61,7 @@ type Volume struct {
 	Name           string `json:"Name"`
 	SizeMb         int64  `json:"SizeMb"`
 	Attachment     string `json:"Attachment"` //instanceId
-	Infrastructure string `json:"Infrastructure"`
+	Infrastructure Infrastructure `json:"Infrastructure"`
 	Created	       time.Time	`json:"Created"`
 }
 
