@@ -9,7 +9,7 @@ import (
 func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*uniktypes.RawImage, error) {
 
 	// create rump config
-	var c RumpConfig
+	var c rumpConfig
 
 	if args == "" {
 		c.Cmdline = "program.bin"
@@ -19,11 +19,12 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*uni
 
 	res := &uniktypes.RawImage{}
 	// add root -> sd0 mapping
-	res.DeviceMappings = append(res.DeviceMappings, &uniktypes.DeviceMapping{MountPoint: "/", DeviceName: "sd0"})
+	res.DeviceMappings = append(res.DeviceMappings,
+		uniktypes.DeviceMapping{MountPoint: "/", DeviceName: "sd0"})
 
 	for i, mntPoint := range mntPoints {
 		deviceMapped := fmt.Sprintf("sd%ca", '1'+i)
-		blk := Blk{
+		blk := blk{
 			Source:     "dev",
 			Path:       "/dev/" + deviceMapped,
 			FSType:     "blk",
@@ -31,11 +32,12 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*uni
 		}
 
 		c.Blk = append(c.Blk, blk)
-		res.DeviceMappings = append(res.DeviceMappings, &uniktypes.DeviceMapping{MountPoint: mntPoint, DeviceName: deviceMapped})
+		res.DeviceMappings = append(res.DeviceMappings,
+			uniktypes.DeviceMapping{MountPoint: mntPoint, DeviceName: deviceMapped})
 	}
 
 	// aws network
-	c.Net = &Net{
+	c.Net = &net{
 		If:     "vioif0",
 		Type:   "inet",
 		Method: DHCP,
