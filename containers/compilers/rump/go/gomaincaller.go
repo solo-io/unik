@@ -17,16 +17,64 @@ import (
 	"time"
 )
 
+const BROADCAST_LISTENING_PORT=9876
+const EnvFile = "env.json"
+
 var timeout = time.Duration(2 * time.Second)
 
 func dialTimeout(network, addr string) (net.Conn, error) {
 	return net.DialTimeout(network, addr, timeout)
 }
 
+func getEnvAmazon() (map[string]string, error) {
+	client := http.Client{
+		Transport: &http.Transport{
+			Dial: dialTimeout,
+		},
+	}
+	resp, err := client.Get("http://169.254.169.254/latest/user-data")
+	if err != nil {
+		return nil, err
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var env map[string]string
+	if err := json.Unmarshal(data, &env); err != nil {
+		return nil, err
+	}
+	return env, nil
+}
+
+func getEnvFile() (map[string]string, error) {
+	data, err := ioutil.ReadFile(EnvFile)
+	if err != nil {
+		return nil, err
+	}
+	var env map[string]string
+	if err := json.Unmarshal(data, &env); err != nil {
+		return nil, err
+	}
+	return env, nil
+}
+
+func getEnvFromInject(req *http.Request) (map[string]string, error) {
+	data, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		return nil, err
+	}
+	defer req.Body.Close()
+	var env map[string]string
+	if err := json.Unmarshal(data, &env); err != nil {
+		return nil, err
+	}
+	return env, nil
+}
+
 //export gomaincaller
 func gomaincaller() {
-	var env map[string]string
-
 	//make logs available via http request
 	logs := bytes.Buffer{}
 	if err := teeStdout(&logs); err != nil {
@@ -36,67 +84,92 @@ func gomaincaller() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Beginning bootstrap...")
+	log.Printf("unik boostrapping beginning...")
 
-	retries := 0
-	err := errors.New("enter loop")
-	for err != nil && retries < 3 {
-		fmt.Printf("listening for Unik backend UDP Heartbeat...")
-		err = bootstrapMulticast(env)
-		retries++
-		if err == nil {
-			fmt.Printf("multicast bootstrap finished!\n")
+	go func() {
+		listenerIp, err := getListenerIp()
+		if err != nil {
+			log.Printf("err getting listener ip: %v", err)
+			return
 		}
-	}
-	if err != nil {
-		fmt.Printf("mdns bootstrap failed, attempting to reach ec2 metadata server...\n")
-		client := http.Client{
-			Transport: &http.Transport{
-				Dial: dialTimeout,
-			},
+		if err := registerWithListener(listenerIp); err != nil {
+			log.Printf("err registering with listener: %v", err)
+			return
 		}
-		resp, err := client.Get("http://169.254.169.254/latest/user-data")
-		if err == nil {
-			fmt.Printf("I am an EC2 instance! Retreiving boostrapping information from http://169.254.169.254/latest/user-data...")
-			defer resp.Body.Close()
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = json.Unmarshal(data, &env)
-			if err != nil {
-				log.Fatal(err)
-			}
-			for key, value := range env {
-				os.Setenv(key, value)
-			}
-			fmt.Printf("ec2 bootstrap finished!\n")
-		} else {
-			log.Printf("failed to bootstrap... moving on without registering to unik backend... err: %s\n", err.Error())
-		}
-	}
+	}()
 
-	//handle logs request
+	envChan := make(chan map[string]string)
+	errChan := make(chan error)
 	mux := http.NewServeMux()
+	//serve logs
 	mux.HandleFunc("/logs", func(res http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(res, "logs: %s", string(logs.Bytes()))
 	})
-	fmt.Printf("starting log server\n")
-	go http.ListenAndServe(":9876", mux)
+	//listen for injectable logs
+	mux.HandleFunc("/inject_env", func(res http.ResponseWriter, req *http.Request) {
+		env, err := getEnvFromInject(req)
+		envChan <- env
+		errChan <- err
+		fmt.Fprintf(res, "accepted")
+	})
+	log.Printf("starting log server\n")
+	go http.ListenAndServe(fmt.Sprintf(":%v", BROADCAST_LISTENING_PORT), mux)
 
-	fmt.Printf("running main\n")
+	go func() {
+		env, err := getEnvFile()
+		envChan <- env
+		errChan <- err
+	}()
+	go func() {
+		env, err := getEnvAmazon()
+		envChan <- env
+		errChan <- err
+	}()
+
+	errCounter := 0
+	envLoop:
+	for {
+		select {
+		case env := <- envChan:
+			setEnv(env)
+			break envLoop
+		case err := <- errChan:
+			if errCounter < 3 {
+				log.Printf("error: %v", err)
+				errCounter++
+			} else { //all getEnv failed
+				log.Fatal("err: %v", err)
+			}
+		}
+	}
+
+	log.Printf("calling main\n")
 	main()
 }
 
-func bootstrapMulticast(env map[string]string) error {
-	//get MAC Addr (needed for vsphere)
+func setEnv(env map[string]string) error {
+	for key, val := range env {
+		os.Setenv(key, val)
+	}
+	data, err := json.Marshal(env)
+	if err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(EnvFile, data, 0644); err != nil {
+		return err
+	}
+	return nil
+}
+
+func registerWithListener(listenerIp string) error {
+	//get MAC Addr
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		return errors.New("retrieving network interfaces" + err.Error())
 	}
 	macAddress := ""
 	for _, iface := range ifaces {
-		fmt.Printf("found an interface: %v\n", iface)
+		log.Printf("found an interface: %v\n", iface)
 		if iface.Name != "lo" {
 			macAddress = iface.HardwareAddr.String()
 		}
@@ -105,43 +178,30 @@ func bootstrapMulticast(env map[string]string) error {
 		return errors.New("could not find mac address")
 	}
 
-	resp, err := http.Get("http://" + getUnikIp() + ":3001/bootstrap?mac_address=" + macAddress)
-	if err != nil {
+	if _, err := http.Get("http://" + listenerIp + ":3000/register?mac_address=" + macAddress); err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(data, &env)
-	if err != nil {
-		return err
-	}
-	for key, value := range env {
-		os.Setenv(key, value)
 	}
 	return nil
 }
 
-func getUnikIp() string {
-	fmt.Printf("begin listening for unik heartbeat...")
+func getListenerIp() (string, error) {
+	log.Printf("listening for udp heartbeat...")
 	socket, err := net.ListenUDP("udp4", &net.UDPAddr{
 		IP:   net.IPv4(0, 0, 0, 0),
 		Port: 9876,
 	})
 	if err != nil {
-		log.Fatalf("error listening for udp4: " + err.Error())
+		return "", err
 	}
 	for {
 		data := make([]byte, 4096)
 		_, remoteAddr, err := socket.ReadFromUDP(data)
 		if err != nil {
-			log.Fatalf("error reading from udp: " + err.Error())
+			return "", err
 		}
-		fmt.Printf("recieved an ip: %s with data: %s", remoteAddr.IP.String(), string(data))
+		log.Printf("recieved an ip: %s with data: %s", remoteAddr.IP.String(), string(data))
 		if strings.Contains(string(data), "unik") {
-			return remoteAddr.IP.String()
+			return remoteAddr.IP.String(), nil
 		}
 	}
 }

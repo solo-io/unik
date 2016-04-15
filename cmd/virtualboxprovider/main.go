@@ -40,6 +40,8 @@ func main() {
 		p = p.WithState(state)
 	}
 
+	compilers.CreateImageVmware()
+
 	switch(*action){
 	case "all":
 		r := compilers.RunmpCompiler{
