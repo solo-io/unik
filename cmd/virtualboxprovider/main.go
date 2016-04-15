@@ -11,6 +11,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"flag"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
 )
 
 func main() {
@@ -27,7 +28,7 @@ func main() {
 		VsphereUser: os.Getenv("VSPHERE_USER"),
 		VspherePassword: os.Getenv("VSPHERE_PASSWORD"),
 	}
-	p, err := vsphere.NewVsphereProvier(c)
+	p, err := virtualbox.NewVirtualboxProvider(c)
 	if err != nil {
 		logrus.Error(err)
 		return
@@ -40,13 +41,11 @@ func main() {
 		p = p.WithState(state)
 	}
 
-	compilers.CreateImageVmware()
-
 	switch(*action){
 	case "all":
 		r := compilers.RunmpCompiler{
-			DockerImage: "rumpcompiler-go-xen",
-			CreateImage: compilers.CreateImageAws,
+			DockerImage: "compilers-rump-go-hw",
+			CreateImage: compilers.CreateImageVirtualBox,
 		}
 		f, err := os.Open("a.tar")
 		if err != nil {
