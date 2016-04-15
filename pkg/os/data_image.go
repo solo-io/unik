@@ -13,7 +13,7 @@ import (
 	"path"
 )
 
-func BuildRawDataImage(dataTar io.ReadCloser, size int) (string, error) {
+func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool) (string, error) {
 	dataFolder, err := ioutil.TempDir("", "")
 	if err != nil {
 		return "", lxerrors.New("creating tmp build folder", err)
@@ -32,6 +32,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int) (string, error) {
 			"-v", "/dev/:/dev/",
 			"-v", buildDir + "/:/opt/vol/",
 			"image-creator",
+			"-p", fmt.Sprintf("%v", usePartitionTables),
 			"-v", filepath.Base(dataFolder), fmt.Sprintf(",%v", size),
 		)
 	} else {
@@ -39,6 +40,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int) (string, error) {
 			"-v", "/dev/:/dev/",
 			"-v", buildDir + "/:/opt/vol/",
 			"image-creator",
+			"-p", fmt.Sprintf("%v", usePartitionTables),
 			"-v", filepath.Base(dataFolder),
 		)
 	}

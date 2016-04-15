@@ -34,6 +34,11 @@ func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error
 	}, nil
 }
 
+func (p *VirtualboxProvider) WithState(state state.State) *VirtualboxProvider {
+	p.state = state
+	return p
+}
+
 func (p *VirtualboxProvider) getClient() *api.VirtualboxClient {
 	return api.NewVirtualboxClient()
 }

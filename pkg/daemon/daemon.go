@@ -493,6 +493,8 @@ func (d *UnikDaemon) registerHandlers() {
 
 			var imagePath string
 
+			provider := d.providers[providerType]
+
 			dataTar, header, err := req.FormFile("tarfile")
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
@@ -512,14 +514,14 @@ func (d *UnikDaemon) registerHandlers() {
 					"tarred-data": header.Filename,
 					"name":        volumeName,
 				}).Debugf("creating volume started")
-				imagePath, err = unikos.BuildRawDataImage(dataTar, size)
+				imagePath, err = unikos.BuildRawDataImage(dataTar, size, provider.GetConfig().UsePartitionTables)
 				if err != nil {
 					return nil, lxerrors.New("creating raw volume image", err)
 				}
 			}
 			defer os.RemoveAll(imagePath)
 
-			volume, err := d.providers[providerType].CreateVolume(volumeName, imagePath)
+			volume, err := provider.CreateVolume(volumeName, imagePath)
 			if err != nil {
 				return nil, lxerrors.New("could not create volume", err)
 			}

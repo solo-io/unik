@@ -3,7 +3,6 @@ package aws
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -54,12 +53,4 @@ func (p *AwsProvider) newS3() *s3.S3 {
 		logrus.WithFields(logrus.Fields{"request": r}).Debugf("request sent to aws")
 	})
 	return s3.New(sess)
-}
-
-//todo: remove:!!
-func (p *AwsProvider) newMetadata() *ec2metadata.EC2Metadata {
-	return ec2metadata.New(session.New(&aws.Config{
-		Region:      aws.String(p.config.Region),
-		Credentials: credentials.NewStaticCredentials(p.config.AwsAccessKeyID, p.config.AwsSecretAcessKey, ""),
-	}))
 }

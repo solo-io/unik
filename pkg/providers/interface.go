@@ -6,8 +6,8 @@ import (
 )
 
 type Provider interface {
+	GetConfig() ProviderConfig
 	//Images
-	//TODO: create provider for each request, put logger inside of provider so we can clean up interface
 	Stage(name string, rawImage *types.RawImage, force bool) (*types.Image, error)
 	ListImages() ([]*types.Image, error)
 	GetImage(nameOrIdPrefix string) (*types.Image, error)
@@ -27,6 +27,10 @@ type Provider interface {
 	DeleteVolume(id string, force bool) error
 	AttachVolume(id, instanceId, mntPoint string) error
 	DetachVolume(id string) error
+}
+
+type ProviderConfig struct {
+	UsePartitionTables bool
 }
 
 type Providers map[string]Provider
