@@ -199,7 +199,7 @@ func main() {
 			logrus.Error(err)
 			return
 		}
-		imagePath, err := unikos.BuildRawDataImage(f, 0)
+		imagePath, err := unikos.BuildRawDataImage(f, 0, false)
 		if err != nil {
 			logrus.Error(err)
 			return

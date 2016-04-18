@@ -9,7 +9,6 @@ $(eval ifneq ($(platform),)
     platform = .$(platform) 
  endif)
 
-
 cd containers && docker build -t $@ -f $(type)/$(framework)/$(proglang)/Dockerfile$(platform) $(type)/$(framework)/$(proglang)
 endef
 
@@ -38,15 +37,6 @@ SUBDIRS = cmd/boot-creator cmd/image-creator cmd/stager cmd/provider cmd/volume-
 all: $(SUBDIRS)
 .PHONY: all $(SUBDIRS)
 
-cmd/daemon:
-	$(gobuild)
-
-cmd/stager:
-	$(gobuild)
-
-cmd/provider:
-	$(gobuild)
-
 cmd/image-creator:
 	$(gobuild-linux)
 	$(cmdbuildcontainer)
@@ -54,9 +44,6 @@ cmd/image-creator:
 cmd/boot-creator:
 	$(gobuild-linux)
 	$(cmdbuildcontainer)
-
-cmd/volume-uploader:
-	$(gobuild)
 
 cmd/vsphere-client:
 	$(mvnpackage)
