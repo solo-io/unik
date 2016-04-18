@@ -4,12 +4,13 @@ import (
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"encoding/json"
+	"fmt"
 )
 
 const BROADCAST_LISTENING_PORT=9876
 
 func GetInstanceIp(listenerIp string, listenerPort int, instanceId string) (string, error) {
-	_, body, err := lxhttpclient.Get(listenerIp+":"+listenerPort, "/instances", nil)
+	_, body, err := lxhttpclient.Get(fmt.Sprintf("%s:%v", listenerIp, listenerPort), "/instances", nil)
 	if err != nil {
 		return "", lxerrors.New("http GET on instance listener", err)
 	}
