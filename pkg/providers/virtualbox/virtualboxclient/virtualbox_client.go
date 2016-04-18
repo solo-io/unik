@@ -12,6 +12,16 @@ import (
 	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
 )
 
+func vboxManage(args ...string) (string, error) {
+	cmd := exec.Command("VBoxManage", args...)
+	logrus.WithField("command", cmd.Args).Debugf("running VBoxManage command")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("%s", string(out))
+	}
+	return string(out), nil
+}
+
 func Vms() ([]vbox.Machine, error) {
 	vms, err := vbox.GetMachines()
 	if err != nil {
@@ -28,6 +38,17 @@ func CreateVm(vmName string) error {
 	defer vm.Release()
 	if err = vm.Register(); err != nil {
 		return lxerrors.New("registering vm", err)
+	}
+
+	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
+		return lxerrors.New("adding scsi storage controller", err)
+	}
+
+	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
+		return lxerrors.New("adding scsi storage controller", err)
+	}
+	if _, err := vboxManage("modifyvm", vmName, "--nic1", "bridged", "--bridgeadapter1", c.Bridge, "--nictype1", "virtio"); err != nil {
+		return lxerrors.New("setting bridged networking on vm", err)
 	}
 	return nil
 }
@@ -69,6 +90,8 @@ func DestroyVm(vmName string) error {
 }
 
 func PowerOnVm(vmName string) error {
+
+
 	machine, err := vbox.FindMachine(vmName)
 	if err != nil {
 		return lxerrors.New("finding machine "+vmName, err)
