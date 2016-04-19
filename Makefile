@@ -32,7 +32,7 @@ cd $@ && GOOS=linux go build
 endef
 
 
-SUBDIRS = cmd/boot-creator cmd/image-creator cmd/stager cmd/provider cmd/volume-uploader cmd/daemon cmd/vsphere-client
+SUBDIRS = cmd/boot-creator cmd/image-creator cmd/vsphere-client
 
 all: $(SUBDIRS)
 .PHONY: all $(SUBDIRS)

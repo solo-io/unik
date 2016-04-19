@@ -43,7 +43,7 @@ func main() {
 	switch(*action){
 	case "all":
 		r := compilers.RunmpCompiler{
-			DockerImage: "rumpcompiler-go-xen",
+			DockerImage: "compilers-rump-go-xen",
 			CreateImage: compilers.CreateImageAws,
 		}
 		f, err := os.Open("a.tar")

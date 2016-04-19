@@ -13,7 +13,7 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 
 	r := compilers.RunmpCompiler{
-		DockerImage: "rumpcompiler-go-hw",
+		DockerImage: "compilers-rump-go-hw",
 		CreateImage: compilers.CreateImageVmware,
 	}
 	f, err := os.Open("a.tar")
