@@ -16,14 +16,22 @@ type VboxVm struct {
 	Running bool
 }
 
-func vboxManage(args ...string) (string, error) {
+func (vm *VboxVm) String() string {
+	if vm == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%-v", *vm)
+}
+
+func vboxManage(args ...string) ([]byte, error) {
 	cmd := exec.Command("VBoxManage", args...)
 	logrus.WithField("command", cmd.Args).Debugf("running VBoxManage command")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("%s", string(out))
+		return nil, fmt.Errorf("%s", string(out))
 	}
-	return string(out), nil
+	//logrus.WithField("vbox-manage-command-result", string(out)).Debugf("VBoxManage result")
+	return out, nil
 }
 
 //for vms with virtualbox guest additions
@@ -43,11 +51,11 @@ func GetVmIp(vmName string) (string, error) {
 	if ipAddr == nil {
 		return "", lxerrors.New("ip address not found in string "+string(out), nil)
 	}
-	return ipAddr, nil
+	return string(ipAddr), nil
 }
 
 func parseVmInfo(vmInfo string) (*VboxVm, error) {
-	rLineBegin, err := regexp.Compile("NIC 1:.*MAC. ")
+	rLineBegin, err := regexp.Compile("NIC [0-9]:.*MAC. ")
 	if err != nil {
 		return nil, lxerrors.New("compiling regex", err)
 	}
@@ -60,7 +68,7 @@ func parseVmInfo(vmInfo string) (*VboxVm, error) {
 	lines := strings.Split(vmInfo, "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "MAC") {
-			macAddr = rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(line), ""), "")
+			macAddr = string(rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(line), []byte("")), []byte("")))
 			logrus.Debugf("mac address found for vm: %s", macAddr)
 		}
 		if strings.Contains(line, "State") && strings.Contains(line, "running") {
@@ -92,6 +100,10 @@ func Vms() ([]*VboxVm, error) {
 	}
 	vms := []*VboxVm{}
 	for _, vmName := range vmNames {
+		if strings.Contains(vmName, "inaccessible") {
+			continue
+		}
+		logrus.Debugf("found vm: "+vmName)
 		vmInfo, err := vboxManage("showvminfo", vmName)
 		if err != nil {
 			return nil, lxerrors.New("getting vm info for "+vmName, err)
