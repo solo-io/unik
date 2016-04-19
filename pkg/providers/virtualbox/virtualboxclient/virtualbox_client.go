@@ -68,7 +68,7 @@ func parseVmInfo(vmInfo string) (*VboxVm, error) {
 	lines := strings.Split(vmInfo, "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "MAC") {
-			macAddr = string(rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(line), []byte("")), []byte("")))
+			macAddr = formatMac(string(rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(line), []byte("")), []byte(""))))
 			logrus.Debugf("mac address found for vm: %s", macAddr)
 		}
 		if strings.Contains(line, "State") && strings.Contains(line, "running") {
@@ -119,7 +119,7 @@ func Vms() ([]*VboxVm, error) {
 	return vms, nil
 }
 
-func CreateVm(vmName, baseFolder, bridgeName string, bridgeAdapterKey int) error {
+func CreateVm(vmName, baseFolder, bridgeName string) error {
 	if _, err := vboxManage("createvm", "--name", vmName, "--basefolder", baseFolder, "-ostype", "Linux26_64"); err != nil {
 		return lxerrors.New("creating vm", err)
 	}
@@ -129,11 +129,7 @@ func CreateVm(vmName, baseFolder, bridgeName string, bridgeAdapterKey int) error
 	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
 		return lxerrors.New("adding scsi storage controller", err)
 	}
-
-	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
-		return lxerrors.New("adding scsi storage controller", err)
-	}
-	if _, err := vboxManage("modifyvm", vmName, "--nic1", "bridged", fmt.Sprintf("%s%v", "--bridgeadapter", bridgeAdapterKey), bridgeName, "--nictype1", "virtio"); err != nil {
+	if _, err := vboxManage("modifyvm", vmName, "--nic1", "bridged", "--bridgeadapter1", bridgeName, "--nictype1", "virtio"); err != nil {
 		return lxerrors.New("setting bridged networking on vm", err)
 	}
 	return nil
@@ -147,7 +143,7 @@ func DestroyVm(vmName string) error {
 }
 
 func PowerOnVm(vmName string) error {
-	_, err := vboxManage("controlvm", vmName, "poweron")
+	_, err := vboxManage("startvm", vmName, "--type", "headless")
 	return err
 }
 
@@ -161,4 +157,9 @@ func AttachDisk(vmName, vmdkPath string, controllerPort int) error {
 		return lxerrors.New("attaching storage", err)
 	}
 	return nil
+}
+
+
+func formatMac(rawMac string) string {
+	return strings.ToLower(rawMac[0:2] + ":" + rawMac[2:4] + ":" + rawMac[4:6] + ":" + rawMac[6:8])
 }
