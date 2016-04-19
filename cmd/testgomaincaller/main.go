@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-const BROADCAST_LISTENING_PORT=9876
+const BROADCAST_LISTENING_PORT = 9876
 const EnvFile = "env.json"
 
 var timeout = time.Duration(2 * time.Second)
@@ -73,8 +73,7 @@ func getEnvFromInject(req *http.Request) (map[string]string, error) {
 	return env, nil
 }
 
-//export gomaincaller
-func gomaincaller() {
+func main() {
 	//make logs available via http request
 	logs := bytes.Buffer{}
 	if err := teeStdout(&logs); err != nil {
@@ -149,7 +148,7 @@ func gomaincaller() {
 	}
 
 	log.Printf("calling main\n")
-	main()
+	mainf()
 }
 
 func setEnv(env map[string]string) error {
@@ -250,4 +249,12 @@ func teeStderr(writer io.Writer) error {
 		}
 	}()
 	return nil
+}
+
+func mainf() {
+	for {
+		log.Printf("finished!")
+		time.Sleep(3000 * time.Millisecond)
+	}
+
 }

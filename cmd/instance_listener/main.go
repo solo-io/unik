@@ -9,9 +9,15 @@ import (
 	"sync"
 	"encoding/json"
 	"net/http"
+	"flag"
 )
 
 func main() {
+	verbose := flag.Bool("v", false, "verbose mode")
+	flag.Parse()
+	if *verbose {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
 	lock := sync.RWMutex{}
 	macIpMap := make(map[string]string)
 
@@ -35,6 +41,7 @@ func main() {
 					"broadcast-ip": BROADCAST_IPv4,
 				}).Fatalf("failed writing to broadcast udp socket")
 			}
+			logrus.Debugf("broadcasting...")
 			time.Sleep(2000 * time.Millisecond)
 		}
 	}()
