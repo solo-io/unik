@@ -119,6 +119,19 @@ func Vms() ([]*VboxVm, error) {
 	return vms, nil
 }
 
+func GetVm(vmName string) (*VboxVm, error) {
+	vms, err := Vms()
+	if err != nil {
+		return nil, lxerrors.New("getting vm list", err)
+	}
+	for _, vm := range vms {
+		if vm.Name == vmName {
+			return vm, nil
+		}
+	}
+	return nil, lxerrors.New("vm "+vmName+" not found", err)
+}
+
 func CreateVm(vmName, baseFolder, bridgeName string) error {
 	if _, err := vboxManage("createvm", "--name", vmName, "--basefolder", baseFolder, "-ostype", "Linux26_64"); err != nil {
 		return lxerrors.New("creating vm", err)
@@ -154,6 +167,13 @@ func PowerOffVm(vmName string) error {
 
 func AttachDisk(vmName, vmdkPath string, controllerPort int) error {
 	if _, err := vboxManage("storageattach", vmName, "--storagectl", "SCSI", "--port", fmt.Sprintf("%v", controllerPort), "--type", "hdd", "--medium", vmdkPath); err != nil {
+		return lxerrors.New("attaching storage", err)
+	}
+	return nil
+}
+
+func DetachDisk(vmName, controllerPort int) error {
+	if _, err := vboxManage("storageattach", vmName, "--storagectl", "SCSI", "--port", fmt.Sprintf("%v", controllerPort), "--type", "hdd", "--medium", "none"); err != nil {
 		return lxerrors.New("attaching storage", err)
 	}
 	return nil

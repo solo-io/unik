@@ -8,14 +8,18 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/pwnall/vbox"
 	"github.com/emc-advanced-dev/unik/pkg/state"
+	"path/filepath"
 )
 
 var virtualboxStateFile = os.Getenv("HOME")+"/.unik/virtualbox/state.json"
 var virtualboxImagesDirectory = os.Getenv("HOME")+"/.unik/virtualbox/images/"
+var virtualboxInstancesDirectory = os.Getenv("HOME")+"/.unik/virtualbox/instances/"
 var virtualboxVolumesDirectory = os.Getenv("HOME")+"/.unik/virtualbox/volumes/"
 
+const VboxUnikInstanceListener = "VboxUnikInstanceListener"
+
 type VirtualboxProvider struct {
-	config config.Vsphere
+	config config.Virtualbox
 	state  state.LocalStorageState
 }
 
@@ -39,6 +43,14 @@ func (p *VirtualboxProvider) WithState(state state.State) *VirtualboxProvider {
 	return p
 }
 
-func (p *VirtualboxProvider) getClient() *api.VirtualboxClient {
-	return api.NewVirtualboxClient()
+func getImagePath(imageName string) string {
+	return filepath.Join(virtualboxImagesDirectory, imageName,"boot.vmdk")
+}
+
+func getInstanceDir(instanceName string) string {
+	return filepath.Join(virtualboxInstancesDirectory, instanceName)
+}
+
+func getVolumePath(volumeName string) string {
+	return filepath.Join(virtualboxVolumesDirectory, volumeName, "boot.vmdk")
 }

@@ -30,5 +30,5 @@ type Vsphere struct {
 
 type Virtualbox struct {
 	Name              string `yaml:"name"`
-	SomethingGoesHere string `yaml:"something"`
+	BridgeName        string `yaml:"bridge_name"`
 }

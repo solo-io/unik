@@ -6,6 +6,7 @@ import (
 )
 
 func (p *VirtualboxProvider) DeleteInstance(id string) error {
+	//TO MAKE SURE WE DONT DELETE VOLUME BEFORE INSTANCE DDELETE, POWER DOWN AND DETACH FIRST! :)
 	instance, err := p.GetInstance(id)
 	if err != nil {
 		return lxerrors.New("retrieving instance "+id, err)

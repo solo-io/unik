@@ -25,16 +25,10 @@ func (p *AwsProvider) AttachVolume(id, instanceId, mntPoint string) error {
 	if err := common.VerifyMntsInput(p, image, map[string]string{mntPoint: id}); err != nil {
 		return lxerrors.New("invalid mapping for volume", err)
 	}
-	deviceName := ""
-	for _, mapping := range image.DeviceMappings {
-		if mntPoint == mapping.MountPoint {
-			deviceName = mapping.DeviceName
-			break
-		}
-	}
-	if deviceName == "" {
+	deviceName, err := common.GetDeviceNameForMnt(image, mntPoint)
+	if err != nil {
 		logrus.WithFields(logrus.Fields{"image": image.Id, "mappings": image.DeviceMappings, "mount point": mntPoint}).Errorf("given mapping was not found for image")
-		return lxerrors.New("no mapping found on image "+image.Id+" for mount point "+mntPoint, nil)
+		return err
 	}
 	param := &ec2.AttachVolumeInput{
 		VolumeId:   aws.String(volume.Id),
