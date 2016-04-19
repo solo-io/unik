@@ -48,6 +48,11 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatalf("attaching disk to vm")
 		}
+	case "attach-data-disk":
+		err := virtualboxclient.AttachDisk("test-scott", "./data.vmdk", 1)
+		if err != nil {
+			logrus.WithError(err).Fatalf("attaching disk to vm")
+		}
 	}
 
 }
