@@ -107,7 +107,7 @@ func Vms() ([]*VboxVm, error) {
 	return vms, nil
 }
 
-func CreateVm(vmName, baseFolder, bridgeName, string, bridgeAdapterKey int) error {
+func CreateVm(vmName, baseFolder, bridgeName string, bridgeAdapterKey int) error {
 	if _, err := vboxManage("createvm", "--name", vmName, "--basefolder", baseFolder, "-ostype", "Linux26_64"); err != nil {
 		return lxerrors.New("creating vm", err)
 	}

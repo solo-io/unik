@@ -1,21 +1,29 @@
 package main
 
 import (
-	"fmt"
 	"os"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
-	"github.com/emc-advanced-dev/unik/pkg/config"
-	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
-	"github.com/emc-advanced-dev/unik/pkg/state"
-	"flag"
-	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
 )
 
 func main() {
-	action := flag.String("action", "all", "what to test")
+	r := compilers.RunmpCompiler{
+		DockerImage: "compilers-rump-go-hw",
+		CreateImage: compilers.CreateImageVirtualBox,
+	}
+	f, err := os.Open("a.tar")
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	rawimg, err := r.CompileRawImage(f, "", []string{})
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	logrus.WithField("image", rawimg).Infof("image completed")
+
+	/*action := flag.String("action", "all", "what to test")
 	arg := flag.String("arg", "", "option for some test (i.e. instance id)")
 	flag.Parse()
 	os.Setenv("TMPDIR", os.Getenv("HOME")+"/tmp/uniktest")
@@ -142,5 +150,5 @@ func main() {
 		logrus.Infof("deleted image %s", imageId)
 		break
 	}
-
+*/
 }
