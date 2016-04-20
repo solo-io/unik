@@ -25,7 +25,7 @@ func main() {
 
 	c := config.Virtualbox{
 		Name: "virtualbox-provider",
-		BridgeName: "en0",
+		HostNetworkName: "en0",
 	}
 	p := virtualbox.NewVirtualboxProvider(c)
 

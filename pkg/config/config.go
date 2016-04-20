@@ -29,6 +29,6 @@ type Vsphere struct {
 }
 
 type Virtualbox struct {
-	Name              string `yaml:"name"`
-	BridgeName        string `yaml:"bridge_name"`
+	Name            string `yaml:"name"`
+	HostNetworkName string `yaml:"bridge_name"`
 }

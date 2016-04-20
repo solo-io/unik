@@ -61,7 +61,7 @@ func GetVmIp(vmName string) (string, error) {
 }
 
 func parseVmInfo(vmInfo string) (*VboxVm, error) {
-	rLineBegin, err := regexp.Compile("NIC [0-9]:.*MAC. ")
+	rLineBegin, err := regexp.Compile("NIC 1:.*MAC. ")
 	if err != nil {
 		return nil, lxerrors.New("compiling regex", err)
 	}
@@ -167,7 +167,7 @@ func GetVm(vmName string) (*VboxVm, error) {
 	return nil, lxerrors.New("vm "+vmName+" not found", err)
 }
 
-func CreateVm(vmName, baseFolder, bridgeName string) error {
+func CreateVm(vmName, baseFolder, adapterName string) error {
 	if _, err := vboxManage("createvm", "--name", vmName, "--basefolder", baseFolder, "-ostype", "Linux26_64"); err != nil {
 		return lxerrors.New("creating vm", err)
 	}
@@ -177,8 +177,17 @@ func CreateVm(vmName, baseFolder, bridgeName string) error {
 	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
 		return lxerrors.New("adding scsi storage controller", err)
 	}
-	if _, err := vboxManage("modifyvm", vmName, "--nic1", "bridged", "--bridgeadapter1", bridgeName, "--nictype1", "virtio"); err != nil {
-		return lxerrors.New("setting bridged networking on vm", err)
+	//if _, err := vboxManage("modifyvm", vmName, "--nic1", "bridged", "--bridgeadapter1", adapterName, "--nictype1", "virtio"); err != nil {
+	//	return lxerrors.New("setting bridged networking on vm", err)
+	//}
+	if _, err := vboxManage("modifyvm", vmName, "--nic1", "hostonly", "--hostonlyadapter1", adapterName, "--nictype1", "virtio"); err != nil {
+		return lxerrors.New("setting hostonly networking on vm", err)
+	}
+	//if _, err := vboxManage("modifyvm", vmName, "--nic2", "nat", "--nictype2", "virtio"); err != nil {
+	//	return lxerrors.New("setting hostonly networking on vm", err)
+	//}
+	if _, err := vboxManage("modifyvm", vmName, "--nic2", "natnetwork", "--nictype2", "virtio"); err != nil {
+		return lxerrors.New("setting hostonly networking on vm", err)
 	}
 	return nil
 }

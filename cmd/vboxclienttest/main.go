@@ -1,11 +1,12 @@
 package main
 
 import (
-	//"os"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/Sirupsen/logrus"
 	"os"
 	"flag"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 )
 
 func main() {
@@ -13,7 +14,8 @@ func main() {
 	flag.Parse()
 
 	baseFolder := os.Getenv("PWD")
-	bridgeName := "en0"
+	//hostnetworkName := "en0"
+	hostnetworkName := "vboxnet0"
 	diskFile := "./boot.vmdk"
 	logrus.SetLevel(logrus.DebugLevel)
 	switch(*operation){
@@ -24,7 +26,7 @@ func main() {
 		}
 		logrus.WithField("vms", vms).Info("get vms succeeded")
 	case "create-vm":
-		err := virtualboxclient.CreateVm("test-scott", baseFolder, bridgeName)
+		err := virtualboxclient.CreateVm("test-scott", baseFolder, hostnetworkName)
 		if err != nil {
 			logrus.WithError(err).Fatalf("creating vm")
 		}
@@ -62,6 +64,25 @@ func main() {
 		err := virtualboxclient.DetachDisk("test-scott", 1)
 		if err != nil {
 			logrus.WithError(err).Fatalf("detaching disk to vm")
+		}
+	case "get-vm-ip":
+		ip, err := virtualboxclient.GetVmIp(virtualbox.VboxUnikInstanceListener)
+		if err != nil {
+			logrus.WithError(err).Fatalf("getting vm ip")
+		}
+		logrus.WithField("ip", ip).Info("get ip succeeded")
+	case "create-instance-listener":
+		if err := virtualboxclient.CreateVm(virtualbox.VboxUnikInstanceListener, baseFolder, hostnetworkName); err != nil {
+			logrus.WithError(err).Fatalf("creating vm")
+		}
+		if err := unikos.CopyFile("instancelistener-base.vmdk", "instancelistener-copy.vmdk"); err != nil {
+			logrus.WithError(err).Fatalf("copying instance listener vmdk")
+		}
+		if err := virtualboxclient.AttachDisk(virtualbox.VboxUnikInstanceListener, "instancelistener-copy.vmdk", 0); err != nil {
+			logrus.WithError(err).Fatalf("attaching disk to vm")
+		}
+		if err := virtualboxclient.PowerOnVm(virtualbox.VboxUnikInstanceListener); err != nil {
+			logrus.WithError(err).Fatalf("powering on vm")
 		}
 	}
 

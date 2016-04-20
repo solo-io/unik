@@ -20,5 +20,5 @@ func GetControllerPortForMnt(image *types.Image, mntPoint string) (int, error) {
 			return controllerPort, nil
 		}
 	}
-	return "", lxerrors.New("no mapping found on image "+image.Id+" for mount point "+mntPoint, nil)
+	return -1, lxerrors.New("no mapping found on image "+image.Id+" for mount point "+mntPoint, nil)
 }
