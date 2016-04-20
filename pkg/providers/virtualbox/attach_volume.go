@@ -4,7 +4,6 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"strconv"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 )
 
@@ -21,13 +20,9 @@ func (p *VirtualboxProvider) AttachVolume(id, instanceId, mntPoint string) error
 	if err != nil {
 		return lxerrors.New("retrieving image for instance", err)
 	}
-	controllerPortStr, err := common.GetDeviceNameForMnt(image, mntPoint)
+	controllerPort, err := common.GetControllerPortForMnt(image, mntPoint)
 	if err != nil {
 		return lxerrors.New("getting controller port for mnt point", err)
-	}
-	controllerPort, err := strconv.Atoi(controllerPortStr)
-	if err != nil {
-		return lxerrors.New("could not convert "+controllerPortStr+" to int", err)
 	}
 	if err := virtualboxclient.AttachDisk(volume.Name, getVolumePath(volume.Name), controllerPort); err != nil {
 		return lxerrors.New("attaching disk to vm", err)

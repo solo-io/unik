@@ -13,3 +13,12 @@ func GetDeviceNameForMnt(image *types.Image, mntPoint string) (string, error) {
 	}
 	return "", lxerrors.New("no mapping found on image "+image.Id+" for mount point "+mntPoint, nil)
 }
+
+func GetControllerPortForMnt(image *types.Image, mntPoint string) (int, error) {
+	for controllerPort, mapping := range image.DeviceMappings {
+		if mntPoint == mapping.MountPoint {
+			return controllerPort, nil
+		}
+	}
+	return "", lxerrors.New("no mapping found on image "+image.Id+" for mount point "+mntPoint, nil)
+}

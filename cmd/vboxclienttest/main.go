@@ -53,6 +53,16 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatalf("attaching disk to vm")
 		}
+	case "detach-disk":
+		err := virtualboxclient.DetachDisk("test-scott", 0)
+		if err != nil {
+			logrus.WithError(err).Fatalf("detaching disk to vm")
+		}
+	case "detach-data-disk":
+		err := virtualboxclient.DetachDisk("test-scott", 1)
+		if err != nil {
+			logrus.WithError(err).Fatalf("detaching disk to vm")
+		}
 	}
 
 }
