@@ -31,7 +31,7 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 
 	instanceDir := getInstanceDir(name)
 
-	portsUsed := []string{}
+	portsUsed := []int{}
 
 	defer func(){
 		if err != nil {

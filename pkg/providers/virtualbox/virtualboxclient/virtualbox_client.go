@@ -113,7 +113,7 @@ func parseDevice(deviceLine string) (*VboxDevice, error) {
 		return nil, lxerrors.New("compiling regex", err)
 	}
 	controllerKey := rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(deviceLine), []byte("")), []byte(""))
-	return &VboxDevice{DiskFile: diskFile, ControllerKey: controllerKey}
+	return &VboxDevice{DiskFile: string(diskFile), ControllerKey: string(controllerKey)}, nil
 }
 
 func Vms() ([]*VboxVm, error) {
@@ -207,7 +207,7 @@ func AttachDisk(vmName, vmdkPath string, controllerPort int) error {
 	return nil
 }
 
-func DetachDisk(vmName, controllerPort int) error {
+func DetachDisk(vmName string, controllerPort int) error {
 	if _, err := vboxManage("storageattach", vmName, "--storagectl", "SCSI", "--port", fmt.Sprintf("%v", controllerPort), "--type", "hdd", "--medium", "none"); err != nil {
 		return lxerrors.New("attaching storage", err)
 	}

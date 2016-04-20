@@ -2,14 +2,12 @@ package virtualbox
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	"github.com/layer-x/layerx-commons/lxerrors"
 	"os"
-	"github.com/pwnall/vbox"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"path/filepath"
 )
 
-var virtualboxStateFile = os.Getenv("HOME")+"/.unik/virtualbox/state.json"
+var VirtualboxStateFile = os.Getenv("HOME")+"/.unik/virtualbox/state.json"
 var virtualboxImagesDirectory = os.Getenv("HOME")+"/.unik/virtualbox/images/"
 var virtualboxInstancesDirectory = os.Getenv("HOME")+"/.unik/virtualbox/instances/"
 var virtualboxVolumesDirectory = os.Getenv("HOME")+"/.unik/virtualbox/volumes/"
@@ -21,19 +19,14 @@ type VirtualboxProvider struct {
 	state  state.State
 }
 
-func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error) {
-	err := vbox.Init()
-	if err != nil {
-		return nil, lxerrors.New("initializing virtualbox client", err)
-	}
-	
-	os.MkdirAll(virtualboxImagesDirectory, 0644)
-	os.MkdirAll(virtualboxVolumesDirectory, 0644)
+func NewVirtualboxProvider(config config.Virtualbox) *VirtualboxProvider {
+	os.MkdirAll(virtualboxImagesDirectory, 0777)
+	os.MkdirAll(virtualboxVolumesDirectory, 0777)
 
 	return &VirtualboxProvider{
 		config: config,
-		state: state.NewBasicState(virtualboxStateFile),
-	}, nil
+		state: state.NewBasicState(VirtualboxStateFile),
+	}
 }
 
 func (p *VirtualboxProvider) WithState(state state.State) *VirtualboxProvider {

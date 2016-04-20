@@ -7,12 +7,24 @@ import (
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"os"
 	"time"
+	"path/filepath"
 )
 
-func (p *VirtualboxProvider) CreateVolume(name, imagePath string) (*types.Volume, error) {
+func (p *VirtualboxProvider) CreateVolume(name, imagePath string) (_ *types.Volume, err error) {
+	if _, volumeErr := p.GetImage(name); volumeErr == nil {
+		return nil, lxerrors.New("volume already exists", nil)
+	}
 	volumePath := getVolumePath(name)
+	if err := os.MkdirAll(filepath.Dir(volumePath), 0777); err != nil {
+		return nil, lxerrors.New("creating directory for volume file", err)
+	}
+	defer func(){
+		if err != nil {
+			os.RemoveAll(filepath.Dir(volumePath))
+		}
+	}()
 	logrus.WithField("raw-image", imagePath).Infof("creating volume from raw image")
-	if err := common.ConvertRawImage("vmdk", volumePath); err != nil {
+	if err := common.ConvertRawImage("vmdk", imagePath, volumePath); err != nil {
 		return nil, lxerrors.New("converting raw image to vmdk", err)
 	}
 
@@ -42,5 +54,5 @@ func (p *VirtualboxProvider) CreateVolume(name, imagePath string) (*types.Volume
 	if err != nil {
 		return nil, lxerrors.New("saving volume map to state", err)
 	}
-	return nil
+	return volume, nil
 }

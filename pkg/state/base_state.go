@@ -124,8 +124,8 @@ func (s *basicState) Save() error {
 	if err != nil {
 		return lxerrors.New("failed to marshal memory state to json", err)
 	}
-	os.MkdirAll(filepath.Dir(s.saveFile), 0751)
-	err = ioutil.WriteFile(s.saveFile, data, 0644)
+	os.MkdirAll(filepath.Dir(s.saveFile), 0777)
+	err = ioutil.WriteFile(s.saveFile, data, 0777)
 	if err != nil {
 		return lxerrors.New("writing save file "+s.saveFile, err)
 	}

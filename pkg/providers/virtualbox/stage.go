@@ -7,6 +7,7 @@ import (
 	"time"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"path/filepath"
 )
 
 func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force bool) (_ *types.Image, err error) {
@@ -27,17 +28,19 @@ func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force 
 			}
 		}
 	}
-	bootImagePath := getImagePath(name)
-
-	defer func() {
+	imagePath := getImagePath(name)
+	logrus.Debugf("making directory: %s", filepath.Dir(imagePath))
+	if err := os.MkdirAll(filepath.Dir(imagePath), 0777); err != nil {
+		return nil, lxerrors.New("creating directory for boot image", err)
+	}
+	defer func(){
 		if err != nil {
-			logrus.Infof("cleaning up image %s", bootImagePath)
-			os.Remove(bootImagePath)
+			os.RemoveAll(filepath.Dir(imagePath))
 		}
 	}()
 
 	logrus.WithField("raw-image", rawImage).Infof("creating boot volume from raw image")
-	if err := common.ConvertRawImage("vmdk", bootImagePath); err != nil {
+	if err := common.ConvertRawImage("vmdk", rawImage.LocalImagePath, imagePath); err != nil {
 		return nil, lxerrors.New("converting raw image to vmdk", err)
 	}
 

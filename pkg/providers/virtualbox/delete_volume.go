@@ -24,12 +24,11 @@ func (p *VirtualboxProvider) DeleteVolume(id string, force bool) error {
 		return nil
 	})
 	if err != nil {
-		return nil, lxerrors.New("deleting volume path from state", err)
+		return lxerrors.New("deleting volume path from state", err)
 	}
 	err = p.state.Save()
 	if err != nil {
 		return lxerrors.New("saving image map to state", err)
 	}
-
 	return nil
 }

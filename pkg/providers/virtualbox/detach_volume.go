@@ -37,10 +37,10 @@ func (p *VirtualboxProvider) DetachVolume(id string) error {
 
 	controllerPort, err := strconv.Atoi(controllerKey)
 	if err != nil {
-		return nil, lxerrors.New("could not convert "+controllerKey+" to int", err)
+		return lxerrors.New("could not convert "+controllerKey+" to int", err)
 	}
 	if err := virtualboxclient.DetachDisk(volume.Name, controllerPort); err != nil {
-		return nil, lxerrors.New("attaching disk to vm", err)
+		return lxerrors.New("attaching disk to vm", err)
 	}
 	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volume, ok := volumes[volume.Id]

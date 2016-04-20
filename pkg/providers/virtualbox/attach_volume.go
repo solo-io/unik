@@ -23,14 +23,14 @@ func (p *VirtualboxProvider) AttachVolume(id, instanceId, mntPoint string) error
 	}
 	controllerPortStr, err := common.GetDeviceNameForMnt(image, mntPoint)
 	if err != nil {
-		return nil, lxerrors.New("getting controller port for mnt point", err)
+		return lxerrors.New("getting controller port for mnt point", err)
 	}
 	controllerPort, err := strconv.Atoi(controllerPortStr)
 	if err != nil {
-		return nil, lxerrors.New("could not convert "+controllerPortStr+" to int", err)
+		return lxerrors.New("could not convert "+controllerPortStr+" to int", err)
 	}
 	if err := virtualboxclient.AttachDisk(volume.Name, getVolumePath(volume.Name), controllerPort); err != nil {
-		return nil, lxerrors.New("attaching disk to vm", err)
+		return lxerrors.New("attaching disk to vm", err)
 	}
 	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volume, ok := volumes[volume.Id]
@@ -43,7 +43,7 @@ func (p *VirtualboxProvider) AttachVolume(id, instanceId, mntPoint string) error
 		return lxerrors.New("modifying volumes in state", err)
 	}
 	if err := p.state.Save(); err != nil {
-		return nil, lxerrors.New("saving instance volume map to state", err)
+		return lxerrors.New("saving instance volume map to state", err)
 	}
 	return nil
 }

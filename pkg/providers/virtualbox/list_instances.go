@@ -44,7 +44,7 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 			return nil
 		})
 		if err != nil {
-			return lxerrors.New("saving instance to state", err)
+			return nil, lxerrors.New("saving instance to state", err)
 		}
 
 		instances = append(instances, instance)
