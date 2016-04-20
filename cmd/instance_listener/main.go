@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"flag"
+	"errors"
+	"fmt"
 )
 
 func main() {
@@ -21,8 +23,13 @@ func main() {
 	lock := sync.RWMutex{}
 	macIpMap := make(map[string]string)
 
-	logrus.Infof("Starting unik discovery (udp heartbeat broadcast)")
-	info := []byte("unik")
+	listenerIp, err := getLocalIp()
+	if err != nil {
+		logrus.Fatalf("failed to get local ip: %v", err)
+	}
+
+	logrus.Infof("Starting unik discovery (udp heartbeat broadcast) with ip %s", listenerIp)
+	info := []byte("unik:" + listenerIp)
 	BROADCAST_IPv4 := net.IPv4(255, 255, 255, 255)
 	socket, err := net.DialUDP("udp4", nil, &net.UDPAddr{
 		IP:   BROADCAST_IPv4,
@@ -33,7 +40,7 @@ func main() {
 			"broadcast-ip": BROADCAST_IPv4,
 		}).Fatalf("failed to dial udp broadcast connection")
 	}
-	go func(){
+	go func() {
 		for {
 			_, err = socket.Write(info)
 			if err != nil {
@@ -75,4 +82,31 @@ func main() {
 		return string(data), nil
 	})
 	m.RunOnAddr(":3000")
+}
+
+func getLocalIp() (string, error) {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return "", errors.New("retrieving network interfaces" + err.Error())
+	}
+	for _, iface := range ifaces {
+		logrus.Infof("found an interface: %v\n", iface)
+			addrs, err := iface.Addrs()
+			if err != nil {
+				continue
+			}
+			for _, addr := range addrs {
+				switch v := addr.(type) {
+				case *net.IPNet:
+					if !v.IP.IsLoopback() {
+						return v.IP.String(), nil
+					}
+				case *net.IPAddr:
+					if !v.IP.IsLoopback() {
+						return v.IP.String(), nil
+					}
+				}
+			}
+	}
+	return "", errors.New("failed to find ip on ifaces: "+fmt.Sprintf("%v", ifaces))
 }

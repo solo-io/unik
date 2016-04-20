@@ -175,8 +175,9 @@ func registerWithListener(listenerIp string) error {
 	macAddress := ""
 	for _, iface := range ifaces {
 		log.Printf("found an interface: %v\n", iface)
-		if !strings.Contains(iface.Name, "lo") {
+		if len(iface.HardwareAddr) > 0 {
 			macAddress = iface.HardwareAddr.String()
+			break
 		}
 	}
 	if macAddress == "" {
@@ -205,9 +206,10 @@ func getListenerIp() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		log.Printf("recieved an ip: %s with data: %s", remoteAddr.IP.String(), string(data))
+		log.Printf("recieved an ip from %s with data: %s", remoteAddr.IP.String(), string(data))
 		if strings.Contains(string(data), "unik") {
-			return remoteAddr.IP.String(), nil
+			data = bytes.Trim(data, "\x00")
+			return strings.Split(string(data), ":")[1], nil
 		}
 	}
 }
