@@ -12,6 +12,9 @@ func (p *AwsProvider) DetachVolume(id string) error {
 	if err != nil {
 		return lxerrors.New("retrieving volume "+id, err)
 	}
+	if volume.Attachment == "" {
+		return lxerrors.New("volume has no attachment", nil)
+	}
 	param := &ec2.DetachVolumeInput{
 		VolumeId: aws.String(volume.Id),
 		Force: aws.Bool(true),

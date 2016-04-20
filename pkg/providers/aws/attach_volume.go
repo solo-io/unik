@@ -14,9 +14,12 @@ func (p *AwsProvider) AttachVolume(id, instanceId, mntPoint string) error {
 	if err != nil {
 		return lxerrors.New("retrieving volume "+id, err)
 	}
+	if volume.Attachment != "" {
+		return lxerrors.New("volume is already attached to instance "+volume.Attachment, nil)
+	}
 	instance, err := p.GetInstance(instanceId)
 	if err != nil {
-		return lxerrors.New("retrieving instance "+id, err)
+		return lxerrors.New("retrieving instance "+instanceId, err)
 	}
 	image, err := p.GetImage(instance.ImageId)
 	if err != nil {
