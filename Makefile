@@ -34,7 +34,7 @@ endef
 
 SUBDIRS = cmd/boot-creator cmd/image-creator cmd/vsphere-client
 
-all: $(SUBDIRS)
+all: $(SUBDIRS) compilers-rump-go-xen compilers-rump-go-hw
 .PHONY: all $(SUBDIRS)
 
 cmd/image-creator:
