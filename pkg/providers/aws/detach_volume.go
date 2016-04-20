@@ -31,8 +31,7 @@ func (p *AwsProvider) DetachVolume(id string) error {
 	if err != nil {
 		return lxerrors.New("modifying volume map in state", err)
 	}
-	err = p.state.Save()
-	if err != nil {
+	if err := p.state.Save(); err != nil {
 		return lxerrors.New("saving modified volume map to state", err)
 	}
 	return nil

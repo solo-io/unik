@@ -203,6 +203,7 @@ func (d *UnikDaemon) registerHandlers() {
 			if err != nil {
 				return nil, lxerrors.New("failed to compile raw image", err)
 			}
+			defer os.Remove(rawImage.LocalImagePath)
 
 			image, err := d.providers[providerType].Stage(name, rawImage, force)
 			if err != nil {

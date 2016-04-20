@@ -30,9 +30,8 @@ func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force 
 	bootImagePath := getImagePath(name)
 
 	defer func() {
-		logrus.Infof("cleaninng up image %s", rawImage.LocalImagePath)
-		os.Remove(rawImage.LocalImagePath)
 		if err != nil {
+			logrus.Infof("cleaning up image %s", bootImagePath)
 			os.Remove(bootImagePath)
 		}
 	}()

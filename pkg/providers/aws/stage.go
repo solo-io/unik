@@ -59,11 +59,6 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 		}
 	}()
 
-	defer func() {
-		logrus.Infof("cleaninng up image %s", rawImage.LocalImagePath)
-		os.Remove(rawImage.LocalImagePath)
-	}()
-
 	logrus.WithField("raw-image", rawImage).WithField("az", p.config.Zone).Infof("creating boot volume from raw image")
 	volumeId, err = createDataVolumeFromRawImage(s3svc, ec2svc, rawImage.LocalImagePath, p.config.Zone)
 	if err != nil {

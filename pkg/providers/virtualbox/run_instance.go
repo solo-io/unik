@@ -126,7 +126,7 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 		Name: name,
 		State: types.InstanceState_Pending,
 		IpAddress: instanceIp,
-		Infrastructure: types.Infrastructure_AWS,
+		Infrastructure: types.Infrastructure_VIRTUALBOX,
 		ImageId: image.Id,
 		Created: time.Now(),
 	}
