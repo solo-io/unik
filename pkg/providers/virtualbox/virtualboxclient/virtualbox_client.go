@@ -13,7 +13,13 @@ import (
 type VboxVm struct {
 	Name string
 	MACAddr string
+	Devices []*VboxDevice
 	Running bool
+}
+
+type VboxDevice struct {
+	DiskFile      string
+	ControllerKey string
 }
 
 func (vm *VboxVm) String() string {
@@ -65,11 +71,18 @@ func parseVmInfo(vmInfo string) (*VboxVm, error) {
 	}
 	var macAddr string
 	var running bool
+	devices := []*VboxDevice{}
 	lines := strings.Split(vmInfo, "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "MAC") {
 			macAddr = formatMac(string(rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(line), []byte("")), []byte(""))))
 			logrus.Debugf("mac address found for vm: %s", macAddr)
+		}
+		if strings.Contains(line, "SCSI (") {
+			device, err := parseDevice(line)
+			if err == nil {
+				devices = append(devices, device)
+			}
 		}
 		if strings.Contains(line, "State") && strings.Contains(line, "running") {
 			running = true
@@ -78,7 +91,29 @@ func parseVmInfo(vmInfo string) (*VboxVm, error) {
 	if macAddr == "" {
 		return nil, lxerrors.New("mac address not found in vm info: "+string(vmInfo), nil)
 	}
-	return &VboxVm{ MACAddr: macAddr, Running: running}, nil
+	return &VboxVm{ MACAddr: macAddr, Running: running, Devices: devices}, nil
+}
+
+func parseDevice(deviceLine string) (*VboxDevice, error) {
+	rLineBegin, err := regexp.Compile("SCSI \\([0-9], [0-15]\\): ")
+	if err != nil {
+		return nil, lxerrors.New("compiling regex", err)
+	}
+	rLineEnd, err := regexp.Compile("\\(UUID: .*")
+	if err != nil {
+		return nil, lxerrors.New("compiling regex", err)
+	}
+	diskFile := rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(deviceLine), []byte("")), []byte(""))
+	rLineBegin, err = regexp.Compile(".*\\([0-15], ")
+	if err != nil {
+		return nil, lxerrors.New("compiling regex", err)
+	}
+	rLineEnd, err = regexp.Compile("\\):.*")
+	if err != nil {
+		return nil, lxerrors.New("compiling regex", err)
+	}
+	controllerKey := rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(deviceLine), []byte("")), []byte(""))
+	return &VboxDevice{DiskFile: diskFile, ControllerKey: controllerKey}
 }
 
 func Vms() ([]*VboxVm, error) {

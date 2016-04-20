@@ -1,12 +1,11 @@
 package virtualbox
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"strconv"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 )
 
 func (p *VirtualboxProvider) AttachVolume(id, instanceId, mntPoint string) error {
@@ -16,32 +15,35 @@ func (p *VirtualboxProvider) AttachVolume(id, instanceId, mntPoint string) error
 	}
 	instance, err := p.GetInstance(instanceId)
 	if err != nil {
-		return lxerrors.New("retrieving instance "+id, err)
+		return lxerrors.New("retrieving instance "+instanceId, err)
 	}
 	image, err := p.GetImage(instance.ImageId)
 	if err != nil {
 		return lxerrors.New("retrieving image for instance", err)
 	}
-	deviceName, err := common.GetDeviceNameForMnt(image, mntPoint)
+	controllerPortStr, err := common.GetDeviceNameForMnt(image, mntPoint)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{"image": image.Id, "mappings": image.DeviceMappings, "mount point": mntPoint}).Errorf("given mapping was not found for image")
-		return err
+		return nil, lxerrors.New("getting controller port for mnt point", err)
 	}
-	param := &ec2.AttachVolumeInput{
-		VolumeId:   aws.String(volume.Id),
-		InstanceId: aws.String(instance.Id),
-		Device:     aws.String(deviceName),
-	}
-	_, err = p.newEC2(logger).AttachVolume(param)
+	controllerPort, err := strconv.Atoi(controllerPortStr)
 	if err != nil {
-		return lxerrors.New("failed to attach volume "+volume.Id, err)
+		return nil, lxerrors.New("could not convert "+controllerPortStr+" to int", err)
 	}
-	return p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+	if err := virtualboxclient.AttachDisk(volume.Name, getVolumePath(volume.Name), controllerPort); err != nil {
+		return nil, lxerrors.New("attaching disk to vm", err)
+	}
+	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volume, ok := volumes[volume.Id]
 		if !ok {
 			return lxerrors.New("no record of "+volume.Id+" in the state", nil)
 		}
 		volume.Attachment = instance.Id
 		return nil
-	})
+	}); err != nil {
+		return lxerrors.New("modifying volumes in state", err)
+	}
+	if err := p.state.Save(); err != nil {
+		return nil, lxerrors.New("saving instance volume map to state", err)
+	}
+	return nil
 }

@@ -2,10 +2,8 @@ package virtualbox
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"os"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/pwnall/vbox"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"path/filepath"
@@ -20,7 +18,7 @@ const VboxUnikInstanceListener = "VboxUnikInstanceListener"
 
 type VirtualboxProvider struct {
 	config config.Virtualbox
-	state  state.LocalStorageState
+	state  state.State
 }
 
 func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error) {
@@ -34,7 +32,7 @@ func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error
 
 	return &VirtualboxProvider{
 		config: config,
-		state: state.NewLocalStorageState(virtualboxStateFile),
+		state: state.NewBasicState(virtualboxStateFile),
 	}, nil
 }
 

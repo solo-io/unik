@@ -2,6 +2,7 @@ package virtualbox
 
 import (
 	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 )
 
 func (p *VirtualboxProvider) StartInstance(id string) error {
@@ -9,9 +10,7 @@ func (p *VirtualboxProvider) StartInstance(id string) error {
 	if err != nil {
 		return lxerrors.New("retrieving instance "+id, err)
 	}
-	c := p.getClient()
-	err = c.PowerOnVm(id)
-	if err != nil {
+	if err := virtualboxclient.PowerOnVm(instance.Name); err != nil {
 		return lxerrors.New("failed to start instance "+instance.Id, err)
 	}
 	return nil

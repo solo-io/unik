@@ -3,78 +3,40 @@ package virtualbox
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	vspheretypes "github.com/vmware/govmomi/vim25/types"
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 )
 
 func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
-	c := p.getClient()
-	vms, err := c.Vms()
+	vms, err := virtualboxclient.Vms()
 	if err != nil {
-		return nil, lxerrors.New("getting vsphere vms", err)
+		return nil, lxerrors.New("getting vms from virtualbox", err)
 	}
 	instances := []*types.Instance{}
 	for _, vm := range vms {
-		if vm.Config == nil {
-			continue
-		}
-		//we use mac address as the vm id
-		instanceId := ""
-		if vm.Config != nil && vm.Config.Hardware.Device != nil {
-			FindEthLoop:
-			for _, device := range vm.Config.Hardware.Device {
-				switch device.(type){
-				case *vspheretypes.VirtualE1000:
-					eth := device.(*vspheretypes.VirtualE1000)
-					instanceId = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualE1000e:
-					eth := device.(*vspheretypes.VirtualE1000e)
-					instanceId = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualPCNet32:
-					eth := device.(*vspheretypes.VirtualPCNet32)
-					instanceId = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualSriovEthernetCard:
-					eth := device.(*vspheretypes.VirtualSriovEthernetCard)
-					instanceId = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualVmxnet:
-					eth := device.(*vspheretypes.VirtualVmxnet)
-					instanceId = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualVmxnet2:
-					eth := device.(*vspheretypes.VirtualVmxnet2)
-					instanceId = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualVmxnet3:
-					eth := device.(*vspheretypes.VirtualVmxnet3)
-					instanceId = eth.MacAddress
-					break FindEthLoop
-				}
-			}
-		}
-		if instanceId == "" {
-			logrus.WithFields(logrus.Fields{"vm": vm}).Warnf("vm found, cannot identify instance id")
-			continue
-		}
+		instanceId := vm.MACAddr
 		instance, ok := p.state.GetInstances()[instanceId]
 		if !ok {
 			logrus.WithFields(logrus.Fields{"vm": vm, "instance-id": instanceId}).Warnf("vm found, cannot identify instance id")
 			continue
 		}
 
-		switch vm.Summary.Runtime.PowerState {
-		case "poweredOn":
+		instanceListenerIp, err := virtualboxclient.GetVmIp(VboxUnikInstanceListener)
+		if err != nil {
+			return nil, lxerrors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
+		}
+		instance.IpAddress, err = common.GetInstanceIp(instanceListenerIp, 3000, instanceId)
+		if err != nil {
+			return nil, lxerrors.New("getting ip for instance from instancelistener", err)
+		}
+
+		switch vm.Running {
+		case true:
 			instance.State = types.InstanceState_Running
 			break
-		case "poweredOff":
-		case "suspended":
-			instance.State = types.InstanceState_Stopped
-			break
 		default:
-			instance.State = types.InstanceState_Unknown
+			instance.State = types.InstanceState_Stopped
 			break
 		}
 		err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {

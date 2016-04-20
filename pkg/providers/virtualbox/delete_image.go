@@ -28,11 +28,7 @@ func (p *VirtualboxProvider) DeleteImage(id string, force bool) error {
 		}
 	}
 
-	imagePath, ok := p.state.GetImagePaths()[image.Id]
-	if !ok {
-		return lxerrors.New("could not find image file path for image "+image.Id, nil)
-	}
-
+	imagePath := getImagePath(image.Name)
 	err = os.Remove(imagePath)
 	if err != nil {
 		return lxerrors.New("deleing image file at " + imagePath, err)
@@ -49,19 +45,5 @@ func (p *VirtualboxProvider) DeleteImage(id string, force bool) error {
 	if err != nil {
 		return lxerrors.New("saving modified image map to state", err)
 	}
-	return nil
-
-	err = p.state.ModifyImagePaths(func(imagePaths map[string]string) error {
-		delete(imagePath, image.Id)
-		return nil
-	})
-	if err != nil {
-		return lxerrors.New("modifying image paths map in state", err)
-	}
-	err = p.state.Save()
-	if err != nil {
-		return lxerrors.New("saving modified image paths map to state", err)
-	}
-
 	return nil
 }

@@ -2,6 +2,7 @@ package virtualbox
 
 import (
 	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 )
 
 func (p *VirtualboxProvider) StopInstance(id string) error {
@@ -9,9 +10,7 @@ func (p *VirtualboxProvider) StopInstance(id string) error {
 	if err != nil {
 		return lxerrors.New("retrieving instance "+id, err)
 	}
-	c := p.getClient()
-	err = c.PowerOffVm(id)
-	if err != nil {
+	if err := virtualboxclient.PowerOffVm(instance.Name); err != nil {
 		return lxerrors.New("failed to stop instance "+instance.Id, err)
 	}
 	return nil

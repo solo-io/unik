@@ -101,7 +101,7 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 			logrus.Debugf("waiting for instance to register to listener")
 			instanceIp, err = common.GetInstanceIp(instanceListenerIp, 3000, instanceId)
 			if err != nil {
-				return lxerrors.New("getting for instance from instancelistener", err)
+				return lxerrors.New("getting ip for instance from instancelistener", err)
 			}
 			return nil
 		}(); err != nil {
