@@ -183,12 +183,12 @@ func CreateVm(vmName, baseFolder, adapterName string) error {
 	if _, err := vboxManage("modifyvm", vmName, "--nic1", "hostonly", "--hostonlyadapter1", adapterName, "--nictype1", "virtio"); err != nil {
 		return lxerrors.New("setting hostonly networking on vm", err)
 	}
-	//if _, err := vboxManage("modifyvm", vmName, "--nic2", "nat", "--nictype2", "virtio"); err != nil {
-	//	return lxerrors.New("setting hostonly networking on vm", err)
-	//}
-	if _, err := vboxManage("modifyvm", vmName, "--nic2", "natnetwork", "--nictype2", "virtio"); err != nil {
+	if _, err := vboxManage("modifyvm", vmName, "--nic2", "nat", "--nictype2", "virtio"); err != nil {
 		return lxerrors.New("setting hostonly networking on vm", err)
 	}
+	//if _, err := vboxManage("modifyvm", vmName, "--nic2", "natnetwork", "--nictype2", "virtio"); err != nil {
+	//	return lxerrors.New("setting hostonly networking on vm", err)
+	//} make: ~/workspace/go/src/github.com/emc-advanced-dev/unik ~/workspace/go/src/github.com/emc-advanced-dev/unik/cmd/vboxclienttest go run main.go -op get-vm-ip
 	return nil
 }
 

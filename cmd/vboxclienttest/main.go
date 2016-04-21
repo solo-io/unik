@@ -84,6 +84,15 @@ func main() {
 		if err := virtualboxclient.PowerOnVm(virtualbox.VboxUnikInstanceListener); err != nil {
 			logrus.WithError(err).Fatalf("powering on vm")
 		}
+	case "destroy-instance-listener":
+		err := virtualboxclient.PowerOffVm(virtualbox.VboxUnikInstanceListener)
+		if err != nil {
+			logrus.WithError(err).Fatalf("powering off vm")
+		}
+		err = virtualboxclient.DestroyVm(virtualbox.VboxUnikInstanceListener)
+		if err != nil {
+			logrus.WithError(err).Fatalf("destroying vm")
+		}
 	}
 
 }
