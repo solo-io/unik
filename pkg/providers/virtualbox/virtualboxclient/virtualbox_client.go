@@ -177,6 +177,7 @@ func CreateVm(vmName, baseFolder, adapterName string) error {
 	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
 		return lxerrors.New("adding scsi storage controller", err)
 	}
+	//NIC ORDER MATTERS
 	//if _, err := vboxManage("modifyvm", vmName, "--nic1", "bridged", "--bridgeadapter1", adapterName, "--nictype1", "virtio"); err != nil {
 	//	return lxerrors.New("setting bridged networking on vm", err)
 	//}

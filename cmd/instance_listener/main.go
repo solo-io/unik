@@ -99,12 +99,12 @@ func getLocalIp() (string, error) {
 				logrus.WithField("addr", addr).Debugf("inspecting address")
 				switch v := addr.(type) {
 				case *net.IPNet:
-					if !v.IP.IsLoopback() && v.IP.IsGlobalUnicast() {
-						return v.IP.String(), nil
+					if !v.IP.IsLoopback() && v.IP.IsGlobalUnicast() && v.IP.To4() != nil {
+						return v.IP.To4().String(), nil
 					}
 				case *net.IPAddr:
-					if !v.IP.IsLoopback() && v.IP.IsGlobalUnicast() {
-						return v.IP.String(), nil
+					if !v.IP.IsLoopback() && v.IP.IsGlobalUnicast() && v.IP.To4() != nil {
+						return v.IP.To4().String(), nil
 					}
 				}
 			}
