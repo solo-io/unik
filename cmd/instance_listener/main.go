@@ -15,6 +15,13 @@ import (
 	"io/ioutil"
 )
 
+const statefile = "statefile.json"
+
+type state struct {
+	MacIpMap map[string]string `json:"Ips"`
+	MacEnvMap map[string]map[string]string `json:"Envs"`
+}
+
 func main() {
 	verbose := flag.Bool("v", false, "verbose mode")
 	flag.Parse()
@@ -23,8 +30,19 @@ func main() {
 	}
 	ipMapLock := sync.RWMutex{}
 	envMapLock := sync.RWMutex{}
-	macIpMap := make(map[string]string)
-	macEnvMap := make(map[string]map[string]string)
+	saveLock := sync.Mutex{}
+	var s state
+	s.MacIpMap = make(map[string]string)
+	s.MacEnvMap = make(map[string]map[string]string)
+
+	data, err := ioutil.ReadFile(statefile)
+	if err != nil {
+		logrus.WithError(err).Warnf("could not read statefile, maybe this is first boot")
+	} else {
+		if err := json.Unmarshal(data, &s); err != nil {
+			logrus.WithError(err).Warnf("failed to parse state json")
+		}
+	}
 
 	listenerIp, err := getLocalIp()
 	if err != nil {
@@ -78,14 +96,15 @@ func main() {
 		go func() {
 			ipMapLock.Lock()
 			defer ipMapLock.Unlock()
-			macIpMap[macAddress] = instanceIp
+			s.MacIpMap[macAddress] = instanceIp
+			go save(s, saveLock)
 		}()
 		envMapLock.RLock()
 		defer envMapLock.RUnlock()
-		env, ok := macEnvMap[macAddress]
+		env, ok := s.MacEnvMap[macAddress]
 		if !ok {
 			env = make(map[string]string)
-			logrus.WithFields(logrus.Fields{"mac": macAddress, "envmap": macEnvMap}).Errorf("no env set for instance, replying with empty map")
+			logrus.WithFields(logrus.Fields{"mac": macAddress, "envmap": s.MacEnvMap}).Errorf("no env set for instance, replying with empty map")
 		}
 		data, err := json.Marshal(env)
 		if err != nil {
@@ -112,13 +131,14 @@ func main() {
 		}).Infof("Env set for instance")
 		envMapLock.Lock()
 		defer envMapLock.Unlock()
-		macEnvMap[macAddress] = env
+		s.MacEnvMap[macAddress] = env
+		go save(s, saveLock)
 		return "success\n", nil
 	})
 	m.Get("/instances", func() (string, error) {
 		ipMapLock.RLock()
 		defer ipMapLock.RUnlock()
-		data, err := json.Marshal(macIpMap)
+		data, err := json.Marshal(s.MacIpMap)
 		if err != nil {
 			return "", err
 		}
@@ -162,4 +182,21 @@ func reverseMask(ip net.IP, mask net.IPMask) net.IP {
 		out[i] = ip[i] | (^mask[i])
 	}
 	return out
+}
+
+func save(s state, l sync.Mutex) {
+	if err := func() error {
+		l.Lock()
+		defer l.Unlock()
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(statefile, data, 0777); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		logrus.WithError(err).Errorf("failed to save state file %s", statefile)
+	}
 }
