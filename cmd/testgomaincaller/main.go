@@ -18,7 +18,6 @@ import (
 )
 
 const BROADCAST_LISTENING_PORT = 9876
-const EnvFile = "env.json"
 
 var timeout = time.Duration(2 * time.Second)
 
@@ -48,31 +47,6 @@ func getEnvAmazon() (map[string]string, error) {
 	return env, nil
 }
 
-func getEnvFile() (map[string]string, error) {
-	data, err := ioutil.ReadFile(EnvFile)
-	if err != nil {
-		return nil, err
-	}
-	var env map[string]string
-	if err := json.Unmarshal(data, &env); err != nil {
-		return nil, err
-	}
-	return env, nil
-}
-
-func getEnvFromInject(req *http.Request) (map[string]string, error) {
-	data, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		return nil, err
-	}
-	defer req.Body.Close()
-	var env map[string]string
-	if err := json.Unmarshal(data, &env); err != nil {
-		return nil, err
-	}
-	return env, nil
-}
-
 func main() {
 	//make logs available via http request
 	logs := bytes.Buffer{}
@@ -83,7 +57,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("unik boostrapping beginning...")
+	log.Printf("unik v0.0 boostrapping beginning...")
+
+	envChan := make(chan map[string]string)
 
 	go func() {
 		listenerIp, err := getListenerIp()
@@ -91,34 +67,23 @@ func main() {
 			log.Printf("err getting listener ip: %v", err)
 			return
 		}
-		if err := registerWithListener(listenerIp); err != nil {
+		if env, err := registerWithListener(listenerIp); err != nil {
 			log.Printf("err registering with listener: %v", err)
 			return
+		} else {
+			envChan <- env
 		}
 	}()
 
-	envChan := make(chan map[string]string)
 	mux := http.NewServeMux()
 	//serve logs
 	mux.HandleFunc("/logs", func(res http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(res, "logs: %s", string(logs.Bytes()))
 	})
-	//listen for injectable logs
-	mux.HandleFunc("/inject_env", func(res http.ResponseWriter, req *http.Request) {
-		log.Printf("someone injected my env: %v", req)
-		env, _ := getEnvFromInject(req)
-		envChan <- env
-		fmt.Fprintf(res, "accepted")
-	})
 	log.Printf("starting log server\n")
 	go http.ListenAndServe(fmt.Sprintf(":%v", BROADCAST_LISTENING_PORT), mux)
 
 	errChan := make(chan error)
-	go func() {
-		env, err := getEnvFile()
-		envChan <- env
-		errChan <- err
-	}()
 	go func() {
 		env, err := getEnvAmazon()
 		envChan <- env
@@ -147,29 +112,21 @@ func main() {
 		}
 	}
 
-	log.Printf("calling main\n")
-	mainf()
+	log.Printf("finished!\n")
 }
 
 func setEnv(env map[string]string) error {
 	for key, val := range env {
 		os.Setenv(key, val)
 	}
-	data, err := json.Marshal(env)
-	if err != nil {
-		return err
-	}
-	if err := ioutil.WriteFile(EnvFile, data, 0644); err != nil {
-		return err
-	}
 	return nil
 }
 
-func registerWithListener(listenerIp string) error {
+func registerWithListener(listenerIp string) (map[string]string, error) {
 	//get MAC Addr
 	ifaces, err := net.Interfaces()
 	if err != nil {
-		return errors.New("retrieving network interfaces" + err.Error())
+		return nil, errors.New("retrieving network interfaces" + err.Error())
 	}
 	macAddress := ""
 	for _, iface := range ifaces {
@@ -180,13 +137,24 @@ func registerWithListener(listenerIp string) error {
 		}
 	}
 	if macAddress == "" {
-		return errors.New("could not find mac address")
+		return nil, errors.New("could not find mac address")
 	}
 
-	if _, err := http.Post("http://" + listenerIp + ":3000/register?mac_address=" + macAddress, "", bytes.NewBuffer([]byte{})); err != nil {
-		return err
+	resp, err := http.Post("http://" + listenerIp + ":3000/register?mac_address=" + macAddress, "", bytes.NewBuffer([]byte{}))
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	data, err := ioutil.ReadAll(resp.Body)
+	log.Printf("got env data: %s", string(data))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var env map[string]string
+	if err := json.Unmarshal(data, &env); err != nil {
+		return nil, err
+	}
+	return env, nil
 }
 
 func getListenerIp() (string, error) {
@@ -205,7 +173,7 @@ func getListenerIp() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		log.Printf("recieved an ip from %s with data: %s", remoteAddr.IP.String(), string(data))
+		log.Printf("received an ip from %s with data: %s", remoteAddr.IP.String(), string(data))
 		if strings.Contains(string(data), "unik") {
 			data = bytes.Trim(data, "\x00")
 			return strings.Split(string(data), ":")[1], nil
@@ -251,12 +219,4 @@ func teeStderr(writer io.Writer) error {
 		}
 	}()
 	return nil
-}
-
-func mainf() {
-	for {
-		log.Printf("finished!")
-		time.Sleep(3000 * time.Millisecond)
-	}
-
 }

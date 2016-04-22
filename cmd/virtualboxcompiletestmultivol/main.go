@@ -25,7 +25,7 @@ func main() {
 			DockerImage: "compilers-rump-go-hw",
 			CreateImage: compilers.CreateImageVirtualBox,
 		}
-		rawimg, err := r.CompileRawImage(f, "", []string{"/data"})
+		rawimg, err := r.CompileRawImage(f, "", []string{"/data1", "/data2"})
 		if err != nil {
 			logrus.Error(err)
 			return
