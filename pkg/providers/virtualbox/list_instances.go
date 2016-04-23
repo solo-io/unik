@@ -6,6 +6,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"time"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
@@ -26,9 +28,16 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 		if err != nil {
 			return nil, lxerrors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 		}
-		instance.IpAddress, err = common.GetInstanceIp(instanceListenerIp, 3000, instanceId)
-		if err != nil {
-			return nil, lxerrors.New("getting ip for instance from instancelistener", err)
+
+		if err := unikutil.Retry(5, time.Duration(2000 * time.Millisecond), func() error {
+			logrus.Debugf("getting instance ip")
+			instance.IpAddress, err = common.GetInstanceIp(instanceListenerIp, 3000, instanceId)
+			if err != nil {
+				return err
+			}
+			return nil
+		}); err != nil {
+			return nil, lxerrors.New("failed to retrieve instance ip", err)
 		}
 
 		switch vm.Running {

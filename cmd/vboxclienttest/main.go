@@ -73,7 +73,7 @@ func main() {
 		}
 		logrus.WithField("ip", ip).Info("get ip succeeded")
 	case "create-instance-listener":
-		if err := virtualboxclient.CreateVm(virtualbox.VboxUnikInstanceListener, baseFolder, hostnetworkName, config.HostOnlyAdapter); err != nil {
+		if err := virtualboxclient.CreateVmNatless(virtualbox.VboxUnikInstanceListener, baseFolder, hostnetworkName, config.HostOnlyAdapter); err != nil {
 			logrus.WithError(err).Fatalf("creating vm")
 		}
 		if err := unikos.CopyFile("instancelistener-base.vmdk", "instancelistener-copy.vmdk"); err != nil {

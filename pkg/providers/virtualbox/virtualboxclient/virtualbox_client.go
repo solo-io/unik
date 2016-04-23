@@ -75,7 +75,7 @@ func parseVmInfo(vmInfo string) (*VboxVm, error) {
 	devices := []*VboxDevice{}
 	lines := strings.Split(vmInfo, "\n")
 	for _, line := range lines {
-		if strings.Contains(line, "MAC") {
+		if strings.Contains(line, "NIC 1:") { //first network adapter must be the IP we use
 			macAddr = formatMac(string(rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(line), []byte("")), []byte(""))))
 			logrus.Debugf("mac address found for vm: %s", macAddr)
 		}
@@ -189,10 +189,35 @@ func CreateVm(vmName, baseFolder, adapterName string, adapterType config.Virtual
 	}
 	//NIC ORDER MATTERS
 	if _, err := vboxManage(nicArgs...); err != nil {
-		return lxerrors.New("setting hostonly networking on vm", err)
+		return lxerrors.New("setting "+string(adapterType)+" networking on vm", err)
 	}
 	if _, err := vboxManage("modifyvm", vmName, "--nic2", "nat", "--nictype2", "virtio"); err != nil {
-		return lxerrors.New("setting hostonly networking on vm", err)
+		return lxerrors.New("setting nat networking on vm", err)
+	}
+	return nil
+}
+
+func CreateVmNatless(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType) error {
+	var nicArgs []string
+	switch adapterType {
+	case config.BridgedAdapter:
+		nicArgs = []string{"modifyvm", vmName, "--nic1", "bridged", "--bridgeadapter1", adapterName, "--nictype1", "virtio"}
+	case config.HostOnlyAdapter:
+		nicArgs = []string{"modifyvm", vmName, "--nic1", "hostonly", "--hostonlyadapter1", adapterName, "--nictype1", "virtio"}
+	default:
+		return lxerrors.New(string(adapterType)+" not a valid adapter type, must specify either "+string(config.BridgedAdapter)+" or "+string(config.HostOnlyAdapter)+" network config", nil)
+	}
+	if _, err := vboxManage("createvm", "--name", vmName, "--basefolder", baseFolder, "-ostype", "Linux26_64"); err != nil {
+		return lxerrors.New("creating vm", err)
+	}
+	if _, err := vboxManage("registervm", filepath.Join(baseFolder, vmName, fmt.Sprintf("%s.vbox", vmName))); err != nil {
+		return lxerrors.New("registering vm", err)
+	}
+	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
+		return lxerrors.New("adding scsi storage controller", err)
+	}
+	if _, err := vboxManage(nicArgs...); err != nil {
+		return lxerrors.New("setting "+string(adapterType)+" networking on vm", err)
 	}
 	return nil
 }
@@ -230,5 +255,5 @@ func DetachDisk(vmName string, controllerPort int) error {
 
 
 func formatMac(rawMac string) string {
-	return strings.ToLower(rawMac[0:2] + ":" + rawMac[2:4] + ":" + rawMac[4:6] + ":" + rawMac[6:8])
+	return strings.ToLower(rawMac[0:2] + ":" + rawMac[2:4] + ":" + rawMac[4:6] + ":" + rawMac[6:8] + ":" + rawMac[8:10] + ":" + rawMac[10:12])
 }

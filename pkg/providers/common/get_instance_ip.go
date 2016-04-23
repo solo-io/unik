@@ -18,7 +18,7 @@ func GetInstanceIp(listenerIp string, listenerPort int, instanceId string) (stri
 	}
 	ip, ok := instanceIpMap[instanceId]
 	if !ok {
-		return "", lxerrors.New("instance not found in map", err)
+		return "", lxerrors.New("instance "+instanceId+" not found in map: "+fmt.Sprintf("%v", instanceIpMap), err)
 	}
 	return ip, nil
 }

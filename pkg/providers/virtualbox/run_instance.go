@@ -10,6 +10,7 @@ import (
 	"os"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
@@ -74,45 +75,39 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 		portsUsed = append(portsUsed, controllerPort)
 	}
 
-	if err := virtualboxclient.PowerOnVm(name); err != nil {
-		return nil, lxerrors.New("powering on vm", err)
+	var instanceId, instanceIp string
+
+	logrus.Debugf("setting instance id from mac address")
+	vm, err := virtualboxclient.GetVm(name)
+	if err != nil {
+		return nil, lxerrors.New("retrieving created vm from vbox", err)
 	}
+	instanceId = vm.MACAddr
 
 	instanceListenerIp, err := virtualboxclient.GetVmIp(VboxUnikInstanceListener)
 	if err != nil {
 		return nil, lxerrors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 	}
 
-	var instanceId, instanceIp string
-
-	for retries := 0; retries < 5 ;retries++ {
-		if err := func() error {
-			logrus.Debugf("getting vm list")
-			vm, err := virtualboxclient.GetVm(name)
-			if err != nil {
-				return lxerrors.New("retrieving created vm from vbox", err)
-			}
-			instanceId = vm.MACAddr
-			logrus.Debugf("waiting for instance to register to listener")
-			instanceIp, err = common.GetInstanceIp(instanceListenerIp, 3000, instanceId)
-			if err != nil {
-				return lxerrors.New("getting ip for instance from instancelistener", err)
-			}
-			return nil
-		}(); err != nil {
-			if retries > 4 {
-				return nil, lxerrors.New("failed to register instance", err)
-			} else {
-				logrus.WithError(err).Warnf("instance not registered yet")
-				time.Sleep(3000 * time.Millisecond)
-			}
-		} else {
-			break
-		}
+	logrus.Debugf("sending env to listener")
+	if _, _, err := lxhttpclient.Post(instanceListenerIp+":3000", "/set_instance_env?mac_address="+instanceId, nil, env); err != nil {
+		return nil, lxerrors.New("sending instance env to listener", err)
 	}
 
-	if _, _, err := lxhttpclient.Post(instanceIp, "/inject_env", nil, env); err != nil {
-		return nil, lxerrors.New("injecting env vars into instance", err)
+	logrus.Debugf("powering on vm")
+	if err := virtualboxclient.PowerOnVm(name); err != nil {
+		return nil, lxerrors.New("powering on vm", err)
+	}
+
+	if err := unikutil.Retry(30, time.Duration(2000 * time.Millisecond), func() error {
+		logrus.Debugf("getting instance ip")
+		instanceIp, err = common.GetInstanceIp(instanceListenerIp, 3000, instanceId)
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, lxerrors.New("failed to retrieve instance ip", err)
 	}
 
 	//must add instance to state before attaching volumes

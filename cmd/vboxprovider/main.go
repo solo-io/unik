@@ -25,8 +25,8 @@ func main() {
 
 	c := config.Virtualbox{
 		Name: "virtualbox-provider",
-		AdapterName: "en0",
-		VirtualboxAdapterType: config.VirtualboxAdapterType("BridgedAdapter"),
+		AdapterName: "vboxnet0",
+		VirtualboxAdapterType: config.HostOnlyAdapter,
 	}
 	p := virtualbox.NewVirtualboxProvider(c)
 
