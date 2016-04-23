@@ -46,7 +46,7 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 
 	logrus.Debugf("creating virtualbox vm")
 
-	if err := virtualboxclient.CreateVm(name, virtualboxInstancesDirectory, p.config.HostNetworkName); err != nil {
+	if err := virtualboxclient.CreateVm(name, virtualboxInstancesDirectory, p.config.AdapterName, p.config.VirtualboxAdapterType); err != nil {
 		return nil, lxerrors.New("creating vm", err)
 	}
 

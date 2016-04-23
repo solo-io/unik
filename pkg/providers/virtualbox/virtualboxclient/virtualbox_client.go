@@ -8,6 +8,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"path/filepath"
 	"regexp"
+	"github.com/emc-advanced-dev/unik/pkg/config"
 )
 
 type VboxVm struct {
@@ -167,7 +168,16 @@ func GetVm(vmName string) (*VboxVm, error) {
 	return nil, lxerrors.New("vm "+vmName+" not found", err)
 }
 
-func CreateVm(vmName, baseFolder, adapterName string) error {
+func CreateVm(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType) error {
+	var nicArgs []string
+	switch adapterType {
+	case config.BridgedAdapter:
+		nicArgs = []string{"modifyvm", vmName, "--nic1", "bridged", "--bridgeadapter1", adapterName, "--nictype1", "virtio"}
+	case config.HostOnlyAdapter:
+		nicArgs = []string{"modifyvm", vmName, "--nic1", "hostonly", "--hostonlyadapter1", adapterName, "--nictype1", "virtio"}
+	default:
+		return lxerrors.New(string(adapterType)+" not a valid adapter type, must specify either "+string(config.BridgedAdapter)+" or "+string(config.HostOnlyAdapter)+" network config", nil)
+	}
 	if _, err := vboxManage("createvm", "--name", vmName, "--basefolder", baseFolder, "-ostype", "Linux26_64"); err != nil {
 		return lxerrors.New("creating vm", err)
 	}
@@ -178,18 +188,12 @@ func CreateVm(vmName, baseFolder, adapterName string) error {
 		return lxerrors.New("adding scsi storage controller", err)
 	}
 	//NIC ORDER MATTERS
-	//if _, err := vboxManage("modifyvm", vmName, "--nic1", "bridged", "--bridgeadapter1", adapterName, "--nictype1", "virtio"); err != nil {
-	//	return lxerrors.New("setting bridged networking on vm", err)
-	//}
-	if _, err := vboxManage("modifyvm", vmName, "--nic1", "hostonly", "--hostonlyadapter1", adapterName, "--nictype1", "virtio"); err != nil {
+	if _, err := vboxManage(nicArgs...); err != nil {
 		return lxerrors.New("setting hostonly networking on vm", err)
 	}
 	if _, err := vboxManage("modifyvm", vmName, "--nic2", "nat", "--nictype2", "virtio"); err != nil {
 		return lxerrors.New("setting hostonly networking on vm", err)
 	}
-	//if _, err := vboxManage("modifyvm", vmName, "--nic2", "natnetwork", "--nictype2", "virtio"); err != nil {
-	//	return lxerrors.New("setting hostonly networking on vm", err)
-	//} make: ~/workspace/go/src/github.com/emc-advanced-dev/unik ~/workspace/go/src/github.com/emc-advanced-dev/unik/cmd/vboxclienttest go run main.go -op get-vm-ip
 	return nil
 }
 

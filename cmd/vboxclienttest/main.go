@@ -7,6 +7,7 @@ import (
 	"flag"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/config"
 )
 
 func main() {
@@ -26,7 +27,7 @@ func main() {
 		}
 		logrus.WithField("vms", vms).Info("get vms succeeded")
 	case "create-vm":
-		err := virtualboxclient.CreateVm("test-scott", baseFolder, hostnetworkName)
+		err := virtualboxclient.CreateVm("test-scott", baseFolder, hostnetworkName, config.HostOnlyAdapter)
 		if err != nil {
 			logrus.WithError(err).Fatalf("creating vm")
 		}
@@ -72,7 +73,7 @@ func main() {
 		}
 		logrus.WithField("ip", ip).Info("get ip succeeded")
 	case "create-instance-listener":
-		if err := virtualboxclient.CreateVm(virtualbox.VboxUnikInstanceListener, baseFolder, hostnetworkName); err != nil {
+		if err := virtualboxclient.CreateVm(virtualbox.VboxUnikInstanceListener, baseFolder, hostnetworkName, config.HostOnlyAdapter); err != nil {
 			logrus.WithError(err).Fatalf("creating vm")
 		}
 		if err := unikos.CopyFile("instancelistener-base.vmdk", "instancelistener-copy.vmdk"); err != nil {

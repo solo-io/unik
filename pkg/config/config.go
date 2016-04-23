@@ -28,7 +28,16 @@ type Vsphere struct {
 	VsphereURL      string `yaml:"vsphere_url"`
 }
 
+
+type VirtualboxAdapterType string
+
+const (
+	BridgedAdapter = VirtualboxAdapterType("BridgedAdapter")
+	HostOnlyAdapter = VirtualboxAdapterType("HostOnlyAdapter")
+)
+
 type Virtualbox struct {
-	Name            string `yaml:"name"`
-	HostNetworkName string `yaml:"bridge_name"`
+	Name        string `yaml:"name"`
+	AdapterName string `yaml:"adapter_name"`
+	VirtualboxAdapterType VirtualboxAdapterType `yaml:"adapter_type"`
 }
