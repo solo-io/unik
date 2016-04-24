@@ -5,6 +5,8 @@ import (
 	"os"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"path/filepath"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"strings"
 )
 
 var VirtualboxStateFile = os.Getenv("HOME")+"/.unik/virtualbox/state.json"
@@ -19,14 +21,20 @@ type VirtualboxProvider struct {
 	state  state.State
 }
 
-func NewVirtualboxProvider(config config.Virtualbox) *VirtualboxProvider {
+func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error) {
 	os.MkdirAll(virtualboxImagesDirectory, 0777)
 	os.MkdirAll(virtualboxVolumesDirectory, 0777)
 
-	return &VirtualboxProvider{
+	p := &VirtualboxProvider{
 		config: config,
 		state: state.NewBasicState(VirtualboxStateFile),
 	}
+
+	if err := p.DeployInstanceListener(); err != nil && !strings.Contains(err.Error(), "already exists") {
+		return nil, lxerrors.New("deploing virtualbox instance listener", err)
+	}
+
+	return p, nil
 }
 
 func (p *VirtualboxProvider) WithState(state state.State) *VirtualboxProvider {

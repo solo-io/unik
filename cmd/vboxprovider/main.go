@@ -28,7 +28,10 @@ func main() {
 		AdapterName: "vboxnet0",
 		VirtualboxAdapterType: config.HostOnlyAdapter,
 	}
-	p := virtualbox.NewVirtualboxProvider(c)
+	p, err := virtualbox.NewVirtualboxProvider(c)
+	if err != nil {
+		logrus.Panic(err)
+	}
 
 	state, err := state.BasicStateFromFile(virtualbox.VirtualboxStateFile)
 	if err != nil {
