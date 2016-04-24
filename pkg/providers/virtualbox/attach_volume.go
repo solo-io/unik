@@ -24,7 +24,7 @@ func (p *VirtualboxProvider) AttachVolume(id, instanceId, mntPoint string) error
 	if err != nil {
 		return lxerrors.New("getting controller port for mnt point", err)
 	}
-	if err := virtualboxclient.AttachDisk(volume.Name, getVolumePath(volume.Name), controllerPort); err != nil {
+	if err := virtualboxclient.AttachDisk(instance.Name, getVolumePath(volume.Name), controllerPort); err != nil {
 		return lxerrors.New("attaching disk to vm", err)
 	}
 	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {

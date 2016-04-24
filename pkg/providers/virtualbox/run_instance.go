@@ -20,6 +20,10 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 		"env": env,
 	}).Infof("running instance %s", name)
 
+	if _, err := p.GetInstance(name); err == nil {
+		return nil, lxerrors.New("instance with name "+name+" already exists. virtualbox provider requires unique names for instances", nil)
+	}
+
 	image, err := p.GetImage(imageId)
 	if err != nil {
 		return nil, lxerrors.New("getting image", err)
