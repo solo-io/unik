@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	vboxInstanceListenerUrl  = "https://s3.amazonaws.com/unik-instance-listener/instancelistener-base.vmdk"
+	vboxInstanceListenerUrl  = "https://s3.amazonaws.com/unik-instance-listener/vbox-instancelistener-base.vmdk"
 	vboxInstanceListenerVmdk = "instancelistener-base.vmdk"
 )
 
