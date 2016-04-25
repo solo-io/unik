@@ -44,11 +44,11 @@ func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force 
 		return nil, lxerrors.New("converting raw image to vmdk", err)
 	}
 
-	rawImageFile, err := os.Stat(rawImage.LocalImagePath)
+	vmdkFile, err := os.Stat(imagePath)
 	if err != nil {
 		return nil, lxerrors.New("statting raw image file", err)
 	}
-	sizeMb := rawImageFile.Size() >> 20
+	sizeMb := vmdkFile.Size() >> 20
 
 	logrus.WithFields(logrus.Fields{
 		"name": name,

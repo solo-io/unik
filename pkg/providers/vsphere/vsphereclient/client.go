@@ -316,7 +316,7 @@ func (vc *VsphereClient) PowerOffVm(vmName string) error {
 	return nil
 }
 
-func (vc *VsphereClient) AttachVmdk(vmName, vmdkPath string, controllerKey int) error {
+func (vc *VsphereClient) AttachDisk(vmName, vmdkPath string, controllerKey int) error {
 	password, _ := vc.u.User.Password()
 	cmd := exec.Command("docker", "run", "--rm",
 		"vsphere-client",
@@ -339,7 +339,7 @@ func (vc *VsphereClient) AttachVmdk(vmName, vmdkPath string, controllerKey int) 
 	return nil
 }
 
-func (vc *VsphereClient) DetachVmdk(vmName string, controllerKey int) error {
+func (vc *VsphereClient) DetachDisk(vmName string, controllerKey int) error {
 	password, _ := vc.u.User.Password()
 	cmd := exec.Command("docker", "run", "--rm",
 		"vsphere-client",

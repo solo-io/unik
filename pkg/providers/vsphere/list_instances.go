@@ -63,6 +63,8 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 			logrus.WithFields(logrus.Fields{"vm": vm}).Warnf("vm found, cannot identify mac addr")
 			continue
 		}
+
+		instanceId := vm.Config.InstanceUuid
 		instance, ok := p.state.GetInstances()[instanceId]
 		if !ok {
 			logrus.WithFields(logrus.Fields{"vm": vm, "instance-id": vm.Config.InstanceUuid}).Warnf("vm found, cannot identify instance id")

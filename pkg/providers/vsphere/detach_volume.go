@@ -39,7 +39,7 @@ func (p *VsphereProvider) DetachVolume(id string) error {
 	if err != nil {
 		return lxerrors.New("could not convert "+controllerKey+" to int", err)
 	}
-	if err := p.getClient().DetachVmdk(instance.Id, controllerPort); err != nil {
+	if err := p.getClient().DetachDisk(instance.Id, controllerPort); err != nil {
 		return lxerrors.New("detaching disk from vm", err)
 	}
 	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {

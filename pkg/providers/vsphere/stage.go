@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"strings"
+	"io/ioutil"
 )
 
 func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force bool) (_ *types.Image, err error) {
@@ -29,38 +31,41 @@ func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force boo
 		}
 	}
 	c := p.getClient()
-	imageDir := getImageDatastoreDir(name)
-	if err := c.Mkdir(imageDir); err != nil {
-
+	if err := c.Mkdir(getImageDatastoreDir(name)); err != nil && !strings.Contains(err.Error(), "exists") {
+		return nil, lxerrors.New("creating vsphere directory for image", err)
 	}
 
-	imagePath := getImageDatastorePath(name)
-	logrus.Debugf("making directory: %s", filepath.Dir(imagePath))
-	if err := os.MkdirAll(filepath.Dir(imagePath), 0777); err != nil {
-		return nil, lxerrors.New("creating directory for boot image", err)
+	localVmdkDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		return nil, lxerrors.New("creating tmp file", err)
 	}
-	defer func() {
-		if err != nil {
-			os.RemoveAll(filepath.Dir(imagePath))
-		}
-	}()
+	defer os.RemoveAll(localVmdkDir)
+
+	localVmdkFile := filepath.Join(localVmdkDir, "boot.vmdk")
 
 	logrus.WithField("raw-image", rawImage).Infof("creating boot volume from raw image")
-	if err := common.ConvertRawImage("vmdk", rawImage.LocalImagePath, imagePath); err != nil {
+	if err := common.ConvertRawImage("vmdk", rawImage.LocalImagePath, localVmdkFile); err != nil {
 		return nil, lxerrors.New("converting raw image to vmdk", err)
 	}
 
-	rawImageFile, err := os.Stat(rawImage.LocalImagePath)
+	rawImageFile, err := os.Stat(localVmdkFile)
 	if err != nil {
 		return nil, lxerrors.New("statting raw image file", err)
 	}
 	sizeMb := rawImageFile.Size() >> 20
 
+	vsphereImagePath := getImageDatastorePath(name)
+
 	logrus.WithFields(logrus.Fields{
 		"name": name,
 		"id":   name,
 		"size": sizeMb,
-	}).Infof("creating base vmdk for unikernel image")
+		"datastore-path": vsphereImagePath,
+	}).Infof("importing base vmdk for unikernel image")
+
+	if err := c.ImportVmdk(localVmdkFile, vsphereImagePath); err != nil {
+		return nil, lxerrors.New("importing base boot.vmdk to vsphere datastore", err)
+	}
 
 	image := &types.Image{
 		Id:             name,

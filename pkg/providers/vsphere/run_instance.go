@@ -1,19 +1,18 @@
-package virtualbox
+package vsphere
 
 import (
 	"github.com/Sirupsen/logrus"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"os"
 	"time"
+	vspheretypes "github.com/vmware/govmomi/vim25/types"
 )
 
-func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
+func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
 	logrus.WithFields(logrus.Fields{
 		"image-id": imageId,
 		"mounts":   mntPointsToVolumeIds,
@@ -33,34 +32,84 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 		return nil, lxerrors.New("invalid mapping for volume", err)
 	}
 
-	instanceDir := getInstanceDir(name)
+	instanceDir := getInstanceDatastoreDir(name)
 
 	portsUsed := []int{}
+
+	c := p.getClient()
 
 	defer func() {
 		if err != nil {
 			logrus.WithError(err).Errorf("error encountered, ensuring vm and disks are destroyed")
-			virtualboxclient.PowerOffVm(name)
+			c.PowerOffVm(name)
 			for _, portUsed := range portsUsed {
-				virtualboxclient.DetachDisk(name, portUsed)
+				c.DetachDisk(name, portUsed)
 			}
-			virtualboxclient.DestroyVm(name)
+			c.DestroyVm(name)
 			os.RemoveAll(instanceDir)
 		}
 	}()
 
-	logrus.Debugf("creating virtualbox vm")
+	logrus.Debugf("creating vsphere vm")
 
-	if err := virtualboxclient.CreateVm(name, virtualboxInstancesDirectory, p.config.AdapterName, p.config.VirtualboxAdapterType); err != nil {
+	if err := c.CreateVm(name, p.config.DefaultInstanceMemory); err != nil {
 		return nil, lxerrors.New("creating vm", err)
 	}
+	
+	vm, err := c.GetVm(name)
+	if err != nil {
+		return nil, lxerrors.New("failed to retrieve vm info after create", err)
+	}
+	if vm.Config == nil {
+		return nil, lxerrors.New("vm has no config object", nil)
+	}
+	macAddr := ""
+	if vm.Config != nil && vm.Config.Hardware.Device != nil {
+		FindEthLoop:
+		for _, device := range vm.Config.Hardware.Device {
+			switch device.(type) {
+			case *vspheretypes.VirtualE1000:
+				eth := device.(*vspheretypes.VirtualE1000)
+				macAddr = eth.MacAddress
+				break FindEthLoop
+			case *vspheretypes.VirtualE1000e:
+				eth := device.(*vspheretypes.VirtualE1000e)
+				macAddr = eth.MacAddress
+				break FindEthLoop
+			case *vspheretypes.VirtualPCNet32:
+				eth := device.(*vspheretypes.VirtualPCNet32)
+				macAddr = eth.MacAddress
+				break FindEthLoop
+			case *vspheretypes.VirtualSriovEthernetCard:
+				eth := device.(*vspheretypes.VirtualSriovEthernetCard)
+				macAddr = eth.MacAddress
+				break FindEthLoop
+			case *vspheretypes.VirtualVmxnet:
+				eth := device.(*vspheretypes.VirtualVmxnet)
+				macAddr = eth.MacAddress
+				break FindEthLoop
+			case *vspheretypes.VirtualVmxnet2:
+				eth := device.(*vspheretypes.VirtualVmxnet2)
+				macAddr = eth.MacAddress
+				break FindEthLoop
+			case *vspheretypes.VirtualVmxnet3:
+				eth := device.(*vspheretypes.VirtualVmxnet3)
+				macAddr = eth.MacAddress
+				break FindEthLoop
+			}
+		}
+	}
+	if macAddr == "" {
+		logrus.WithFields(logrus.Fields{"vm": vm}).Warnf("vm found, cannot identify mac addr")
+		return nil, lxerrors.New("could not find mac addr on vm", nil)
+	}
 
-	logrus.Debugf("copying source boot vmdk")
-	instanceBootImage := instanceDir + "/boot.vmdk"
-	if err := unikos.CopyFile(getImagePath(image.Name), instanceBootImage); err != nil {
+	logrus.Debugf("copying base boot vmdk to instance dir")
+	instanceBootImagePath := instanceDir + "/boot.vmdk"
+	if err := c.CopyVmdk(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
 		return nil, lxerrors.New("copying base boot image", err)
 	}
-	if err := virtualboxclient.AttachDisk(name, instanceBootImage, 0); err != nil {
+	if err := c.AttachDisk(name, instanceBootImagePath, 0); err != nil {
 		return nil, lxerrors.New("attaching boot vol to instance", err)
 	}
 
@@ -73,21 +122,13 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 		if err != nil {
 			return nil, lxerrors.New("getting controller port for mnt point", err)
 		}
-		if err := virtualboxclient.AttachDisk(name, getVolumePath(volume.Name), controllerPort); err != nil {
+		if err := c.AttachDisk(name, getVolumeDatastorePath(volume.Name), controllerPort); err != nil {
 			return nil, lxerrors.New("attaching disk to vm", err)
 		}
 		portsUsed = append(portsUsed, controllerPort)
 	}
 
-	logrus.Debugf("setting instance id from mac address")
-	vm, err := virtualboxclient.GetVm(name)
-	if err != nil {
-		return nil, lxerrors.New("retrieving created vm from vbox", err)
-	}
-	macAddr := vm.MACAddr
-	instanceId := vm.UUID
-
-	instanceListenerIp, err := virtualboxclient.GetVmIp(VboxUnikInstanceListener)
+	instanceListenerIp, err := c.GetVmIp(VsphereInstanceListener)
 	if err != nil {
 		return nil, lxerrors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 	}
@@ -98,7 +139,7 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 	}
 
 	logrus.Debugf("powering on vm")
-	if err := virtualboxclient.PowerOnVm(name); err != nil {
+	if err := c.PowerOnVm(name); err != nil {
 		return nil, lxerrors.New("powering on vm", err)
 	}
 
@@ -115,12 +156,13 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 		return nil, lxerrors.New("failed to retrieve instance ip", err)
 	}
 
+	instanceId := vm.Config.InstanceUuid
 	instance := &types.Instance{
 		Id:             instanceId,
 		Name:           name,
 		State:          types.InstanceState_Pending,
 		IpAddress:      instanceIp,
-		Infrastructure: types.Infrastructure_VIRTUALBOX,
+		Infrastructure: types.Infrastructure_VSPHERE,
 		ImageId:        image.Id,
 		Created:        time.Now(),
 	}

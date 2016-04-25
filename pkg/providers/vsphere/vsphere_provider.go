@@ -51,7 +51,7 @@ func getImageDatastoreDir(imageName string) string {
 }
 
 func getImageDatastorePath(imageName string) string {
-	return filepath.Join(VsphereImagesDirectory, imageName, "boot.vmdk")
+	return filepath.Join(getImageDatastoreDir(imageName), "boot.vmdk")
 }
 
 func getVolumeDatastoreDir(volumeName string) string {
@@ -59,5 +59,5 @@ func getVolumeDatastoreDir(volumeName string) string {
 }
 
 func getVolumeDatastorePath(volumeName string) string {
-	return filepath.Join(VsphereVolumesDirectory, volumeName, "data.vmdk")
+	return filepath.Join(getVolumeDatastoreDir(volumeName), "data.vmdk")
 }

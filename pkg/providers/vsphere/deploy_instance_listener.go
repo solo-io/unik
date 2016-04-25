@@ -56,7 +56,7 @@ func (p *VsphereProvider) DeployInstanceListener() error {
 	if err := c.CreateVm(VsphereInstanceListener, 512); err != nil {
 		return lxerrors.New("creating vm", err)
 	}
-	if err := c.AttachVmdk(VsphereInstanceListener, "unik/"+vsphereInstanceListenerVmdk, 0); err != nil {
+	if err := c.AttachDisk(VsphereInstanceListener, "unik/"+vsphereInstanceListenerVmdk, 0); err != nil {
 		return lxerrors.New("attaching disk to vm", err)
 	}
 	if err := c.PowerOnVm(VsphereInstanceListener); err != nil {

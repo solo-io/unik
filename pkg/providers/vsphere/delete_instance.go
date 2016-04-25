@@ -32,7 +32,7 @@ func (p *VsphereProvider) DeleteInstance(id string) error {
 	c := p.getClient()
 	for controllerPort, deviceMapping := range image.DeviceMappings {
 		if deviceMapping.MountPoint != "/" {
-			if err := c.DetachVmdk(instance.Id, controllerPort); err != nil {
+			if err := c.DetachDisk(instance.Id, controllerPort); err != nil {
 				return lxerrors.New("detaching volume from instance", err)
 			}
 		}
