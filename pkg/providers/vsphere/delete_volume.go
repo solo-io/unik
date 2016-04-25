@@ -4,6 +4,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"os"
+	"strings"
 )
 
 func (p *VsphereProvider) DeleteVolume(id string, force bool) error {
@@ -11,23 +12,24 @@ func (p *VsphereProvider) DeleteVolume(id string, force bool) error {
 	if err != nil {
 		return lxerrors.New("retrieving volume "+id, err)
 	}
-	volumePath, ok := p.state.GetVolumePaths()[volume.Id]
-	if !ok {
-		return lxerrors.New("could not find path for volume "+volume.Id, nil)
+	if volume.Attachment != "" {
+		return lxerrors.New("volume is still attached to instance "+volume.Attachment, err)
 	}
-	err = os.Remove(volumePath)
+	volumeDir := getVolumeDatastoreDir(volume.Name)
+	err = p.getClient().Rmdir(volumeDir)
 	if err != nil {
-		return lxerrors.New("could not delete volume at path "+volumePath, err)
+		return lxerrors.New("could not delete volume at path "+ volumeDir, err)
 	}
-
-	p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		delete(volumes, volume.Id)
 		return nil
 	})
-
-	p.state.ModifyVolumePaths(func(volumePaths map[string]string) error {
-		delete(volumePaths, volume.Id)
-		return nil
-	})
+	if err != nil {
+		return lxerrors.New("deleting volume path from state", err)
+	}
+	err = p.state.Save()
+	if err != nil {
+		return lxerrors.New("saving image map to state", err)
+	}
 	return nil
 }

@@ -10,7 +10,7 @@ func (p *VsphereProvider) StartInstance(id string) error {
 		return lxerrors.New("retrieving instance "+id, err)
 	}
 	c := p.getClient()
-	err = c.PowerOnVm(id)
+	err = c.PowerOnVm(instance.Id)
 	if err != nil {
 		return lxerrors.New("failed to start instance "+instance.Id, err)
 	}

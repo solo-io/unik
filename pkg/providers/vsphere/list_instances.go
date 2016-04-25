@@ -1,10 +1,13 @@
 package vsphere
 
 import (
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	vspheretypes "github.com/vmware/govmomi/vim25/types"
-	"github.com/Sirupsen/logrus"
+	"time"
 )
 
 func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
@@ -13,6 +16,7 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 	if err != nil {
 		return nil, lxerrors.New("getting vsphere vms", err)
 	}
+
 	instances := []*types.Instance{}
 	for _, vm := range vms {
 		if vm.Config == nil {
@@ -21,9 +25,9 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 		//we use mac address as the vm id
 		macAddr := ""
 		if vm.Config != nil && vm.Config.Hardware.Device != nil {
-			FindEthLoop:
+		FindEthLoop:
 			for _, device := range vm.Config.Hardware.Device {
-				switch device.(type){
+				switch device.(type) {
 				case *vspheretypes.VirtualE1000:
 					eth := device.(*vspheretypes.VirtualE1000)
 					macAddr = eth.MacAddress
@@ -59,7 +63,7 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 			logrus.WithFields(logrus.Fields{"vm": vm}).Warnf("vm found, cannot identify mac addr")
 			continue
 		}
-		instance, ok := p.state.GetInstances()[vm.Config.InstanceUuid]
+		instance, ok := p.state.GetInstances()[instanceId]
 		if !ok {
 			logrus.WithFields(logrus.Fields{"vm": vm, "instance-id": vm.Config.InstanceUuid}).Warnf("vm found, cannot identify instance id")
 			continue
@@ -77,6 +81,23 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 			instance.State = types.InstanceState_Unknown
 			break
 		}
+
+		instanceListenerIp, err := c.GetVmIp(VsphereInstanceListener)
+		if err != nil {
+			return nil, lxerrors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
+		}
+
+		if err := unikutil.Retry(5, time.Duration(2000*time.Millisecond), func() error {
+			logrus.Debugf("getting instance ip")
+			instance.IpAddress, err = common.GetInstanceIp(instanceListenerIp, 3000, macAddr)
+			if err != nil {
+				return err
+			}
+			return nil
+		}); err != nil {
+			return nil, lxerrors.New("failed to retrieve instance ip", err)
+		}
+
 		err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 			instances[instance.Id] = instance
 			return nil

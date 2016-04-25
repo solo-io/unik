@@ -1,43 +1,46 @@
-package api
+package vsphereclient
 
 import (
-	"github.com/vmware/govmomi"
-	"github.com/vmware/govmomi/find"
-	"net/url"
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"golang.org/x/net/context"
-	"github.com/vmware/govmomi/vim25/mo"
-	"github.com/vmware/govmomi/property"
-	vspheretypes "github.com/vmware/govmomi/vim25/types"
-	"os/exec"
-	"strings"
-	"path/filepath"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/vmware/govmomi"
+	"github.com/vmware/govmomi/find"
+	"github.com/vmware/govmomi/property"
+	"github.com/vmware/govmomi/vim25/mo"
+	vspheretypes "github.com/vmware/govmomi/vim25/types"
+	"golang.org/x/net/context"
+	"net/url"
+	"os/exec"
+	"path/filepath"
+	"strings"
 )
 
 type VsphereClient struct {
-	u *url.URL
+	u  *url.URL
+	ds string
 }
 
-func NewVsphereClient(u *url.URL) (*VsphereClient, error) {
+func NewVsphereClient(u *url.URL, datastore string) *VsphereClient {
 	return &VsphereClient{
-		u: u,
-	}, nil
+		u:  u,
+		ds: datastore,
+	}
 }
 
-func (c *VsphereClient) newGovmomiClient() (*govmomi.Client, error) {
-	c, err := govmomi.NewClient(context.TODO(), c.u, true)
+func (vc *VsphereClient) newGovmomiClient() (*govmomi.Client, error) {
+	c, err := govmomi.NewClient(context.TODO(), vc.u, true)
 	if err != nil {
 		return nil, lxerrors.New("creating new govmovi client", err)
 	}
 	return c, nil
 }
 
-func (c *VsphereClient) newGovmomiFinder() (*find.Finder, error) {
-	c, err := c.newGovmomiClient()
+func (vc *VsphereClient) newGovmomiFinder() (*find.Finder, error) {
+	c, err := vc.newGovmomiClient()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	f := find.NewFinder(c.Client, true)
 
@@ -49,14 +52,13 @@ func (c *VsphereClient) newGovmomiFinder() (*find.Finder, error) {
 
 	// Make future calls local to this datacenter
 	f.SetDatacenter(dc)
-	return f
+	return f, nil
 }
-
 
 func (vc *VsphereClient) Vms() ([]mo.VirtualMachine, error) {
 	f, err := vc.newGovmomiFinder()
 	if err != nil {
-		return lxerrors.New("creating new govmomi finder", err)
+		return nil, lxerrors.New("creating new govmomi finder", err)
 	}
 	vms, err := f.VirtualMachineList(context.TODO(), "*")
 	if err != nil {
@@ -70,10 +72,10 @@ func (vc *VsphereClient) Vms() ([]mo.VirtualMachine, error) {
 		refs = append(refs, vm.Reference())
 		err = pc.Retrieve(context.TODO(), refs, nil, &managedVms)
 		if err != nil {
-			return nil, lxerrors.New("retrieving managed vms property of vm " + vm.String(), err)
+			return nil, lxerrors.New("retrieving managed vms property of vm "+vm.String(), err)
 		}
 		if len(managedVms) < 1 {
-			return nil, lxerrors.New("0 managed vms found for vm " + vm.String(), nil)
+			return nil, lxerrors.New("0 managed vms found for vm "+vm.String(), nil)
 		}
 		logrus.WithFields(logrus.Fields{"vm": managedVms[0]}).Debugf("read vm from govmomi client")
 		vmList = append(vmList, managedVms[0])
@@ -81,26 +83,46 @@ func (vc *VsphereClient) Vms() ([]mo.VirtualMachine, error) {
 	return vmList, nil
 }
 
-func (vc *VsphereClient) CreateVm(vmName, annotation, memoryMb string) error {
+func (vc *VsphereClient) GetVm(vmName string) (mo.VirtualMachine, error) {
+	vms, err := vc.Vms()
+	if err != nil {
+		return mo.VirtualMachine{}, lxerrors.New("getting vsphere vm list", err)
+	}
+	for _, vm := range vms {
+		if vm.Name == vmName {
+			return vm, nil
+		}
+	}
+	return mo.VirtualMachine{}, lxerrors.New("no vm found with name "+vmName, nil)
+}
+
+func (vc *VsphereClient) GetVmIp(vmName string) (string, error) {
+	vm, err := vc.GetVm(vmName)
+	if err != nil {
+		return "", lxerrors.New("getting vsphere vm", err)
+	}
+	if vm.Guest == nil {
+		return "", lxerrors.New("vm has no guest info", nil)
+	}
+	return vm.Guest.IpAddress, nil
+}
+
+func (vc *VsphereClient) CreateVm(vmName string, memoryMb int) error {
 	cmd := exec.Command("docker", "run", "--rm",
 		"vsphere-client",
 		"govc",
 		"vm.create",
 		"-k",
 		"-u", formatUrl(vc.u),
-		"--annotation=" + annotation,
 		"--force=true",
-		"--m="+memoryMb,
+		fmt.Sprintf("--m=%v", memoryMb),
 		"--on=false",
 		vmName,
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running govc command")
 	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
-		return lxerrors.New("failed running govc vm.create " + vmName, err)
+		return lxerrors.New("failed running govc vm.create "+vmName, err)
 	}
 	return nil
 }
@@ -114,13 +136,10 @@ func (vc *VsphereClient) DestroyVm(vmName string) error {
 		"-u", formatUrl(vc.u),
 		vmName,
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running govc command")
 	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
-		return lxerrors.New("failed running govc vm.destroy " + vmName, err)
+		return lxerrors.New("failed running govc vm.destroy "+vmName, err)
 	}
 	return nil
 }
@@ -134,13 +153,10 @@ func (vc *VsphereClient) Mkdir(folder string) error {
 		"-u", formatUrl(vc.u),
 		folder,
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running govc command")
 	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
-		return lxerrors.New("failed running govc datastore.mkdir " + folder, err)
+		return lxerrors.New("failed running govc datastore.mkdir "+folder, err)
 	}
 	return nil
 }
@@ -154,20 +170,17 @@ func (vc *VsphereClient) Rmdir(folder string) error {
 		"-u", formatUrl(vc.u),
 		folder,
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running govc command")
 	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
-		return lxerrors.New("failed running govc datastore.rm " + folder, err)
+		return lxerrors.New("failed running govc datastore.rm "+folder, err)
 	}
 	return nil
 }
 
 func (vc *VsphereClient) ImportVmdk(vmdkPath, folder string) error {
 	vmdkFolder := filepath.Dir(vmdkPath)
-	cmd := exec.Command("docker", "run", "--rm", "-v", vmdkFolder + ":" + vmdkFolder,
+	cmd := exec.Command("docker", "run", "--rm", "-v", vmdkFolder+":"+vmdkFolder,
 		"vsphere-client",
 		"govc",
 		"import.vmdk",
@@ -176,20 +189,17 @@ func (vc *VsphereClient) ImportVmdk(vmdkPath, folder string) error {
 		vmdkPath,
 		folder,
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running govc command")
 	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
-		return lxerrors.New("failed running govc import.vmdk " + folder, err)
+		return lxerrors.New("failed running govc import.vmdk "+folder, err)
 	}
 	return nil
 }
 
 func (vc *VsphereClient) UploadFile(srcFile, dest string) error {
 	srcDir := filepath.Dir(srcFile)
-	cmd := exec.Command("docker", "run", "--rm", "-v", srcDir + ":" + srcDir,
+	cmd := exec.Command("docker", "run", "--rm", "-v", srcDir+":"+srcDir,
 		"vsphere-client",
 		"govc",
 		"datastore.upload",
@@ -198,9 +208,6 @@ func (vc *VsphereClient) UploadFile(srcFile, dest string) error {
 		srcFile,
 		dest,
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running govc command")
 	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
@@ -211,7 +218,7 @@ func (vc *VsphereClient) UploadFile(srcFile, dest string) error {
 
 func (vc *VsphereClient) DownloadFile(remoteFile, localFile string) error {
 	localDir := filepath.Dir(localFile)
-	cmd := exec.Command("docker", "run", "--rm", "-v", localDir + ":" + localDir,
+	cmd := exec.Command("docker", "run", "--rm", "-v", localDir+":"+localDir,
 		"vsphere-client",
 		"govc",
 		"datastore.download",
@@ -220,9 +227,6 @@ func (vc *VsphereClient) DownloadFile(remoteFile, localFile string) error {
 		remoteFile,
 		localFile,
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running govc command")
 	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
@@ -242,16 +246,13 @@ func (vc *VsphereClient) CopyVmdk(src, dest string) error {
 		vc.u.String(),
 		vc.u.User.Username(),
 		password,
-		"[datastore1] " + src,
-		"[datastore1] " + dest,
+		"["+vc.ds+"] "+src,
+		"["+vc.ds+"] "+dest,
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running vsphere-client.jar command")
 	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
-		return lxerrors.New("failed running vsphere-client.jar CopyVirtualDisk " + src + " " + dest, err)
+		return lxerrors.New("failed running vsphere-client.jar CopyVirtualDisk "+src+" "+dest, err)
 	}
 	return nil
 }
@@ -265,12 +266,9 @@ func (vc *VsphereClient) Ls(dir string) ([]string, error) {
 		"-u", formatUrl(vc.u),
 		dir,
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running govc command")
 	out, err := cmd.Output()
 	if err != nil {
-		return nil, lxerrors.New("failed running govc datastore.ls " + dir, err)
+		return nil, lxerrors.New("failed running govc datastore.ls "+dir, err)
 	}
 	split := strings.Split(string(out), "\n")
 	contents := []string{}
@@ -292,9 +290,6 @@ func (vc *VsphereClient) PowerOnVm(vmName string) error {
 		"-u", formatUrl(vc.u),
 		vmName,
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running govc command")
 	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
@@ -313,9 +308,6 @@ func (vc *VsphereClient) PowerOffVm(vmName string) error {
 		"-u", formatUrl(vc.u),
 		vmName,
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running govc command")
 	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
@@ -324,7 +316,7 @@ func (vc *VsphereClient) PowerOffVm(vmName string) error {
 	return nil
 }
 
-func (vc *VsphereClient) AttachVmdk(vmName, vmdkPath string) error {
+func (vc *VsphereClient) AttachVmdk(vmName, vmdkPath string, controllerKey int) error {
 	password, _ := vc.u.User.Password()
 	cmd := exec.Command("docker", "run", "--rm",
 		"vsphere-client",
@@ -336,16 +328,35 @@ func (vc *VsphereClient) AttachVmdk(vmName, vmdkPath string) error {
 		vc.u.User.Username(),
 		password,
 		vmName,
-		"[datastore1] " + vmdkPath,
-		"200", //TODO: is this right?
+		"["+vc.ds+"] "+vmdkPath,
+		fmt.Sprintf("%v", controllerKey),
 	)
-	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
-	}).Debugf("running vsphere-client.jar command")
 	uniklog.LogCommand(cmd, true)
 	err := cmd.Run()
 	if err != nil {
 		return lxerrors.New("failed running vsphere-client.jar AttachVmdk", err)
+	}
+	return nil
+}
+
+func (vc *VsphereClient) DetachVmdk(vmName string, controllerKey int) error {
+	password, _ := vc.u.User.Password()
+	cmd := exec.Command("docker", "run", "--rm",
+		"vsphere-client",
+		"java",
+		"-jar",
+		"/vsphere-client.jar",
+		"VmDetachDisk",
+		vc.u.String(),
+		vc.u.User.Username(),
+		password,
+		vmName,
+		fmt.Sprintf("%v", controllerKey),
+	)
+	uniklog.LogCommand(cmd, true)
+	err := cmd.Run()
+	if err != nil {
+		return lxerrors.New("failed running vsphere-client.jar DetachVmdk", err)
 	}
 	return nil
 }

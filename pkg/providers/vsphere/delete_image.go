@@ -30,35 +30,20 @@ func (p *VsphereProvider) DeleteImage(id string, force bool) error {
 		}
 	}
 
-	imagePath, ok := p.state.GetImagePaths()[image.Id]
-	if !ok {
-		return lxerrors.New("could not find image file path for image "+image.Id, nil)
+	imagePath := getImageDatastorePath(image.Name)
+	logrus.Warnf("deleting image file at %s", imagePath)
+	if err := os.Remove(imagePath); err != nil {
+		return lxerrors.New("deleing image file at "+imagePath, err)
 	}
 
-	err = os.Remove(imagePath)
-	if err != nil {
-		return lxerrors.New("deleing image file at " + imagePath, err)
-	}
-
-	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
+	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {
 		delete(images, image.Id)
 		return nil
-	})
-	if err != nil {
-		return nil, lxerrors.New("deleting image from state", err)
+	}); err != nil {
+		return lxerrors.New("modifying image map in state", err)
 	}
-	err = p.state.Save()
-	if err != nil {
-		return lxerrors.New("saving image to state", err)
+	if err := p.state.Save(); err != nil {
+		return lxerrors.New("saving modified image map to state", err)
 	}
-
-	err = p.state.ModifyImagePaths(func(imagePaths map[string]string) error {
-		delete(imagePath, image.Id)
-		return nil
-	})
-	if err != nil {
-		return nil, lxerrors.New("deleting path to image from state", err)
-	}
-
 	return nil
 }
