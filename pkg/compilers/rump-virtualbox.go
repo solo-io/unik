@@ -3,9 +3,9 @@ package compilers
 import (
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	uniktypes "github.com/emc-advanced-dev/unik/pkg/types"
 	"regexp"
-	"github.com/Sirupsen/logrus"
 )
 
 func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*uniktypes.RawImage, error) {

@@ -1,9 +1,9 @@
 package common
 
 import (
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/providers"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxerrors"
 	"strings"
 )
 

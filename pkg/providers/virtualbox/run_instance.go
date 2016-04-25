@@ -1,23 +1,23 @@
 package virtualbox
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"time"
 	"github.com/Sirupsen/logrus"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
-	"os"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	"github.com/layer-x/layerx-commons/lxhttpclient"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/layer-x/layerx-commons/lxhttpclient"
+	"os"
+	"time"
 )
 
 func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
 	logrus.WithFields(logrus.Fields{
-	"image-id": imageId,
-		"mounts": mntPointsToVolumeIds,
-		"env": env,
+		"image-id": imageId,
+		"mounts":   mntPointsToVolumeIds,
+		"env":      env,
 	}).Infof("running instance %s", name)
 
 	if _, err := p.GetInstance(name); err == nil {
@@ -37,7 +37,7 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 
 	portsUsed := []int{}
 
-	defer func(){
+	defer func() {
 		if err != nil {
 			logrus.WithError(err).Errorf("error encountered, ensuring vm and disks are destroyed")
 			virtualboxclient.PowerOffVm(name)
@@ -56,7 +56,7 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 	}
 
 	logrus.Debugf("copying source boot vmdk")
-	instanceBootImage := instanceDir+"/boot.vmdk"
+	instanceBootImage := instanceDir + "/boot.vmdk"
 	if err := unikos.CopyFile(getImagePath(image.Name), instanceBootImage); err != nil {
 		return nil, lxerrors.New("copying base boot image", err)
 	}
@@ -116,16 +116,16 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 
 	//must add instance to state before attaching volumes
 	instance := &types.Instance{
-		Id: instanceId,
-		Name: name,
-		State: types.InstanceState_Pending,
-		IpAddress: instanceIp,
+		Id:             instanceId,
+		Name:           name,
+		State:          types.InstanceState_Pending,
+		IpAddress:      instanceIp,
 		Infrastructure: types.Infrastructure_VIRTUALBOX,
-		ImageId: image.Id,
-		Created: time.Now(),
+		ImageId:        image.Id,
+		Created:        time.Now(),
 	}
 
-	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error{
+	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 		instances[instance.Id] = instance
 		return nil
 	}); err != nil {

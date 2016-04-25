@@ -1,13 +1,13 @@
 package aws
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"os"
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/aws"
-	"time"
 	"github.com/Sirupsen/logrus"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"os"
+	"time"
 )
 
 var kernelIdMap = map[string]string{
@@ -33,7 +33,7 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 			if !force {
 				return nil, lxerrors.New("an image already exists with name '"+name+"', try again with --force", nil)
 			} else {
-				logrus.WithField("image", image).Warnf("force: deleting previous image with name "+name)
+				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + name)
 				err = p.DeleteImage(image.Id, true)
 				if err != nil {
 					return nil, lxerrors.New("removing previously existing image", err)
@@ -68,7 +68,7 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 	logrus.WithField("volume-id", volumeId).Infof("creating snapshot from boot volume")
 	createSnasphotInput := &ec2.CreateSnapshotInput{
 		Description: aws.String("snapshot for unikernel image " + name),
-		VolumeId: aws.String(volumeId),
+		VolumeId:    aws.String(volumeId),
 	}
 	createSnapshotOutput, err := ec2svc.CreateSnapshot(createSnasphotInput)
 	if err != nil {
@@ -107,19 +107,19 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 	kernelId := kernelIdMap[p.config.Region]
 
 	logrus.WithFields(logrus.Fields{
-		"name": name,
-		"architecture": architecture,
-		"virtualization-type": virtualizationType,
-		"kernel-id": kernelId,
+		"name":                  name,
+		"architecture":          architecture,
+		"virtualization-type":   virtualizationType,
+		"kernel-id":             kernelId,
 		"block-device-mappings": blockDeviceMappings,
-		"root-device-name": rootDeviceName,
+		"root-device-name":      rootDeviceName,
 	}).Infof("creating AMI for unikernel image")
 
 	registerImageInput := &ec2.RegisterImageInput{
-		Name: aws.String(name),
+		Name:                aws.String(name),
 		Architecture:        aws.String(architecture),
 		BlockDeviceMappings: blockDeviceMappings,
-		RootDeviceName: aws.String(rootDeviceName),
+		RootDeviceName:      aws.String(rootDeviceName),
 		VirtualizationType:  aws.String(virtualizationType),
 		KernelId:            aws.String(kernelId),
 	}
@@ -140,11 +140,11 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 		},
 		Tags: []*ec2.Tag{
 			&ec2.Tag{
-				Key:  aws.String(UNIK_IMAGE_ID),
+				Key:   aws.String(UNIK_IMAGE_ID),
 				Value: aws.String(imageId),
 			},
 			&ec2.Tag{
-				Key: aws.String("Name"),
+				Key:   aws.String("Name"),
 				Value: aws.String(name),
 			},
 		},
@@ -161,12 +161,12 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 	sizeMb := rawImageFile.Size() >> 20
 
 	image := &types.Image{
-		Id: imageId,
-		Name: name,
+		Id:             imageId,
+		Name:           name,
 		DeviceMappings: rawImage.DeviceMappings,
-		SizeMb: sizeMb,
+		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_AWS,
-		Created: time.Now(),
+		Created:        time.Now(),
 	}
 
 	err = p.state.ModifyImages(func(images map[string]*types.Image) error {

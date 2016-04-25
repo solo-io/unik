@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"io"
 
-	uniktypes "github.com/emc-advanced-dev/unik/pkg/types"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	uniktypes "github.com/emc-advanced-dev/unik/pkg/types"
 
 	"fmt"
 	"io/ioutil"
@@ -76,7 +76,6 @@ func ToRumpJson(c rumpConfig) (string, error) {
 	return jsonString, nil
 
 }
-
 
 // rump special json
 func ToRumpJsonMultiNet(c multinetRumpConfig) (string, error) {

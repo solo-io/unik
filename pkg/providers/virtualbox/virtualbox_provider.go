@@ -2,17 +2,17 @@ package virtualbox
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	"os"
 	"github.com/emc-advanced-dev/unik/pkg/state"
-	"path/filepath"
 	"github.com/layer-x/layerx-commons/lxerrors"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
-var VirtualboxStateFile = os.Getenv("HOME")+"/.unik/virtualbox/state.json"
-var virtualboxImagesDirectory = os.Getenv("HOME")+"/.unik/virtualbox/images/"
-var virtualboxInstancesDirectory = os.Getenv("HOME")+"/.unik/virtualbox/instances/"
-var virtualboxVolumesDirectory = os.Getenv("HOME")+"/.unik/virtualbox/volumes/"
+var VirtualboxStateFile = os.Getenv("HOME") + "/.unik/virtualbox/state.json"
+var virtualboxImagesDirectory = os.Getenv("HOME") + "/.unik/virtualbox/images/"
+var virtualboxInstancesDirectory = os.Getenv("HOME") + "/.unik/virtualbox/instances/"
+var virtualboxVolumesDirectory = os.Getenv("HOME") + "/.unik/virtualbox/volumes/"
 
 const VboxUnikInstanceListener = "VboxUnikInstanceListener"
 
@@ -27,7 +27,7 @@ func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error
 
 	p := &VirtualboxProvider{
 		config: config,
-		state: state.NewBasicState(VirtualboxStateFile),
+		state:  state.NewBasicState(VirtualboxStateFile),
 	}
 
 	if err := p.DeployInstanceListener(); err != nil && !strings.Contains(err.Error(), "already exists") {
@@ -43,7 +43,7 @@ func (p *VirtualboxProvider) WithState(state state.State) *VirtualboxProvider {
 }
 
 func getImagePath(imageName string) string {
-	return filepath.Join(virtualboxImagesDirectory, imageName,"boot.vmdk")
+	return filepath.Join(virtualboxImagesDirectory, imageName, "boot.vmdk")
 }
 
 func getInstanceDir(instanceName string) string {
@@ -51,5 +51,5 @@ func getInstanceDir(instanceName string) string {
 }
 
 func getVolumePath(volumeName string) string {
-	return filepath.Join(virtualboxVolumesDirectory, volumeName, "boot.vmdk")
+	return filepath.Join(virtualboxVolumesDirectory, volumeName, "data.vmdk")
 }

@@ -1,6 +1,7 @@
 package virtualbox
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"os"
@@ -20,6 +21,7 @@ func (p *VirtualboxProvider) DeleteImage(id string, force bool) error {
 			if !force {
 				return lxerrors.New("instance "+instance.Id+" found which uses image "+image.Id+"; try again with force=true", nil)
 			} else {
+				logrus.Warnf("deleting instance %s which belongs to instance %s", instance.Id, image.Id)
 				err = p.DeleteInstance(instance.Id)
 				if err != nil {
 					return lxerrors.New("failed to delete instance "+instance.Id+" which is using image "+image.Id, err)
@@ -29,9 +31,10 @@ func (p *VirtualboxProvider) DeleteImage(id string, force bool) error {
 	}
 
 	imagePath := getImagePath(image.Name)
+	logrus.Warnf("deleting image file at %s", imagePath)
 	err = os.Remove(imagePath)
 	if err != nil {
-		return lxerrors.New("deleing image file at " + imagePath, err)
+		return lxerrors.New("deleing image file at "+imagePath, err)
 	}
 
 	err = p.state.ModifyImages(func(images map[string]*types.Image) error {

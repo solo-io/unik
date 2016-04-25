@@ -2,14 +2,14 @@ package main
 
 import (
 	"flag"
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/config"
+	"github.com/emc-advanced-dev/unik/pkg/daemon"
+	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"os/exec"
-	"github.com/emc-advanced-dev/unik/pkg/daemon"
-	"github.com/Sirupsen/logrus"
-	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
 	"os"
+	"os/exec"
 )
 
 func main() {

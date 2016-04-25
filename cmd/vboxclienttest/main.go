@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
-	"github.com/Sirupsen/logrus"
-	"os"
 	"flag"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/config"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
+	"os"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 	hostnetworkName := "vboxnet0"
 	diskFile := "./boot.vmdk"
 	logrus.SetLevel(logrus.DebugLevel)
-	switch(*operation){
+	switch *operation {
 	case "list":
 		vms, err := virtualboxclient.Vms()
 		if err != nil {

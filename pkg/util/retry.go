@@ -1,8 +1,8 @@
 package util
 
 import (
-	"time"
 	"github.com/Sirupsen/logrus"
+	"time"
 )
 
 func Retry(retries int, sleep time.Duration, action func() error) error {

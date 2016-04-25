@@ -1,10 +1,10 @@
 package virtualbox
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxerrors"
 )
 
 func (p *VirtualboxProvider) AttachVolume(id, instanceId, mntPoint string) error {

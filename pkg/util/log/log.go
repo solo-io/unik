@@ -1,14 +1,14 @@
 package log
 
 import (
+	"bufio"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"io"
-	"fmt"
+	"math"
+	"os/exec"
 	"runtime"
 	"strings"
-	"math"
-	"bufio"
-	"os/exec"
 )
 
 type AddTraceHook struct {
@@ -43,12 +43,12 @@ func (h *AddTraceHook) addTrace(message string) string {
 			continue
 		}
 		fnNameComponents := strings.Split(fnName, "/")
-		truncatedFnName := fnNameComponents[len(fnNameComponents) - 1]
+		truncatedFnName := fnNameComponents[len(fnNameComponents)-1]
 
 		pathComponents := strings.Split(fn, "/")
 		var truncatedPath string
 		if len(pathComponents) > 3 {
-			truncatedPath = strings.Join(pathComponents[len(pathComponents) - 2:], "/")
+			truncatedPath = strings.Join(pathComponents[len(pathComponents)-2:], "/")
 		} else {
 			truncatedPath = strings.Join(pathComponents, "/")
 		}
@@ -66,6 +66,7 @@ func (h *AddTraceHook) addTrace(message string) string {
 }
 
 func LogCommand(cmd *exec.Cmd, asDebug bool) {
+	logrus.WithField("command", cmd.Args).Debugf("running command")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return
@@ -75,9 +76,7 @@ func LogCommand(cmd *exec.Cmd, asDebug bool) {
 		return
 	}
 	go func() {
-		// read command's stdout line by line
 		in := bufio.NewScanner(stdout)
-
 		for in.Scan() {
 			if asDebug {
 				logrus.Debugf(in.Text())
@@ -87,9 +86,7 @@ func LogCommand(cmd *exec.Cmd, asDebug bool) {
 		}
 	}()
 	go func() {
-		// read command's stdout line by line
 		in := bufio.NewScanner(stderr)
-
 		for in.Scan() {
 			logrus.Errorf(in.Text())
 		}
@@ -110,22 +107,22 @@ func (h *TeeHook) Fire(entry *logrus.Entry) error {
 	switch entry.Level {
 	case logrus.PanicLevel:
 		logger.WithFields(entry.Data).Panic(entry.Message)
-		break;
+		break
 	case logrus.FatalLevel:
 		logger.WithFields(entry.Data).Fatal(entry.Message)
-		break;
+		break
 	case logrus.ErrorLevel:
 		logger.WithFields(entry.Data).Error(entry.Message)
-		break;
+		break
 	case logrus.WarnLevel:
 		logger.WithFields(entry.Data).Warnf(entry.Message)
-		break;
+		break
 	case logrus.InfoLevel:
 		logger.WithFields(entry.Data).Info(entry.Message)
-		break;
+		break
 	case logrus.DebugLevel:
 		logger.WithFields(entry.Data).Debug(entry.Message)
-		break;
+		break
 	}
 	return nil
 }

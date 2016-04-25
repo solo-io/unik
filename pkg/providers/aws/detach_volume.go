@@ -17,7 +17,7 @@ func (p *AwsProvider) DetachVolume(id string) error {
 	}
 	param := &ec2.DetachVolumeInput{
 		VolumeId: aws.String(volume.Id),
-		Force: aws.Bool(true),
+		Force:    aws.Bool(true),
 	}
 	_, err = p.newEC2().DetachVolume(param)
 	if err != nil {

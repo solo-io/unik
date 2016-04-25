@@ -1,11 +1,11 @@
 package aws
 
 import (
+	"github.com/Sirupsen/logrus"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/Sirupsen/logrus"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/aws"
 	"os"
 	"time"
 )
@@ -24,7 +24,7 @@ func (p *AwsProvider) CreateVolume(name, imagePath string) (*types.Volume, error
 		},
 		Tags: []*ec2.Tag{
 			&ec2.Tag{
-				Key: aws.String("Name"),
+				Key:   aws.String("Name"),
 				Value: aws.String(name),
 			},
 		},
@@ -41,16 +41,15 @@ func (p *AwsProvider) CreateVolume(name, imagePath string) (*types.Volume, error
 	sizeMb := rawImageFile.Size() >> 20
 
 	volume := &types.Volume{
-		Id: volumeId,
-		Name: name,
-		SizeMb: sizeMb,
-		Attachment: "",
+		Id:             volumeId,
+		Name:           name,
+		SizeMb:         sizeMb,
+		Attachment:     "",
 		Infrastructure: types.Infrastructure_AWS,
-		Created: time.Now(),
+		Created:        time.Now(),
 	}
 
-
-	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error{
+	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volumes[volume.Id] = volume
 		return nil
 	})

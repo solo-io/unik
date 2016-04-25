@@ -2,22 +2,22 @@ package virtualbox
 
 import (
 	"github.com/Sirupsen/logrus"
-	"os"
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"net/http"
-	"io"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"io"
+	"net/http"
+	"os"
 )
 
 const (
-	vboxInstanceListenerUrl = "https://s3.amazonaws.com/unik-instance-listener/instancelistener-base.vmdk"
+	vboxInstanceListenerUrl  = "https://s3.amazonaws.com/unik-instance-listener/instancelistener-base.vmdk"
 	vboxInstanceListenerVmdk = "instancelistener-base.vmdk"
 )
 
 func (p *VirtualboxProvider) DeployInstanceListener() error {
 	if _, err := os.Stat(vboxInstanceListenerVmdk); err != nil {
-		logrus.Infof("vbox instance listener vmdk not found, attempting to download from "+vboxInstanceListenerUrl)
+		logrus.Infof("vbox instance listener vmdk not found, attempting to download from " + vboxInstanceListenerUrl)
 		vmdkFile, err := os.Create(vboxInstanceListenerVmdk)
 		if err != nil {
 			return lxerrors.New("creating file for vbox instance listener vmdk", err)

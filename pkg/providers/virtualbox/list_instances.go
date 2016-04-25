@@ -1,13 +1,13 @@
 package virtualbox
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"time"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"time"
 )
 
 func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {

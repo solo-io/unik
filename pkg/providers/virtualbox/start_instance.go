@@ -1,8 +1,8 @@
 package virtualbox
 
 import (
-	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
+	"github.com/layer-x/layerx-commons/lxerrors"
 )
 
 func (p *VirtualboxProvider) StartInstance(id string) error {

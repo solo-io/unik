@@ -8,9 +8,9 @@ type Config struct {
 	Providers Providers `yaml:"providers"`
 }
 type Providers struct {
-	Aws        []Aws     `yaml:"aws"`
-	Vsphere    []Vsphere `yaml:"vsphere"`
-	Virtualbox []Virtualbox    `yaml:"virtualbox"`
+	Aws        []Aws        `yaml:"aws"`
+	Vsphere    []Vsphere    `yaml:"vsphere"`
+	Virtualbox []Virtualbox `yaml:"virtualbox"`
 }
 
 type Aws struct {
@@ -26,17 +26,18 @@ type Vsphere struct {
 	VsphereUser     string `yaml:"vsphere_user"`
 	VspherePassword string `yaml:"vsphere_password"`
 	VsphereURL      string `yaml:"vsphere_url"`
+	Datastore       string `yaml:"datastore_name"`
 }
 
 type Virtualbox struct {
-	Name        string `yaml:"name"`
-	AdapterName string `yaml:"adapter_name"`
+	Name                  string                `yaml:"name"`
+	AdapterName           string                `yaml:"adapter_name"`
 	VirtualboxAdapterType VirtualboxAdapterType `yaml:"adapter_type"`
 }
 
 type VirtualboxAdapterType string
 
 const (
-	BridgedAdapter = VirtualboxAdapterType("bridged")
+	BridgedAdapter  = VirtualboxAdapterType("bridged")
 	HostOnlyAdapter = VirtualboxAdapterType("host_only")
 )

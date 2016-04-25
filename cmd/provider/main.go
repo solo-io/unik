@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 
+	"flag"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
-	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
 	"github.com/emc-advanced-dev/unik/pkg/state"
-	"flag"
+	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
 	"strings"
 )
 
@@ -24,11 +24,11 @@ func main() {
 	logrus.AddHook(&uniklog.AddTraceHook{true})
 
 	c := config.Aws{
-		Name: "aws-provider",
-		AwsAccessKeyID: os.Getenv("AWS_ACCESS_KEY_ID"),
+		Name:              "aws-provider",
+		AwsAccessKeyID:    os.Getenv("AWS_ACCESS_KEY_ID"),
 		AwsSecretAcessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		Region: os.Getenv("AWS_REGION"),
-		Zone: os.Getenv("AWS_AVAILABILITY_ZONE"),
+		Region:            os.Getenv("AWS_REGION"),
+		Zone:              os.Getenv("AWS_AVAILABILITY_ZONE"),
 	}
 	p := aws.NewAwsProvier(c)
 	state, err := state.BasicStateFromFile(aws.AwsStateFile)
@@ -39,7 +39,7 @@ func main() {
 		p = p.WithState(state)
 	}
 
-	switch(*action){
+	switch *action {
 	case "all":
 		r := compilers.RunmpCompiler{
 			DockerImage: "compilers-rump-go-xen",
@@ -235,7 +235,7 @@ func main() {
 	case "run-instance-with-volume":
 		args := strings.Split(*arg, ",")
 		if len(args) != 4 {
-			logrus.Error("wrong args: "+*arg)
+			logrus.Error("wrong args: " + *arg)
 			return
 		}
 		name := args[0]

@@ -32,7 +32,7 @@ type rumpConfig struct {
 
 type multinetRumpConfig struct {
 	Cmdline string `json:"cmdline"`
-	Net1     *net   `json:"net1,omitempty"`
-	Net2     *net   `json:"net2,omitempty"`
+	Net1    *net   `json:"net1,omitempty"`
+	Net2    *net   `json:"net2,omitempty"`
 	Blk     []blk  `json:"blk,omitempty"`
 }

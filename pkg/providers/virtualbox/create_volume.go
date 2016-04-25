@@ -1,13 +1,13 @@
 package virtualbox
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"os"
-	"time"
 	"path/filepath"
+	"time"
 )
 
 func (p *VirtualboxProvider) CreateVolume(name, imagePath string) (_ *types.Volume, err error) {
@@ -18,7 +18,7 @@ func (p *VirtualboxProvider) CreateVolume(name, imagePath string) (_ *types.Volu
 	if err := os.MkdirAll(filepath.Dir(volumePath), 0777); err != nil {
 		return nil, lxerrors.New("creating directory for volume file", err)
 	}
-	defer func(){
+	defer func() {
 		if err != nil {
 			os.RemoveAll(filepath.Dir(volumePath))
 		}
@@ -35,15 +35,15 @@ func (p *VirtualboxProvider) CreateVolume(name, imagePath string) (_ *types.Volu
 	sizeMb := rawImageFile.Size() >> 20
 
 	volume := &types.Volume{
-		Id: name,
-		Name: name,
-		SizeMb: sizeMb,
-		Attachment: "",
+		Id:             name,
+		Name:           name,
+		SizeMb:         sizeMb,
+		Attachment:     "",
 		Infrastructure: types.Infrastructure_VIRTUALBOX,
-		Created: time.Now(),
+		Created:        time.Now(),
 	}
 
-	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error{
+	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volumes[volume.Id] = volume
 		return nil
 	})

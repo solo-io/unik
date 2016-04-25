@@ -1,11 +1,11 @@
 package main
 
 import (
-	"os"
+	"flag"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
-	"flag"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"os"
 )
 
 func main() {

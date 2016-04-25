@@ -1,24 +1,24 @@
 package main
 
 import (
-	"net"
+	"encoding/json"
+	"errors"
+	"flag"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/go-martini/martini"
-	"time"
+	"io/ioutil"
+	"net"
+	"net/http"
 	"strings"
 	"sync"
-	"encoding/json"
-	"net/http"
-	"flag"
-	"errors"
-	"fmt"
-	"io/ioutil"
+	"time"
 )
 
 const statefile = "statefile.json"
 
 type state struct {
-	MacIpMap map[string]string `json:"Ips"`
+	MacIpMap  map[string]string            `json:"Ips"`
 	MacEnvMap map[string]map[string]string `json:"Envs"`
 }
 
@@ -89,7 +89,7 @@ func main() {
 		instanceIp := splitAddr[0]
 		macAddress := req.URL.Query().Get("mac_address")
 		logrus.WithFields(logrus.Fields{
-			"Ip": instanceIp,
+			"Ip":          instanceIp,
 			"mac-address": macAddress,
 		}).Infof("Instance registered")
 		//mac address = the instance id in vsphere/vbox
@@ -126,7 +126,7 @@ func main() {
 			return "failed to unmarshal data " + string(data) + " to map[string]string\n", err
 		}
 		logrus.WithFields(logrus.Fields{
-			"env": env,
+			"env":         env,
 			"mac-address": macAddress,
 		}).Infof("Env set for instance")
 		envMapLock.Lock()

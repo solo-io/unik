@@ -1,28 +1,28 @@
 package aws
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"github.com/Sirupsen/logrus"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/aws"
-	"encoding/json"
-	"encoding/base64"
 	"time"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 )
 
 func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
 	logrus.WithFields(logrus.Fields{
-	"image-id": imageId,
-		"mounts": mntPointsToVolumeIds,
-		"env": env,
+		"image-id": imageId,
+		"mounts":   mntPointsToVolumeIds,
+		"env":      env,
 	}).Infof("running instance %s", name)
 
 	var instanceId string
 	ec2svc := p.newEC2()
 
-	defer func(){
+	defer func() {
 		if err != nil {
 			logrus.WithError(err).Errorf("aws running instance encountered an error")
 			if instanceId != "" {
@@ -31,7 +31,7 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 					InstanceIds: []*string{aws.String(instanceId)},
 				}
 				ec2svc.TerminateInstances(terminateInstanceInput)
-				cleanupErr := p.state.ModifyInstances(func(instances map[string]*types.Instance) error{
+				cleanupErr := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 					delete(instances, instanceId)
 					return nil
 				})
@@ -61,7 +61,7 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 	}
 	encodedData := base64.StdEncoding.EncodeToString(envData)
 	runInstanceInput := &ec2.RunInstancesInput{
-		ImageId: aws.String(image.Id),
+		ImageId:  aws.String(image.Id),
 		MinCount: aws.Int64(1),
 		MaxCount: aws.Int64(1),
 		Placement: &ec2.Placement{
@@ -87,15 +87,15 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 
 	//must add instance to state before attaching volumes
 	instance := &types.Instance{
-		Id: instanceId,
-		Name: name,
-		State: types.InstanceState_Pending,
+		Id:             instanceId,
+		Name:           name,
+		State:          types.InstanceState_Pending,
 		Infrastructure: types.Infrastructure_AWS,
-		ImageId: image.Id,
-		Created: time.Now(),
+		ImageId:        image.Id,
+		Created:        time.Now(),
 	}
 
-	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error{
+	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 		instances[instance.Id] = instance
 		return nil
 	}); err != nil {
@@ -134,7 +134,7 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 		},
 		Tags: []*ec2.Tag{
 			&ec2.Tag{
-				Key:  aws.String("Name"),
+				Key:   aws.String("Name"),
 				Value: aws.String(name),
 			},
 		},
@@ -148,4 +148,3 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 
 	return instance, nil
 }
-

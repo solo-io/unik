@@ -1,9 +1,9 @@
 package virtualbox
 
 import (
-	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxerrors"
 )
 
 func (p *VirtualboxProvider) DeleteInstance(id string) error {

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"os"
 	"github.com/Sirupsen/logrus"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"os"
 )
 
 func main() {

@@ -1,13 +1,13 @@
 package state
 
 import (
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"path/filepath"
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"sync"
-	"io/ioutil"
 	"encoding/json"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"io/ioutil"
 	"os"
+	"path/filepath"
+	"sync"
 )
 
 type basicState struct {
@@ -23,10 +23,10 @@ type basicState struct {
 
 func NewBasicState(saveFile string) *basicState {
 	return &basicState{
-		saveFile:      saveFile,
-		Images:        make(map[string]*types.Image),
-		Instances:     make(map[string]*types.Instance),
-		Volumes:       make(map[string]*types.Volume),
+		saveFile:  saveFile,
+		Images:    make(map[string]*types.Image),
+		Instances: make(map[string]*types.Instance),
+		Volumes:   make(map[string]*types.Volume),
 	}
 }
 
@@ -43,7 +43,6 @@ func BasicStateFromFile(saveFile string) (*basicState, error) {
 	s.saveFile = saveFile
 	return &s, nil
 }
-
 
 func (s *basicState) GetImages() map[string]*types.Image {
 	s.imagesLock.RLock()
@@ -74,7 +73,7 @@ func (s *basicState) GetInstances() map[string]*types.Instance {
 			Infrastructure: instance.Infrastructure,
 			Name:           instance.Name,
 			State:          instance.State,
-			Created:          instance.Created,
+			Created:        instance.Created,
 		}
 		instancesCopy[id] = instanceCopy
 	}
@@ -92,7 +91,7 @@ func (s *basicState) GetVolumes() map[string]*types.Volume {
 			SizeMb:         volume.SizeMb,
 			Attachment:     volume.Attachment,
 			Infrastructure: volume.Infrastructure,
-			Created: volume.Created,
+			Created:        volume.Created,
 		}
 		volumesCopy[id] = volumeCopy
 	}

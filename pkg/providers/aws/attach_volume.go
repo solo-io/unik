@@ -1,12 +1,12 @@
 package aws
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 )
 
 func (p *AwsProvider) AttachVolume(id, instanceId, mntPoint string) error {

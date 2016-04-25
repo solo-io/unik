@@ -2,10 +2,10 @@ package common
 
 import (
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
-	"github.com/Sirupsen/logrus"
 )
 
 const UnikLogsPort = 9876

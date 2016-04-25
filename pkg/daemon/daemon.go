@@ -3,9 +3,11 @@ package daemon
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/pkg/ioutils"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/config"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/go-martini/martini"
@@ -13,12 +15,10 @@ import (
 	"github.com/layer-x/layerx-commons/lxmartini"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
-	"github.com/Sirupsen/logrus"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	"os"
 )
 
 type UnikDaemon struct {
@@ -28,8 +28,8 @@ type UnikDaemon struct {
 }
 
 const (
-	aws     = "aws"
-	vsphere = "vsphere"
+	aws        = "aws"
+	vsphere    = "vsphere"
 	virtualbox = "virtualbox"
 )
 
@@ -90,7 +90,7 @@ func (d *UnikDaemon) registerHandlers() {
 				return
 			}
 			if jsonObject != nil {
-				httpOutStream.Write([]byte(BEGIN_JSON_DATA+"\n"))
+				httpOutStream.Write([]byte(BEGIN_JSON_DATA + "\n"))
 				data, err := json.Marshal(jsonObject)
 				if err != nil {
 					respond(res, lxerrors.New("could not marshal message to json", err))
@@ -196,7 +196,7 @@ func (d *UnikDaemon) registerHandlers() {
 				"force":        force,
 				"mount-points": mountPoints,
 				"name":         name,
-				"args":		args,
+				"args":         args,
 				"compiler":     compilerMode,
 			}).Debugf("compiling raw image")
 			rawImage, err := compiler.CompileRawImage(sourceTar, args, mountPoints)
@@ -650,7 +650,7 @@ func getCompilerMode(stagerMode, unikernelType string) string {
 }
 
 func respond(res http.ResponseWriter, message interface{}) error {
-	switch message.(type){
+	switch message.(type) {
 	case string:
 		messageString := message.(string)
 		data := []byte(messageString)

@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"os"
 
+	"flag"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	"github.com/emc-advanced-dev/unik/pkg/state"
-	"flag"
-	"strings"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
+	"github.com/emc-advanced-dev/unik/pkg/state"
+	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
+	"strings"
 )
 
 func main() {
@@ -24,8 +24,8 @@ func main() {
 	logrus.AddHook(&uniklog.AddTraceHook{true})
 
 	c := config.Virtualbox{
-		Name: "virtualbox-provider",
-		AdapterName: "vboxnet0",
+		Name:                  "virtualbox-provider",
+		AdapterName:           "vboxnet0",
 		VirtualboxAdapterType: config.HostOnlyAdapter,
 	}
 	p, err := virtualbox.NewVirtualboxProvider(c)
@@ -42,7 +42,7 @@ func main() {
 	}
 	defer state.Save()
 
-	switch(*action){
+	switch *action {
 	case "all":
 		r := compilers.RunmpCompiler{
 			DockerImage: "compilers-rump-go-hw",
@@ -216,7 +216,7 @@ func main() {
 	case "run-instance-with-volume":
 		args := strings.Split(*arg, ",")
 		if len(args) != 4 {
-			logrus.Error("wrong args: "+*arg)
+			logrus.Error("wrong args: " + *arg)
 			return
 		}
 		name := args[0]

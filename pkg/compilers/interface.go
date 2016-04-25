@@ -1,8 +1,8 @@
 package compilers
 
 import (
-	"io"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"io"
 )
 
 type Compiler interface {

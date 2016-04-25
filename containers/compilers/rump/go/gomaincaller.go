@@ -92,7 +92,7 @@ func gomaincaller() {
 	}()
 
 	errCounter := 0
-	envLoop:
+envLoop:
 	for {
 		log.Printf("waiting for env")
 		select {
@@ -142,7 +142,7 @@ func registerWithListener(listenerIp string) (map[string]string, error) {
 		return nil, errors.New("could not find mac address")
 	}
 
-	resp, err := http.Post("http://" + listenerIp + ":3000/register?mac_address=" + macAddress, "", bytes.NewBuffer([]byte{}))
+	resp, err := http.Post("http://"+listenerIp+":3000/register?mac_address="+macAddress, "", bytes.NewBuffer([]byte{}))
 	if err != nil {
 		return nil, err
 	}

@@ -1,17 +1,16 @@
 package os
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/container"
 	"github.com/docker/engine-api/types/network"
 	"github.com/docker/engine-api/types/strslice"
+	"github.com/layer-x/layerx-commons/lxerrors"
 	"golang.org/x/net/context"
 	"io/ioutil"
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/Sirupsen/logrus"
 )
-
 
 func RunContainer(imageName string, cmds, binds []string, privileged bool) error {
 	cli, err := client.NewEnvClient()

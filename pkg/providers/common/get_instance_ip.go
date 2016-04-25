@@ -1,10 +1,10 @@
 package common
 
 import (
-	"github.com/layer-x/layerx-commons/lxhttpclient"
-	"github.com/layer-x/layerx-commons/lxerrors"
 	"encoding/json"
 	"fmt"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/layer-x/layerx-commons/lxhttpclient"
 )
 
 func GetInstanceIp(listenerIp string, listenerPort int, instanceId string) (string, error) {

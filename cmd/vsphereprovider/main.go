@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"os"
 
+	"flag"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
-	"github.com/emc-advanced-dev/unik/pkg/state"
-	"flag"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
+	"github.com/emc-advanced-dev/unik/pkg/state"
+	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
 )
 
 func main() {
@@ -22,9 +22,9 @@ func main() {
 	logrus.AddHook(&uniklog.AddTraceHook{true})
 
 	c := config.Vsphere{
-		Name: "vsphere-provider",
-		VsphereURL: os.Getenv("VSPHERE_URL"),
-		VsphereUser: os.Getenv("VSPHERE_USER"),
+		Name:            "vsphere-provider",
+		VsphereURL:      os.Getenv("VSPHERE_URL"),
+		VsphereUser:     os.Getenv("VSPHERE_USER"),
 		VspherePassword: os.Getenv("VSPHERE_PASSWORD"),
 	}
 	p, err := vsphere.NewVsphereProvier(c)
@@ -40,7 +40,7 @@ func main() {
 		p = p.WithState(state)
 	}
 
-	switch(*action){
+	switch *action {
 	case "all":
 		r := compilers.RunmpCompiler{
 			DockerImage: "compilers-rump-go-xen",

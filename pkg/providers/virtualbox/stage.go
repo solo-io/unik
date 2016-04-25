@@ -1,13 +1,13 @@
 package virtualbox
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"os"
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"time"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"os"
 	"path/filepath"
+	"time"
 )
 
 func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force bool) (_ *types.Image, err error) {
@@ -20,7 +20,7 @@ func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force 
 			if !force {
 				return nil, lxerrors.New("an image already exists with name '"+name+"', try again with --force", nil)
 			} else {
-				logrus.WithField("image", image).Warnf("force: deleting previous image with name "+name)
+				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + name)
 				err = p.DeleteImage(image.Id, true)
 				if err != nil {
 					return nil, lxerrors.New("removing previously existing image", err)
@@ -33,7 +33,7 @@ func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force 
 	if err := os.MkdirAll(filepath.Dir(imagePath), 0777); err != nil {
 		return nil, lxerrors.New("creating directory for boot image", err)
 	}
-	defer func(){
+	defer func() {
 		if err != nil {
 			os.RemoveAll(filepath.Dir(imagePath))
 		}
@@ -52,17 +52,17 @@ func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force 
 
 	logrus.WithFields(logrus.Fields{
 		"name": name,
-		"id": name,
+		"id":   name,
 		"size": sizeMb,
 	}).Infof("creating base vmdk for unikernel image")
 
 	image := &types.Image{
-		Id: name,
-		Name: name,
+		Id:             name,
+		Name:           name,
 		DeviceMappings: rawImage.DeviceMappings,
-		SizeMb: sizeMb,
+		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_VIRTUALBOX,
-		Created: time.Now(),
+		Created:        time.Now(),
 	}
 
 	err = p.state.ModifyImages(func(images map[string]*types.Image) error {

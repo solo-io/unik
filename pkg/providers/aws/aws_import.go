@@ -264,14 +264,14 @@ func toGigs(i int64) int64 {
 }
 
 type manifest struct {
-	XMLName         xml.Name `xml:"manifest"`
+	XMLName xml.Name `xml:"manifest"`
 
 	Version         string   `xml:"version"`
 	FileFormat      string   `xml:"file-format"`
 	Importer        importer `xml:"importer"`
 	SelfDestructUrl string   `xml:"self-destruct-url"`
 
-	ImportSpec      importSpec `xml:"import"`
+	ImportSpec importSpec `xml:"import"`
 }
 
 type importer struct {

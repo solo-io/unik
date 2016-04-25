@@ -1,8 +1,8 @@
 package common
 
 import (
-	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxerrors"
 )
 
 func GetDeviceNameForMnt(image *types.Image, mntPoint string) (string, error) {

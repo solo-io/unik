@@ -1,11 +1,11 @@
 package virtualbox
 
 import (
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"strconv"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"path/filepath"
+	"strconv"
 )
 
 func (p *VirtualboxProvider) DetachVolume(id string) error {
@@ -26,7 +26,7 @@ func (p *VirtualboxProvider) DetachVolume(id string) error {
 		return lxerrors.New("retreiving vm from virtualbox", err)
 	}
 	var controllerKey string
-	for _,  device := range vm.Devices {
+	for _, device := range vm.Devices {
 		if filepath.Clean(device.DiskFile) == filepath.Clean(getVolumePath(volume.Name)) {
 			controllerKey = device.ControllerKey
 		}

@@ -1,10 +1,10 @@
 package common
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/providers"
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/providers"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxerrors"
 )
 
 func VerifyMntsInput(p providers.Provider, image *types.Image, mntPointsToVolumeIds map[string]string) error {

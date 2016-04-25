@@ -1,12 +1,12 @@
 package os
 
 import (
+	"archive/tar"
+	"errors"
+	log "github.com/Sirupsen/logrus"
 	"io"
 	"os"
 	"path"
-	"archive/tar"
-	log "github.com/Sirupsen/logrus"
-	"errors"
 )
 
 func ExtractTar(tarArchive io.ReadCloser, localFolder string) error {
@@ -55,4 +55,3 @@ func ExtractTar(tarArchive io.ReadCloser, localFolder string) error {
 
 	return nil
 }
-

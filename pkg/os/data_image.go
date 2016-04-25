@@ -1,16 +1,16 @@
 package os
 
 import (
-	"os/exec"
-	"github.com/layer-x/layerx-commons/lxerrors"
-	"path/filepath"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
-	"fmt"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"io"
 	"io/ioutil"
 	"os"
-	"io"
+	"os/exec"
 	"path"
+	"path/filepath"
 )
 
 func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool) (string, error) {
@@ -30,7 +30,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool)
 	if size > 0 {
 		cmd = exec.Command("docker", "run", "--rm", "--privileged",
 			"-v", "/dev/:/dev/",
-			"-v", buildDir + "/:/opt/vol/",
+			"-v", buildDir+"/:/opt/vol/",
 			"image-creator",
 			"-p", fmt.Sprintf("%v", usePartitionTables),
 			"-v", filepath.Base(dataFolder), fmt.Sprintf(",%v", size),
@@ -38,7 +38,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool)
 	} else {
 		cmd = exec.Command("docker", "run", "--rm", "--privileged",
 			"-v", "/dev/:/dev/",
-			"-v", buildDir + "/:/opt/vol/",
+			"-v", buildDir+"/:/opt/vol/",
 			"image-creator",
 			"-p", fmt.Sprintf("%v", usePartitionTables),
 			"-v", filepath.Base(dataFolder),
@@ -51,7 +51,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool)
 	uniklog.LogCommand(cmd, true)
 	err = cmd.Run()
 	if err != nil {
-		return "", lxerrors.New("failed running image-creator on " + dataFolder, err)
+		return "", lxerrors.New("failed running image-creator on "+dataFolder, err)
 	}
 
 	resultFile, err := ioutil.TempFile("", "")
@@ -81,7 +81,7 @@ func BuildEmptyDataVolume(size int) (string, error) {
 
 	cmd := exec.Command("docker", "run", "--rm", "--privileged",
 		"-v", "/dev/:/dev/",
-		"-v", buildDir + "/:/opt/vol/",
+		"-v", buildDir+"/:/opt/vol/",
 		"image-creator",
 		"-v", filepath.Base(dataFolder), fmt.Sprintf(",%v", size),
 	)
@@ -92,7 +92,7 @@ func BuildEmptyDataVolume(size int) (string, error) {
 	uniklog.LogCommand(cmd, true)
 	err = cmd.Run()
 	if err != nil {
-		return "", lxerrors.New("failed running image-creator on " + dataFolder, err)
+		return "", lxerrors.New("failed running image-creator on "+dataFolder, err)
 	}
 
 	resultFile, err := ioutil.TempFile("", "")

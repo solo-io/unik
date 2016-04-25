@@ -1,35 +1,35 @@
 package types
 
 import (
-	"time"
 	"fmt"
+	"time"
 )
 
 type InstanceState string
 
 const (
-	InstanceState_Running     InstanceState = "InstanceState_Running"
-	InstanceState_Stopped     InstanceState = "InstanceState_Stopped"
-	InstanceState_Pending     InstanceState = "InstanceState_Pending"
-	InstanceState_Unknown     InstanceState = "InstanceState_Unknown"
-	InstanceState_Terminated     InstanceState = "InstanceState_Terminated"
+	InstanceState_Running    InstanceState = "InstanceState_Running"
+	InstanceState_Stopped    InstanceState = "InstanceState_Stopped"
+	InstanceState_Pending    InstanceState = "InstanceState_Pending"
+	InstanceState_Unknown    InstanceState = "InstanceState_Unknown"
+	InstanceState_Terminated InstanceState = "InstanceState_Terminated"
 )
 
 type Infrastructure string
 
 const (
-	Infrastructure_AWS Infrastructure = "Infrastructure_AWS"
-	Infrastructure_VSPHERE Infrastructure = "Infrastructure_VSPHERE"
+	Infrastructure_AWS        Infrastructure = "Infrastructure_AWS"
+	Infrastructure_VSPHERE    Infrastructure = "Infrastructure_VSPHERE"
 	Infrastructure_VIRTUALBOX Infrastructure = "Infrastructure_VIRTUALBOX"
 )
 
 type Image struct {
-	Id             string           `json:"Id"`
-	Name           string           `json:"Name"`
+	Id             string          `json:"Id"`
+	Name           string          `json:"Name"`
 	DeviceMappings []DeviceMapping `json:"DeviceMappings"`
-	SizeMb         int64            `json:"SizeMb"`
-	Infrastructure Infrastructure   `json:"Infrastructure"`
-	Created	       time.Time	`json:"Created"`
+	SizeMb         int64           `json:"SizeMb"`
+	Infrastructure Infrastructure  `json:"Infrastructure"`
+	Created        time.Time       `json:"Created"`
 }
 
 func (image *Image) String() string {
@@ -40,13 +40,13 @@ func (image *Image) String() string {
 }
 
 type Instance struct {
-	Id             string        `json:"Id"`
-	Name           string        `json:"Name"`
-	State          InstanceState `json:"State"`
-	IpAddress      string        `json:"IpAddress"`
-	ImageId        string        `json:"ImageId"`
-	Infrastructure Infrastructure        `json:"Infrastructure"`
-	Created	       time.Time	`json:"Created"`
+	Id             string         `json:"Id"`
+	Name           string         `json:"Name"`
+	State          InstanceState  `json:"State"`
+	IpAddress      string         `json:"IpAddress"`
+	ImageId        string         `json:"ImageId"`
+	Infrastructure Infrastructure `json:"Infrastructure"`
+	Created        time.Time      `json:"Created"`
 }
 
 func (instance *Instance) String() string {
@@ -57,12 +57,12 @@ func (instance *Instance) String() string {
 }
 
 type Volume struct {
-	Id             string `json:"Id"`
-	Name           string `json:"Name"`
-	SizeMb         int64  `json:"SizeMb"`
-	Attachment     string `json:"Attachment"` //instanceId
+	Id             string         `json:"Id"`
+	Name           string         `json:"Name"`
+	SizeMb         int64          `json:"SizeMb"`
+	Attachment     string         `json:"Attachment"` //instanceId
 	Infrastructure Infrastructure `json:"Infrastructure"`
-	Created	       time.Time	`json:"Created"`
+	Created        time.Time      `json:"Created"`
 }
 
 func (volume *Volume) String() string {
@@ -78,7 +78,7 @@ type DeviceMapping struct {
 }
 
 type RawImage struct {
-	LocalImagePath string           `json:"LocalImagePath"`
+	LocalImagePath string          `json:"LocalImagePath"`
 	DeviceMappings []DeviceMapping `json:"DeviceMappings"`
 }
 
