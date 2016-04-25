@@ -25,8 +25,8 @@ func main() {
 
 	deferred := util.Stack{}
 	defer func(){
-		for fn := deferred.Pop(); fn != nil; {
-			fn.(func())()
+		for deferred.Len() > 0 {
+			deferred.Pop().(func())()
 		}
 	}()
 
