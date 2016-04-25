@@ -37,14 +37,7 @@ public class VmAttachDisk {
                 System.exit(-1);
             }
 
-            int scsiKey = -1;
-            for (VirtualDevice vd : vm.getConfig().getHardware().getDevice()) {
-                if (vd instanceof VirtualSCSIController) {
-                    VirtualSCSIController vscsi = (VirtualSCSIController) vd;
-                    System.out.println("found scsi controller:"+vscsi.getScsiCtlrUnitNumber()+" "+vscsi.getUnitNumber()+" "+vscsi.getKey());
-                    scsiKey = vscsi.getKey();
-                }
-            }
+            int scsiKey = getScsiDeviceKey(vm);
             if (scsiKey == -1) {
                 System.out.println("could not find scsi controller device on ");
                 System.exit(-1);
@@ -55,6 +48,48 @@ public class VmAttachDisk {
             // mode: persistent|independent_persistent,independent_nonpersistent
             String diskMode = "persistent";
             VirtualDeviceConfigSpec vdiskSpec = createExistingDiskSpec(vmdkPath, scsiKey, deviceKey, diskMode);
+            VirtualDeviceConfigSpec[] vdiskSpecArray = {vdiskSpec};
+            vmConfigSpec.setDeviceChange(vdiskSpecArray);
+
+            Task task = vm.reconfigVM_Task(vmConfigSpec);
+            System.out.println(task.waitForTask());
+            if (task.getTaskInfo() != null && task.getTaskInfo().getDescription() != null) {
+                System.out.println(task.getTaskInfo().getDescription().getMessage());
+            }
+        }
+
+        if (args[0].equals("VmDetachDisk")) {
+            if (args.length != 7) {
+                System.err.println("Usage: java VmAttachDisk <url> " +
+                        "<username> <password> <vmname> <deviceKey>");
+                System.exit(-1);
+            }
+
+            String vmname = args[4];
+            int deviceKey = Integer.parseInt(args[5]);
+
+            ServiceInstance si = new ServiceInstance(
+                    new URL(args[1]), args[2], args[3], true);
+
+            Folder rootFolder = si.getRootFolder();
+            VirtualMachine vm = (VirtualMachine) new InventoryNavigator(
+                    rootFolder).searchManagedEntity("VirtualMachine", vmname);
+
+            if (vm == null) {
+                System.out.println("No VM " + vmname + " found");
+                si.getServerConnection().logout();
+                System.exit(-1);
+            }
+
+            int scsiKey = getScsiDeviceKey(vm);
+            if (scsiKey == -1) {
+                System.out.println("could not find scsi controller device on ");
+                System.exit(-1);
+            }
+
+            VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
+
+            VirtualDeviceConfigSpec vdiskSpec = createRemoveDiskSpec(scsiKey, deviceKey);
             VirtualDeviceConfigSpec[] vdiskSpecArray = {vdiskSpec};
             vmConfigSpec.setDeviceChange(vdiskSpecArray);
 
@@ -129,7 +164,7 @@ public class VmAttachDisk {
         }
     }
 
-    static VirtualDeviceConfigSpec createExistingDiskSpec(String fileName, int controllerKey, int deviceKey, String diskMode) {
+    private static VirtualDeviceConfigSpec createExistingDiskSpec(String fileName, int controllerKey, int deviceKey, String diskMode) {
         VirtualDeviceConfigSpec diskSpec =
                 new VirtualDeviceConfigSpec();
         diskSpec.setOperation(VirtualDeviceConfigSpecOperation.add);
@@ -144,6 +179,31 @@ public class VmAttachDisk {
         diskfileBacking.setFileName(fileName);
         diskfileBacking.setDiskMode(diskMode);
         vd.setBacking(diskfileBacking);
+        diskSpec.setDevice(vd);
+        return diskSpec;
+    }
+
+    private static int getScsiDeviceKey(VirtualMachine vm) {
+        for (VirtualDevice vd : vm.getConfig().getHardware().getDevice()) {
+            if (vd instanceof VirtualSCSIController) {
+                VirtualSCSIController vscsi = (VirtualSCSIController) vd;
+                System.out.println("found scsi controller:"+vscsi.getScsiCtlrUnitNumber()+" "+vscsi.getUnitNumber()+" "+vscsi.getKey());
+                return vscsi.getKey();
+            }
+        }
+        return -1;
+    }
+
+    private static VirtualDeviceConfigSpec createRemoveDiskSpec(int controllerKey, int deviceKey) {
+        VirtualDeviceConfigSpec diskSpec =
+                new VirtualDeviceConfigSpec();
+        diskSpec.setOperation(VirtualDeviceConfigSpecOperation.remove);
+
+        VirtualDisk vd = new VirtualDisk();
+        vd.setCapacityInKB(-1);
+        vd.setKey(deviceKey);
+        vd.setUnitNumber(new Integer(deviceKey));
+        vd.setControllerKey(new Integer(controllerKey));
         diskSpec.setDevice(vd);
         return diskSpec;
     }
