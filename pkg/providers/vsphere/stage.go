@@ -34,13 +34,18 @@ func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force boo
 	if err := c.Mkdir(getImageDatastoreDir(name)); err != nil && !strings.Contains(err.Error(), "exists") {
 		return nil, lxerrors.New("creating vsphere directory for image", err)
 	}
+	defer func() {
+		if err != nil {
+			logrus.WithError(err).Warnf("creating image failed, cleaning up image on datastore")
+			c.Rmdir(getImageDatastoreDir(name))
+		}
+	}()
 
 	localVmdkDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		return nil, lxerrors.New("creating tmp file", err)
 	}
 	defer os.RemoveAll(localVmdkDir)
-
 	localVmdkFile := filepath.Join(localVmdkDir, "boot.vmdk")
 
 	logrus.WithField("raw-image", rawImage).Infof("creating boot volume from raw image")

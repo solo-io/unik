@@ -144,19 +144,26 @@ func (vc *VsphereClient) DestroyVm(vmName string) error {
 	return nil
 }
 
-func (vc *VsphereClient) Mkdir(folder string) error {
-	cmd := exec.Command("docker", "run", "--rm",
-		"vsphere-client",
-		"govc",
-		"datastore.mkdir",
-		"-k",
-		"-u", formatUrl(vc.u),
-		folder,
-	)
-	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
-		return lxerrors.New("failed running govc datastore.mkdir "+folder, err)
+func (vc *VsphereClient) Mkdir(path string) error {
+	folderTree := strings.Split(path, "/")
+	for _, folder := range folderTree {
+		cmd := exec.Command("docker", "run", "--rm",
+			"vsphere-client",
+			"govc",
+			"datastore.mkdir",
+			"-k",
+			"-u", formatUrl(vc.u),
+			folder,
+		)
+		uniklog.LogCommand(cmd, true)
+		err := cmd.Run()
+		if err != nil {
+			//only error on last dir
+			if folder == folderTree[len(folderTree)-1] {
+				return lxerrors.New("failed to make folder "+folder, err)
+			}
+			logrus.WithError(err).Warnf("failed running govc datastore.mkdir " + folder)
+		}
 	}
 	return nil
 }

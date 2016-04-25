@@ -17,6 +17,15 @@ const (
 func (p *VsphereProvider) DeployInstanceListener() error {
 	logrus.Infof("checking if instance listener base vmdk already exists on vsphere datastore")
 	c := p.getClient()
+	vm, err := c.GetVm(VsphereUnikInstanceListener)
+	if err == nil {
+		if vm.Summary.Runtime.PowerState != "poweredOn" {
+			return c.PowerOnVm(VsphereUnikInstanceListener)
+		} else {
+			logrus.Info("instance listener already running")
+			return nil
+		}
+	}
 	files, err := c.Ls("unik")
 	if err != nil {
 		return lxerrors.New("lsing on folder 'unik'", err)
@@ -53,13 +62,13 @@ func (p *VsphereProvider) DeployInstanceListener() error {
 	}
 
 	logrus.Infof("deploying virtualbox instance listener")
-	if err := c.CreateVm(VsphereInstanceListener, 512); err != nil {
+	if err := c.CreateVm(VsphereUnikInstanceListener, 512); err != nil {
 		return lxerrors.New("creating vm", err)
 	}
-	if err := c.AttachDisk(VsphereInstanceListener, "unik/"+vsphereInstanceListenerVmdk, 0); err != nil {
+	if err := c.AttachDisk(VsphereUnikInstanceListener, "unik/"+vsphereInstanceListenerVmdk, 0); err != nil {
 		return lxerrors.New("attaching disk to vm", err)
 	}
-	if err := c.PowerOnVm(VsphereInstanceListener); err != nil {
+	if err := c.PowerOnVm(VsphereUnikInstanceListener); err != nil {
 		return lxerrors.New("powering on vm", err)
 	}
 	return nil

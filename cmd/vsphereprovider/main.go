@@ -26,13 +26,15 @@ func main() {
 		VsphereURL:      os.Getenv("VSPHERE_URL"),
 		VsphereUser:     os.Getenv("VSPHERE_USER"),
 		VspherePassword: os.Getenv("VSPHERE_PASSWORD"),
+		Datastore: os.Getenv("VSPHERE_DATASTORE"),
+		DefaultInstanceMemory: 512,
 	}
 	p, err := vsphere.NewVsphereProvier(c)
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
-	state, err := state.LocalStorageStateFromFile(vsphere.VsphereStateFile)
+	state, err := state.BasicStateFromFile(vsphere.VsphereStateFile)
 	if err != nil {
 		logrus.WithError(err).Error("failed to load state")
 	} else {
@@ -43,8 +45,8 @@ func main() {
 	switch *action {
 	case "all":
 		r := compilers.RunmpCompiler{
-			DockerImage: "compilers-rump-go-xen",
-			CreateImage: compilers.CreateImageAws,
+			DockerImage: "compilers-rump-go-hw",
+			CreateImage: compilers.CreateImageVmware,
 		}
 		f, err := os.Open("a.tar")
 		if err != nil {

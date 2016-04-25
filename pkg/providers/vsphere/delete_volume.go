@@ -3,8 +3,6 @@ package vsphere
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"os"
-	"strings"
 )
 
 func (p *VsphereProvider) DeleteVolume(id string, force bool) error {

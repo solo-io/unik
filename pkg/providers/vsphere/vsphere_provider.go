@@ -15,12 +15,12 @@ var VsphereStateFile = os.Getenv("HOME") + "/.unik/vsphere/state.json"
 var VsphereImagesDirectory = "unik/vsphere/images/"
 var VsphereVolumesDirectory = "unik/vsphere/volumes/"
 
-const VsphereInstanceListener = "VsphereInstanceListener"
+const VsphereUnikInstanceListener = "VsphereUnikInstanceListener"
 
 type VsphereProvider struct {
 	config config.Vsphere
 	state  state.State
-	u      url.URL
+	u      *url.URL
 }
 
 func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
@@ -30,11 +30,24 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 		return nil, lxerrors.New("parsing vsphere url", err)
 	}
 
-	return &VsphereProvider{
+	p := &VsphereProvider{
 		config: config,
 		state:  state.NewBasicState(VsphereStateFile),
 		u:      u,
 	}
+
+	p.getClient().Mkdir("unik")
+
+	if err := p.DeployInstanceListener(); err != nil && !strings.Contains(err.Error(), "already exists") {
+		return nil, lxerrors.New("deploing virtualbox instance listener", err)
+	}
+
+	return p, nil
+}
+
+func (p *VsphereProvider) WithState(state state.State) *VsphereProvider {
+	p.state = state
+	return p
 }
 
 func (p *VsphereProvider) getClient() *vsphereclient.VsphereClient {
