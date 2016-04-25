@@ -17,10 +17,11 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 	}
 	instances := []*types.Instance{}
 	for _, vm := range vms {
-		instanceId := vm.MACAddr
+		macAddr := vm.MACAddr
+		instanceId := vm.UUID
 		instance, ok := p.state.GetInstances()[instanceId]
 		if !ok {
-			logrus.WithFields(logrus.Fields{"vm": vm, "instance-id": instanceId}).Warnf("vm found, cannot identify instance id")
+			logrus.WithFields(logrus.Fields{"vm": vm, "instance-id": macAddr}).Warnf("vm found, cannot identify instance id")
 			continue
 		}
 
@@ -29,9 +30,9 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 			return nil, lxerrors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 		}
 
-		if err := unikutil.Retry(5, time.Duration(2000 * time.Millisecond), func() error {
+		if err := unikutil.Retry(5, time.Duration(2000*time.Millisecond), func() error {
 			logrus.Debugf("getting instance ip")
-			instance.IpAddress, err = common.GetInstanceIp(instanceListenerIp, 3000, instanceId)
+			instance.IpAddress, err = common.GetInstanceIp(instanceListenerIp, 3000, macAddr)
 			if err != nil {
 				return err
 			}

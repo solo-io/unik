@@ -10,7 +10,7 @@ func (p *VirtualboxProvider) StopInstance(id string) error {
 	if err != nil {
 		return lxerrors.New("retrieving instance "+id, err)
 	}
-	if err := virtualboxclient.PowerOffVm(instance.Name); err != nil {
+	if err := virtualboxclient.PowerOffVm(instance.Id); err != nil {
 		return lxerrors.New("failed to stop instance "+instance.Id, err)
 	}
 	return nil

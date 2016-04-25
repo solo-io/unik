@@ -1,11 +1,10 @@
 package vsphere
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"github.com/Sirupsen/logrus"
 )
 
 func (p *VsphereProvider) AttachVolume(id, instanceId, mntPoint string) error {
@@ -15,38 +14,32 @@ func (p *VsphereProvider) AttachVolume(id, instanceId, mntPoint string) error {
 	}
 	instance, err := p.GetInstance(instanceId)
 	if err != nil {
-		return lxerrors.New("retrieving instance "+id, err)
+		return lxerrors.New("retrieving instance "+instanceId, err)
 	}
 	image, err := p.GetImage(instance.ImageId)
 	if err != nil {
 		return lxerrors.New("retrieving image for instance", err)
 	}
-	deviceName := ""
-	for _, mapping := range image.DeviceMappings {
-		if mntPoint == mapping.MountPoint {
-			deviceName = mapping.DeviceName
-			break
-		}
-	} //todo: how do we handle device mappings on vsphere?
-	if deviceName == "" {
-		logrus.WithFields(logrus.Fields{"image": image.Id, "mappings": image.DeviceMappings, "mount point": mntPoint}).Errorf("given mapping was not found for image")
-		return lxerrors.New("no mapping found on image "+image.Id+" for mount point "+mntPoint, nil)
-	}
-	param := &ec2.AttachVolumeInput{
-		VolumeId:   aws.String(volume.Id),
-		InstanceId: aws.String(instance.Id),
-		Device:     aws.String(deviceName),
-	}
-	_, err = p.newEC2(logger).AttachVolume(param)
+	controllerPort, err := common.GetControllerPortForMnt(image, mntPoint)
 	if err != nil {
-		return lxerrors.New("failed to attach volume "+volume.Id, err)
+		return lxerrors.New("getting controller port for mnt point", err)
 	}
-	return p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+	logrus.Infof("attaching %s to %s on controller port %v", volume.Id, instance.Id, controllerPort)
+	if err := p.getClient().AttachVmdk(instance.Id, getVolumePath(volume.Name), controllerPort); err != nil {
+		return lxerrors.New("attaching disk to vm", err)
+	}
+	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volume, ok := volumes[volume.Id]
 		if !ok {
 			return lxerrors.New("no record of "+volume.Id+" in the state", nil)
 		}
 		volume.Attachment = instance.Id
 		return nil
-	})
+	}); err != nil {
+		return lxerrors.New("modifying volumes in state", err)
+	}
+	if err := p.state.Save(); err != nil {
+		return lxerrors.New("saving instance volume map to state", err)
+	}
+	return nil
 }

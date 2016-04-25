@@ -10,7 +10,7 @@ func (p *VirtualboxProvider) StartInstance(id string) error {
 	if err != nil {
 		return lxerrors.New("retrieving instance "+id, err)
 	}
-	if err := virtualboxclient.PowerOnVm(instance.Name); err != nil {
+	if err := virtualboxclient.PowerOnVm(instance.Id); err != nil {
 		return lxerrors.New("failed to start instance "+instance.Id, err)
 	}
 	return nil

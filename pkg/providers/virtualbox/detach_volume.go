@@ -21,7 +21,7 @@ func (p *VirtualboxProvider) DetachVolume(id string) error {
 	if err != nil {
 		return lxerrors.New("retrieving instance "+instanceId, err)
 	}
-	vm, err := virtualboxclient.GetVm(instance.Name)
+	vm, err := virtualboxclient.GetVm(instance.Id)
 	if err != nil {
 		return lxerrors.New("retreiving vm from virtualbox", err)
 	}
@@ -39,7 +39,7 @@ func (p *VirtualboxProvider) DetachVolume(id string) error {
 	if err != nil {
 		return lxerrors.New("could not convert "+controllerKey+" to int", err)
 	}
-	if err := virtualboxclient.DetachDisk(instance.Name, controllerPort); err != nil {
+	if err := virtualboxclient.DetachDisk(instance.Id, controllerPort); err != nil {
 		return lxerrors.New("detaching disk from vm", err)
 	}
 	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {

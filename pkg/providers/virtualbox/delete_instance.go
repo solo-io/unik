@@ -31,12 +31,12 @@ func (p *VirtualboxProvider) DeleteInstance(id string) error {
 	}
 	for controllerPort, deviceMapping := range image.DeviceMappings {
 		if deviceMapping.MountPoint != "/" {
-			if err := virtualboxclient.DetachDisk(instance.Name, controllerPort); err != nil {
+			if err := virtualboxclient.DetachDisk(instance.Id, controllerPort); err != nil {
 				return lxerrors.New("detaching volume from instance", err)
 			}
 		}
 	}
-	if err := virtualboxclient.DestroyVm(instance.Name); err != nil {
+	if err := virtualboxclient.DestroyVm(instance.Id); err != nil {
 		return lxerrors.New("destroying vm", err)
 	}
 	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {

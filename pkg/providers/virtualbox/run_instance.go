@@ -79,14 +79,13 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 		portsUsed = append(portsUsed, controllerPort)
 	}
 
-	var instanceId, instanceIp string
-
 	logrus.Debugf("setting instance id from mac address")
 	vm, err := virtualboxclient.GetVm(name)
 	if err != nil {
 		return nil, lxerrors.New("retrieving created vm from vbox", err)
 	}
-	instanceId = vm.MACAddr
+	macAddr := vm.MACAddr
+	instanceId := vm.UUID
 
 	instanceListenerIp, err := virtualboxclient.GetVmIp(VboxUnikInstanceListener)
 	if err != nil {
@@ -94,7 +93,7 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 	}
 
 	logrus.Debugf("sending env to listener")
-	if _, _, err := lxhttpclient.Post(instanceListenerIp+":3000", "/set_instance_env?mac_address="+instanceId, nil, env); err != nil {
+	if _, _, err := lxhttpclient.Post(instanceListenerIp+":3000", "/set_instance_env?mac_address="+macAddr, nil, env); err != nil {
 		return nil, lxerrors.New("sending instance env to listener", err)
 	}
 
@@ -103,9 +102,11 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 		return nil, lxerrors.New("powering on vm", err)
 	}
 
-	if err := unikutil.Retry(30, time.Duration(2000 * time.Millisecond), func() error {
+	var instanceIp string
+
+	if err := unikutil.Retry(30, time.Duration(2000*time.Millisecond), func() error {
 		logrus.Debugf("getting instance ip")
-		instanceIp, err = common.GetInstanceIp(instanceListenerIp, 3000, instanceId)
+		instanceIp, err = common.GetInstanceIp(instanceListenerIp, 3000, macAddr)
 		if err != nil {
 			return err
 		}

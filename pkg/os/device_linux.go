@@ -6,13 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func Mount(device BlockDevice) (mntpoint string, err error) {
@@ -244,19 +244,8 @@ type DeviceMapperDevice struct {
 	orginalDevice BlockDevice
 }
 
-//http://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-golang
-const letterBytes = "abcdefghijklmnopqrstuvwxyz"
-
-func RandStringBytes(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
-	}
-	return string(b)
-}
-
 func randomDeviceName() string {
-	return "dev" + RandStringBytes(4)
+	return "dev" + unikutil.RandStringBytes(4)
 }
 
 // Device device name is generated, user can chagne it..
