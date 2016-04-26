@@ -37,6 +37,9 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 	}
 
 	p.getClient().Mkdir("unik")
+	p.getClient().Mkdir("unik/vsphere")
+	p.getClient().Mkdir("unik/vsphere/images")
+	p.getClient().Mkdir("unik/vsphere/volumes")
 
 	if err := p.DeployInstanceListener(); err != nil && !strings.Contains(err.Error(), "already exists") {
 		return nil, lxerrors.New("deploing virtualbox instance listener", err)

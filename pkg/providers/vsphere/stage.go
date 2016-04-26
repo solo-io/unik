@@ -31,13 +31,14 @@ func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force boo
 		}
 	}
 	c := p.getClient()
-	if err := c.Mkdir(getImageDatastoreDir(name)); err != nil && !strings.Contains(err.Error(), "exists") {
+	vsphereImageDir := getImageDatastoreDir(name)
+	if err := c.Mkdir(vsphereImageDir); err != nil && !strings.Contains(err.Error(), "exists") {
 		return nil, lxerrors.New("creating vsphere directory for image", err)
 	}
 	defer func() {
 		if err != nil {
 			logrus.WithError(err).Warnf("creating image failed, cleaning up image on datastore")
-			c.Rmdir(getImageDatastoreDir(name))
+			c.Rmdir(vsphereImageDir)
 		}
 	}()
 
@@ -59,16 +60,14 @@ func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force boo
 	}
 	sizeMb := rawImageFile.Size() >> 20
 
-	vsphereImagePath := getImageDatastorePath(name)
-
 	logrus.WithFields(logrus.Fields{
 		"name": name,
 		"id":   name,
 		"size": sizeMb,
-		"datastore-path": vsphereImagePath,
+		"datastore-path": vsphereImageDir,
 	}).Infof("importing base vmdk for unikernel image")
 
-	if err := c.ImportVmdk(localVmdkFile, vsphereImagePath); err != nil {
+	if err := c.ImportVmdk(localVmdkFile, vsphereImageDir); err != nil {
 		return nil, lxerrors.New("importing base boot.vmdk to vsphere datastore", err)
 	}
 
