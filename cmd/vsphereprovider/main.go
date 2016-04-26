@@ -20,7 +20,6 @@ func main() {
 	os.Setenv("TMPDIR", os.Getenv("HOME")+"/tmp/uniktest")
 	logrus.SetLevel(logrus.DebugLevel)
 	logrus.AddHook(&uniklog.AddTraceHook{true})
-
 	c := config.Vsphere{
 		Name:            "vsphere-provider",
 		VsphereURL:      os.Getenv("VSPHERE_URL"),
