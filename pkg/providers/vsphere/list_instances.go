@@ -6,7 +6,6 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	vspheretypes "github.com/vmware/govmomi/vim25/types"
 	"time"
 )
 
@@ -19,44 +18,12 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 
 	instances := []*types.Instance{}
 	for _, vm := range vms {
-		if vm.Config == nil {
-			continue
-		}
 		//we use mac address as the vm id
 		macAddr := ""
-		if vm.Config != nil && vm.Config.Hardware.Device != nil {
-		FindEthLoop:
-			for _, device := range vm.Config.Hardware.Device {
-				switch device.(type) {
-				case *vspheretypes.VirtualE1000:
-					eth := device.(*vspheretypes.VirtualE1000)
-					macAddr = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualE1000e:
-					eth := device.(*vspheretypes.VirtualE1000e)
-					macAddr = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualPCNet32:
-					eth := device.(*vspheretypes.VirtualPCNet32)
-					macAddr = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualSriovEthernetCard:
-					eth := device.(*vspheretypes.VirtualSriovEthernetCard)
-					macAddr = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualVmxnet:
-					eth := device.(*vspheretypes.VirtualVmxnet)
-					macAddr = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualVmxnet2:
-					eth := device.(*vspheretypes.VirtualVmxnet2)
-					macAddr = eth.MacAddress
-					break FindEthLoop
-				case *vspheretypes.VirtualVmxnet3:
-					eth := device.(*vspheretypes.VirtualVmxnet3)
-					macAddr = eth.MacAddress
-					break FindEthLoop
-				}
+		for _, device := range vm.Config.Hardware.Device {
+			if len(device.MacAddress) > 0 {
+				macAddr = device.MacAddress
+				break
 			}
 		}
 		if macAddr == "" {
@@ -64,10 +31,9 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 			continue
 		}
 
-		instanceId := vm.Config.InstanceUuid
+		instanceId := vm.Config.InstanceUUID
 		instance, ok := p.state.GetInstances()[instanceId]
 		if !ok {
-			logrus.WithFields(logrus.Fields{"vm": vm, "instance-id": vm.Config.InstanceUuid}).Warnf("vm found, cannot identify instance id")
 			continue
 		}
 

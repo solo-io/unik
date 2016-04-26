@@ -15,6 +15,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"encoding/json"
 )
 
 type VsphereClient struct {
@@ -55,7 +56,7 @@ func (vc *VsphereClient) newGovmomiFinder() (*find.Finder, error) {
 	return f, nil
 }
 
-func (vc *VsphereClient) Vms() ([]mo.VirtualMachine, error) {
+func (vc *VsphereClient) Vms() ([]*VirtualMachine, error) {
 	f, err := vc.newGovmomiFinder()
 	if err != nil {
 		return nil, lxerrors.New("creating new govmomi finder", err)
@@ -64,36 +65,80 @@ func (vc *VsphereClient) Vms() ([]mo.VirtualMachine, error) {
 	if err != nil {
 		return nil, lxerrors.New("retrieving virtual machine list from finder", err)
 	}
-	vmList := []mo.VirtualMachine{}
-	for _, vm := range vms {
+	vmList := []*VirtualMachine{}
+	for _, moVm := range vms {
 		managedVms := []mo.VirtualMachine{}
-		pc := property.DefaultCollector(vm.Client())
+		pc := property.DefaultCollector(moVm.Client())
 		refs := make([]vspheretypes.ManagedObjectReference, 0, len(vms))
-		refs = append(refs, vm.Reference())
+		refs = append(refs, moVm.Reference())
 		err = pc.Retrieve(context.TODO(), refs, nil, &managedVms)
 		if err != nil {
-			return nil, lxerrors.New("retrieving managed vms property of vm "+vm.String(), err)
+			return nil, lxerrors.New("retrieving managed vms property of vm "+ moVm.String(), err)
 		}
 		if len(managedVms) < 1 {
-			return nil, lxerrors.New("0 managed vms found for vm "+vm.String(), nil)
+			return nil, lxerrors.New("0 managed vms found for vm "+ moVm.String(), nil)
 		}
-		logrus.WithFields(logrus.Fields{"vm": managedVms[0]}).Debugf("read vm from govmomi client")
-		vmList = append(vmList, managedVms[0])
+		if managedVms[0].Config == nil {
+			continue
+		}
+		vm, err := vc.GetVmByUuid(managedVms[0].Config.Uuid)
+		if err != nil {
+			return nil, lxerrors.New("getting vm info for "+ managedVms[0].Name, err)
+		}
+		vmList = append(vmList, vm)
 	}
 	return vmList, nil
 }
 
-func (vc *VsphereClient) GetVm(vmName string) (mo.VirtualMachine, error) {
-	vms, err := vc.Vms()
+func (vc *VsphereClient) GetVmByUuid(uuid string) (*VirtualMachine, error) {
+	cmd := exec.Command("docker", "run", "--rm",
+		"vsphere-client",
+		"govc",
+		"vm.info",
+		"-k",
+		"-u", formatUrl(vc.u),
+		"--json",
+		"--vm.uuid="+uuid,
+	)
+	logrus.WithField("command", cmd.Args).Debugf("running command")
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return mo.VirtualMachine{}, lxerrors.New("getting vsphere vm list", err)
+		return nil, lxerrors.New("failed running govc vm.info "+ uuid, err)
 	}
-	for _, vm := range vms {
-		if vm.Name == vmName {
-			return vm, nil
-		}
+	var vm VmInfo
+	if err := json.Unmarshal(out, &vm); err != nil {
+		return nil, lxerrors.New("unmarshalling json: "+string(out), err)
 	}
-	return mo.VirtualMachine{}, lxerrors.New("no vm found with name "+vmName, nil)
+	if len(vm.VirtualMachines) < 1 {
+		return nil, lxerrors.New("returned virtualmachines had len 0; does vm exist? "+string(out), nil)
+	}
+	logrus.Debugf("VM INFO: %s", string(out))
+	return &vm.VirtualMachines[0], nil
+}
+
+func (vc *VsphereClient) GetVm(name string) (*VirtualMachine, error) {
+	cmd := exec.Command("docker", "run", "--rm",
+		"vsphere-client",
+		"govc",
+		"vm.info",
+		"-k",
+		"-u", formatUrl(vc.u),
+		"--json",
+		name,
+	)
+	logrus.WithField("command", cmd.Args).Debugf("running command")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, lxerrors.New("failed running govc vm.info "+ name, err)
+	}
+	var vm VmInfo
+	if err := json.Unmarshal(out, &vm); err != nil {
+		return nil, lxerrors.New("unmarshalling json: "+string(out), err)
+	}
+	if len(vm.VirtualMachines) < 1 {
+		return nil, lxerrors.New("returned virtualmachines had len 0; does vm exist? "+string(out), nil)
+	}
+	return &vm.VirtualMachines[0], nil
 }
 
 func (vc *VsphereClient) GetVmIp(vmName string) (string, error) {
@@ -101,10 +146,7 @@ func (vc *VsphereClient) GetVmIp(vmName string) (string, error) {
 	if err != nil {
 		return "", lxerrors.New("getting vsphere vm", err)
 	}
-	if vm.Guest == nil {
-		return "", lxerrors.New("vm has no guest info", nil)
-	}
-	return vm.Guest.IpAddress, nil
+	return vm.Guest.IPAddress, nil
 }
 
 func (vc *VsphereClient) CreateVm(vmName string, memoryMb int) error {
@@ -144,26 +186,19 @@ func (vc *VsphereClient) DestroyVm(vmName string) error {
 	return nil
 }
 
-func (vc *VsphereClient) Mkdir(path string) error {
-	folderTree := strings.Split(path, "/")
-	for _, folder := range folderTree {
-		cmd := exec.Command("docker", "run", "--rm",
-			"vsphere-client",
-			"govc",
-			"datastore.mkdir",
-			"-k",
-			"-u", formatUrl(vc.u),
-			folder,
-		)
-		uniklog.LogCommand(cmd, true)
-		err := cmd.Run()
-		if err != nil {
-			//only error on last dir
-			if folder == folderTree[len(folderTree)-1] {
-				return lxerrors.New("failed to make folder "+folder, err)
-			}
-			logrus.WithError(err).Warnf("failed running govc datastore.mkdir " + folder)
-		}
+func (vc *VsphereClient) Mkdir(folder string) error {
+	cmd := exec.Command("docker", "run", "--rm",
+		"vsphere-client",
+		"govc",
+		"datastore.mkdir",
+		"-k",
+		"-u", formatUrl(vc.u),
+		folder,
+	)
+	uniklog.LogCommand(cmd, true)
+	err := cmd.Run()
+	if err != nil {
+		logrus.WithError(err).Warnf("failed running govc datastore.mkdir " + folder)
 	}
 	return nil
 }

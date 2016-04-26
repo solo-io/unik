@@ -9,7 +9,6 @@ import (
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"os"
 	"time"
-	vspheretypes "github.com/vmware/govmomi/vim25/types"
 )
 
 func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
@@ -55,47 +54,23 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 	if err := c.CreateVm(name, p.config.DefaultInstanceMemory); err != nil {
 		return nil, lxerrors.New("creating vm", err)
 	}
-	
+
+	logrus.Debugf("powering on vm to assign mac addr")
+	if err := c.PowerOnVm(name); err != nil {
+		return nil, lxerrors.New("failed to power on vm to assign mac addr", err)
+	}
+
 	vm, err := c.GetVm(name)
 	if err != nil {
 		return nil, lxerrors.New("failed to retrieve vm info after create", err)
 	}
-	if vm.Config == nil {
-		return nil, lxerrors.New("vm has no config object", nil)
-	}
+
 	macAddr := ""
-	if vm.Config != nil && vm.Config.Hardware.Device != nil {
-		FindEthLoop:
+	if vm.Config.Hardware.Device != nil {
 		for _, device := range vm.Config.Hardware.Device {
-			switch device.(type) {
-			case *vspheretypes.VirtualE1000:
-				eth := device.(*vspheretypes.VirtualE1000)
-				macAddr = eth.MacAddress
-				break FindEthLoop
-			case *vspheretypes.VirtualE1000e:
-				eth := device.(*vspheretypes.VirtualE1000e)
-				macAddr = eth.MacAddress
-				break FindEthLoop
-			case *vspheretypes.VirtualPCNet32:
-				eth := device.(*vspheretypes.VirtualPCNet32)
-				macAddr = eth.MacAddress
-				break FindEthLoop
-			case *vspheretypes.VirtualSriovEthernetCard:
-				eth := device.(*vspheretypes.VirtualSriovEthernetCard)
-				macAddr = eth.MacAddress
-				break FindEthLoop
-			case *vspheretypes.VirtualVmxnet:
-				eth := device.(*vspheretypes.VirtualVmxnet)
-				macAddr = eth.MacAddress
-				break FindEthLoop
-			case *vspheretypes.VirtualVmxnet2:
-				eth := device.(*vspheretypes.VirtualVmxnet2)
-				macAddr = eth.MacAddress
-				break FindEthLoop
-			case *vspheretypes.VirtualVmxnet3:
-				eth := device.(*vspheretypes.VirtualVmxnet3)
-				macAddr = eth.MacAddress
-				break FindEthLoop
+			if len(device.MacAddress) > 0 {
+				macAddr = device.MacAddress
+				break
 			}
 		}
 	}
@@ -156,7 +131,7 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 		return nil, lxerrors.New("failed to retrieve instance ip", err)
 	}
 
-	instanceId := vm.Config.InstanceUuid
+	instanceId := vm.Config.InstanceUUID
 	instance := &types.Instance{
 		Id:             instanceId,
 		Name:           name,
