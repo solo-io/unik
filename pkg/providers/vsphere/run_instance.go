@@ -78,6 +78,9 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 		logrus.WithFields(logrus.Fields{"vm": vm}).Warnf("vm found, cannot identify mac addr")
 		return nil, lxerrors.New("could not find mac addr on vm", nil)
 	}
+	if err := c.PowerOffVm(name); err != nil {
+		return nil, lxerrors.New("failed to power off vm after retrieving mac addr", err)
+	}
 
 	logrus.Debugf("copying base boot vmdk to instance dir")
 	instanceBootImagePath := instanceDir + "/boot.vmdk"
