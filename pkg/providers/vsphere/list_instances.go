@@ -7,15 +7,19 @@ import (
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"time"
+	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere/vsphereclient"
 )
 
 func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 	c := p.getClient()
-	vms, err := c.Vms()
-	if err != nil {
-		return nil, lxerrors.New("getting vsphere vms", err)
+	vms := []*vsphereclient.VirtualMachine{}
+	for instanceId := range p.state.GetInstances() {
+		vm, err := c.GetVmByUuid(instanceId)
+		if err != nil {
+			return nil, lxerrors.New("getting vm info for "+instanceId, err)
+		}
+		vms = append(vms, vm)
 	}
-
 	instances := []*types.Instance{}
 	for _, vm := range vms {
 		//we use mac address as the vm id

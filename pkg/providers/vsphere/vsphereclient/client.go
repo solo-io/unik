@@ -7,9 +7,6 @@ import (
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/find"
-	"github.com/vmware/govmomi/property"
-	"github.com/vmware/govmomi/vim25/mo"
-	vspheretypes "github.com/vmware/govmomi/vim25/types"
 	"golang.org/x/net/context"
 	"net/url"
 	"os/exec"
@@ -56,40 +53,6 @@ func (vc *VsphereClient) newGovmomiFinder() (*find.Finder, error) {
 	return f, nil
 }
 
-func (vc *VsphereClient) Vms() ([]*VirtualMachine, error) {
-	f, err := vc.newGovmomiFinder()
-	if err != nil {
-		return nil, lxerrors.New("creating new govmomi finder", err)
-	}
-	vms, err := f.VirtualMachineList(context.TODO(), "*")
-	if err != nil {
-		return nil, lxerrors.New("retrieving virtual machine list from finder", err)
-	}
-	vmList := []*VirtualMachine{}
-	for _, moVm := range vms {
-		managedVms := []mo.VirtualMachine{}
-		pc := property.DefaultCollector(moVm.Client())
-		refs := make([]vspheretypes.ManagedObjectReference, 0, len(vms))
-		refs = append(refs, moVm.Reference())
-		err = pc.Retrieve(context.TODO(), refs, nil, &managedVms)
-		if err != nil {
-			return nil, lxerrors.New("retrieving managed vms property of vm "+ moVm.String(), err)
-		}
-		if len(managedVms) < 1 {
-			return nil, lxerrors.New("0 managed vms found for vm "+ moVm.String(), nil)
-		}
-		if managedVms[0].Config == nil {
-			continue
-		}
-		vm, err := vc.GetVmByUuid(managedVms[0].Config.Uuid)
-		if err != nil {
-			return nil, lxerrors.New("getting vm info for "+ managedVms[0].Name, err)
-		}
-		vmList = append(vmList, vm)
-	}
-	return vmList, nil
-}
-
 func (vc *VsphereClient) GetVmByUuid(uuid string) (*VirtualMachine, error) {
 	cmd := exec.Command("docker", "run", "--rm",
 		"vsphere-client",
@@ -112,7 +75,6 @@ func (vc *VsphereClient) GetVmByUuid(uuid string) (*VirtualMachine, error) {
 	if len(vm.VirtualMachines) < 1 {
 		return nil, lxerrors.New("returned virtualmachines had len 0; does vm exist? "+string(out), nil)
 	}
-	logrus.Debugf("VM INFO: %s", string(out))
 	return &vm.VirtualMachines[0], nil
 }
 
@@ -162,8 +124,7 @@ func (vc *VsphereClient) CreateVm(vmName string, memoryMb int) error {
 		vmName,
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc vm.create "+vmName, err)
 	}
 	return nil
@@ -179,8 +140,7 @@ func (vc *VsphereClient) DestroyVm(vmName string) error {
 		vmName,
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc vm.destroy "+vmName, err)
 	}
 	return nil
@@ -196,8 +156,7 @@ func (vc *VsphereClient) Mkdir(folder string) error {
 		folder,
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		logrus.WithError(err).Warnf("failed running govc datastore.mkdir " + folder)
 	}
 	return nil
@@ -213,15 +172,17 @@ func (vc *VsphereClient) Rmdir(folder string) error {
 		folder,
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc datastore.rm "+folder, err)
 	}
 	return nil
 }
 
-func (vc *VsphereClient) ImportVmdk(vmdkPath, folder string) error {
-	vmdkFolder := filepath.Dir(vmdkPath)
+func (vc *VsphereClient) ImportVmdk(vmdkPath, remoteFolder string) error {
+	vmdkFolder, err := filepath.Abs(filepath.Dir(vmdkPath))
+	if err != nil {
+		return lxerrors.New("getting aboslute path for "+vmdkFolder, err)
+	}
 	cmd := exec.Command("docker", "run", "--rm", "-v", vmdkFolder+":"+vmdkFolder,
 		"vsphere-client",
 		"govc",
@@ -229,12 +190,11 @@ func (vc *VsphereClient) ImportVmdk(vmdkPath, folder string) error {
 		"-k",
 		"-u", formatUrl(vc.u),
 		vmdkPath,
-		folder,
+		remoteFolder,
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
-		return lxerrors.New("failed running govc import.vmdk "+folder, err)
+	if err := cmd.Run(); err != nil {
+		return lxerrors.New("failed running govc import.vmdk "+ remoteFolder, err)
 	}
 	return nil
 }
@@ -251,8 +211,7 @@ func (vc *VsphereClient) UploadFile(srcFile, dest string) error {
 		dest,
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc datastore.upload", err)
 	}
 	return nil
@@ -270,8 +229,7 @@ func (vc *VsphereClient) DownloadFile(remoteFile, localFile string) error {
 		localFile,
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc datastore.upload", err)
 	}
 	return nil
@@ -292,8 +250,7 @@ func (vc *VsphereClient) CopyVmdk(src, dest string) error {
 		"["+vc.ds+"] "+dest,
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running vsphere-client.jar CopyVirtualDisk "+src+" "+dest, err)
 	}
 	return nil
@@ -333,8 +290,7 @@ func (vc *VsphereClient) PowerOnVm(vmName string) error {
 		vmName,
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc vm.power (on)", err)
 	}
 	return nil
@@ -351,8 +307,7 @@ func (vc *VsphereClient) PowerOffVm(vmName string) error {
 		vmName,
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc vm.power (off)", err)
 	}
 	return nil
@@ -374,8 +329,7 @@ func (vc *VsphereClient) AttachDisk(vmName, vmdkPath string, controllerKey int) 
 		fmt.Sprintf("%v", controllerKey),
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running vsphere-client.jar AttachVmdk", err)
 	}
 	return nil
@@ -396,8 +350,7 @@ func (vc *VsphereClient) DetachDisk(vmName string, controllerKey int) error {
 		fmt.Sprintf("%v", controllerKey),
 	)
 	uniklog.LogCommand(cmd, true)
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running vsphere-client.jar DetachVmdk", err)
 	}
 	return nil
