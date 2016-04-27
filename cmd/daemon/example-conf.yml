@@ -6,17 +6,15 @@ config:
         secret_access_key: bar
         region: us-west-1
         zone: us-west-1a
-      - name: aws-2
-        access_key_id: foo2
-        secret_access_key: bar2
-        region: us-west-2
     vsphere:
       - name: vsphere-1
         vsphere_user: user
         vsphere_password: password
         vsphere_url: url
+        datastore: datastore1
+        default_instance_memory: 512
     virtualbox:
       - name: vsphere-1
-        vsphere_user: user
-        vsphere_password: password
-        vsphere_url: url
+        adapter_name: vboxnet0
+        adapter_type: host_only
+  version: 0.0.0

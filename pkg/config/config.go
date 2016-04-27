@@ -6,6 +6,7 @@ type UnikConfig struct {
 
 type Config struct {
 	Providers Providers `yaml:"providers"`
+	Version   string    `yaml:"version"`
 }
 type Providers struct {
 	Aws        []Aws        `yaml:"aws"`
@@ -26,7 +27,7 @@ type Vsphere struct {
 	VsphereUser     string `yaml:"vsphere_user"`
 	VspherePassword string `yaml:"vsphere_password"`
 	VsphereURL      string `yaml:"vsphere_url"`
-	Datastore       string `yaml:"datastore_name"`
+	Datastore       string `yaml:"datastore"`
 	DefaultInstanceMemory int `yaml:"default_instance_memory"`
 }
 
