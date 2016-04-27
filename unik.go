@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/spf13/cobra"
+)
 
 func main() {
 	fmt.Printf("hello")

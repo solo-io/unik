@@ -34,6 +34,11 @@ func main() {
 		logrus.Error(err)
 		return
 	}
+
+	logrus.WithError(p.DeployInstanceListener()).Infof("this is what happened")
+
+	return
+
 	state, err := state.BasicStateFromFile(vsphere.VsphereStateFile)
 	if err != nil {
 		logrus.WithError(err).Error("failed to load state")

@@ -1,4 +1,4 @@
-FROM compilers-rump-base-common
+FROM unik/compilers-rump-base-common
 
 ENV PLATFORM=hw
 ENV BUILDRUMP_EXTRA=
@@ -16,4 +16,4 @@ VOLUME /opt/code
 WORKDIR /opt/code
 
 
-# RUN LIKE THIS: docker run --rm -v -ti /path/to/code:/opt/code compilers-rump-base-common-hw
+# RUN LIKE THIS: docker run --rm -v -ti /path/to/code:/opt/code unik/compilers-rump-base-common-hw
