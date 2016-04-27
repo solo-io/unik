@@ -3,6 +3,7 @@ package vsphere
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/Sirupsen/logrus"
 )
 
 func (p *VsphereProvider) DeleteInstance(id string) error {
@@ -25,7 +26,7 @@ func (p *VsphereProvider) DeleteInstance(id string) error {
 		}
 	}
 	if err := p.StopInstance(instance.Id); err != nil {
-		return lxerrors.New("powering off instance", err)
+		logrus.WithError(err).Warnf("could not power off instance, is instance already powered off?")
 	}
 
 	c := p.getClient()
