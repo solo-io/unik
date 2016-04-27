@@ -1,72 +1,32 @@
-define buildcontainer
-$(eval words = $(subst -, ,$@))
-$(eval type      = $(word 1, $(words)))
-$(eval framework = $(word 2, $(words)))
-$(eval proglang  = $(word 3, $(words)))
-$(eval platform  = $(word 4, $(words)))
-
-$(eval ifneq ($(platform),)
-    platform = .$(platform) 
- endif)
-
-cd containers && docker build -t $@ -f $(type)/$(framework)/$(proglang)/Dockerfile$(platform) $(type)/$(framework)/$(proglang)
-endef
-
-define cmdbuildcontainer
-$(eval words = $(subst /, ,$@))
-$(eval folder = $(word 1, $(words)))
-$(eval name = $(word 2, $(words)))
-docker build -t $(name) $@
-endef
-
-define gobuild
-cd $@ && go build
-endef
-
-define mvnpackage
-cd $@ && mvn package
-endef
-
-define gobuild-linux
-cd $@ && GOOS=linux go build
-endef
-
-
-SUBDIRS = cmd/boot-creator cmd/image-creator cmd/vsphere-client
-
-all: $(SUBDIRS) compilers-rump-go-xen compilers-rump-go-hw
-.PHONY: all $(SUBDIRS)
-
-cmd/image-creator:
-	$(gobuild-linux)
-	$(cmdbuildcontainer)
-
-cmd/boot-creator:
-	$(gobuild-linux)
-	$(cmdbuildcontainer)
-
-cmd/vsphere-client:
-	$(mvnpackage)
-	$(cmdbuildcontainer)
-
-# rump compilers - these produce a .bin unikernel
+all: compilers utils unik
 
 compilers-rump-base-common:
-	$(buildcontainer)
+	cd containers/compilers/rump/base docker build -t unik/$@ -f Dockerfile.common .
 
 compilers-rump-base-hw: compilers-rump-base-common
-	$(buildcontainer)
+	cd containers/compilers/rump/base docker build -t unik/$@ -f Dockerfile.hw .
 
 compilers-rump-base-xen: compilers-rump-base-common
-	$(buildcontainer)
+	cd containers/compilers/rump/go docker build -t unik/$@ -f Dockerfile.xen .
 
 compilers-rump-go-hw: compilers-rump-base-hw
-	$(buildcontainer)
+	cd containers/compilers/rump/go docker build -t unik/$@ -f Dockerfile.hw .
 
 compilers-rump-go-xen: compilers-rump-base-xen
-	$(buildcontainer)
+	cd containers/compilers/rump/go docker build -t unik/$@ -f Dockerfile.xen .
 
-compilers-mirage-ocaml:
-	$(buildcontainer)
+compilers: compilers-rump-go-hw compilers-rump-go-xen
 
+boot-creator:
+	cd containers/utils/boot-creator && GOOS=linux go build && docker build -t unik/$@ -f Dockerfile . && rm boot-creator
 
+image-creator:
+	cd containers/utils/image-creator && GOOS=linux go build && docker build -t unik/$@ -f Dockerfile . && rm image-creator
+
+vsphere-client:
+	cd containers/utils/vsphere-client && mvn package && docker build -t unik/$@ -f Dockerfile . && rm -rf target
+
+utils: boot-creator image-creator vsphere-client
+
+unik:
+	go build
