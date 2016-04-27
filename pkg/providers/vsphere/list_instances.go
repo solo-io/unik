@@ -31,7 +31,7 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 			continue
 		}
 
-		instanceId := vm.Config.InstanceUUID
+		instanceId := vm.Config.UUID
 		instance, ok := p.state.GetInstances()[instanceId]
 		if !ok {
 			continue

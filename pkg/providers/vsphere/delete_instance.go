@@ -37,7 +37,7 @@ func (p *VsphereProvider) DeleteInstance(id string) error {
 			}
 		}
 	}
-	err = c.DestroyVm(id)
+	err = c.DestroyVm(instance.Name)
 	if err != nil {
 		return lxerrors.New("failed to terminate instance "+instance.Id, err)
 	}

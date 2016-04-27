@@ -134,7 +134,7 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 		return nil, lxerrors.New("failed to retrieve instance ip", err)
 	}
 
-	instanceId := vm.Config.InstanceUUID
+	instanceId := vm.Config.UUID
 	instance := &types.Instance{
 		Id:             instanceId,
 		Name:           name,
