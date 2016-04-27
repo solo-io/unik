@@ -59,7 +59,11 @@ func (h *AddTraceHook) addTrace(message string) string {
 	}
 
 	maxLen := int(math.Max(float64(len(stackTrace)-2), 1))
-
+	for i := 0; i < maxLen/2; i ++ {
+		tmp := stackTrace[i]
+		stackTrace[i] = stackTrace[maxLen-i-1]
+		stackTrace[maxLen-i-1] = tmp
+	}
 	file := strings.Join(stackTrace[:maxLen], "\n")
 	message = file + "\n" + message
 	return message
