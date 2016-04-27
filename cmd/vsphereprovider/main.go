@@ -11,6 +11,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
+	"time"
 )
 
 func main() {
@@ -92,6 +93,11 @@ func main() {
 		}
 		logrus.WithField("instances", instances).Infof("printing instances")
 		fmt.Println()
+
+		for i := 0; i < 10; i++ {
+			logrus.Printf("vm is alive! go check it out :D")
+			time.Sleep(time.Second)
+		}
 
 		for _, instance := range instances {
 			if err := p.DeleteInstance(instance.Id); err != nil {
