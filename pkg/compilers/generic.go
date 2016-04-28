@@ -116,7 +116,7 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool) error
 	return nil
 }
 
-func (r *RunmpCompiler) runContainer(localFolder string) error {
+func (r *RumpCompiler) runContainer(localFolder string) error {
 
 	return RunContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false)
 }

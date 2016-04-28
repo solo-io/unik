@@ -17,12 +17,12 @@ import (
 // the container expectes code in /opt/code and will produce program.bin in the same folder.
 // we need to take the program bin and combine with json config produce an image
 
-type RunmpCompiler struct {
+type RumpCompiler struct {
 	DockerImage string
 	CreateImage func(kernel, args string, mntPoints []string) (*uniktypes.RawImage, error)
 }
 
-func (r *RunmpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (*uniktypes.RawImage, error) {
+func (r *RumpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (*uniktypes.RawImage, error) {
 
 	localFolder, err := ioutil.TempDir("", "")
 	if err != nil {
