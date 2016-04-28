@@ -35,6 +35,11 @@ const (
 
 const BEGIN_JSON_DATA = "BEGIN_JSON_DATA"
 
+const (
+	Images = "/images"
+	Image = "/images"
+)
+
 func NewAwsProvider(aws config.Aws) providers.Provider {
 	return nil
 }
@@ -198,6 +203,7 @@ func (d *UnikDaemon) registerHandlers() {
 				"name":         name,
 				"args":         args,
 				"compiler":     compilerMode,
+				"provider":	providerType,
 			}).Debugf("compiling raw image")
 			rawImage, err := compiler.CompileRawImage(sourceTar, args, mountPoints)
 			if err != nil {
@@ -330,16 +336,18 @@ func (d *UnikDaemon) registerHandlers() {
 			return logs, nil
 		})
 	})
-	d.server.Post("/instances/:image_name/run", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+	d.server.Post("/instances/:name/run", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		streamOrRespond(res, req, func() (interface{}, error) {
 			logrus.WithFields(logrus.Fields{
 				"request": req, "query": req.URL.Query(),
 			}).Debugf("recieved run request")
-			imageName := params["image_name"]
+
+			imageName := req.URL.Query().Get("image_name")
 			if imageName == "" {
 				return nil, lxerrors.New("image must be named", nil)
 			}
-			instanceName := req.URL.Query().Get("name")
+
+			instanceName := params["name"]
 
 			envDelimiter := req.URL.Query().Get("useDelimiter")
 			if envDelimiter == "" {
@@ -396,7 +404,7 @@ func (d *UnikDaemon) registerHandlers() {
 			return instance, nil
 		})
 	})
-	d.server.Put("/instances/:instance_id/start", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+	d.server. Post("/instances/:instance_id/start", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		streamOrRespond(res, req, func() (interface{}, error) {
 			instanceId := params["instance_id"]
 			logrus.WithFields(logrus.Fields{
@@ -413,7 +421,7 @@ func (d *UnikDaemon) registerHandlers() {
 			return nil, nil
 		})
 	})
-	d.server.Put("/instances/:instance_id/stop", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+	d.server.Post("/instances/:instance_id/stop", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		streamOrRespond(res, req, func() (interface{}, error) {
 			instanceId := params["instance_id"]
 			logrus.WithFields(logrus.Fields{
@@ -477,7 +485,7 @@ func (d *UnikDaemon) registerHandlers() {
 				"req": req,
 			}).Debugf("parsing multipart form")
 
-			sizeStr := req.FormValue("sizeStr")
+			sizeStr := req.FormValue("size")
 			size, err := strconv.Atoi(sizeStr)
 			if err != nil {
 				return nil, lxerrors.New("could not parse given size", err)
