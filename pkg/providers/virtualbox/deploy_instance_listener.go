@@ -13,12 +13,12 @@ import (
 
 const (
 	vboxInstanceListenerUrl  = "https://s3.amazonaws.com/unik-instance-listener/vbox-instancelistener-base.vmdk"
-	vboxInstanceListenerVmdk = "instancelistener-base.vmdk"
+	vboxInstanceListenerVmdk = "vbox-instancelistener-base.vmdk"
 )
 
 func (p *VirtualboxProvider) DeployInstanceListener() error {
 	if _, err := os.Stat(vboxInstanceListenerVmdk); err != nil {
-		logrus.Infof("vbox instance listener vmdk not found, attempting to download from " + vboxInstanceListenerUrl)
+		logrus.WithError(err).Infof("vbox instance listener vmdk not found, attempting to download from " + vboxInstanceListenerUrl)
 		vmdkFile, err := os.Create(vboxInstanceListenerVmdk)
 		if err != nil {
 			return lxerrors.New("creating file for vbox instance listener vmdk", err)
@@ -39,10 +39,10 @@ func (p *VirtualboxProvider) DeployInstanceListener() error {
 	if err := virtualboxclient.CreateVmNatless(VboxUnikInstanceListener, os.Getenv("PWD"), p.config.AdapterName, p.config.VirtualboxAdapterType); err != nil {
 		return lxerrors.New("creating vm", err)
 	}
-	if err := unikos.CopyFile(vboxInstanceListenerVmdk, "instancelistener-copy.vmdk"); err != nil {
+	if err := unikos.CopyFile(vboxInstanceListenerVmdk, "vbox-instancelistener-copy.vmdk"); err != nil {
 		return lxerrors.New("copying instance listener vmdk", err)
 	}
-	if err := virtualboxclient.AttachDisk(VboxUnikInstanceListener, "instancelistener-copy.vmdk", 0); err != nil {
+	if err := virtualboxclient.AttachDisk(VboxUnikInstanceListener, "vbox-instancelistener-copy.vmdk", 0); err != nil {
 		return lxerrors.New("attaching disk to vm", err)
 	}
 	if err := virtualboxclient.PowerOnVm(VboxUnikInstanceListener); err != nil {

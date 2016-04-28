@@ -7,11 +7,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 const (
 	vsphereInstanceListenerUrl = "https://s3.amazonaws.com/unik-instance-listener/vsphere-instancelistener-base.vmdk"
-	vsphereInstanceListenerVmdk = "instancelistener-base.vmdk"
+	vsphereInstanceListenerVmdk = "vsphere-instancelistener-base.vmdk"
 )
 
 func (p *VsphereProvider) DeployInstanceListener() error {
@@ -39,17 +40,17 @@ func (p *VsphereProvider) DeployInstanceListener() error {
 	}
 	if !alreadyUploaded {
 		if _, err := os.Stat(vsphereInstanceListenerVmdk); err != nil {
-			logrus.Infof("vbox instance listener vmdk not found, attempting to download from " + vsphereInstanceListenerUrl)
+			logrus.WithError(err).Infof("vsphere instance listener vmdk not found, attempting to download from " + vsphereInstanceListenerUrl)
 			vmdkFile, err := os.Create(vsphereInstanceListenerVmdk)
 			if err != nil {
-				return lxerrors.New("creating file for vbox instance listener vmdk", err)
+				return lxerrors.New("creating file for vsphere instance listener vmdk", err)
 			}
 			resp, err := http.Get(vsphereInstanceListenerUrl)
 			if err != nil {
 				return lxerrors.New("contacting "+ vsphereInstanceListenerUrl, err)
 			}
 			defer resp.Body.Close()
-			n, err := io.Copy(vmdkFile, resp.Body)
+			n, err := io.Copy(vmdkFile, unikutil.ReaderWithProgress(resp.Body, resp.ContentLength))
 			if err != nil {
 				return lxerrors.New("copying response to file", err)
 			}
@@ -61,7 +62,7 @@ func (p *VsphereProvider) DeployInstanceListener() error {
 		}
 	}
 
-	logrus.Infof("deploying virtualbox instance listener")
+	logrus.Infof("deploying vsphere instance listener")
 	if err := c.CreateVm(VsphereUnikInstanceListener, 512); err != nil {
 		return lxerrors.New("creating vm", err)
 	}
