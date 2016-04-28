@@ -18,9 +18,9 @@ const (
 type Infrastructure string
 
 const (
-	Infrastructure_AWS        Infrastructure = "Infrastructure_AWS"
-	Infrastructure_VSPHERE    Infrastructure = "Infrastructure_VSPHERE"
-	Infrastructure_VIRTUALBOX Infrastructure = "Infrastructure_VIRTUALBOX"
+	Infrastructure_AWS        Infrastructure = "AWS"
+	Infrastructure_VSPHERE    Infrastructure = "VSPHERE"
+	Infrastructure_VIRTUALBOX Infrastructure = "VIRTUALBOX"
 )
 
 type Image struct {

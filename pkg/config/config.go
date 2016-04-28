@@ -1,10 +1,6 @@
 package config
 
-type UnikConfig struct {
-	Config Config `yaml:"config"`
-}
-
-type Config struct {
+type DaemonConfig struct {
 	Providers Providers `yaml:"providers"`
 	Version   string    `yaml:"version"`
 }
@@ -43,3 +39,7 @@ const (
 	BridgedAdapter  = VirtualboxAdapterType("bridged")
 	HostOnlyAdapter = VirtualboxAdapterType("host_only")
 )
+
+type ClientConfig struct {
+	DaemonUrl string `yaml:"url"`
+}
