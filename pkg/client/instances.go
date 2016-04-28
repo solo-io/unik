@@ -26,7 +26,7 @@ func (i *instances) All() ([]*types.Instance, error) {
 		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	var instances []*types.Instance
-	if err := json.Unmarshal(body, *instances); err != nil {
+	if err := json.Unmarshal(body, instances); err != nil {
 		return nil, lxerrors.New(fmt.Sprintf("response body %s did not unmarshal to type []*types.Instance", string(body)), err)
 	}
 	return instances, nil
@@ -37,11 +37,11 @@ func (i *instances) Get(id string) (*types.Instance, error) {
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
-	var instance *types.Instance
-	if err := json.Unmarshal(body, *instance); err != nil {
+	var instance types.Instance
+	if err := json.Unmarshal(body, &instance); err != nil {
 		return nil, lxerrors.New(fmt.Sprintf("response body %s did not unmarshal to type *types.Instance", string(body)), err)
 	}
-	return instance, nil
+	return &instance, nil
 }
 
 func (i *instances) Delete(id string) error {
@@ -55,7 +55,7 @@ func (i *instances) Delete(id string) error {
 func (i *instances) GetLogs(id string) (string, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/instances/"+id+"/logs", nil)
 	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+		return "", lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	return string(body), nil
 }
@@ -87,11 +87,11 @@ func (i *instances) Run(imageName, instanceName string, mounts, env map[string]s
 	if err != nil || resp.StatusCode != http.StatusCreated {
 		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
-	var instance *types.Instance
-	if err := json.Unmarshal(body, *instance); err != nil {
+	var instance types.Instance
+	if err := json.Unmarshal(body, &instance); err != nil {
 		return nil, lxerrors.New(fmt.Sprintf("response body %s did not unmarshal to type *types.Instance", string(body)), err)
 	}
-	return instance, nil
+	return &instance, nil
 }
 
 func (i *instances) Start(id string) error {

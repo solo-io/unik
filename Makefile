@@ -9,7 +9,7 @@ compilers-rump-base-hw: compilers-rump-base-common
 	cd containers/compilers/rump/base && docker build -t unik/$@ -f Dockerfile.hw .
 
 compilers-rump-base-xen: compilers-rump-base-common
-	cd containers/compilers/rump/go && docker build -t unik/$@ -f Dockerfile.xen .
+	cd containers/compilers/rump/base && docker build -t unik/$@ -f Dockerfile.xen .
 
 compilers-rump-go-hw: compilers-rump-base-hw
 	cd containers/compilers/rump/go && docker build -t unik/$@ -f Dockerfile.hw .

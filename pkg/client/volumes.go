@@ -19,7 +19,7 @@ func (v *volumes) All() ([]*types.Volume, error) {
 		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	var volumes []*types.Volume
-	if err := json.Unmarshal(body, *volumes); err != nil {
+	if err := json.Unmarshal(body, &volumes); err != nil {
 		return nil, lxerrors.New(fmt.Sprintf("response body %s did not unmarshal to type []*types.Volume", string(body)), err)
 	}
 	return volumes, nil
@@ -30,11 +30,11 @@ func (v *volumes) Get(id string) (*types.Volume, error) {
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
-	var volume *types.Volume
-	if err := json.Unmarshal(body, *volume); err != nil {
+	var volume types.Volume
+	if err := json.Unmarshal(body, &volume); err != nil {
 		return nil, lxerrors.New(fmt.Sprintf("response body %s did not unmarshal to type *types.Volume", string(body)), err)
 	}
-	return volume, nil
+	return &volume, nil
 }
 
 func (v *volumes) Delete(id string) error {
@@ -45,7 +45,7 @@ func (v *volumes) Delete(id string) error {
 	return nil
 }
 
-func (v *volumes) Create(name, dataTar, provider string, size int) ([]*types.Volume, error) {
+func (v *volumes) Create(name, dataTar, provider string, size int) (*types.Volume, error) {
 	query := fmt.Sprintf("?size=%v&provider=%v", size, provider)
 	//no data provided
 	var (
@@ -64,11 +64,11 @@ func (v *volumes) Create(name, dataTar, provider string, size int) ([]*types.Vol
 			return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 		}
 	}
-	var volume *types.Volume
-	if err := json.Unmarshal(body, *volume); err != nil {
+	var volume types.Volume
+	if err := json.Unmarshal(body, &volume); err != nil {
 		return nil, lxerrors.New(fmt.Sprintf("response body %s did not unmarshal to type *types.Volume", string(body)), err)
 	}
-	return volume, nil
+	return &volume, nil
 }
 
 func (v *volumes) Attach(id, instanceId, mountPoint string) error {
