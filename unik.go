@@ -1,8 +1,6 @@
 package main
 
 import (
-)
-import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/cmd"
 )
