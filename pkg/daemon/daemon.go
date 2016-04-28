@@ -41,18 +41,18 @@ const (
 	rump_virtualbox = "rump-virtualbox"
 )
 
-func NewUnikDaemon(config config.UnikConfig) *UnikDaemon {
+func NewUnikDaemon(config config.DaemonConfig) *UnikDaemon {
 	_providers := make(providers.Providers)
 	_compilers := make(map[string]compilers.Compiler)
-	for _, awsConfig := range config.Config.Providers.Aws {
+	for _, awsConfig := range config.Providers.Aws {
 		_providers[aws_provider] = aws.NewAwsProvier(awsConfig)
 		break
 	}
-	for _, vsphereConfig := range config.Config.Providers.Vsphere {
+	for _, vsphereConfig := range config.Providers.Vsphere {
 		_providers[vsphere_provider] = vsphere.NewVsphereProvier(vsphereConfig)
 		break
 	}
-	for _, virtualboxConfig := range config.Config.Providers.Virtualbox {
+	for _, virtualboxConfig := range config.Providers.Virtualbox {
 		_providers[virtualbox_provider] = virtualbox.NewVirtualboxProvider(virtualboxConfig)
 		break
 	}
@@ -600,6 +600,34 @@ func (d *UnikDaemon) registerHandlers() {
 				"volume": volumeName,
 			}).Infof("volume detached")
 			return volumeName, http.StatusAccepted, nil
+		})
+	})
+
+	//info
+	d.server.Get("/available_compilers", func(res http.ResponseWriter, req *http.Request) {
+		handle(res, req, func() (interface{}, int, error) {
+			logrus.Debugf("listing available compilers")
+			availableCompilers := []string{}
+			for compilerName := range d.compilers {
+				availableCompilers = append(availableCompilers, compilerName)
+			}
+			logrus.WithFields(logrus.Fields{
+				"compilers": availableCompilers,
+			}).Infof("compilers")
+			return availableCompilers, http.StatusOK, nil
+		})
+	})
+	d.server.Get("/available_providers", func(res http.ResponseWriter, req *http.Request) {
+		handle(res, req, func() (interface{}, int, error) {
+			logrus.Debugf("listing available providers")
+			availableProviders := []string{}
+			for compilerName := range d.providers {
+				availableProviders = append(availableProviders, compilerName)
+			}
+			logrus.WithFields(logrus.Fields{
+				"providers": availableProviders,
+			}).Infof("providers")
+			return availableProviders, http.StatusOK, nil
 		})
 	})
 }
