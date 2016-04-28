@@ -1,10 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"github.com/spf13/cobra"
+)
+import (
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/cmd"
 )
 
 func main() {
-	fmt.Printf("hello")
+	if err := cmd.RootCmd.Execute(); err != nil {
+		logrus.WithError(err).Fatalf("unik failed")
+	}
 }

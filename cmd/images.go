@@ -6,9 +6,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// daemonCmd represents the daemon command
-var daemonCmd = &cobra.Command{
-	Use:   "daemon",
+// imagesCmd represents the images command
+var imagesCmd = &cobra.Command{
+	Use:   "images",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -18,21 +18,21 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO: Work your own magic here
-		fmt.Println("daemon called")
+		fmt.Println("images called")
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(daemonCmd)
+	RootCmd.AddCommand(imagesCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// daemonCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// imagesCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// daemonCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// imagesCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 }
