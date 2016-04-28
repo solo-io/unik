@@ -16,8 +16,11 @@ type images struct {
 
 func (i *images) All() ([]*types.Image, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/images", nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), nil)
 	}
 	var images []*types.Image
 	if err := json.Unmarshal(body, &images); err != nil {
@@ -28,8 +31,11 @@ func (i *images) All() ([]*types.Image, error) {
 
 func (i *images) Get(id string) (*types.Image, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/images/"+id, nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), nil)
 	}
 	var image types.Image
 	if err := json.Unmarshal(body, &image); err != nil {

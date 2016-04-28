@@ -9,10 +9,9 @@ import (
 	"io/ioutil"
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+	"os"
 )
 
-var url string
-var port int
 var show bool
 
 var targetCmd = &cobra.Command{
@@ -32,18 +31,20 @@ var targetCmd = &cobra.Command{
 			logrus.Infof("Current target: %s", clientConfig.DaemonUrl)
 			return
 		}
-		if url == "localhost" {
-			url = "127.0.0.1"
+		if url == "" {
+			logrus.Error("--url must be set for target")
+			os.Exit(-1)
 		}
 		if err := setClientConfig(url, port); err != nil {
 			logrus.WithError(err).Error("failed to save target to config file")
+			os.Exit(-1)
 		}
 		logrus.Infof("target set: %s:%v", url, port)
 	},
 }
 
 func setClientConfig(url string, port int) error {
-	data, err := yaml.Marshal(config.ClientConfig{DaemonUrl: url+fmt.Sprintf(":%v", port)})
+	data, err := yaml.Marshal(config.ClientConfig{DaemonUrl: fmt.Sprintf("%s:%v", url, port)})
 	if err != nil {
 		return errors.New("failed to convert config to yaml string: "+err.Error())
 	}
@@ -55,7 +56,5 @@ func setClientConfig(url string, port int) error {
 
 func init() {
 	RootCmd.AddCommand(targetCmd)
-	targetCmd.Flags().StringVar(&url, "url", "localhost", "<string, required>: url/ip address of the host running the unik daemon")
-	targetCmd.Flags().IntVar(&port, "port", 3000, "<int, optional>: port the daemon is running on (default: 3000)")
 	targetCmd.Flags().BoolVar(&show, "show", false, "<bool,optional>: shows the current target that is set")
 }

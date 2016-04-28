@@ -28,11 +28,11 @@ var daemonCmd = &cobra.Command{
 	for desired providers.
 
 	flags:
-		-daemon-config: <string, required> configuration file for daemon (default is $HOME/.unik/daemon-config.yaml)
-		-port: <int, optional> port for daemon to run on. 3000 by default
-		-debug: <bool, optional> more verbose logging for the daemon
-		-trace: <bool, optional> add stack trace to daemon logs
-		-logfile: <string, optional> output logs to file (in addition to stdout)
+		--daemon-config: <string, required> configuration file for daemon (default is $HOME/.unik/daemon-config.yaml)
+		--port: <int, optional> port for daemon to run on. 3000 by default
+		--debug: <bool, optional> more verbose logging for the daemon
+		--trace: <bool, optional> add stack trace to daemon logs
+		--logfile: <string, optional> output logs to file (in addition to stdout)
 
 	Example usage:
 		unik daemon -daemon-config ./my-config.yaml -port 12345 -debug -trace -logfile logs.txt

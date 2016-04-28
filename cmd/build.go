@@ -9,6 +9,7 @@ import (
 	"strings"
 	"os/exec"
 	"os"
+	"github.com/emc-advanced-dev/unik/pkg/util/log"
 )
 
 var name, path, compiler, provider, runArgs string
@@ -49,6 +50,22 @@ var buildCmd = &cobra.Command{
 		unik build -name anotherUnikernel -path ./anotherApp/src -compiler rump-vmware -provider vsphere
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		if name == "" {
+			logrus.Error("--name must be set")
+			os.Exit(-1)
+		}
+		if path == "" {
+			logrus.Error("--path must be set")
+			os.Exit(-1)
+		}
+		if compiler == "" {
+			logrus.Error("--compiler must be set")
+			os.Exit(-1)
+		}
+		if provider == "" {
+			logrus.Error("--provider must be set")
+			os.Exit(-1)
+		}
 		logrus.WithFields(logrus.Fields{
 			"name": name,
 			"path": path,
@@ -62,8 +79,7 @@ var buildCmd = &cobra.Command{
 		path = strings.TrimSuffix(path, "/")
 		sourceTar := path + "/" + name + ".tar.gz"
 		tarCommand := exec.Command("tar", "-zvcf", filepath.Base(sourceTar), "./")
-		tarCommand.Stdout = os.Stdout
-		tarCommand.Stderr = os.Stderr
+		log.LogCommand(tarCommand, true)
 		tarCommand.Dir = path
 		logrus.Info("Tarring files: %s\n", tarCommand.Args)
 		err := tarCommand.Run()

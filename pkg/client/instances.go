@@ -22,11 +22,14 @@ const mntPairDelimiter = ":"
 
 func (i *instances) All() ([]*types.Instance, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/instances", nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), nil)
 	}
 	var instances []*types.Instance
-	if err := json.Unmarshal(body, instances); err != nil {
+	if err := json.Unmarshal(body, &instances); err != nil {
 		return nil, lxerrors.New(fmt.Sprintf("response body %s did not unmarshal to type []*types.Instance", string(body)), err)
 	}
 	return instances, nil
@@ -34,8 +37,11 @@ func (i *instances) All() ([]*types.Instance, error) {
 
 func (i *instances) Get(id string) (*types.Instance, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/instances/"+id, nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), nil)
 	}
 	var instance types.Instance
 	if err := json.Unmarshal(body, &instance); err != nil {

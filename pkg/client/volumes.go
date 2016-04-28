@@ -15,8 +15,11 @@ type volumes struct {
 
 func (v *volumes) All() ([]*types.Volume, error) {
 	resp, body, err := lxhttpclient.Get(v.unikIP, "/volumes", nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), nil)
 	}
 	var volumes []*types.Volume
 	if err := json.Unmarshal(body, &volumes); err != nil {
@@ -27,8 +30,11 @@ func (v *volumes) All() ([]*types.Volume, error) {
 
 func (v *volumes) Get(id string) (*types.Volume, error) {
 	resp, body, err := lxhttpclient.Get(v.unikIP, "/volumes/"+id, nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), nil)
 	}
 	var volume types.Volume
 	if err := json.Unmarshal(body, &volume); err != nil {
