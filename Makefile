@@ -36,11 +36,11 @@ SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 BINARY=unik
 
 unik: ${SOURCES}
-	go build -o ${BINARY} main.go
+	go build -o ${BINARY} unik.go
 
 .PHONY: install
 install: all
-	go install main.go
+	go install unik.go
 
 .PHONY: uninstall
 	rm $(which ${BINARY})
