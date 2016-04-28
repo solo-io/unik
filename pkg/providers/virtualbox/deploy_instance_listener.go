@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 const (
@@ -27,7 +28,7 @@ func (p *VirtualboxProvider) DeployInstanceListener() error {
 			return lxerrors.New("contacting "+vboxInstanceListenerUrl, err)
 		}
 		defer resp.Body.Close()
-		n, err := io.Copy(vmdkFile, resp.Body)
+		n, err := io.Copy(vmdkFile, unikutil.ReaderWithProgress(resp.Body, resp.ContentLength))
 		if err != nil {
 			return lxerrors.New("copying response to file", err)
 		}
