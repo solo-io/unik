@@ -31,7 +31,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool)
 		cmd = exec.Command("docker", "run", "--rm", "--privileged",
 			"-v", "/dev/:/dev/",
 			"-v", buildDir+"/:/opt/vol/",
-			"image-creator",
+			"unik/image-creator",
 			"-p", fmt.Sprintf("%v", usePartitionTables),
 			"-v", filepath.Base(dataFolder), fmt.Sprintf(",%v", size),
 		)
@@ -39,7 +39,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool)
 		cmd = exec.Command("docker", "run", "--rm", "--privileged",
 			"-v", "/dev/:/dev/",
 			"-v", buildDir+"/:/opt/vol/",
-			"image-creator",
+			"unik/image-creator",
 			"-p", fmt.Sprintf("%v", usePartitionTables),
 			"-v", filepath.Base(dataFolder),
 		)
@@ -82,7 +82,7 @@ func BuildEmptyDataVolume(size int) (string, error) {
 	cmd := exec.Command("docker", "run", "--rm", "--privileged",
 		"-v", "/dev/:/dev/",
 		"-v", buildDir+"/:/opt/vol/",
-		"image-creator",
+		"unik/image-creator",
 		"-v", filepath.Base(dataFolder), fmt.Sprintf(",%v", size),
 	)
 
