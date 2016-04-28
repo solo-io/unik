@@ -9,7 +9,7 @@ import (
 func main() {
 	logrus.SetLevel(logrus.DebugLevel)
 	os.Setenv("TMPDIR", os.Getenv("HOME")+"/tmp/uniktest")
-	r := compilers.RunmpCompiler{
+	r := compilers.RumpCompiler{
 		DockerImage: "compilers-rump-go-hw",
 		CreateImage: compilers.CreateImageVmware,
 	}

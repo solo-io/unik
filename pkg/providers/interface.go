@@ -31,6 +31,7 @@ type Provider interface {
 
 type ProviderConfig struct {
 	UsePartitionTables bool
+	SupportedCompilers []string
 }
 
 type Providers map[string]Provider

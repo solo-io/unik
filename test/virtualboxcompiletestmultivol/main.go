@@ -21,7 +21,7 @@ func main() {
 	defer f.Close()
 	switch *op {
 	case "boot":
-		r := compilers.RunmpCompiler{
+		r := compilers.RumpCompiler{
 			DockerImage: "compilers-rump-go-hw",
 			CreateImage: compilers.CreateImageVirtualBox,
 		}

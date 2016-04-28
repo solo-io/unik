@@ -44,7 +44,7 @@ func main() {
 
 	switch *action {
 	case "all":
-		r := compilers.RunmpCompiler{
+		r := compilers.RumpCompiler{
 			DockerImage: "unik/compilers-rump-go-hw",
 			CreateImage: compilers.CreateImageVirtualBox,
 		}
@@ -131,7 +131,7 @@ func main() {
 		logrus.Infof("deleted instance %s", instanceId)
 		break
 	case "create-image":
-		r := compilers.RunmpCompiler{
+		r := compilers.RumpCompiler{
 			DockerImage: "unik/compilers-rump-go-xen",
 			CreateImage: compilers.CreateImageAws,
 		}
@@ -152,7 +152,7 @@ func main() {
 		break
 	case "create-image-with-volume":
 		name := *arg
-		r := compilers.RunmpCompiler{
+		r := compilers.RumpCompiler{
 			DockerImage: "unik/compilers-rump-go-xen",
 			CreateImage: compilers.CreateImageAws,
 		}

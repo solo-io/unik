@@ -49,7 +49,7 @@ func main() {
 
 	switch *action {
 	case "all":
-		r := compilers.RunmpCompiler{
+		r := compilers.RumpCompiler{
 			DockerImage: "compilers-rump-go-hw",
 			CreateImage: compilers.CreateImageVmware,
 		}

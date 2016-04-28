@@ -12,7 +12,7 @@ func main() {
 	os.Setenv("TMPDIR", "/Users/kohavy/tmp")
 	log.SetLevel(log.DebugLevel)
 
-	r := compilers.RunmpCompiler{
+	r := compilers.RumpCompiler{
 		DockerImage: "unik/compilers-rump-go-hw",
 		CreateImage: compilers.CreateImageVmware,
 	}
