@@ -23,4 +23,6 @@ _testmain.go
 *.test
 *.prof
 unik
-instancelistener-base.vmdk
+vbox-instancelistener-base.vmdk
+VboxUnikInstanceListener/
+vbox-instancelistener-copy.vmdk
