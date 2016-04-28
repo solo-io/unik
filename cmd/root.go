@@ -1,14 +1,18 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/config"
+	"io/ioutil"
+	"gopkg.in/yaml.v2"
+	"os"
+	"fmt"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"bytes"
 )
 
-var cfgFile string
+var clientConfigFile, daemonUrl string
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -16,46 +20,57 @@ var RootCmd = &cobra.Command{
 	Short: "The unikernel compilation, deployment, and management tool",
 	Long: `Unik is a tool for compiling application source code
 	into bootable disk images. Unik also runs and manages unikernel
-	vm instances across infrastructures.`,
-// Uncomment the following line if your bare application
-// has an action associated with it:
-//	Run: func(cmd *cobra.Command, args []string) { },
+	vm instances across infrastructures.
+
+	Set client configuration file with --client-config=<path>`,
 }
 
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		logrus.Error(err)
 		os.Exit(-1)
 	}
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports Persistent Flags, which, if defined here,
-	// will be global for your application.
-
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.unik.yaml)")
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.PersistentFlags().StringVar(&clientConfigFile, "client-config", os.Getenv("HOME")+"/.unik/client-config.yaml", "client config file (default is $HOME/.unik/client-config.yaml)")
+	RootCmd.PersistentFlags().StringVar(&daemonUrl, "url", "", "override daemon host url set in client-config")
 }
 
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" { // enable ability to specify config file via flag
-		viper.SetConfigFile(cfgFile)
+var clientConfig config.ClientConfig
+func readClientConfig() {
+	data, err := ioutil.ReadFile(clientConfigFile)
+	if err != nil {
+		logrus.WithError(err).Errorf("failed to read client configuration file at "+ clientConfigFile +`\n
+		Try setting your config with 'unik target DAEMON_URL'`)
+		os.Exit(-1)
 	}
+	data = bytes.Replace(data, []byte("\n"), []byte{}, -1)
+	if err := yaml.Unmarshal(data, &clientConfig); err != nil {
+		logrus.WithError(err).Errorf("failed to parse client configuration yaml at "+ clientConfigFile +`\n
+		Please ensure config file contains valid yaml.'`)
+		os.Exit(-1)
+	}
+}
 
-	viper.SetConfigName(".unik") // name of config file (without extension)
-	viper.AddConfigPath("$HOME")  // adding home directory as first search path
-	viper.AutomaticEnv()          // read in environment variables that match
+func printImages(images ... *types.Image) {
+	fmt.Printf("%-15s %-10s %-10s %-15s %-6s %-15s\n", "NAME", "ID", "INFRASTRUCTURE", "CREATED", "SIZE", "MOUNTPOINTS")
+	for _, image := range images {
+		printImage(image)
+	}
+}
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+func printImage(image *types.Image) {
+	if len(image.DeviceMappings) == 0 {
+		fmt.Printf("%-15.15s %-10.10s %-14.14s %-20.20s %-6.6v \n", image.Name, image.Id, image.Infrastructure, image.Created.String(), image.SizeMb)
+	} else if len(image.DeviceMappings) > 0 {
+		fmt.Printf("%-15.15s %-10.10s %-14.14s %-20.20s %-6.6v %-15.15s\n", image.Name, image.Id, image.Infrastructure, image.Created.String(), image.SizeMb, image.DeviceMappings[0].MountPoint)
+		if len(image.DeviceMappings) > 1 {
+			for i := 1; i < len(image.DeviceMappings); i++ {
+				fmt.Printf("%74.70s\n", image.DeviceMappings[i].MountPoint)
+			}
+		}
 	}
 }
