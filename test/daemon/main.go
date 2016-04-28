@@ -48,7 +48,7 @@ func main() {
 		logrus.WithError(err).Fatalf("reading config file conf.yml")
 	}
 
-	var config config.UnikConfig
+	var config config.DaemonConfig
 	if err := yaml.Unmarshal(configData, &config); err != nil {
 		logrus.WithError(err).Fatalf("parsing conf.yml")
 	}

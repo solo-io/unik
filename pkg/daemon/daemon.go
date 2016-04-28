@@ -41,7 +41,7 @@ const (
 	rump_virtualbox = "rump-virtualbox"
 )
 
-func NewUnikDaemon(config config.DaemonConfig) *UnikDaemon {
+func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_providers := make(providers.Providers)
 	_compilers := make(map[string]compilers.Compiler)
 	for _, awsConfig := range config.Providers.Aws {
@@ -49,34 +49,46 @@ func NewUnikDaemon(config config.DaemonConfig) *UnikDaemon {
 		break
 	}
 	for _, vsphereConfig := range config.Providers.Vsphere {
-		_providers[vsphere_provider] = vsphere.NewVsphereProvier(vsphereConfig)
+		p, err := vsphere.NewVsphereProvier(vsphereConfig)
+		if err != nil {
+			return nil, lxerrors.New("initializing vsphere provider", err)
+		}
+		_providers[vsphere_provider] = p
 		break
 	}
 	for _, virtualboxConfig := range config.Providers.Virtualbox {
-		_providers[virtualbox_provider] = virtualbox.NewVirtualboxProvider(virtualboxConfig)
+		p, err := virtualbox.NewVirtualboxProvider(virtualboxConfig)
+		if err != nil {
+			return nil, lxerrors.New("initializing virtualbox provider", err)
+		}
+		_providers[virtualbox_provider] = p
 		break
 	}
 
-	_compilers[rump_aws] = compilers.RumpCompiler{
+	_compilers[rump_aws] = &compilers.RumpCompiler{
 		DockerImage: "unik/compilers-rump-go-xen",
 		CreateImage: compilers.CreateImageAws,
 	}
 
-	_compilers[rump_vmware] = compilers.RumpCompiler{
+	_compilers[rump_vmware] = &compilers.RumpCompiler{
 		DockerImage: "unik/compilers-rump-go-hw",
 		CreateImage: compilers.CreateImageVmware,
 	}
 
-	_compilers[rump_virtualbox] = compilers.RumpCompiler{
+	_compilers[rump_virtualbox] = &compilers.RumpCompiler{
 		DockerImage: "unik/compilers-rump-go-hw",
 		CreateImage: compilers.CreateImageVirtualBox,
 	}
 
-	return &UnikDaemon{
+	d := &UnikDaemon{
 		server:    lxmartini.QuietMartini(),
 		providers: _providers,
 		compilers: _compilers,
 	}
+
+	d.registerHandlers()
+
+	return d, nil
 }
 
 func (d *UnikDaemon) Run(port int) {
