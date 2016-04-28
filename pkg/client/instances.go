@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"strings"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"io"
 )
 
 type instances struct {
@@ -51,13 +52,21 @@ func (i *instances) Delete(id string) error {
 	return nil
 }
 
-func (i *instances) GetLogs(id string, follow, deleteOnDisconnect bool) (string, error) {
-	query := fmt.Sprintf("?follow=%v&delete=%v", follow, deleteOnDisconnect)
-	resp, body, err := lxhttpclient.Get(i.unikIP, "/instances/"+id+"/logs"+query, nil)
+func (i *instances) GetLogs(id string) (string, error) {
+	resp, body, err := lxhttpclient.Get(i.unikIP, "/instances/"+id+"/logs", nil)
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	return string(body), nil
+}
+
+func (i *instances) AttachLogs(id string, deleteOnDisconnect bool) (io.ReadCloser, error) {
+	query := fmt.Sprintf("?follow=%v&delete=%v", true, deleteOnDisconnect)
+	resp, err := lxhttpclient.GetAsync(i.unikIP, "/instances/"+id+"/logs"+query, nil)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil, lxerrors.New(fmt.Sprintf("failed with status %v", resp.StatusCode), err)
+	}
+	return resp.Body, nil
 }
 
 func (i *instances) Run(imageName, instanceName string, mounts, env map[string]string) (*types.Instance, error) {
@@ -75,7 +84,7 @@ func (i *instances) Run(imageName, instanceName string, mounts, env map[string]s
 
 	query := fmt.Sprintf("?image_name=%s&useDelimiter=%s&usePairDelimiter=%s&env=%s&mounts=%s", imageName, envDelimiter, envPairDelimiter, envStr, mntStr)
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+instanceName+query, nil, nil)
-	if err != nil || resp.StatusCode != http.StatusAccepted {
+	if err != nil || resp.StatusCode != http.StatusCreated {
 		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	var instance *types.Instance

@@ -55,12 +55,12 @@ func (v *volumes) Create(name, dataTar, provider string, size int) ([]*types.Vol
 	)
 	if dataTar == "" {
 		resp, body, err = lxhttpclient.Post(v.unikIP, "/volumes/"+name+query, nil, nil)
-		if err != nil || resp.StatusCode != http.StatusAccepted {
+		if err != nil || resp.StatusCode != http.StatusCreated {
 			return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 		}
 	} else {
 		resp, body, err = lxhttpclient.PostFile(v.unikIP, "/volumes/"+name+query, "tarfile", dataTar)
-		if err != nil || resp.StatusCode != http.StatusAccepted {
+		if err != nil || resp.StatusCode != http.StatusCreated {
 			return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 		}
 	}

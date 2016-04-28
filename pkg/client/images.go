@@ -41,7 +41,7 @@ func (i *images) Get(id string) (*types.Image, error) {
 func (i *images) Build(name, sourceTar, compiler, provider, args string, mounts []string, force bool) ([]*types.Image, error) {
 	query := fmt.Sprintf("?compiler=%s&provider=%s&args=%s&mounts=%s&force=%v", compiler, provider, args, strings.Join(mounts, ","), force)
 	resp, body, err := lxhttpclient.PostFile(i.unikIP, "/images/"+name+query, "tarfile", sourceTar)
-	if err != nil || resp.StatusCode != http.StatusAccepted {
+	if err != nil || resp.StatusCode != http.StatusCreated {
 		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	var image *types.Image
