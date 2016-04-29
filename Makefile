@@ -1,7 +1,5 @@
 all: compilers utils unik
 
-.PHONY: compilers utils compilers-rump-base-common compilers-rump-base-hw compilers-rump-base-xen compilers-rump-go-hw compilers-rump-go-xen boot-creator image-creator vsphere-client
-
 compilers-rump-base-common:
 	cd containers/compilers/rump/base && docker build -t unik/$@ -f Dockerfile.common .
 
@@ -36,11 +34,10 @@ SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 BINARY=unik
 
 unik: ${SOURCES}
-	go build -o ${BINARY} unik.go
+	go build -o ${BINARY}
 
-.PHONY: install
-install: all
-	go install unik.go
+install: all ${SOURCES}
+	go install
 
 .PHONY: uninstall
 	rm $(which ${BINARY})
