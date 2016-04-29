@@ -1,6 +1,6 @@
-FROM ubuntu
+FROM ubuntu:14.04
 
-RUN sudo sudo apt-get update -y  && sudo apt-get install libxen-dev curl git build-essential -y && sudo apt-get clean -y && sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get update -y  &&  apt-get install libxen-dev curl git build-essential -y &&  apt-get clean -y &&  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ENV DESTDIR=/usr/local
 
