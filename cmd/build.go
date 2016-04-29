@@ -21,8 +21,22 @@ var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build a unikernel image from source code files",
 	Long: `Compiles source files into a runnable unikernel image.
-	Image is compiled for a target infrastructure, specified with the flag -provider.
 
+	Images must be compiled for a specific provider, specified with the --provider flag
+	To see a list of available providers, run 'unik providers'
+
+	A unikernel compiler that is compatible with the provider must be specified with the --compiler flag
+	To see a list of available compilers, run 'unik compilers'
+
+	If you wish to attach volumes to instances of an image, the image must be compiled in advance
+	with a list of the expected mount points. e.g. for an application that reads from a '/data' folder,
+	the unikernel should be compiled with the flag -mount /data
+
+	Runtime arguments to be passed to your unikernel must also be specified at compile time.
+	You can specify arguments as a single string passed to the --args flag
+
+	Image names must be unique. If an image exists with the same name, you can force overwriting with the
+	--force flag
 
 	Example usage:
 		unik build -name myUnikernel -path ./myApp/src -compiler rump-xen -provider aws -mountpoint /foo -mountpoint /bar -args '-myParameter MYVALUE' -force
