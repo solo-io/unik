@@ -16,11 +16,11 @@ var imagesCmd = &cobra.Command{
 	including bind mounts required at runtime.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		readClientConfig()
-		if url == "" {
-			url = clientConfig.DaemonUrl
+		if host == "" {
+			host = clientConfig.Host
 		}
-		logrus.WithField("url", url).Info("listing images")
-		images, err := client.UnikClient(url).Images().All()
+		logrus.WithField("host", host).Info("listing images")
+		images, err := client.UnikClient(host).Images().All()
 		if err != nil {
 			logrus.WithError(err).Error("listing images failed")
 			os.Exit(-1)

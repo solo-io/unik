@@ -12,7 +12,7 @@ import (
 	"bytes"
 )
 
-var clientConfigFile, url string
+var clientConfigFile, host string
 var port int
 
 // RootCmd represents the base command when called without any subcommands
@@ -23,7 +23,10 @@ var RootCmd = &cobra.Command{
 	into bootable disk images. Unik also runs and manages unikernel
 	instances across infrastructures.
 
-	Set client configuration file with --client-config=<path>`,
+	Create a client configuration file with 'unik target'
+
+	You may set a custom client configuration file w
+	ith the global flag --client-config=<path>`,
 }
 
 // Execute adds all child commands to the root command sets flags appropriately.
@@ -37,7 +40,7 @@ func Execute() {
 
 func init() {
 	RootCmd.PersistentFlags().StringVar(&clientConfigFile, "client-config", os.Getenv("HOME")+"/.unik/client-config.yaml", "client config file (default is $HOME/.unik/client-config.yaml)")
-	RootCmd.PersistentFlags().StringVar(&url, "url", "", "<string, optional>: url/ip address of the host running the unik daemon")
+	RootCmd.PersistentFlags().StringVar(&host, "host", "", "<string, optional>: host/ip address of the host running the unik daemon")
 	targetCmd.Flags().IntVar(&port, "port", 3000, "<int, optional>: port the daemon is running on (default: 3000)")
 }
 
@@ -46,7 +49,7 @@ func readClientConfig() {
 	data, err := ioutil.ReadFile(clientConfigFile)
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to read client configuration file at "+ clientConfigFile +`\n
-		Try setting your config with 'unik target DAEMON_URL'`)
+		Try setting your config with 'unik target HOST_URL'`)
 		os.Exit(-1)
 	}
 	data = bytes.Replace(data, []byte("\n"), []byte{}, -1)

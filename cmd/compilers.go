@@ -30,11 +30,11 @@ var compilersCmd = &cobra.Command{
 	Long: `Returns a list of compilers available to the targeted unik backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		readClientConfig()
-		if url == "" {
-			url = clientConfig.DaemonUrl
+		if host == "" {
+			host = clientConfig.Host
 		}
-		logrus.WithField("url", url).Info("listing compilers")
-		compilers, err := client.UnikClient(url).AvailableCompilers()
+		logrus.WithField("host", host).Info("listing compilers")
+		compilers, err := client.UnikClient(host).AvailableCompilers()
 		if err != nil {
 			logrus.WithError(err).Error("listing compilers failed")
 			os.Exit(-1)

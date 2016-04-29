@@ -16,11 +16,11 @@ var psCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		readClientConfig()
-		if url == "" {
-			url = clientConfig.DaemonUrl
+		if host == "" {
+			host = clientConfig.Host
 		}
-		logrus.WithField("url", url).Info("listing images")
-		instances, err := client.UnikClient(url).Instances().All()
+		logrus.WithField("host", host).Info("listing images")
+		instances, err := client.UnikClient(host).Instances().All()
 		if err != nil {
 			logrus.WithError(err).Error("listing images failed")
 			os.Exit(-1)

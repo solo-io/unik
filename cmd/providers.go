@@ -31,11 +31,11 @@ var providersCmd = &cobra.Command{
 	Long: `Returns a list of providers available to the targeted unik backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		readClientConfig()
-		if url == "" {
-			url = clientConfig.DaemonUrl
+		if host == "" {
+			host = clientConfig.Host
 		}
-		logrus.WithField("url", url).Info("listing providers")
-		providers, err := client.UnikClient(url).AvailableProviders()
+		logrus.WithField("host", host).Info("listing providers")
+		providers, err := client.UnikClient(host).AvailableProviders()
 		if err != nil {
 			logrus.WithError(err).Error("listing providers failed")
 			os.Exit(-1)

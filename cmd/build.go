@@ -96,10 +96,10 @@ var buildCmd = &cobra.Command{
 		}()
 
 		fmt.Printf("App packaged as tarball: %s\n", sourceTar)
-		if url == "" {
-			url = clientConfig.DaemonUrl
+		if host == "" {
+			host = clientConfig.Host
 		}
-		image, err := client.UnikClient(url).Images().Build(name, sourceTar, compiler, provider, runArgs, mountPoints, force)
+		image, err := client.UnikClient(host).Images().Build(name, sourceTar, compiler, provider, runArgs, mountPoints, force)
 		if err != nil {
 			logrus.WithError(err).Error("building image failed")
 			os.Exit(-1)

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var imageName string
+var instanceName, imageName string
 var volumes, envPairs []string
 
 // runCmd represents the run command
@@ -30,7 +30,7 @@ var runCmd = &cobra.Command{
 	environment variables can be set at runtime through the use of the -env flag.
 
 	Example usage:
-		unik run -name newInstance -imageName myImage -vol myVol:/mount1 -vol yourVol:/mount2 -env foo=bar -env another=one
+		unik run -instanceName newInstance -imageName myImage -vol myVol:/mount1 -vol yourVol:/mount2 -env foo=bar -env another=one
 
 		# will create and run an instance of myImage on the provider environment myImage is compiled for
 		# instance will be named newInstance
@@ -42,8 +42,8 @@ var runCmd = &cobra.Command{
 		# note that run must take exactly one -vol argument for each mount point defined in the image specification
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if name == "" {
-			logrus.Error("--name must be set")
+		if instanceName == "" {
+			logrus.Error("--instanceName must be set")
 			os.Exit(-1)
 		}
 		if imageName == "" {
@@ -51,8 +51,8 @@ var runCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 		readClientConfig()
-		if url == "" {
-			url = clientConfig.DaemonUrl
+		if host == "" {
+			host = clientConfig.Host
 		}
 
 		mounts := make(map[string]string)
@@ -80,12 +80,13 @@ var runCmd = &cobra.Command{
 		}
 
 		logrus.WithFields(logrus.Fields{
-			"name": name,
+			"instanceName": instanceName,
 			"imageName": imageName,
 			"env": env,
 			"mounts": mounts,
+			"host": host,
 		}).Infof("running unik run")
-		instance, err := client.UnikClient(url).Instances().Run(name, imageName, mounts, env)
+		instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mounts, env)
 		if err != nil {
 			logrus.WithError(err).Error("building image failed")
 			os.Exit(-1)
@@ -96,10 +97,10 @@ var runCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(runCmd)
-	buildCmd.Flags().StringVar(&name, "name", "", "<string,required> name to give the instance. must be unique")
+	buildCmd.Flags().StringVar(&instanceName, "instanceName", "", "<string,required> name to give the instance. must be unique")
 	buildCmd.Flags().StringVar(&imageName, "imageName", "", "<string,required> image to use")
-	buildCmd.Flags().StringSliceVar(&envPairs, "env", "", "<string,repeated> set any number of environment variables for the instance. must be in the format KEY=VALUE")
-	buildCmd.Flags().StringSliceVar(&volumes, "vol", "", `<string,repeated> each --vol flag specifies one volume id and the corresponding mount point to attach
+	buildCmd.Flags().StringSliceVar(&envPairs, "env", []string{}, "<string,repeated> set any number of environment variables for the instance. must be in the format KEY=VALUE")
+	buildCmd.Flags().StringSliceVar(&volumes, "vol", []string{}, `<string,repeated> each --vol flag specifies one volume id and the corresponding mount point to attach
 	to the instance at boot time. volumes must be attached to the instance for each mount point expected by the image.
 	run 'unik image <image_name>' to see the mount points required for the image.
 	specified in the format 'volume_id:mount_point'`)

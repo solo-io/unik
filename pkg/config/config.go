@@ -41,5 +41,5 @@ const (
 )
 
 type ClientConfig struct {
-	DaemonUrl string `yaml:"url"`
+	Host string `yaml:"host"`
 }

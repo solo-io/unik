@@ -17,34 +17,34 @@ var show bool
 var targetCmd = &cobra.Command{
 	Use:   "target",
 	Short: "Configure unik daemon URL for cli client commands",
-	Long: `Sets the url of the unik daemon for cli commands.
-	If running unik locally, say 'unik target -url localhost'
+	Long: `Sets the host url of the unik daemon for cli commands.
+	If running unik locally, use 'unik target --host localhost'
 
 	args:
-	--url: <string, required>: url/ip address of the host running the unik daemon
+	--host: <string, required>: host/ip address of the host running the unik daemon
 	--port: <int, optional>: port the daemon is running on (default: 3000)
 
 	--show: <bool,optional>: shows the current target that is set`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if show {
 			readClientConfig()
-			logrus.Infof("Current target: %s", clientConfig.DaemonUrl)
+			logrus.Infof("Current target: %s", clientConfig.Host)
 			return
 		}
-		if url == "" {
-			logrus.Error("--url must be set for target")
+		if host == "" {
+			logrus.Error("--host must be set for target")
 			os.Exit(-1)
 		}
-		if err := setClientConfig(url, port); err != nil {
+		if err := setClientConfig(host, port); err != nil {
 			logrus.WithError(err).Error("failed to save target to config file")
 			os.Exit(-1)
 		}
-		logrus.Infof("target set: %s:%v", url, port)
+		logrus.Infof("target set: %s:%v", host, port)
 	},
 }
 
-func setClientConfig(url string, port int) error {
-	data, err := yaml.Marshal(config.ClientConfig{DaemonUrl: fmt.Sprintf("%s:%v", url, port)})
+func setClientConfig(host string, port int) error {
+	data, err := yaml.Marshal(config.ClientConfig{Host: fmt.Sprintf("%s:%v", host, port)})
 	if err != nil {
 		return errors.New("failed to convert config to yaml string: "+err.Error())
 	}
