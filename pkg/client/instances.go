@@ -53,7 +53,7 @@ func (i *instances) Get(id string) (*types.Instance, error) {
 func (i *instances) Delete(id string) error {
 	resp, body, err := lxhttpclient.Delete(i.unikIP, "/instances/"+id, nil)
 	if err != nil  {
-		return nil, lxerrors.New("request failed", err)
+		return lxerrors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusNoContent {
 		return lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
@@ -64,7 +64,7 @@ func (i *instances) Delete(id string) error {
 func (i *instances) GetLogs(id string) (string, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/instances/"+id+"/logs", nil)
 	if err != nil  {
-		return nil, lxerrors.New("request failed", err)
+		return "", lxerrors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return "", lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
@@ -115,7 +115,7 @@ func (i *instances) Run(instanceName, imageName string, mounts, env map[string]s
 func (i *instances) Start(id string) error {
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+id+"/start", nil, nil)
 	if err != nil  {
-		return nil, lxerrors.New("request failed", err)
+		return lxerrors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
@@ -126,7 +126,7 @@ func (i *instances) Start(id string) error {
 func (i *instances) Stop(id string) error {
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+id+"/stop", nil, nil)
 	if err != nil  {
-		return nil, lxerrors.New("request failed", err)
+		return lxerrors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)

@@ -64,7 +64,7 @@ func (i *images) Delete(id string, force bool) error {
 	query := fmt.Sprintf("?force=%v", force)
 	resp, body, err := lxhttpclient.Delete(i.unikIP, "/images/"+id+query, nil)
 	if err != nil  {
-		return nil, lxerrors.New("request failed", err)
+		return lxerrors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusNoContent {
 		return lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
