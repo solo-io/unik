@@ -195,7 +195,12 @@ func (d *UnikDaemon) registerHandlers() {
 			if !ok {
 				return nil, http.StatusBadRequest, lxerrors.New("unikernel type "+ compilerType +" not available for "+providerType+"infrastructure", nil)
 			}
-			mountPoints := strings.Split(req.FormValue("mounts"), ",")
+			mntStr := req.FormValue("mounts")
+
+			var mountPoints []string
+			if len(mntStr) > 0 {
+				mountPoints = strings.Split(mntStr, ",")
+			}
 
 			logrus.WithFields(logrus.Fields{
 				"force":        force,
