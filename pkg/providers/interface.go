@@ -16,7 +16,7 @@ type Provider interface {
 	RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (*types.Instance, error)
 	ListInstances() ([]*types.Instance, error)
 	GetInstance(nameOrIdPrefix string) (*types.Instance, error)
-	DeleteInstance(id string) error
+	DeleteInstance(id string, force bool) error
 	StartInstance(id string) error
 	StopInstance(id string) error
 	GetInstanceLogs(id string) (string, error)

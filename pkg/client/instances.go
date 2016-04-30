@@ -50,8 +50,9 @@ func (i *instances) Get(id string) (*types.Instance, error) {
 	return &instance, nil
 }
 
-func (i *instances) Delete(id string) error {
-	resp, body, err := lxhttpclient.Delete(i.unikIP, "/instances/"+id, nil)
+func (i *instances) Delete(id string, force bool) error {
+	query := fmt.Sprintf("?force=%v", force)
+	resp, body, err := lxhttpclient.Delete(i.unikIP, "/instances/"+id+query, nil)
 	if err != nil  {
 		return lxerrors.New("request failed", err)
 	}

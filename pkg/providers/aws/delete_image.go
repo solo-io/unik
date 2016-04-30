@@ -21,7 +21,7 @@ func (p *AwsProvider) DeleteImage(id string, force bool) error {
 			if !force {
 				return lxerrors.New("instance "+instance.Id+" found which uses image "+image.Id+"; try again with force=true", nil)
 			} else {
-				err = p.DeleteInstance(instance.Id)
+				err = p.DeleteInstance(instance.Id, true)
 				if err != nil {
 					return lxerrors.New("failed to delete instance "+instance.Id+" which is using image "+image.Id, err)
 				}

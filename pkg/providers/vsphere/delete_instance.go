@@ -6,10 +6,19 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-func (p *VsphereProvider) DeleteInstance(id string) error {
+func (p *VsphereProvider) DeleteInstance(id string, force bool) error {
 	instance, err := p.GetInstance(id)
 	if err != nil {
 		return lxerrors.New("retrieving instance "+id, err)
+	}
+	if instance.State == types.InstanceState_Running {
+		if force {
+			if err := p.StopInstance(instance.Id); err != nil {
+				return lxerrors.New("stopping instance for deletion", err)
+			}
+		} else {
+			return lxerrors.New("instance "+instance.Id+"is still running. try again with --force or power off instance first", err)
+		}
 	}
 	image, err := p.GetImage(instance.ImageId)
 	if err != nil {

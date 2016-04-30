@@ -7,10 +7,13 @@ import (
 	"github.com/layer-x/layerx-commons/lxerrors"
 )
 
-func (p *AwsProvider) DeleteInstance(id string) error {
+func (p *AwsProvider) DeleteInstance(id string, force bool) error {
 	instance, err := p.GetInstance(id)
 	if err != nil {
 		return lxerrors.New("retrieving instance "+id, err)
+	}
+	if instance.State == types.InstanceState_Running && !force {
+		return lxerrors.New("instance "+instance.Id+"is still running. try again with --force or power off instance first", err)
 	}
 	param := &ec2.TerminateInstancesInput{
 		InstanceIds: []*string{

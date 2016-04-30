@@ -253,10 +253,10 @@ func (d *UnikDaemon) registerHandlers() {
 				}).Errorf("image must be named")
 				return nil, http.StatusBadRequest, lxerrors.New("image must be named", nil)
 			}
-			forceStr := req.URL.Query().Get("force")
 			logrus.WithFields(logrus.Fields{
 				"request": req,
 			}).Infof("deleting instance " + imageName)
+			forceStr := req.URL.Query().Get("force")
 			force := false
 			if strings.ToLower(forceStr) == "true" {
 				force = true
@@ -314,7 +314,12 @@ func (d *UnikDaemon) registerHandlers() {
 			if err != nil {
 				return nil, http.StatusInternalServerError, err
 			}
-			err = provider.DeleteInstance(instanceId)
+			forceStr := req.URL.Query().Get("force")
+			force := false
+			if strings.ToLower(forceStr) == "true" {
+				force = true
+			}
+			err = provider.DeleteInstance(instanceId, force)
 			if err != nil {
 				return nil, http.StatusInternalServerError, err
 			}
@@ -339,7 +344,7 @@ func (d *UnikDaemon) registerHandlers() {
 
 				deleteOnDisconnect := req.URL.Query().Get("delete")
 				if strings.ToLower(deleteOnDisconnect) == "true" {
-					defer provider.DeleteInstance(instanceId)
+					defer provider.DeleteInstance(instanceId, true)
 				}
 
 				output := ioutils.NewWriteFlusher(res)
