@@ -8,11 +8,11 @@ import (
 type InstanceState string
 
 const (
-	InstanceState_Running    InstanceState = "InstanceState_Running"
-	InstanceState_Stopped    InstanceState = "InstanceState_Stopped"
-	InstanceState_Pending    InstanceState = "InstanceState_Pending"
-	InstanceState_Unknown    InstanceState = "InstanceState_Unknown"
-	InstanceState_Terminated InstanceState = "InstanceState_Terminated"
+	InstanceState_Running    InstanceState = "running"
+	InstanceState_Stopped    InstanceState = "stopped"
+	InstanceState_Pending    InstanceState = "pending"
+	InstanceState_Unknown    InstanceState = "unknown"
+	InstanceState_Terminated InstanceState = "terminated"
 )
 
 type Infrastructure string
