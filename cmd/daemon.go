@@ -9,6 +9,9 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"gopkg.in/yaml.v2"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
+	"path/filepath"
+	"fmt"
+	"errors"
 )
 
 var daemonConfigFile, logFile string
@@ -37,28 +40,43 @@ var daemonCmd = &cobra.Command{
 		 # outputting logs to logs.txt
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		readDaemonConfig()
-		if debugMode {
-			logrus.SetLevel(logrus.DebugLevel)
-		}
-		if trace {
-			logrus.AddHook(&uniklog.AddTraceHook{true})
-		}
-		if logFile != "" {
-			f, err := os.Open(logFile)
-			if err != nil {
-				logrus.WithError(err).Errorf("failed to open log file %s for writing", logFile)
-				os.Exit(-1)
+		if err := func() error {
+			//important to set TMPDIR on OSX
+			oldTmpDir := os.Getenv("TMPDIR")
+			os.Setenv("TMPDIR", filepath.Join(os.Getenv("HOME"), ".unik", "tmp"))
+			if oldTmpDir == "" {
+				defer os.Unsetenv("TMPDIR")
+			} else {
+				defer os.Setenv("TMPDIR", oldTmpDir)
 			}
-			logrus.AddHook(&uniklog.TeeHook{f})
-		}
-		logrus.WithField("config", daemonConfig).Info("daemon started")
-		d, err := daemon.NewUnikDaemon(daemonConfig)
-		if err != nil {
-			logrus.WithError(err).Errorf("daemon failed to initialize")
+
+			if err := readDaemonConfig(); err != nil {
+				return err
+			}
+			if debugMode {
+				logrus.SetLevel(logrus.DebugLevel)
+			}
+			if trace {
+				logrus.AddHook(&uniklog.AddTraceHook{true})
+			}
+			if logFile != "" {
+				f, err := os.Open(logFile)
+				if err != nil {
+					return errors.New(fmt.Sprintf("failed to open log file %s for writing: %v", logFile, err))
+				}
+				logrus.AddHook(&uniklog.TeeHook{f})
+			}
+			logrus.WithField("config", daemonConfig).Info("daemon started")
+			d, err := daemon.NewUnikDaemon(daemonConfig)
+			if err != nil {
+				return errors.New("daemon failed to initialize: "+ err.Error())
+			}
+			d.Run(port)
+			return nil
+		}(); err != nil {
+			logrus.Errorf("running daemon failed: %v", err)
 			os.Exit(-1)
 		}
-		d.Run(port)
 	},
 }
 
@@ -73,16 +91,17 @@ func init() {
 
 
 var daemonConfig config.DaemonConfig
-func readDaemonConfig() {
+func readDaemonConfig() error {
 	data, err := ioutil.ReadFile(daemonConfigFile)
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to read daemon configuration file at "+ daemonConfigFile +`\n
 		See documentation at http://github.com/emc-advanced-dev/unik for creating daemon config.'`)
-		os.Exit(-1)
+		return err
 	}
 	if err := yaml.Unmarshal(data, &daemonConfig); err != nil {
 		logrus.WithError(err).Errorf("failed to parse daemon configuration yaml at "+ daemonConfigFile +`\n
 		Please ensure config file contains valid yaml.'`)
-		os.Exit(-1)
+		return err
 	}
+	return nil
 }

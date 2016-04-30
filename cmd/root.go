@@ -45,19 +45,20 @@ func init() {
 }
 
 var clientConfig config.ClientConfig
-func readClientConfig() {
+func readClientConfig() error {
 	data, err := ioutil.ReadFile(clientConfigFile)
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to read client configuration file at "+ clientConfigFile +`\n
 		Try setting your config with 'unik target HOST_URL'`)
-		os.Exit(-1)
+		return err
 	}
 	data = bytes.Replace(data, []byte("\n"), []byte{}, -1)
 	if err := yaml.Unmarshal(data, &clientConfig); err != nil {
 		logrus.WithError(err).Errorf("failed to parse client configuration yaml at "+ clientConfigFile +`\n
 		Please ensure config file contains valid yaml.'`)
-		os.Exit(-1)
+		return err
 	}
+	return nil
 }
 
 func printImages(images ... *types.Image) {

@@ -26,20 +26,26 @@ var targetCmd = &cobra.Command{
 
 	--show: <bool,optional>: shows the current target that is set`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if show {
-			readClientConfig()
-			logrus.Infof("Current target: %s", clientConfig.Host)
-			return
-		}
-		if host == "" {
-			logrus.Error("--host must be set for target")
+		if err := func() error {
+			if show {
+				if err := readClientConfig(); err != nil {
+					return err
+				}
+				logrus.Infof("Current target: %s", clientConfig.Host)
+				return nil
+			}
+			if host == "" {
+				return errors.New("--host must be set for target")
+			}
+			if err := setClientConfig(host, port); err != nil {
+				return errors.New(fmt.Sprintf("failed to save target to config file: %v", err))
+			}
+			logrus.Infof("target set: %s:%v", host, port)
+			return nil
+		}(); err != nil {
+			logrus.Errorf("failed running target: %v", err)
 			os.Exit(-1)
 		}
-		if err := setClientConfig(host, port); err != nil {
-			logrus.WithError(err).Error("failed to save target to config file")
-			os.Exit(-1)
-		}
-		logrus.Infof("target set: %s:%v", host, port)
 	},
 }
 

@@ -6,6 +6,8 @@ import (
 	"os"
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"strings"
+	"fmt"
+	"errors"
 )
 
 var instanceName, imageName string
@@ -42,56 +44,60 @@ var runCmd = &cobra.Command{
 		# note that run must take exactly one -vol argument for each mount point defined in the image specification
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if instanceName == "" {
-			logrus.Error("--instanceName must be set")
-			os.Exit(-1)
-		}
-		if imageName == "" {
-			logrus.Error("--imageName must be set")
-			os.Exit(-1)
-		}
-		readClientConfig()
-		if host == "" {
-			host = clientConfig.Host
-		}
-
-		mounts := make(map[string]string)
-		for _, vol := range volumes {
-			pair := strings.Split(vol, ":")
-			if len(pair) != 2 {
-				logrus.Errorf("invalid format for vol flag: %s", vol)
-				os.Exit(-1)
+		if err := func() error {
+			if instanceName == "" {
+				return errors.New("--instanceName must be set")
 			}
-			volId := pair[0]
-			mnt := pair[1]
-			mounts[volId] = mnt
-		}
-
-		env := make(map[string]string)
-		for _, e := range envPairs {
-			pair := strings.Split(e, "=")
-			if len(pair) != 2 {
-				logrus.Errorf("invalid format for env flag: %s", e)
-				os.Exit(-1)
+			if imageName == "" {
+				logrus.Error("--imageName must be set")
+				return errors.New("--instanceName must be set")
 			}
-			key := pair[0]
-			val := pair[1]
-			env[key] = val
-		}
+			if err := readClientConfig(); err != nil {
+				return err
+			}
+			if host == "" {
+				host = clientConfig.Host
+			}
 
-		logrus.WithFields(logrus.Fields{
-			"instanceName": instanceName,
-			"imageName": imageName,
-			"env": env,
-			"mounts": mounts,
-			"host": host,
-		}).Infof("running unik run")
-		instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mounts, env)
-		if err != nil {
-			logrus.WithError(err).Error("building image failed")
+			mounts := make(map[string]string)
+			for _, vol := range volumes {
+				pair := strings.Split(vol, ":")
+				if len(pair) != 2 {
+					return errors.New(fmt.Sprintf("invalid format for vol flag: %s", vol))
+				}
+				volId := pair[0]
+				mnt := pair[1]
+				mounts[volId] = mnt
+			}
+
+			env := make(map[string]string)
+			for _, e := range envPairs {
+				pair := strings.Split(e, "=")
+				if len(pair) != 2 {
+					return errors.New(fmt.Sprintf("invalid format for env flag: %s", e))
+				}
+				key := pair[0]
+				val := pair[1]
+				env[key] = val
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"instanceName": instanceName,
+				"imageName": imageName,
+				"env": env,
+				"mounts": mounts,
+				"host": host,
+			}).Infof("running unik run")
+			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mounts, env)
+			if err != nil {
+				return errors.New(fmt.Sprintf("building image failed: %v", err))
+			}
+			printInstances(instance)
+			return nil
+		}(); err != nil {
+			logrus.Errorf("failed running instance: %v", err)
 			os.Exit(-1)
 		}
-		printInstances(instance)
 	},
 }
 

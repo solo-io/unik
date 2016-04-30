@@ -5,6 +5,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"os"
 	"github.com/emc-advanced-dev/unik/pkg/client"
+	"fmt"
+	"errors"
 )
 
 // psCmd represents the ps command
@@ -15,17 +17,24 @@ var psCmd = &cobra.Command{
 	Long: `Lists all unik-managed instances across providers.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		readClientConfig()
-		if host == "" {
-			host = clientConfig.Host
-		}
-		logrus.WithField("host", host).Info("listing images")
-		instances, err := client.UnikClient(host).Instances().All()
-		if err != nil {
-			logrus.WithError(err).Error("listing images failed")
+		if err := func() error {
+			if err := readClientConfig(); err != nil {
+				return err
+			}
+			if host == "" {
+				host = clientConfig.Host
+			}
+			logrus.WithField("host", host).Info("listing images")
+			instances, err := client.UnikClient(host).Instances().All()
+			if err != nil {
+				return errors.New(fmt.Sprintf("listing images failed: %v", err))
+			}
+			printInstances(instances...)
+			return nil
+		}(); err != nil {
+			logrus.Errorf("failed listing instances: %v", err)
 			os.Exit(-1)
 		}
-		printInstances(instances...)
 	},
 }
 

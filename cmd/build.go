@@ -7,6 +7,7 @@ import (
 	"os"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"io/ioutil"
+	"errors"
 )
 
 var name, path, compiler, provider, runArgs string
@@ -49,53 +50,56 @@ var buildCmd = &cobra.Command{
 		unik build -name anotherUnikernel -path ./anotherApp/src -compiler rump-vmware -provider vsphere
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		if name == "" {
-			logrus.Error("--name must be set")
-			return
+		if err := func() error {
+			if name == "" {
+				return errors.New("--name must be set")
+			}
+			if path == "" {
+				return errors.New("--path must be set")
+			}
+			if compiler == "" {
+				return errors.New("--compiler must be set")
+			}
+			if provider == "" {
+				return errors.New("--provider must be set")
+			}
+			if err := readClientConfig(); err != nil {
+				return err
+			}
+			if host == "" {
+				host = clientConfig.Host
+			}
+			logrus.WithFields(logrus.Fields{
+				"name": name,
+				"path": path,
+				"compiler": compiler,
+				"provider": provider ,
+				"args": args,
+				"mountPoints": mountPoints,
+				"force": force,
+				"host": host,
+			}).Infof("running unik build")
+			sourceTar, err := ioutil.TempFile("", "")
+			if err != nil {
+				logrus.WithError(err).Error("failed to create tmp tar file")
+			}
+			if false {
+				defer os.Remove(sourceTar.Name())
+			}
+			if err := unikos.Compress(path, sourceTar.Name()); err != nil {
+				return errors.New("failed to tar sources: "+err.Error())
+			}
+			logrus.Infof("App packaged as tarball: %s\n", sourceTar.Name())
+			image, err := client.UnikClient(host).Images().Build(name, sourceTar.Name(), compiler, provider, runArgs, mountPoints, force)
+			if err != nil {
+				return errors.New("building image failed: %v"+err.Error())
+			}
+			printImages(image)
+			return nil
+		}(); err != nil {
+			logrus.Errorf("build failed: %v", err)
+			os.Exit(-1)
 		}
-		if path == "" {
-			logrus.Error("--path must be set")
-			return
-		}
-		if compiler == "" {
-			logrus.Error("--compiler must be set")
-			return
-		}
-		if provider == "" {
-			logrus.Error("--provider must be set")
-			return
-		}
-		logrus.WithFields(logrus.Fields{
-			"name": name,
-			"path": path,
-			"compiler": compiler,
-			"provider": provider ,
-			"args": args,
-			"mountPoints": mountPoints,
-			"force": force,
-		}).Infof("running unik build")
-		readClientConfig()
-		sourceTar, err := ioutil.TempFile("", "")
-		if err != nil {
-			logrus.WithError(err).Error("failed to create tmp tar file")
-		}
-		if false {
-			defer os.Remove(sourceTar.Name())
-		}
-		if err := unikos.Compress(path, sourceTar.Name()); err != nil {
-			logrus.WithError(err).Error("failed to tar sources")
-			return
-		}
-		logrus.Infof("App packaged as tarball: %s\n", sourceTar.Name())
-		if host == "" {
-			host = clientConfig.Host
-		}
-		image, err := client.UnikClient(host).Images().Build(name, sourceTar.Name(), compiler, provider, runArgs, mountPoints, force)
-		if err != nil {
-			logrus.WithError(err).Error("building image failed")
-			return
-		}
-		printImages(image)
 	},
 }
 

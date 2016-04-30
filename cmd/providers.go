@@ -22,6 +22,7 @@ import (
 	"strings"
 	"os"
 	"github.com/emc-advanced-dev/unik/pkg/client"
+	"errors"
 )
 
 // providersCmd represents the providers command
@@ -30,17 +31,24 @@ var providersCmd = &cobra.Command{
 	Short: "List available unikernel providers",
 	Long: `Returns a list of providers available to the targeted unik backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		readClientConfig()
-		if host == "" {
-			host = clientConfig.Host
-		}
-		logrus.WithField("host", host).Info("listing providers")
-		providers, err := client.UnikClient(host).AvailableProviders()
-		if err != nil {
-			logrus.WithError(err).Error("listing providers failed")
+		if err := func() error {
+			if err := readClientConfig(); err != nil {
+				return err
+			}
+			if host == "" {
+				host = clientConfig.Host
+			}
+			logrus.WithField("host", host).Info("listing providers")
+			providers, err := client.UnikClient(host).AvailableProviders()
+			if err != nil {
+				return errors.New(fmt.Sprintf("listing providers failed: %v", err))
+			}
+			fmt.Printf("%s\n", strings.Join(providers, "\n"))
+			return nil
+		}(); err != nil {
+			logrus.Errorf("failed listing providers: %v", err)
 			os.Exit(-1)
 		}
-		fmt.Printf("%s\n", strings.Join(providers, "\n"))
 	},
 }
 

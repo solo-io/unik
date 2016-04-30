@@ -18,9 +18,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/client"
-	"os"
 	"fmt"
 	"strings"
+	"os"
 )
 
 // compilersCmd represents the compilers command
@@ -29,17 +29,24 @@ var compilersCmd = &cobra.Command{
 	Short: "List available unikernel compilers",
 	Long: `Returns a list of compilers available to the targeted unik backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		readClientConfig()
-		if host == "" {
-			host = clientConfig.Host
-		}
-		logrus.WithField("host", host).Info("listing compilers")
-		compilers, err := client.UnikClient(host).AvailableCompilers()
-		if err != nil {
-			logrus.WithError(err).Error("listing compilers failed")
+		if err := func() error {
+			if err := readClientConfig(); err != nil {
+				return err
+			}
+			if host == "" {
+				host = clientConfig.Host
+			}
+			logrus.WithField("host", host).Info("listing compilers")
+			compilers, err := client.UnikClient(host).AvailableCompilers()
+			if err != nil {
+				return err
+			}
+			fmt.Printf("%s\n", strings.Join(compilers, "\n"))
+			return nil
+		}(); err != nil {
+			logrus.Errorf("failed listing compilers: %v", err)
 			os.Exit(-1)
 		}
-		fmt.Printf("%s\n", strings.Join(compilers, "\n"))
 	},
 }
 
