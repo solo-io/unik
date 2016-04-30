@@ -173,7 +173,7 @@ func (d *UnikDaemon) registerHandlers() {
 			if strings.ToLower(forceStr) == "true" {
 				force = true
 			}
-			compilerType := req.FormValue("type")
+			compilerType := req.FormValue("compiler")
 			args := req.FormValue("args")
 			providerType := req.FormValue("provider")
 			if _, ok := d.providers[providerType]; !ok {
