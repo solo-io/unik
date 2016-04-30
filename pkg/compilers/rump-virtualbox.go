@@ -34,6 +34,7 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*uni
 		}
 
 		c.Blk = append(c.Blk, blk)
+		logrus.Debugf("adding mount point to image: %s:%s", mntPoint, deviceMapped)
 		res.DeviceMappings = append(res.DeviceMappings,
 			uniktypes.DeviceMapping{MountPoint: mntPoint, DeviceName: deviceMapped})
 	}

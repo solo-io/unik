@@ -98,7 +98,7 @@ func (i *instances) Run(instanceName, imageName string, mounts, env map[string]s
 	mntStr := strings.Join(mntPairs, mntDelimiter)
 
 	query := fmt.Sprintf("?image_name=%s&useDelimiter=%s&usePairDelimiter=%s&env=%s&mounts=%s", imageName, envDelimiter, envPairDelimiter, envStr, mntStr)
-	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+instanceName+query, nil, nil)
+	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+instanceName+"/run"+query, nil, nil)
 	if err != nil  {
 		return nil, lxerrors.New("request failed", err)
 	}
