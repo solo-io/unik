@@ -22,7 +22,7 @@ func Mount(device BlockDevice) (mntpoint string, err error) {
 		}
 	}()
 
-	mntpoint, err = ioutil.TempDir("", "stgr")
+	mntpoint, err = ioutil.TempDir(unikutil.UnikTmpDir(), "stgr")
 	if err != nil {
 		return
 	}

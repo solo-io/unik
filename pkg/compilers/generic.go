@@ -15,14 +15,14 @@ import (
 	"github.com/docker/engine-api/types/network"
 	"github.com/docker/engine-api/types/strslice"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"golang.org/x/net/context"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"os/exec"
 )
 
 func BuildBootableImage(kernel, cmdline string) (string, error) {
-	directory, err := ioutil.TempDir("", "")
+	directory, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return "", err
 	}
@@ -41,7 +41,7 @@ func BuildBootableImage(kernel, cmdline string) (string, error) {
 		return "", err
 	}
 
-	resultFile, err := ioutil.TempFile("", "")
+	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return "", err
 	}
@@ -130,7 +130,7 @@ func execContainer(imageName string, cmds, binds []string, privileged bool) erro
 	dockerArgs = append(dockerArgs, imageName)
 	dockerArgs = append(dockerArgs, cmds...)
 	cmd := exec.Command("docker", dockerArgs...)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("running container "+imageName, err)
 	}

@@ -165,7 +165,7 @@ func (d *UnikDaemon) registerHandlers() {
 			}).Debugf("parsing form file marked 'tarfile'")
 			sourceTar, _, err := req.FormFile("tarfile")
 			if err != nil {
-				return nil, http.StatusBadRequest, err
+				return nil, http.StatusBadRequest, lxerrors.New("parsing form file marked 'tarfile", err)
 			}
 			defer sourceTar.Close()
 			forceStr := req.FormValue("force")

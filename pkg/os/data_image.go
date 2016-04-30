@@ -3,7 +3,7 @@ package os
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"io"
 	"io/ioutil"
@@ -14,7 +14,7 @@ import (
 )
 
 func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool) (string, error) {
-	dataFolder, err := ioutil.TempDir("", "")
+	dataFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return "", lxerrors.New("creating tmp build folder", err)
 	}
@@ -48,13 +48,13 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool)
 	logrus.WithFields(logrus.Fields{
 		"command": cmd.Args,
 	}).Debugf("running image-creator container")
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	err = cmd.Run()
 	if err != nil {
 		return "", lxerrors.New("failed running image-creator on "+dataFolder, err)
 	}
 
-	resultFile, err := ioutil.TempFile("", "")
+	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return "", err
 	}
@@ -71,7 +71,7 @@ func BuildEmptyDataVolume(size int) (string, error) {
 	if size < 1 {
 		return "", lxerrors.New("must specify size > 0", nil)
 	}
-	dataFolder, err := ioutil.TempDir("", "")
+	dataFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return "", lxerrors.New("creating tmp build folder", err)
 	}
@@ -89,13 +89,13 @@ func BuildEmptyDataVolume(size int) (string, error) {
 	logrus.WithFields(logrus.Fields{
 		"command": cmd.Args,
 	}).Debugf("running image-creator container")
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	err = cmd.Run()
 	if err != nil {
 		return "", lxerrors.New("failed running image-creator on "+dataFolder, err)
 	}
 
-	resultFile, err := ioutil.TempFile("", "")
+	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return "", err
 	}

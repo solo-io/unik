@@ -8,6 +8,7 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"io/ioutil"
 	"errors"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 var name, path, compiler, provider, runArgs string
@@ -79,7 +80,7 @@ var buildCmd = &cobra.Command{
 				"force": force,
 				"host": host,
 			}).Infof("running unik build")
-			sourceTar, err := ioutil.TempFile("", "")
+			sourceTar, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
 			if err != nil {
 				logrus.WithError(err).Error("failed to create tmp tar file")
 			}

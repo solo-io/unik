@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 	"io/ioutil"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func (p *VsphereProvider) CreateVolume(name, imagePath string) (_ *types.Volume, err error) {
@@ -17,7 +18,7 @@ func (p *VsphereProvider) CreateVolume(name, imagePath string) (_ *types.Volume,
 	}
 	c := p.getClient()
 
-	localVmdkDir, err := ioutil.TempDir("", "")
+	localVmdkDir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return nil, lxerrors.New("creating tmp file", err)
 	}

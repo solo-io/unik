@@ -10,6 +10,7 @@ import (
 	"time"
 	"strings"
 	"io/ioutil"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force bool) (_ *types.Image, err error) {
@@ -42,7 +43,7 @@ func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force boo
 		}
 	}()
 
-	localVmdkDir, err := ioutil.TempDir("", "")
+	localVmdkDir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return nil, lxerrors.New("creating tmp file", err)
 	}

@@ -3,7 +3,7 @@ package vsphereclient
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/layer-x/layerx-commons/lxerrors"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/find"
@@ -123,7 +123,7 @@ func (vc *VsphereClient) CreateVm(vmName string, memoryMb int) error {
 		"--on=false",
 		vmName,
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc vm.create "+vmName, err)
 	}
@@ -139,7 +139,7 @@ func (vc *VsphereClient) DestroyVm(vmName string) error {
 		"-u", formatUrl(vc.u),
 		vmName,
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc vm.destroy "+vmName, err)
 	}
@@ -155,7 +155,7 @@ func (vc *VsphereClient) Mkdir(folder string) error {
 		"-u", formatUrl(vc.u),
 		folder,
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		logrus.WithError(err).Warnf("failed running govc datastore.mkdir " + folder)
 	}
@@ -171,7 +171,7 @@ func (vc *VsphereClient) Rmdir(folder string) error {
 		"-u", formatUrl(vc.u),
 		folder,
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc datastore.rm "+folder, err)
 	}
@@ -192,7 +192,7 @@ func (vc *VsphereClient) ImportVmdk(vmdkPath, remoteFolder string) error {
 		vmdkPath,
 		remoteFolder,
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc import.vmdk "+ remoteFolder, err)
 	}
@@ -210,7 +210,7 @@ func (vc *VsphereClient) UploadFile(srcFile, dest string) error {
 		srcFile,
 		dest,
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc datastore.upload", err)
 	}
@@ -228,7 +228,7 @@ func (vc *VsphereClient) DownloadFile(remoteFile, localFile string) error {
 		remoteFile,
 		localFile,
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc datastore.upload", err)
 	}
@@ -249,7 +249,7 @@ func (vc *VsphereClient) CopyVmdk(src, dest string) error {
 		"["+vc.ds+"] "+src,
 		"["+vc.ds+"] "+dest,
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running vsphere-client.jar CopyVirtualDisk "+src+" "+dest, err)
 	}
@@ -289,7 +289,7 @@ func (vc *VsphereClient) PowerOnVm(vmName string) error {
 		"-u", formatUrl(vc.u),
 		vmName,
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc vm.power (on)", err)
 	}
@@ -306,7 +306,7 @@ func (vc *VsphereClient) PowerOffVm(vmName string) error {
 		"-u", formatUrl(vc.u),
 		vmName,
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running govc vm.power (off)", err)
 	}
@@ -328,7 +328,7 @@ func (vc *VsphereClient) AttachDisk(vmName, vmdkPath string, controllerKey int) 
 		"["+vc.ds+"] "+vmdkPath,
 		fmt.Sprintf("%v", controllerKey),
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running vsphere-client.jar AttachVmdk", err)
 	}
@@ -349,7 +349,7 @@ func (vc *VsphereClient) DetachDisk(vmName string, controllerKey int) error {
 		vmName,
 		fmt.Sprintf("%v", controllerKey),
 	)
-	uniklog.LogCommand(cmd, true)
+	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
 		return lxerrors.New("failed running vsphere-client.jar DetachVmdk", err)
 	}

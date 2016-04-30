@@ -22,6 +22,7 @@ import (
 	"math/rand"
 
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 
 	"errors"
 )
@@ -67,7 +68,7 @@ func uploadToAws(s3svc *s3.S3, body io.ReadSeeker, size int64, bucket, path stri
 }
 
 func createDataVolume(s3svc *s3.S3, ec2svc *ec2.EC2, folder string, az string) (string, error) {
-	dir, err := ioutil.TempDir("", "")
+	dir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return "", err
 	}

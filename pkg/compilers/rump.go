@@ -6,6 +6,7 @@ import (
 
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	uniktypes "github.com/emc-advanced-dev/unik/pkg/types"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 
 	"fmt"
 	"io/ioutil"
@@ -24,8 +25,7 @@ type RumpCompiler struct {
 }
 
 func (r *RumpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (*uniktypes.RawImage, error) {
-
-	localFolder, err := ioutil.TempDir("", "")
+	localFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return nil, err
 	}

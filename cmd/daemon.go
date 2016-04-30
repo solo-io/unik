@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/spf13/cobra"
 	"os"
 	"github.com/Sirupsen/logrus"
@@ -9,7 +9,6 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"gopkg.in/yaml.v2"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
-	"path/filepath"
 	"fmt"
 	"errors"
 )
@@ -41,15 +40,6 @@ var daemonCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
-			//important to set TMPDIR on OSX
-			oldTmpDir := os.Getenv("TMPDIR")
-			os.Setenv("TMPDIR", filepath.Join(os.Getenv("HOME"), ".unik", "tmp"))
-			if oldTmpDir == "" {
-				defer os.Unsetenv("TMPDIR")
-			} else {
-				defer os.Setenv("TMPDIR", oldTmpDir)
-			}
-
 			if err := readDaemonConfig(); err != nil {
 				return err
 			}
@@ -57,14 +47,14 @@ var daemonCmd = &cobra.Command{
 				logrus.SetLevel(logrus.DebugLevel)
 			}
 			if trace {
-				logrus.AddHook(&uniklog.AddTraceHook{true})
+				logrus.AddHook(&unikutil.AddTraceHook{true})
 			}
 			if logFile != "" {
 				f, err := os.Open(logFile)
 				if err != nil {
 					return errors.New(fmt.Sprintf("failed to open log file %s for writing: %v", logFile, err))
 				}
-				logrus.AddHook(&uniklog.TeeHook{f})
+				logrus.AddHook(&unikutil.TeeHook{f})
 			}
 			logrus.WithField("config", daemonConfig).Info("daemon started")
 			d, err := daemon.NewUnikDaemon(daemonConfig)
