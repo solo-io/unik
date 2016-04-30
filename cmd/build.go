@@ -4,12 +4,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/client"
-	"path/filepath"
-	"fmt"
-	"strings"
-	"os/exec"
 	"os"
-	"github.com/emc-advanced-dev/unik/pkg/util/log"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"io/ioutil"
 )
 
 var name, path, compiler, provider, runArgs string
@@ -39,7 +36,7 @@ var buildCmd = &cobra.Command{
 	--force flag
 
 	Example usage:
-		unik build -name myUnikernel -path ./myApp/src -compiler rump-xen -provider aws -mountpoint /foo -mountpoint /bar -args '-myParameter MYVALUE' -force
+		unik build --name myUnikernel --path ./myApp/src --compiler rump-xen --provider aws --mountpoint /foo --mountpoint /bar --args '-myParameter MYVALUE' --force
 
 		# will create a unikernel named myUnikernel using the sources found in ./myApp/src,
 		# compiled using rumprun for the xen hypervisor, targeting AWS infrastructure,
@@ -54,19 +51,19 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if name == "" {
 			logrus.Error("--name must be set")
-			os.Exit(-1)
+			return
 		}
 		if path == "" {
 			logrus.Error("--path must be set")
-			os.Exit(-1)
+			return
 		}
 		if compiler == "" {
 			logrus.Error("--compiler must be set")
-			os.Exit(-1)
+			return
 		}
 		if provider == "" {
 			logrus.Error("--provider must be set")
-			os.Exit(-1)
+			return
 		}
 		logrus.WithFields(logrus.Fields{
 			"name": name,
@@ -78,31 +75,25 @@ var buildCmd = &cobra.Command{
 			"force": force,
 		}).Infof("running unik build")
 		readClientConfig()
-		path = strings.TrimSuffix(path, "/")
-		sourceTar := path + "/" + name + ".tar.gz"
-		tarCommand := exec.Command("tar", "-zvcf", filepath.Base(sourceTar), "./")
-		log.LogCommand(tarCommand, true)
-		tarCommand.Dir = path
-		logrus.Info("Tarring files: %s\n", tarCommand.Args)
-		err := tarCommand.Run()
-		//clean up artifacts even if we fail
-		defer func() {
-			err = os.RemoveAll(sourceTar)
-			if err != nil {
-				logrus.WithError(err).Error("could not clean up tarball at " + sourceTar)
-				os.Exit(-1)
-			}
-			fmt.Printf("cleaned up tarball %s\n", sourceTar)
-		}()
-
-		fmt.Printf("App packaged as tarball: %s\n", sourceTar)
+		sourceTar, err := ioutil.TempFile("", "")
+		if err != nil {
+			logrus.WithError(err).Error("failed to create tmp tar file")
+		}
+		if false {
+			defer os.Remove(sourceTar.Name())
+		}
+		if err := unikos.Compress(path, sourceTar.Name()); err != nil {
+			logrus.WithError(err).Error("failed to tar sources")
+			return
+		}
+		logrus.Infof("App packaged as tarball: %s\n", sourceTar.Name())
 		if host == "" {
 			host = clientConfig.Host
 		}
-		image, err := client.UnikClient(host).Images().Build(name, sourceTar, compiler, provider, runArgs, mountPoints, force)
+		image, err := client.UnikClient(host).Images().Build(name, sourceTar.Name(), compiler, provider, runArgs, mountPoints, force)
 		if err != nil {
 			logrus.WithError(err).Error("building image failed")
-			os.Exit(-1)
+			return
 		}
 		printImages(image)
 	},
