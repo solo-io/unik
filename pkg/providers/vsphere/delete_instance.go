@@ -31,11 +31,9 @@ func (p *VsphereProvider) DeleteInstance(id string, force bool) error {
 	}
 	for _, volume := range volumes {
 		if volume.Attachment == instance.Id {
+			logrus.Debugf("detaching volume: %v", volume)
 			volumesToDetach = append(volumesToDetach, volume)
 		}
-	}
-	if err := p.StopInstance(instance.Id); err != nil {
-		logrus.WithError(err).Warnf("could not power off instance, is instance already powered off?")
 	}
 
 	c := p.getClient()

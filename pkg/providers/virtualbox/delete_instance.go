@@ -35,9 +35,6 @@ func (p *VirtualboxProvider) DeleteInstance(id string, force bool) error {
 		}
 	}
 
-	if err := p.StopInstance(instance.Id); err != nil {
-		return lxerrors.New("powering off instance", err)
-	}
 	for controllerPort, deviceMapping := range image.DeviceMappings {
 		if deviceMapping.MountPoint != "/" {
 			if err := virtualboxclient.DetachDisk(instance.Id, controllerPort); err != nil {
