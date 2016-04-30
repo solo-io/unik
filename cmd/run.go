@@ -32,7 +32,7 @@ var runCmd = &cobra.Command{
 	environment variables can be set at runtime through the use of the -env flag.
 
 	Example usage:
-		unik run -instanceName newInstance -imageName myImage -vol myVol:/mount1 -vol yourVol:/mount2 -env foo=bar -env another=one
+		unik run --instanceName newInstance --imageName myImage -vol myVol:/mount1 -vol yourVol:/mount2 -env foo=bar -env another=one
 
 		# will create and run an instance of myImage on the provider environment myImage is compiled for
 		# instance will be named newInstance
@@ -103,10 +103,10 @@ var runCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(runCmd)
-	buildCmd.Flags().StringVar(&instanceName, "instanceName", "", "<string,required> name to give the instance. must be unique")
-	buildCmd.Flags().StringVar(&imageName, "imageName", "", "<string,required> image to use")
-	buildCmd.Flags().StringSliceVar(&envPairs, "env", []string{}, "<string,repeated> set any number of environment variables for the instance. must be in the format KEY=VALUE")
-	buildCmd.Flags().StringSliceVar(&volumes, "vol", []string{}, `<string,repeated> each --vol flag specifies one volume id and the corresponding mount point to attach
+	runCmd.Flags().StringVar(&instanceName, "instanceName", "", "<string,required> name to give the instance. must be unique")
+	runCmd.Flags().StringVar(&imageName, "imageName", "", "<string,required> image to use")
+	runCmd.Flags().StringSliceVar(&envPairs, "env", []string{}, "<string,repeated> set any number of environment variables for the instance. must be in the format KEY=VALUE")
+	runCmd.Flags().StringSliceVar(&volumes, "vol", []string{}, `<string,repeated> each --vol flag specifies one volume id and the corresponding mount point to attach
 	to the instance at boot time. volumes must be attached to the instance for each mount point expected by the image.
 	run 'unik image <image_name>' to see the mount points required for the image.
 	specified in the format 'volume_id:mount_point'`)
