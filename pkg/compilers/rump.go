@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"github.com/Sirupsen/logrus"
 )
 
 // uses rump docker conter container
@@ -29,7 +30,7 @@ func (r *RumpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mnt
 		return nil, err
 	}
 	defer os.RemoveAll(localFolder)
-
+	logrus.Debugf("extracting uploaded files to "+localFolder)
 	if err := unikos.ExtractTar(sourceTar, localFolder); err != nil {
 		return nil, err
 	}

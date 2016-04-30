@@ -210,6 +210,7 @@ func (d *UnikDaemon) registerHandlers() {
 				return nil, http.StatusInternalServerError, lxerrors.New("failed to compile raw image", err)
 			}
 			defer os.Remove(rawImage.LocalImagePath)
+			logrus.Debugf("raw image compiled and saved to "+rawImage.LocalImagePath)
 
 			image, err := d.providers[providerType].Stage(name, rawImage, force)
 			if err != nil {

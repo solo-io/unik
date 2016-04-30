@@ -15,7 +15,10 @@ import (
 	"github.com/docker/engine-api/types/network"
 	"github.com/docker/engine-api/types/strslice"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	uniklog "github.com/emc-advanced-dev/unik/pkg/util/log"
 	"golang.org/x/net/context"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"os/exec"
 )
 
 func BuildBootableImage(kernel, cmdline string) (string, error) {
@@ -113,6 +116,24 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool) error
 		return errors.New("Returned non zero status")
 	}
 
+	return nil
+}
+
+func execContainer(imageName string, cmds, binds []string, privileged bool) error {
+	dockerArgs := []string{"run", "--rm"}
+	if privileged {
+		dockerArgs = append(dockerArgs, "--privileged")
+	}
+	for _, bind := range binds {
+		dockerArgs = append(dockerArgs, "-v", bind)
+	}
+	dockerArgs = append(dockerArgs, imageName)
+	dockerArgs = append(dockerArgs, cmds...)
+	cmd := exec.Command("docker", dockerArgs...)
+	uniklog.LogCommand(cmd, true)
+	if err := cmd.Run(); err != nil {
+		return lxerrors.New("running container "+imageName, err)
+	}
 	return nil
 }
 

@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 )
 
 func ExtractTar(tarArchive io.ReadCloser, localFolder string) error {
