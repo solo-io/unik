@@ -47,7 +47,10 @@ func (i *images) Get(id string) (*types.Image, error) {
 func (i *images) Build(name, sourceTar, compiler, provider, args string, mounts []string, force bool) (*types.Image, error) {
 	query := fmt.Sprintf("?compiler=%s&provider=%s&args=%s&mounts=%s&force=%v", compiler, provider, args, strings.Join(mounts, ","), force)
 	resp, body, err := lxhttpclient.PostFile(i.unikIP, "/images/"+name+query, "tarfile", sourceTar)
-	if err != nil || resp.StatusCode != http.StatusCreated {
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusCreated {
 		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	var image types.Image
@@ -60,7 +63,10 @@ func (i *images) Build(name, sourceTar, compiler, provider, args string, mounts 
 func (i *images) Delete(id string, force bool) error {
 	query := fmt.Sprintf("?force=%v", force)
 	resp, body, err := lxhttpclient.Delete(i.unikIP, "/images/"+id+query, nil)
-	if err != nil || resp.StatusCode != http.StatusNoContent {
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusNoContent {
 		return lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	return nil

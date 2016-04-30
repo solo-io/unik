@@ -52,7 +52,10 @@ func (i *instances) Get(id string) (*types.Instance, error) {
 
 func (i *instances) Delete(id string) error {
 	resp, body, err := lxhttpclient.Delete(i.unikIP, "/instances/"+id, nil)
-	if err != nil || resp.StatusCode != http.StatusNoContent {
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusNoContent {
 		return lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	return nil
@@ -60,7 +63,10 @@ func (i *instances) Delete(id string) error {
 
 func (i *instances) GetLogs(id string) (string, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/instances/"+id+"/logs", nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
 		return "", lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	return string(body), nil
@@ -69,7 +75,10 @@ func (i *instances) GetLogs(id string) (string, error) {
 func (i *instances) AttachLogs(id string, deleteOnDisconnect bool) (io.ReadCloser, error) {
 	query := fmt.Sprintf("?follow=%v&delete=%v", true, deleteOnDisconnect)
 	resp, err := lxhttpclient.GetAsync(i.unikIP, "/instances/"+id+"/logs"+query, nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
 		return nil, lxerrors.New(fmt.Sprintf("failed with status %v", resp.StatusCode), err)
 	}
 	return resp.Body, nil
@@ -90,7 +99,10 @@ func (i *instances) Run(instanceName, imageName string, mounts, env map[string]s
 
 	query := fmt.Sprintf("?image_name=%s&useDelimiter=%s&usePairDelimiter=%s&env=%s&mounts=%s", imageName, envDelimiter, envPairDelimiter, envStr, mntStr)
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+instanceName+query, nil, nil)
-	if err != nil || resp.StatusCode != http.StatusCreated {
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusCreated {
 		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	var instance types.Instance
@@ -102,7 +114,10 @@ func (i *instances) Run(instanceName, imageName string, mounts, env map[string]s
 
 func (i *instances) Start(id string) error {
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+id+"/start", nil, nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
 		return lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	return nil
@@ -110,7 +125,10 @@ func (i *instances) Start(id string) error {
 
 func (i *instances) Stop(id string) error {
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+id+"/stop", nil, nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
 		return lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	return nil

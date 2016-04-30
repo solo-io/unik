@@ -45,7 +45,10 @@ func (v *volumes) Get(id string) (*types.Volume, error) {
 
 func (v *volumes) Delete(id string) error {
 	resp, body, err := lxhttpclient.Delete(v.unikIP, "/volumes/"+id, nil)
-	if err != nil || resp.StatusCode != http.StatusNoContent {
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusNoContent {
 		return lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	return nil
@@ -60,13 +63,19 @@ func (v *volumes) Create(name, dataTar, provider string, size int) (*types.Volum
 		err error
 	)
 	if dataTar == "" {
-		resp, body, err = lxhttpclient.Post(v.unikIP, "/volumes/"+name+query, nil, nil)
-		if err != nil || resp.StatusCode != http.StatusCreated {
+		resp, body, err = lxhttpclient.Post(v.unikIP, "/volumes/" + name + query, nil, nil)
+		if err != nil {
+			return nil, lxerrors.New("request failed", err)
+		}
+		if resp.StatusCode != http.StatusCreated {
 			return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 		}
 	} else {
-		resp, body, err = lxhttpclient.PostFile(v.unikIP, "/volumes/"+name+query, "tarfile", dataTar)
-		if err != nil || resp.StatusCode != http.StatusCreated {
+		resp, body, err = lxhttpclient.PostFile(v.unikIP, "/volumes/" + name + query, "tarfile", dataTar)
+		if err != nil {
+			return nil, lxerrors.New("request failed", err)
+		}
+		if resp.StatusCode != http.StatusCreated {
 			return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 		}
 	}
@@ -80,7 +89,10 @@ func (v *volumes) Create(name, dataTar, provider string, size int) (*types.Volum
 func (v *volumes) Attach(id, instanceId, mountPoint string) error {
 	query := fmt.Sprintf("?mount=%v", mountPoint)
 	resp, body, err := lxhttpclient.Post(v.unikIP, "/volumes/"+id+"/attach/"+instanceId+query, nil, nil)
-	if err != nil || resp.StatusCode != http.StatusAccepted {
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusAccepted {
 		return lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	return nil
@@ -88,7 +100,10 @@ func (v *volumes) Attach(id, instanceId, mountPoint string) error {
 
 func (v *volumes) Detach(id string) error {
 	resp, body, err := lxhttpclient.Post(v.unikIP, "/volumes/"+id+"/detach", nil, nil)
-	if err != nil || resp.StatusCode != http.StatusAccepted {
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusAccepted {
 		return lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	return nil

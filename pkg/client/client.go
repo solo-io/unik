@@ -30,8 +30,11 @@ func (c *client) Volumes() *volumes {
 
 func (c *client) AvailableCompilers() ([]string, error) {
 	resp, body, err := lxhttpclient.Get(c.unikIP, "/available_compilers", nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), nil)
 	}
 	var compilers []string
 	if err := json.Unmarshal(body, &compilers); err != nil {
@@ -42,8 +45,11 @@ func (c *client) AvailableCompilers() ([]string, error) {
 
 func (c *client) AvailableProviders() ([]string, error) {
 	resp, body, err := lxhttpclient.Get(c.unikIP, "/available_providers", nil)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	if err != nil  {
+		return nil, lxerrors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, lxerrors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), nil)
 	}
 	var compilers []string
 	if err := json.Unmarshal(body, &compilers); err != nil {
