@@ -22,6 +22,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
+	"github.com/emc-advanced-dev/unik/pkg/state"
 )
 
 type UnikDaemon struct {
@@ -45,7 +46,14 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_providers := make(providers.Providers)
 	_compilers := make(map[string]compilers.Compiler)
 	for _, awsConfig := range config.Providers.Aws {
-		_providers[aws_provider] = aws.NewAwsProvier(awsConfig)
+		p := aws.NewAwsProvier(awsConfig)
+		s, err := state.BasicStateFromFile(aws.AwsStateFile)
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read aws state file at %s, creating blank aws state", aws.AwsStateFile)
+			s = state.NewBasicState(aws.AwsStateFile)
+		}
+		p = p.WithState(s)
+		_providers[aws_provider] = p
 		break
 	}
 	for _, vsphereConfig := range config.Providers.Vsphere {
@@ -53,6 +61,12 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		if err != nil {
 			return nil, lxerrors.New("initializing vsphere provider", err)
 		}
+		s, err := state.BasicStateFromFile(vsphere.VsphereStateFile)
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read vsphere state file at %s, creating blank vsphere state", vsphere.VsphereStateFile)
+			s = state.NewBasicState(vsphere.VsphereStateFile)
+		}
+		p = p.WithState(s)
 		_providers[vsphere_provider] = p
 		break
 	}
@@ -61,6 +75,12 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		if err != nil {
 			return nil, lxerrors.New("initializing virtualbox provider", err)
 		}
+		s, err := state.BasicStateFromFile(virtualbox.VirtualboxStateFile)
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read virtualbox state file at %s, creating blank virtualbox state", virtualbox.VirtualboxStateFile)
+			s = state.NewBasicState(virtualbox.VirtualboxStateFile)
+		}
+		p = p.WithState(s)
 		_providers[virtualbox_provider] = p
 		break
 	}
