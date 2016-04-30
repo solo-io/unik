@@ -1,2 +1,2 @@
 # unik
-The Unikernel Compilation and Deployment Platform
+UniK (pronounced you-neek) is an open-source tool written in Go for compiling applications into unikernels and deploying those unikernels across a variety of cloud providers, embedded devices (IoT), as well as a developer laptop or workstation. UniK utilizes a simple docker-like command-line interface, making developing on unikernels as easy as developing on containers. UniK’s convenient REST API makes integrating UniK with orchestration tools a breeze. On top of it all, UniK offers a highly pluggable and scalable architecture, allowing developers to add support for new processor architectures, programming languages, unikernel compilers, and cloud providers with ease.
