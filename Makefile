@@ -24,7 +24,11 @@ image-creator:
 	cd containers/utils/image-creator && GOOS=linux go build && docker build -t unik/$@ -f Dockerfile . && rm image-creator
 
 vsphere-client:
+ifeq ($(VSPHERE),1)
 	cd containers/utils/vsphere-client && mvn package && docker build -t unik/$@ -f Dockerfile . && rm -rf target
+else
+	echo NOT BUILDING VSPHERE-CLIENT CONTAINER
+endif
 
 utils: boot-creator image-creator vsphere-client
 
@@ -41,6 +45,16 @@ install: all ${SOURCES}
 
 .PHONY: uninstall
 	rm $(which ${BINARY})
+
+.PHONY: remove-containers
+	-docker rmi -f unik/vsphere-client
+	-docker rmi -f unik/image-creator
+	-docker rmi -f unik/boot-creator
+	-docker rmi -f unik/compilers-rump-go-xen
+	-docker rmi -f unik/compilers-rump-go-hw
+	-docker rmi -f unik/compilers-rump-base-xen
+	-docker rmi -f unik/compilers-rump-base-hw
+	-docker rmi -f unik/compilers-rump-base-common
 
 .PHONY: clean
 clean:
