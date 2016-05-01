@@ -1,0 +1,42 @@
+package cmd
+
+import (
+	"github.com/spf13/cobra"
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/client"
+	"os"
+	"errors"
+)
+
+var startCmd = &cobra.Command{
+	Use:   "start",
+	Short: "Start a running unikernel instance",
+	Long: `Starts a running instance.
+	You may specify the instance by name or id.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := func() error {
+			if err := readClientConfig(); err != nil {
+				return err
+			}
+			if host == "" {
+				host = clientConfig.Host
+			}
+			if instanceName == "" {
+				return errors.New("must specify --instance")
+			}
+			logrus.WithFields(logrus.Fields{"host": host, "instance": instanceName}).Info("starting instance")
+			if err := client.UnikClient(host).Instances().Start(instanceName); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			logrus.Errorf("failed starting instance: %v", err)
+			os.Exit(-1)
+		}
+	},
+}
+
+func init() {
+	RootCmd.AddCommand(startCmd)
+	startCmd.Flags().StringVar(&instanceName, "instance", "", "<string,required> name or id of instance. unik accepts a prefix of the name or id")
+}
