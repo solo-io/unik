@@ -131,8 +131,6 @@ func (d *UnikDaemon) registerHandlers() {
 				logrus.WithError(err).Errorf("failed to reply to http request")
 			}
 			logrus.WithField("result", jsonObject).Debugf("request finished")
-		} else {
-			res.WriteHeader(http.StatusBadRequest)
 		}
 	}
 

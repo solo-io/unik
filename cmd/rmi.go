@@ -21,7 +21,7 @@ var rmiCmd = &cobra.Command{
 				return err
 			}
 			if imageName == "" {
-				return errors.New("must specify --name")
+				return errors.New("must specify --image")
 			}
 			if host == "" {
 				host = clientConfig.Host

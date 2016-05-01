@@ -23,7 +23,7 @@ var rmCmd = &cobra.Command{
 				host = clientConfig.Host
 			}
 			if instanceName == "" {
-				return errors.New("must specify --name")
+				return errors.New("must specify --instance")
 			}
 			logrus.WithFields(logrus.Fields{"host": host, "force": force, "instance": instanceName}).Info("deleting instance")
 			if err := client.UnikClient(host).Instances().Delete(instanceName, force); err != nil {
