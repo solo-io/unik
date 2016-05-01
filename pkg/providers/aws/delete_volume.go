@@ -12,7 +12,16 @@ func (p *AwsProvider) DeleteVolume(id string, force bool) error {
 	if err != nil {
 		return lxerrors.New("retrieving volume "+id, err)
 	}
-	param := &ec2.DeleteVolumeInput{
+	if volume.Attachment != "" {
+		if force {
+			if err := p.DetachVolume(volume.Id); err != nil {
+				return lxerrors.New("detaching volume for deletion", err)
+			} else {
+				return lxerrors.New("volume "+volume.Id+" is attached to instance."+volume.Attachment+", try again with --force or detach volume first", err)
+			}
+		}
+	}
+ 	param := &ec2.DeleteVolumeInput{
 		VolumeId: aws.String(volume.Id),
 	}
 	_, err = p.newEC2().DeleteVolume(param)

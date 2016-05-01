@@ -43,8 +43,9 @@ func (v *volumes) Get(id string) (*types.Volume, error) {
 	return &volume, nil
 }
 
-func (v *volumes) Delete(id string) error {
-	resp, body, err := lxhttpclient.Delete(v.unikIP, "/volumes/"+id, nil)
+func (v *volumes) Delete(id string, force bool) error {
+	query := fmt.Sprintf("?force=%v", force)
+	resp, body, err := lxhttpclient.Delete(v.unikIP, "/volumes/"+id+query, nil)
 	if err != nil  {
 		return lxerrors.New("request failed", err)
 	}

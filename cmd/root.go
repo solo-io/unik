@@ -52,7 +52,7 @@ func readClientConfig() error {
 }
 
 func printImages(images ... *types.Image) {
-	fmt.Printf("%-20s %-20s %-20s %-20s %-6s %-20s\n", "NAME", "ID", "INFRASTRUCTURE", "CREATED", "SIZE", "MOUNTPOINTS")
+	fmt.Printf("%-20s %-20s %-20s %-20s %-6s %-20s\n", "NAME", "ID", "INFRASTRUCTURE", "CREATED", "SIZE(MB)", "MOUNTPOINTS")
 	for _, image := range images {
 		printImage(image)
 	}
@@ -74,12 +74,25 @@ func printImage(image *types.Image) {
 func printInstances(instance ... *types.Instance) {
 	fmt.Printf("%-15s %-20s %-14s %-20s %-20s %-14s %-12s\n",
 		"NAME", "ID", "INFRASTRUCTURE", "CREATED", "IMAGE", "IPADDRESS", "STATE")
-	for _, image := range instance {
-		printInstance(image)
+	for _, instance := range instance {
+		printInstance(instance)
 	}
 }
 
 func printInstance(instance *types.Instance) {
 	fmt.Printf("%-15.15s %-20.20s %-14.14s %-20.20s %-20.20v %-14.14s %-12.12s\n",
 		instance.Name, instance.Id, instance.Infrastructure, instance.Created.String(), instance.ImageId, instance.IpAddress, instance.State)
+}
+
+func printVolumes(volume ... *types.Volume) {
+	fmt.Printf("%-15.15s %-15.15s %-14.14s %-20.20s %-20.20v %-12.12s\n",
+		"NAME", "ID", "INFRASTRUCTURE", "CREATED", "ATTACHED-INSTANCE", "SIZE(MB)")
+	for _, volume := range volume {
+		printVolume(volume)
+	}
+}
+
+func printVolume(volume *types.Volume) {
+	fmt.Printf("%-15.15s %-15.15s %-14.14s %-20.20s %-20.20v %-12.12s\n",
+		volume.Name, volume.Id, volume.Infrastructure, volume.Created.String(), volume.Attachment, volume.SizeMb)
 }

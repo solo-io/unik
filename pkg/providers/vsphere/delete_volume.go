@@ -11,7 +11,13 @@ func (p *VsphereProvider) DeleteVolume(id string, force bool) error {
 		return lxerrors.New("retrieving volume "+id, err)
 	}
 	if volume.Attachment != "" {
-		return lxerrors.New("volume is still attached to instance "+volume.Attachment, err)
+		if force {
+			if err := p.DetachVolume(volume.Id); err != nil {
+				return lxerrors.New("detaching volume for deletion", err)
+			} else {
+				return lxerrors.New("volume "+volume.Id+" is attached to instance."+volume.Attachment+", try again with --force or detach volume first", err)
+			}
+		}
 	}
 	volumeDir := getVolumeDatastoreDir(volume.Name)
 	err = p.getClient().Rmdir(volumeDir)
