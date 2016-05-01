@@ -49,13 +49,14 @@ func getEnvAmazon() (map[string]string, error) {
 
 func main() {
 	//make logs available via http request
-	logs := bytes.Buffer{}
+	logs := &bytes.Buffer{}
 	if err := teeStdout(&logs); err != nil {
 		log.Fatal(err)
 	}
 	if err := teeStderr(&logs); err != nil {
 		log.Fatal(err)
 	}
+	log.SetOutput(os.Stdout)
 
 	log.Printf("unik v0.0 boostrapping beginning...")
 
@@ -113,6 +114,7 @@ envLoop:
 	}
 
 	log.Printf("finished!\n")
+	for {}
 }
 
 func setEnv(env map[string]string) error {

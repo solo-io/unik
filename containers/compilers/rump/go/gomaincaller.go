@@ -50,13 +50,14 @@ func getEnvAmazon() (map[string]string, error) {
 //export gomaincaller
 func gomaincaller() {
 	//make logs available via http request
-	logs := bytes.Buffer{}
-	if err := teeStdout(&logs); err != nil {
+	logs := &bytes.Buffer{}
+	if err := teeStdout(logs); err != nil {
 		log.Fatal(err)
 	}
-	if err := teeStderr(&logs); err != nil {
+	if err := teeStderr(logs); err != nil {
 		log.Fatal(err)
 	}
+	log.SetOutput(os.Stdout)
 
 	log.Printf("unik v0.0 boostrapping beginning...")
 
