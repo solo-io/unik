@@ -10,8 +10,8 @@ import (
 
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start a running unikernel instance",
-	Long: `Starts a running instance.
+	Short: "Start a stopped unikernel instance",
+	Long: `Starts a stopped instance.
 	You may specify the instance by name or id.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {

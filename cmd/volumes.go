@@ -13,6 +13,7 @@ var volumesCmd = &cobra.Command{
 	Use:   "volumes",
 	Short: "List available unik-managed volumes",
 	Long: `Lists all available unik-managed volumes across providers.
+
 	ATTACHED-INSTANCE gives the instance ID of the instance a volume
 	is attached to, if any. Only volumes that have no attachment are
 	available to be attached to an instance.`,
