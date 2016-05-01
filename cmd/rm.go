@@ -8,7 +8,6 @@ import (
 	"errors"
 )
 
-// rmCmd represents the rm command
 var rmCmd = &cobra.Command{
 	Use:   "delete-instance",
 	Aliases: []string{"rm"},

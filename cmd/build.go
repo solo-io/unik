@@ -15,7 +15,6 @@ var name, path, compiler, provider, runArgs string
 var mountPoints []string
 var force bool
 
-// buildCmd represents the build command
 var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build a unikernel image from source code files",

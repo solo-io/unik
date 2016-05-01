@@ -15,7 +15,6 @@ import (
 var clientConfigFile, host string
 var port int
 
-// RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "unik",
 	Short: "The unikernel compilation, deployment, and management tool",
@@ -27,15 +26,6 @@ var RootCmd = &cobra.Command{
 
 	You may set a custom client configuration file w
 	ith the global flag --client-config=<path>`,
-}
-
-// Execute adds all child commands to the root command sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	if err := RootCmd.Execute(); err != nil {
-		logrus.Error(err)
-		os.Exit(-1)
-	}
 }
 
 func init() {

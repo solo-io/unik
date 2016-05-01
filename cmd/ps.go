@@ -9,7 +9,6 @@ import (
 	"errors"
 )
 
-// psCmd represents the ps command
 var psCmd = &cobra.Command{
 	Use:   "instances",
 	Aliases: []string{"ps"},

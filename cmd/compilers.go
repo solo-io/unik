@@ -23,7 +23,6 @@ import (
 	"os"
 )
 
-// compilersCmd represents the compilers command
 var compilersCmd = &cobra.Command{
 	Use:   "compilers",
 	Short: "List available unikernel compilers",

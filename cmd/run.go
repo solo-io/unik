@@ -13,7 +13,6 @@ import (
 var instanceName, imageName string
 var volumes, envPairs []string
 
-// runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run a unikernel instance from a compiled image",

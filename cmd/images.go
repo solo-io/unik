@@ -9,7 +9,6 @@ import (
 	"fmt"
 )
 
-// imagesCmd represents the images command
 var imagesCmd = &cobra.Command{
 	Use:   "images",
 	Short: "List available unikernel images",

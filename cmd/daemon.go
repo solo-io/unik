@@ -16,7 +16,6 @@ import (
 var daemonConfigFile, logFile string
 var debugMode, trace bool
 
-// daemonCmd represents the daemon command
 var daemonCmd = &cobra.Command{
 	Use:   "daemon",
 	Short: "Runs the unik backend (daemon)",
