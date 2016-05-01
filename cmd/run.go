@@ -89,7 +89,7 @@ var runCmd = &cobra.Command{
 			}).Infof("running unik run")
 			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mounts, env)
 			if err != nil {
-				return errors.New(fmt.Sprintf("building image failed: %v", err))
+				return errors.New(fmt.Sprintf("running image failed: %v", err))
 			}
 			printInstances(instance)
 			return nil

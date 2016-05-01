@@ -7,6 +7,7 @@ import (
 	"os"
 	"errors"
 	"fmt"
+	"bufio"
 )
 
 var follow, deleteOnDisconnect bool
@@ -29,23 +30,29 @@ var logsCmd = &cobra.Command{
 			}
 			if follow {
 				logrus.WithFields(logrus.Fields{"host": host, "instance": instanceName}).Info("attaching to instance")
-				w, err := client.UnikClient(host).Instances().AttachLogs(instanceName, deleteOnDisconnect)
+				r, err := client.UnikClient(host).Instances().AttachLogs(instanceName, deleteOnDisconnect)
 				if err != nil {
 					return err
 				}
-
+				reader := bufio.NewReader(r)
+				for {
+					line, err := reader.ReadString('\n')
+					if err != nil {
+						return err
+					}
+					fmt.Println(line)
+				}
 			} else {
-
+				logrus.WithFields(logrus.Fields{"host": host, "instance": instanceName}).Info("getting instance logs")
+				data, err := client.UnikClient(host).Instances().GetLogs(instanceName)
+				if err != nil {
+					return err
+				}
+				fmt.Printf("%s\n", string(data))
 			}
-			logrus.WithFields(logrus.Fields{"host": host, "instance": instanceName}).Info("getting instance logs")
-			data, err := client.UnikClient(host).Instances().GetLogs(instanceName)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("%s\n", string(data))
 			return nil
 		}(); err != nil {
-			logrus.Errorf("failed logsping instance: %v", err)
+			logrus.Errorf("failed retrieving instance logs: %v", err)
 			os.Exit(-1)
 		}
 	},
@@ -54,6 +61,6 @@ var logsCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(logsCmd)
 	logsCmd.Flags().StringVar(&instanceName, "instance", "", "<string,required> name or id of instance. unik accepts a prefix of the name or id")
-	logsCmd.Flags().BoolVar(&follow, "instance", false, "<bool,optional> follow stdout of instance as it is printed")
+	logsCmd.Flags().BoolVar(&follow, "follow", false, "<bool,optional> follow stdout of instance as it is printed")
 	logsCmd.Flags().BoolVar(&deleteOnDisconnect, "delete", false, "<bool,optional> use this flag with the --follow flag to trigger automatic deletion of instance after client closes the http connection")
 }
