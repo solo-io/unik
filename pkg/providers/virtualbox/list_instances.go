@@ -21,7 +21,7 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 		instanceId := vm.UUID
 		instance, ok := p.state.GetInstances()[instanceId]
 		if !ok {
-			logrus.WithFields(logrus.Fields{"vm": vm, "instance-id": macAddr}).Warnf("vm found, cannot identify instance id")
+			logrus.WithFields(logrus.Fields{"vm": vm, "instance-id": macAddr}).Warnf("vm found that does not belong to unik, ignoring")
 			continue
 		}
 

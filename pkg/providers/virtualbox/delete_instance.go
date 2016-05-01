@@ -17,7 +17,7 @@ func (p *VirtualboxProvider) DeleteInstance(id string, force bool) error {
 				return lxerrors.New("stopping instance for deletion", err)
 			}
 		} else {
-			return lxerrors.New("instance "+instance.Id+"is still running. try again with --force or power off instance first", err)
+			return lxerrors.New("instance "+instance.Id+" is still running. try again with --force or power off instance first", err)
 		}
 	}
 	image, err := p.GetImage(instance.ImageId)

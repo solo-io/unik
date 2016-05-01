@@ -106,7 +106,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		compilers: _compilers,
 	}
 
-	d.registerHandlers()
+	d.addEndpoints()
 
 	return d, nil
 }
@@ -115,7 +115,7 @@ func (d *UnikDaemon) Run(port int) {
 	d.server.RunOnAddr(fmt.Sprintf(":%v", port))
 }
 
-func (d *UnikDaemon) registerHandlers() {
+func (d *UnikDaemon) addEndpoints() {
 	handle := func(res http.ResponseWriter, req *http.Request, action func() (interface{}, int, error)) {
 		jsonObject, statusCode, err := action()
 		res.WriteHeader(statusCode)
@@ -707,10 +707,6 @@ func streamOutput(outputFunc func() (string, error), w io.Writer) error {
 			continue
 		}
 	}
-}
-
-func getCompilerMode(stagerMode, unikernelType string) string {
-	return fmt.Sprintf("%s-%s", stagerMode, unikernelType)
 }
 
 func respond(res http.ResponseWriter, message interface{}) error {
