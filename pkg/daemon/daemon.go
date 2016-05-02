@@ -23,6 +23,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
 	"github.com/emc-advanced-dev/unik/pkg/state"
+	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
 )
 
 type UnikDaemon struct {
@@ -85,19 +86,19 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		break
 	}
 
-	_compilers[compilers.RUMP_GO_AWS] = &compilers.RumpCompiler{
+	_compilers[compilers.RUMP_GO_AWS] = &rump.RumpCompiler{
 		DockerImage: "projectunik/compilers-rump-go-xen",
-		CreateImage: compilers.CreateImageAws,
+		CreateImage: rump.CreateImageAws,
 	}
 
-	_compilers[compilers.RUMP_GO_VMWARE] = &compilers.RumpCompiler{
+	_compilers[compilers.RUMP_GO_VMWARE] = &rump.RumpCompiler{
 		DockerImage: "projectunik/compilers-rump-go-hw",
-		CreateImage: compilers.CreateImageVmware,
+		CreateImage: rump.CreateImageVmware,
 	}
 
-	_compilers[compilers.RUMP_GO_VIRTUALBOX] = &compilers.RumpCompiler{
+	_compilers[compilers.RUMP_GO_VIRTUALBOX] = &rump.RumpCompiler{
 		DockerImage: "projectunik/compilers-rump-go-hw",
-		CreateImage: compilers.CreateImageVirtualBox,
+		CreateImage: rump.CreateImageVirtualBox,
 	}
 
 	d := &UnikDaemon{

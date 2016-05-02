@@ -1,4 +1,4 @@
-package compilers
+package rump
 
 import (
 	"encoding/json"

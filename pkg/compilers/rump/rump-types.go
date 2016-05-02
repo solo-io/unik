@@ -1,4 +1,4 @@
-package compilers
+package rump
 
 type blk struct {
 	Source     string `json:"source"`
