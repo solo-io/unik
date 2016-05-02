@@ -19,6 +19,10 @@ func (p *VirtualboxProvider) CreateVolume(params types.CreateVolumeParams) (_ *t
 		return nil, lxerrors.New("creating directory for volume file", err)
 	}
 	defer func() {
+		if  params.NoCleanup {
+			logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed volume %s at %s", params.Name, volumePath)
+			return
+		}
 		if err != nil {
 			os.RemoveAll(filepath.Dir(volumePath))
 		}

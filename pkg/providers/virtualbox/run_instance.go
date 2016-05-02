@@ -39,6 +39,10 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 
 	defer func() {
 		if err != nil {
+			if  params.NoCleanup {
+				logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed instance %s.2", params.Name)
+				return
+			}
 			logrus.WithError(err).Errorf("error encountered, ensuring vm and disks are destroyed")
 			virtualboxclient.PowerOffVm(params.Name)
 			for _, portUsed := range portsUsed {

@@ -87,7 +87,7 @@ var runCmd = &cobra.Command{
 				"mounts": mounts,
 				"host": host,
 			}).Infof("running unik run")
-			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mounts, env)
+			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mounts, env, noCleanup)
 			if err != nil {
 				return errors.New(fmt.Sprintf("running image failed: %v", err))
 			}
@@ -109,4 +109,5 @@ func init() {
 	to the instance at boot time. volumes must be attached to the instance for each mount point expected by the image.
 	run 'unik image <image_name>' to see the mount points required for the image.
 	specified in the format 'volume_id:mount_point'`)
+	runCmd.Flags().BoolVar(&noCleanup, "no-cleanup", false, "<bool, optional> for debugging; do not clean up artifacts for instances that fail to launch")
 }

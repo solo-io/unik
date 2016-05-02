@@ -55,8 +55,8 @@ func (v *volumes) Delete(id string, force bool) error {
 	return nil
 }
 
-func (v *volumes) Create(name, dataTar, provider string, size int) (*types.Volume, error) {
-	query := fmt.Sprintf("?size=%v&provider=%v", size, provider)
+func (v *volumes) Create(name, dataTar, provider string, size int, noCleanup bool) (*types.Volume, error) {
+	query := fmt.Sprintf("?size=%v&provider=%v&no_cleanup=%v", size, provider, noCleanup)
 	//no data provided
 	var (
 		resp *http.Response

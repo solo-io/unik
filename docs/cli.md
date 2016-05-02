@@ -132,6 +132,7 @@ Flags:
   *  `--name string`        (string,required) name to give the unikernel. must be unique
   *  `--path string`        (string,required) path to root application sources folder
   *  `--provider string`    (string,required) name of the target infrastructure to compile for
+  * `--no-cleanup`          (bool, optional) tell UniK not to clean up any artifacts from the build process if building fails. for debugging purposes.
 
 ---
 
@@ -195,6 +196,7 @@ Flags:
   *  `--imageName string`      (string,required) image to use
   *  `--instanceName string`   (string,required) name to give the instance. must be unique
   *  `--vol value`             (string,repeated) each --vol flag specifies one volume id and the corresponding mount point to attach to the instance at boot time. volumes must be attached to the instance for each mount point expected by the image. run 'unik image (image_name)' to see the mount points required for the image. specified in the format 'volume_id:mount_point' (default [])
+  * `--no-cleanup`          (bool, optional) tell UniK not to clean up any artifacts from the launch instance process if launching fails. for debugging purposes.
 
 ---
 
@@ -314,6 +316,7 @@ Flags:
 *  `--data string`       (string,special) path to data folder. optional if --size is provided
 *  `--name string`       (string,required) name to give the unikernel. must be unique
 *  `--provider string`   (string,required) name of the target infrastructure to compile for
+* `--no-cleanup`         (bool, optional) tell UniK not to clean up any artifacts from the build process if building fails. for debugging purposes.
 
 ---
 

@@ -13,7 +13,7 @@ import (
 
 var name, path, compiler, provider, runArgs string
 var mountPoints []string
-var force bool
+var force, noCleanup bool
 
 var buildCmd = &cobra.Command{
 	Use:   "build",
@@ -88,7 +88,7 @@ var buildCmd = &cobra.Command{
 				return errors.New("failed to tar sources: "+err.Error())
 			}
 			logrus.Infof("App packaged as tarball: %s\n", sourceTar.Name())
-			image, err := client.UnikClient(host).Images().Build(name, sourceTar.Name(), compiler, provider, runArgs, mountPoints, force)
+			image, err := client.UnikClient(host).Images().Build(name, sourceTar.Name(), compiler, provider, runArgs, mountPoints, force, noCleanup)
 			if err != nil {
 				return errors.New("building image failed: %v"+err.Error())
 			}
@@ -110,4 +110,5 @@ func init() {
 	buildCmd.Flags().StringVar(&runArgs, "args", "", "<string,optional> to be passed to the unikernel at runtime")
 	buildCmd.Flags().StringSliceVar(&mountPoints, "mountpoint", []string{}, "<string,repeated> specify up to 8 mount points for volumes")
 	buildCmd.Flags().BoolVar(&force, "force", false, "<bool, optional> force overwriting a previously existing")
+	buildCmd.Flags().BoolVar(&noCleanup, "no-cleanup", false, "<bool, optional> for debugging; do not clean up artifacts for images that fail to build")
 }

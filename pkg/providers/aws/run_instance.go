@@ -26,6 +26,10 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		if err != nil {
 			logrus.WithError(err).Errorf("aws running instance encountered an error")
 			if instanceId != "" {
+				if  params.NoCleanup {
+					logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed instance %s0", instanceId)
+					return
+				}
 				logrus.Warnf("cleaning up instance %s", instanceId)
 				terminateInstanceInput := &ec2.TerminateInstancesInput{
 					InstanceIds: []*string{aws.String(instanceId)},

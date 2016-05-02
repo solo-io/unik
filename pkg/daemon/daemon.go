@@ -235,10 +235,17 @@ func (d *UnikDaemon) addEndpoints() {
 			defer os.Remove(rawImage.LocalImagePath)
 			logrus.Debugf("raw image compiled and saved to "+rawImage.LocalImagePath)
 
+			noCleanupStr := req.FormValue("no_cleanup")
+			var noCleanup bool
+			if strings.ToLower(noCleanupStr) == "true" {
+				noCleanup = true
+			}
+
 			params := types.StageImageParams{
 				Name:name,
 				RawImage: rawImage,
 				Force: force,
+				NoCleanup: noCleanup,
 			}
 
 			image, err := d.providers[providerType].Stage(params)
@@ -431,11 +438,18 @@ func (d *UnikDaemon) addEndpoints() {
 				return nil, http.StatusInternalServerError, err
 			}
 
+			noCleanupStr := req.FormValue("no_cleanup")
+			var noCleanup bool
+			if strings.ToLower(noCleanupStr) == "true" {
+				noCleanup = true
+			}
+
 			params := types.RunInstanceParams{
 				Name: instanceName,
 				ImageId: imageName,
 				MntPointsToVolumeIds: mntPointsToVolumeIds,
 				Env: env,
+				NoCleanup: noCleanup,
 			}
 
 			instance, err := provider.RunInstance(params)
@@ -571,9 +585,16 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 			defer os.RemoveAll(imagePath)
 
+			noCleanupStr := req.FormValue("no_cleanup")
+			var noCleanup bool
+			if strings.ToLower(noCleanupStr) == "true" {
+				noCleanup = true
+			}
+
 			params := types.CreateVolumeParams{
 				Name: volumeName,
 				ImagePath: imagePath,
+				NoCleanup: noCleanup,
 			}
 
 			volume, err := provider.CreateVolume(params)

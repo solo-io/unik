@@ -85,7 +85,7 @@ func (i *instances) AttachLogs(id string, deleteOnDisconnect bool) (io.ReadClose
 	return resp.Body, nil
 }
 
-func (i *instances) Run(instanceName, imageName string, mounts, env map[string]string) (*types.Instance, error) {
+func (i *instances) Run(instanceName, imageName string, mounts, env map[string]string, noCleanup bool) (*types.Instance, error) {
 	envPairs := []string{}
 	for key, val := range env {
 		envPairs = append(envPairs, fmt.Sprintf("%s%s%s", key, envPairDelimiter, val))
@@ -98,7 +98,7 @@ func (i *instances) Run(instanceName, imageName string, mounts, env map[string]s
 	}
 	mntStr := strings.Join(mntPairs, mntDelimiter)
 
-	query := fmt.Sprintf("?image_name=%s&useDelimiter=%s&usePairDelimiter=%s&env=%s&mounts=%s", imageName, envDelimiter, envPairDelimiter, envStr, mntStr)
+	query := fmt.Sprintf("?image_name=%s&useDelimiter=%s&usePairDelimiter=%s&env=%s&mounts=%s&no_cleanup=%v", imageName, envDelimiter, envPairDelimiter, envStr, mntStr, noCleanup)
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+instanceName+"/run"+query, nil, nil)
 	if err != nil  {
 		return nil, lxerrors.New("request failed", err)

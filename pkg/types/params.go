@@ -12,9 +12,11 @@ type StageImageParams struct {
 	Name string
 	RawImage *RawImage
 	Force bool
+	NoCleanup bool
 }
 
 type CreateVolumeParams struct {
 	Name string
 	ImagePath string
+	NoCleanup bool
 }

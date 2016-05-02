@@ -95,7 +95,7 @@ var cvCmd = &cobra.Command{
 				data = dataTar.Name()
 				logrus.Infof("Data packaged as tarball: %s\n", dataTar.Name())
 			}
-			volume, err := client.UnikClient(host).Volumes().Create(name, data, provider, size)
+			volume, err := client.UnikClient(host).Volumes().Create(name, data, provider, size, noCleanup)
 			if err != nil {
 				return errors.New("creatinv volume image failed: %v" + err.Error())
 			}
@@ -114,4 +114,5 @@ func init() {
 	cvCmd.Flags().StringVar(&data, "data", "", "<string,special> path to data folder. optional if --size is provided")
 	cvCmd.Flags().IntVar(&size, "compiler", 0, "<int,special> size to create volume in MB. optional if --data is provided")
 	cvCmd.Flags().StringVar(&provider, "provider", "", "<string,required> name of the target infrastructure to compile for")
+	cvCmd.Flags().BoolVar(&noCleanup, "no-cleanup", false, "<bool, optional> for debugging; do not clean up artifacts for volumes that fail to build")
 }
