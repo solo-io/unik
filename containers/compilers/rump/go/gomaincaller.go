@@ -63,8 +63,10 @@ func gomaincaller() {
 
 	envChan := make(chan map[string]string)
 
+	closeChan := make(chan struct{})
+
 	go func() {
-		listenerIp, err := getListenerIp()
+		listenerIp, err := getListenerIp(closeChan)
 		if err != nil {
 			log.Printf("err getting listener ip: %v", err)
 			return
@@ -90,6 +92,7 @@ func gomaincaller() {
 		env, err := getEnvAmazon()
 		envChan <- env
 		errChan <- err
+		close(closeChan)
 	}()
 
 	envLoop:
@@ -151,7 +154,7 @@ func registerWithListener(listenerIp string) (map[string]string, error) {
 	return env, nil
 }
 
-func getListenerIp() (string, error) {
+func getListenerIp(closeChan <-chan struct{}) (string, error) {
 	log.Printf("listening for udp heartbeat...")
 	socket, err := net.ListenUDP("udp4", &net.UDPAddr{
 		IP:   net.IPv4(0, 0, 0, 0),
@@ -171,6 +174,12 @@ func getListenerIp() (string, error) {
 		if strings.Contains(string(data), "unik") {
 			data = bytes.Trim(data, "\x00")
 			return strings.Split(string(data), ":")[1], nil
+		}
+		select {
+		case <-closeChan:
+			return "", nil //registered with ec2
+		default :
+			continue
 		}
 	}
 }
