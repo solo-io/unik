@@ -42,7 +42,7 @@ func main() {
 	switch *action {
 	case "all":
 		r := compilers.RumpCompiler{
-			DockerImage: "unik/compilers-rump-go-xen",
+			DockerImage: "projectunik/compilers-rump-go-xen",
 			CreateImage: compilers.CreateImageAws,
 		}
 		f, err := os.Open("a.tar")
@@ -139,7 +139,7 @@ func main() {
 		break
 	case "create-image":
 		r := compilers.RumpCompiler{
-			DockerImage: "unik/compilers-rump-go-xen",
+			DockerImage: "projectunik/compilers-rump-go-xen",
 			CreateImage: compilers.CreateImageAws,
 		}
 		f, err := os.Open("a.tar")
@@ -163,7 +163,7 @@ func main() {
 	case "create-image-with-volume":
 		name := *arg
 		r := compilers.RumpCompiler{
-			DockerImage: "unik/compilers-rump-go-xen",
+			DockerImage: "projectunik/compilers-rump-go-xen",
 			CreateImage: compilers.CreateImageAws,
 		}
 		f, err := os.Open("a.tar")

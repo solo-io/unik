@@ -23,7 +23,7 @@ Ensure that each of the following are installed
   $ cd unik
   $ make install
   ```
-  note: `make install` will take quite a while the first time it runs. the UniK `Makefile` is building all of the Docker images that bundle UniK's dependencies.
+  note: `make install` will take quite a few minutes the first time it runs. the UniK `Makefile` is pulling all of the Docker images that bundle UniK's dependencies.
 
 2. Configure a Host-Only Network on Virtualbox
   * Open Virtualbox

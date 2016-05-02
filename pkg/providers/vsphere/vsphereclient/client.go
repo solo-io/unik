@@ -55,7 +55,7 @@ func (vc *VsphereClient) newGovmomiFinder() (*find.Finder, error) {
 
 func (vc *VsphereClient) GetVmByUuid(uuid string) (*VirtualMachine, error) {
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"vm.info",
 		"-k",
@@ -80,7 +80,7 @@ func (vc *VsphereClient) GetVmByUuid(uuid string) (*VirtualMachine, error) {
 
 func (vc *VsphereClient) GetVm(name string) (*VirtualMachine, error) {
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"vm.info",
 		"-k",
@@ -113,7 +113,7 @@ func (vc *VsphereClient) GetVmIp(vmName string) (string, error) {
 
 func (vc *VsphereClient) CreateVm(vmName string, memoryMb int) error {
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"vm.create",
 		"-k",
@@ -132,7 +132,7 @@ func (vc *VsphereClient) CreateVm(vmName string, memoryMb int) error {
 
 func (vc *VsphereClient) DestroyVm(vmName string) error {
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"vm.destroy",
 		"-k",
@@ -148,7 +148,7 @@ func (vc *VsphereClient) DestroyVm(vmName string) error {
 
 func (vc *VsphereClient) Mkdir(folder string) error {
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"datastore.mkdir",
 		"-k",
@@ -164,7 +164,7 @@ func (vc *VsphereClient) Mkdir(folder string) error {
 
 func (vc *VsphereClient) Rmdir(folder string) error {
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"datastore.rm",
 		"-k",
@@ -184,7 +184,7 @@ func (vc *VsphereClient) ImportVmdk(vmdkPath, remoteFolder string) error {
 		return lxerrors.New("getting aboslute path for "+vmdkFolder, err)
 	}
 	cmd := exec.Command("docker", "run", "--rm", "-v", vmdkFolder+":"+vmdkFolder,
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"import.vmdk",
 		"-k",
@@ -202,7 +202,7 @@ func (vc *VsphereClient) ImportVmdk(vmdkPath, remoteFolder string) error {
 func (vc *VsphereClient) UploadFile(srcFile, dest string) error {
 	srcDir := filepath.Dir(srcFile)
 	cmd := exec.Command("docker", "run", "--rm", "-v", srcDir+":"+srcDir,
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"datastore.upload",
 		"-k",
@@ -220,7 +220,7 @@ func (vc *VsphereClient) UploadFile(srcFile, dest string) error {
 func (vc *VsphereClient) DownloadFile(remoteFile, localFile string) error {
 	localDir := filepath.Dir(localFile)
 	cmd := exec.Command("docker", "run", "--rm", "-v", localDir+":"+localDir,
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"datastore.download",
 		"-k",
@@ -238,7 +238,7 @@ func (vc *VsphereClient) DownloadFile(remoteFile, localFile string) error {
 func (vc *VsphereClient) CopyVmdk(src, dest string) error {
 	password, _ := vc.u.User.Password()
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"java",
 		"-jar",
 		"/vsphere-client.jar",
@@ -258,7 +258,7 @@ func (vc *VsphereClient) CopyVmdk(src, dest string) error {
 
 func (vc *VsphereClient) Ls(dir string) ([]string, error) {
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"datastore.ls",
 		"-k",
@@ -281,7 +281,7 @@ func (vc *VsphereClient) Ls(dir string) ([]string, error) {
 
 func (vc *VsphereClient) PowerOnVm(vmName string) error {
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"vm.power",
 		"--on=true",
@@ -298,7 +298,7 @@ func (vc *VsphereClient) PowerOnVm(vmName string) error {
 
 func (vc *VsphereClient) PowerOffVm(vmName string) error {
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"govc",
 		"vm.power",
 		"--off=true",
@@ -316,7 +316,7 @@ func (vc *VsphereClient) PowerOffVm(vmName string) error {
 func (vc *VsphereClient) AttachDisk(vmName, vmdkPath string, controllerKey int) error {
 	password, _ := vc.u.User.Password()
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"java",
 		"-jar",
 		"/vsphere-client.jar",
@@ -338,7 +338,7 @@ func (vc *VsphereClient) AttachDisk(vmName, vmdkPath string, controllerKey int) 
 func (vc *VsphereClient) DetachDisk(vmName string, controllerKey int) error {
 	password, _ := vc.u.User.Password()
 	cmd := exec.Command("docker", "run", "--rm",
-		"unik/vsphere-client",
+		"projectunik/vsphere-client",
 		"java",
 		"-jar",
 		"/vsphere-client.jar",

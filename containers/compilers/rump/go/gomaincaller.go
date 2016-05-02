@@ -57,7 +57,7 @@ func gomaincaller() {
 	if err := teeStderr(logs); err != nil {
 		log.Fatal(err)
 	}
-	log.SetOutput(os.Stdout)
+	log.SetOutput(os.Stderr)
 
 	log.Printf("unik v0.0 boostrapping beginning...")
 
@@ -92,10 +92,9 @@ func gomaincaller() {
 		errChan <- err
 	}()
 
-	errCounter := 0
-envLoop:
+	envLoop:
 	for {
-		log.Printf("waiting for env")
+		log.Printf("waiting for UniK bootstrap")
 		select {
 		case env := <-envChan:
 			if env != nil {
@@ -104,13 +103,7 @@ envLoop:
 				break envLoop
 			}
 		case err := <-errChan:
-			if errCounter < 2 {
-				log.Printf("error: %v", err)
-				errCounter++
-			} else {
-				//all getEnv failed
-				log.Fatal("err: %v", err)
-			}
+			log.Printf("error: %v", err)
 		}
 	}
 
@@ -207,9 +200,9 @@ func teeStderr(writer io.Writer) error {
 	if err != nil {
 		return errors.New("creating pipe: " + err.Error())
 	}
-	stdout := os.Stderr
+	stderr := os.Stderr
 	os.Stderr = w
-	multi := io.MultiWriter(stdout, writer)
+	multi := io.MultiWriter(stderr, writer)
 	reader := bufio.NewReader(r)
 	go func() {
 		for {

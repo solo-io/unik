@@ -50,13 +50,13 @@ func getEnvAmazon() (map[string]string, error) {
 func main() {
 	//make logs available via http request
 	logs := &bytes.Buffer{}
-	if err := teeStdout(&logs); err != nil {
+	if err := teeStdout(logs); err != nil {
 		log.Fatal(err)
 	}
-	if err := teeStderr(&logs); err != nil {
+	if err := teeStderr(logs); err != nil {
 		log.Fatal(err)
 	}
-	log.SetOutput(os.Stdout)
+	log.SetOutput(os.Stderr)
 
 	log.Printf("unik v0.0 boostrapping beginning...")
 
@@ -208,9 +208,9 @@ func teeStderr(writer io.Writer) error {
 	if err != nil {
 		return errors.New("creating pipe: " + err.Error())
 	}
-	stdout := os.Stderr
+	stderr := os.Stderr
 	os.Stderr = w
-	multi := io.MultiWriter(stdout, writer)
+	multi := io.MultiWriter(stderr, writer)
 	reader := bufio.NewReader(r)
 	go func() {
 		for {

@@ -82,17 +82,17 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	}
 
 	_compilers[compilers.RUMP_GO_AWS] = &compilers.RumpCompiler{
-		DockerImage: "unik/compilers-rump-go-xen",
+		DockerImage: "projectunik/compilers-rump-go-xen",
 		CreateImage: compilers.CreateImageAws,
 	}
 
 	_compilers[compilers.RUMP_GO_VMWARE] = &compilers.RumpCompiler{
-		DockerImage: "unik/compilers-rump-go-hw",
+		DockerImage: "projectunik/compilers-rump-go-hw",
 		CreateImage: compilers.CreateImageVmware,
 	}
 
 	_compilers[compilers.RUMP_GO_VIRTUALBOX] = &compilers.RumpCompiler{
-		DockerImage: "unik/compilers-rump-go-hw",
+		DockerImage: "projectunik/compilers-rump-go-hw",
 		CreateImage: compilers.CreateImageVirtualBox,
 	}
 

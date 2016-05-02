@@ -1,61 +1,79 @@
-all: compilers utils unik
+all: pull ${SOURCES}
 
-compilers-rump-base-common:
-	cd containers/compilers/rump/base && docker build -t unik/$@ -f Dockerfile.common .
+#pull containers
+.PHONY: pull:
+	echo "Pullling containers from docker hub"
+	docker pull projectunik/vsphere-client
+	docker pull projectunik/image-creator
+	docker pull projectunik/boot-creator
+	docker pull projectunik/compilers-rump-go-xen
+	docker pull projectunik/compilers-rump-go-hw
+	docker pull projectunik/compilers-rump-base-xen
+	docker pull projectunik/compilers-rump-base-hw
+	docker pull projectunik/compilers-rump-base-common
+#------
 
-compilers-rump-base-hw: compilers-rump-base-common
-	cd containers/compilers/rump/base && docker build -t unik/$@ -f Dockerfile.hw .
+#build containers from source
+.PHONY: containers: compilers utils
+	echo "Built containers from source"
 
-compilers-rump-base-xen: compilers-rump-base-common
-	cd containers/compilers/rump/base && docker build -t unik/$@ -f Dockerfile.xen .
+#compilers
+.PHONY: compilers-rump-base-common:
+	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.common .
 
-compilers-rump-go-hw: compilers-rump-base-hw
-	cd containers/compilers/rump/go && docker build -t unik/$@ -f Dockerfile.hw .
+.PHONY: compilers-rump-base-hw: compilers-rump-base-common
+	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.hw .
 
-compilers-rump-go-xen: compilers-rump-base-xen
-	cd containers/compilers/rump/go && docker build -t unik/$@ -f Dockerfile.xen .
+.PHONY: compilers-rump-base-xen: compilers-rump-base-common
+	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.xen .
 
-compilers: compilers-rump-go-hw compilers-rump-go-xen
+.PHONY: compilers-rump-go-hw: compilers-rump-base-hw
+	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.hw .
 
-boot-creator:
-	cd containers/utils/boot-creator && GOOS=linux go build && docker build -t unik/$@ -f Dockerfile . && rm boot-creator
+.PHONY: compilers-rump-go-xen: compilers-rump-base-xen
+	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.xen .
 
-image-creator:
-	cd containers/utils/image-creator && GOOS=linux go build && docker build -t unik/$@ -f Dockerfile . && rm image-creator
+.PHONY: compilers: compilers-rump-go-hw compilers-rump-go-xen
 
-vsphere-client:
-ifeq ($(VSPHERE),1)
-	cd containers/utils/vsphere-client && mvn package && docker build -t unik/$@ -f Dockerfile . && rm -rf target
-else
-	echo NOT BUILDING VSPHERE-CLIENT CONTAINER
-endif
+#utils
+.PHONY: boot-creator:
+	cd containers/utils/boot-creator && GOOS=linux go build && docker build -t projectunik/$@ -f Dockerfile . && rm boot-creator
 
-utils: boot-creator image-creator vsphere-client
+.PHONY: image-creator:
+	cd containers/utils/image-creator && GOOS=linux go build && docker build -t projectunik/$@ -f Dockerfile . && rm image-creator
 
+.PHONY: vsphere-client:
+	cd containers/utils/vsphere-client && mvn package && docker build -t projectunik/$@ -f Dockerfile . && rm -rf target
+
+.PHONY: utils: boot-creator image-creator vsphere-client
+#------
+
+#binary & install
 SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 BINARY=unik
 
-unik: ${SOURCES}
-	go build -o ${BINARY}
-
 install: all ${SOURCES}
 	go install
 
+#----
+
+#clean up
 .PHONY: uninstall
 	rm $(which ${BINARY})
 
 .PHONY: remove-containers
-	-docker rmi -f unik/vsphere-client
-	-docker rmi -f unik/image-creator
-	-docker rmi -f unik/boot-creator
-	-docker rmi -f unik/compilers-rump-go-xen
-	-docker rmi -f unik/compilers-rump-go-hw
-	-docker rmi -f unik/compilers-rump-base-xen
-	-docker rmi -f unik/compilers-rump-base-hw
-	-docker rmi -f unik/compilers-rump-base-common
+	-docker rmi -f projectunik/vsphere-client
+	-docker rmi -f projectunik/image-creator
+	-docker rmi -f projectunik/boot-creator
+	-docker rmi -f projectunik/compilers-rump-go-xen
+	-docker rmi -f projectunik/compilers-rump-go-hw
+	-docker rmi -f projectunik/compilers-rump-base-xen
+	-docker rmi -f projectunik/compilers-rump-base-hw
+	-docker rmi -f projectunik/compilers-rump-base-common
 
 .PHONY: clean
 clean:
 	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
+#---

@@ -39,6 +39,3 @@ UniK is built to be easily extensible, allowing (and encouraging) adding support
 * better code documentation
 * `unik pull` & `unik push` && unikhub for sharing unikernel images
 * multi-account support per provider (i.e. multiple AWS accounts/regions, etc.)
-
-### Known bugs:
-* **time.Sleep() in (go)rump**: time.Sleep currently causes panic() in gorump unikernels

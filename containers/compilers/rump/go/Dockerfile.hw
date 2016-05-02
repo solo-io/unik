@@ -1,4 +1,4 @@
-FROM unik/compilers-rump-base-hw
+FROM projectunik/compilers-rump-base-hw
 
 ENV GOROOT=/usr/local/go
 ENV GOPATH=$HOME/go
@@ -26,7 +26,7 @@ RUN go get github.com/tools/godep
 
 ENV RUMP_BAKE=hw_generic
 
-# RUN LIKE THIS: docker run --rm -v /path/to/code:/opt/code unik/compilers-rump-go-hw
+# RUN LIKE THIS: docker run --rm -v /path/to/code:/opt/code projectunik/compilers-rump-go-hw
 CMD set -x && \
     cp /tmp/build/gomaincaller.go  /tmp/build/mainstub.c . && \
     (if [ -d Godeps ]; then GO15VENDOREXPERIMENT=1 godep restore; fi) && \
