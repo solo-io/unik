@@ -29,7 +29,7 @@ var daemonCmd = &cobra.Command{
 	for desired providers.
 
 	Example usage:
-		unik daemon --daemon-config ./my-config.yaml --port 12345 --debug --trace --logfile logs.txt
+		unik daemon --f ./my-config.yaml --port 12345 --debug --trace --logfile logs.txt
 
 		 # will start the daemon using config file at my-config.yaml
 		 # running on port 12345
@@ -71,7 +71,7 @@ var daemonCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(daemonCmd)
-	daemonCmd.Flags().StringVar(&daemonConfigFile, "daemon-config", os.Getenv("HOME")+"/.unik/daemon-config.yaml", "daemon config file (default is $HOME/.unik/daemon-config.yaml)")
+	daemonCmd.Flags().StringVar(&daemonConfigFile, "f", os.Getenv("HOME")+"/.unik/daemon-config.yaml", "daemon config file (default is $HOME/.unik/daemon-config.yaml)")
 	daemonCmd.Flags().IntVar(&port, "port", 3000, "<int, optional> listening port for daemon")
 	daemonCmd.Flags().BoolVar(&debugMode, "debug", false, "<bool, optional> more verbose logging for the daemon")
 	daemonCmd.Flags().BoolVar(&trace, "trace", false, "<bool, optional> add stack trace to daemon logs")

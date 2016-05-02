@@ -83,9 +83,7 @@ var buildCmd = &cobra.Command{
 			if err != nil {
 				logrus.WithError(err).Error("failed to create tmp tar file")
 			}
-			if false {
-				defer os.Remove(sourceTar.Name())
-			}
+			defer os.Remove(sourceTar.Name())
 			if err := unikos.Compress(path, sourceTar.Name()); err != nil {
 				return errors.New("failed to tar sources: "+err.Error())
 			}
