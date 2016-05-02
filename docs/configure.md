@@ -1,10 +1,10 @@
 # Configuring UniK
 
-1. [Daemon Config](#Daemon Config)
-    * [Virtualbox](#Virtualbox)
-    * [AWS](#AWS)
-    * [vSphere](#vSphere)
-3. [CLI Config](#CLI Config)
+1. [Daemon Config](configure.md#daemon-config)
+    * [Virtualbox](configure.md#virtualbox)
+    * [AWS](configure.md#aws)
+    * [vSphere](configure.md#vsphere)
+3. [CLI Config](configure.md#cli-config)
 
 ## Daemon Config
 Starting the UniK daemon with `unik daemon` requires a `yaml` file with configuration for each desired [provider](providers/README.md).
