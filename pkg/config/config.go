@@ -12,8 +12,6 @@ type Providers struct {
 
 type Aws struct {
 	Name              string `yaml:"name"`
-	AwsAccessKeyID    string `yaml:"aws_access_key_id"`
-	AwsSecretAcessKey string `yaml:"aws_secret_acess_key"`
 	Region            string `yaml:"region"`
 	Zone              string `yaml:"zone"`
 }

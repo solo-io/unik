@@ -9,6 +9,10 @@ import (
 )
 
 func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
+	if len(p.state.GetInstances()) < 1 {
+		return []*types.Instance{}, nil
+	}
+
 	instanceIds := []*string{}
 	for instanceId := range p.state.GetInstances() {
 		instanceIds = append(instanceIds, aws.String(instanceId))

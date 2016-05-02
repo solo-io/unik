@@ -11,6 +11,9 @@ import (
 const UNIK_IMAGE_ID = "UNIK_IMAGE_ID"
 
 func (p *AwsProvider) ListImages() ([]*types.Image, error) {
+	if len(p.state.GetImages()) < 1 {
+		return []*types.Image{}, nil
+	}
 	imageIds := []*string{}
 	for imageId := range p.state.GetImages() {
 		imageIds = append(imageIds, aws.String(imageId))

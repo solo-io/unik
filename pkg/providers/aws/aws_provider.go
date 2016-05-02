@@ -3,7 +3,6 @@ package aws
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -36,7 +35,6 @@ func (p *AwsProvider) WithState(state state.State) *AwsProvider {
 func (p *AwsProvider) newEC2() *ec2.EC2 {
 	sess := session.New(&aws.Config{
 		Region:      aws.String(p.config.Region),
-		Credentials: credentials.NewStaticCredentials(p.config.AwsAccessKeyID, p.config.AwsSecretAcessKey, ""),
 	})
 	sess.Handlers.Send.PushFront(func(r *request.Request) {
 		logrus.WithFields(logrus.Fields{"request": r}).Debugf("request sent to aws")
@@ -47,7 +45,6 @@ func (p *AwsProvider) newEC2() *ec2.EC2 {
 func (p *AwsProvider) newS3() *s3.S3 {
 	sess := session.New(&aws.Config{
 		Region:      aws.String(p.config.Region),
-		Credentials: credentials.NewStaticCredentials(p.config.AwsAccessKeyID, p.config.AwsSecretAcessKey, ""),
 	})
 	sess.Handlers.Send.PushFront(func(r *request.Request) {
 		logrus.WithFields(logrus.Fields{"request": r}).Debugf("request sent to aws")

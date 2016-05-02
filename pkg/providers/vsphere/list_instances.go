@@ -11,6 +11,9 @@ import (
 )
 
 func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
+	if len(p.state.GetInstances()) < 1 {
+		return []*types.Instance{}, nil
+	}
 	c := p.getClient()
 	vms := []*vsphereclient.VirtualMachine{}
 	for instanceId := range p.state.GetInstances() {

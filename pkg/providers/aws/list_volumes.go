@@ -9,6 +9,9 @@ import (
 )
 
 func (p *AwsProvider) ListVolumes() ([]*types.Volume, error) {
+	if len(p.state.GetVolumes()) < 1 {
+		return []*types.Volume{}, nil
+	}
 	volumeIds := []*string{}
 	for volumeId := range p.state.GetVolumes() {
 		volumeIds = append(volumeIds, aws.String(volumeId))
