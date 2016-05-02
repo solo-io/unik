@@ -15,7 +15,7 @@ var data string
 var size int
 
 var cvCmd = &cobra.Command{
-	Use:   "create-volme",
+	Use:   "create-volume",
 	Short: "Create a unik-managed data volume",
 	Long: `Create a data volume which can be attached to and detached from
 	unik-managed instances.

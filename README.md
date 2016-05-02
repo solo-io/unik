@@ -12,7 +12,7 @@ UniK is built to be easily extensible, allowing (and encouraging) adding support
 - **Getting Started**
   - [Run your first unikernel](docs/getting_started.md) with UniK
 - **User Documenation**
-  - Using the [cli](docs/cli.md)
+  - Using the [command line interface](docs/cli.md)
 - **Developer Documentation**
   - UniK's [REST API](docs/api.md)
   - Adding [compiler](docs/compilers/README.md) support
