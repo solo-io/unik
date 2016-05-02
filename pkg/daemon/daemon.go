@@ -36,10 +36,6 @@ const (
 	aws_provider = "aws"
 	vsphere_provider = "vsphere"
 	virtualbox_provider = "virtualbox"
-	//available compilers
-	rump_aws = "rump-aws"
-	rump_vmware = "rump-vsphere"
-	rump_virtualbox = "rump-virtualbox"
 )
 
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
@@ -85,17 +81,17 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		break
 	}
 
-	_compilers[rump_aws] = &compilers.RumpCompiler{
+	_compilers[compilers.RUMP_GO_AWS] = &compilers.RumpCompiler{
 		DockerImage: "unik/compilers-rump-go-xen",
 		CreateImage: compilers.CreateImageAws,
 	}
 
-	_compilers[rump_vmware] = &compilers.RumpCompiler{
+	_compilers[compilers.RUMP_GO_VMWARE] = &compilers.RumpCompiler{
 		DockerImage: "unik/compilers-rump-go-hw",
 		CreateImage: compilers.CreateImageVmware,
 	}
 
-	_compilers[rump_virtualbox] = &compilers.RumpCompiler{
+	_compilers[compilers.RUMP_GO_VIRTUALBOX] = &compilers.RumpCompiler{
 		DockerImage: "unik/compilers-rump-go-hw",
 		CreateImage: compilers.CreateImageVirtualBox,
 	}

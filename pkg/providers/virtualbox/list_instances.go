@@ -11,6 +11,9 @@ import (
 )
 
 func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
+	if len(p.state.GetInstances()) < 1 {
+		return []*types.Instance{}, nil
+	}
 	vms, err := virtualboxclient.Vms()
 	if err != nil {
 		return nil, lxerrors.New("getting vms from virtualbox", err)

@@ -1,10 +1,13 @@
 package aws
 
-import "github.com/emc-advanced-dev/unik/pkg/providers"
+import (
+	"github.com/emc-advanced-dev/unik/pkg/providers"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
+)
 
 func (p *AwsProvider) GetConfig() providers.ProviderConfig {
 	return providers.ProviderConfig{
 		UsePartitionTables: false,
-		SupportedCompilers: []string{"rump-aws"},
+		SupportedCompilers: []string{compilers.RUMP_GO_AWS},
 	}
 }
