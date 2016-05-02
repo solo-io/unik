@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-func (p *AwsProvider) CreateVolume(name, imagePath string) (*types.Volume, error) {
-	logrus.WithField("raw-image", imagePath).WithField("az", p.config.Zone).Infof("creating data volume from raw image")
+func (p *AwsProvider) CreateVolume(params types.CreateVolumeParams) (*types.Volume, error) {
+	logrus.WithField("raw-image", params.ImagePath).WithField("az", p.config.Zone).Infof("creating data volume from raw image")
 	s3svc := p.newS3()
 	ec2svc := p.newEC2()
-	volumeId, err := createDataVolumeFromRawImage(s3svc, ec2svc, imagePath, p.config.Zone)
+	volumeId, err := createDataVolumeFromRawImage(s3svc, ec2svc, params.ImagePath, p.config.Zone)
 	if err != nil {
 		return nil, lxerrors.New("creating aws boot volume", err)
 	}
@@ -25,7 +25,7 @@ func (p *AwsProvider) CreateVolume(name, imagePath string) (*types.Volume, error
 		Tags: []*ec2.Tag{
 			&ec2.Tag{
 				Key:   aws.String("Name"),
-				Value: aws.String(name),
+				Value: aws.String(params.Name),
 			},
 		},
 	}
@@ -34,7 +34,7 @@ func (p *AwsProvider) CreateVolume(name, imagePath string) (*types.Volume, error
 		return nil, lxerrors.New("tagging volume", err)
 	}
 
-	rawImageFile, err := os.Stat(imagePath)
+	rawImageFile, err := os.Stat(params.ImagePath)
 	if err != nil {
 		return nil, lxerrors.New("statting raw image file", err)
 	}
@@ -42,7 +42,7 @@ func (p *AwsProvider) CreateVolume(name, imagePath string) (*types.Volume, error
 
 	volume := &types.Volume{
 		Id:             volumeId,
-		Name:           name,
+		Name:           params.Name,
 		SizeMb:         sizeMb,
 		Attachment:     "",
 		Infrastructure: types.Infrastructure_AWS,

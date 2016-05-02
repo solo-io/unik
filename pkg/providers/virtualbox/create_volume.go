@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-func (p *VirtualboxProvider) CreateVolume(name, imagePath string) (_ *types.Volume, err error) {
-	if _, volumeErr := p.GetImage(name); volumeErr == nil {
+func (p *VirtualboxProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.Volume, err error) {
+	if _, volumeErr := p.GetImage(params.Name); volumeErr == nil {
 		return nil, lxerrors.New("volume already exists", nil)
 	}
-	volumePath := getVolumePath(name)
+	volumePath := getVolumePath(params.Name)
 	if err := os.MkdirAll(filepath.Dir(volumePath), 0777); err != nil {
 		return nil, lxerrors.New("creating directory for volume file", err)
 	}
@@ -23,20 +23,20 @@ func (p *VirtualboxProvider) CreateVolume(name, imagePath string) (_ *types.Volu
 			os.RemoveAll(filepath.Dir(volumePath))
 		}
 	}()
-	logrus.WithField("raw-image", imagePath).Infof("creating volume from raw image")
-	if err := common.ConvertRawImage("vmdk", imagePath, volumePath); err != nil {
+	logrus.WithField("raw-image", params.ImagePath).Infof("creating volume from raw image")
+	if err := common.ConvertRawImage("vmdk", params.ImagePath, volumePath); err != nil {
 		return nil, lxerrors.New("converting raw image to vmdk", err)
 	}
 
-	rawImageFile, err := os.Stat(imagePath)
+	rawImageFile, err := os.Stat(params.ImagePath)
 	if err != nil {
 		return nil, lxerrors.New("statting raw image file", err)
 	}
 	sizeMb := rawImageFile.Size() >> 20
 
 	volume := &types.Volume{
-		Id:             name,
-		Name:           name,
+		Id:             params.Name,
+		Name:           params.Name,
 		SizeMb:         sizeMb,
 		Attachment:     "",
 		Infrastructure: types.Infrastructure_VIRTUALBOX,

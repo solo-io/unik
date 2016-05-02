@@ -12,8 +12,8 @@ import (
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
-func (p *VsphereProvider) CreateVolume(name, imagePath string) (_ *types.Volume, err error) {
-	if _, volumeErr := p.GetImage(name); volumeErr == nil {
+func (p *VsphereProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.Volume, err error) {
+	if _, volumeErr := p.GetImage(params.Name); volumeErr == nil {
 		return nil, lxerrors.New("volume already exists", nil)
 	}
 	c := p.getClient()
@@ -24,8 +24,8 @@ func (p *VsphereProvider) CreateVolume(name, imagePath string) (_ *types.Volume,
 	}
 	defer os.RemoveAll(localVmdkDir)
 	localVmdkFile := filepath.Join(localVmdkDir, "boot.vmdk")
-	logrus.WithField("raw-image", imagePath).Infof("creating vmdk from raw image")
-	if err := common.ConvertRawImage("vmdk", imagePath, localVmdkFile); err != nil {
+	logrus.WithField("raw-image", params.ImagePath).Infof("creating vmdk from raw image")
+	if err := common.ConvertRawImage("vmdk", params.ImagePath, localVmdkFile); err != nil {
 		return nil, lxerrors.New("converting raw image to vmdk", err)
 	}
 
@@ -35,7 +35,7 @@ func (p *VsphereProvider) CreateVolume(name, imagePath string) (_ *types.Volume,
 	}
 	sizeMb := rawImageFile.Size() >> 20
 
-	vsphereVolumeDir := getVolumeDatastoreDir(name)
+	vsphereVolumeDir := getVolumeDatastoreDir(params.Name)
 	if err := c.Mkdir(vsphereVolumeDir); err != nil {
 		return nil, lxerrors.New("creating vsphere directory for volume", err)
 	}
@@ -46,15 +46,15 @@ func (p *VsphereProvider) CreateVolume(name, imagePath string) (_ *types.Volume,
 		}
 	}()
 
-	vsphereVolumePath := getVolumeDatastorePath(name)
+	vsphereVolumePath := getVolumeDatastorePath(params.Name)
 
 	if err := c.ImportVmdk(localVmdkFile, vsphereVolumePath); err != nil {
 		return nil, lxerrors.New("importing data.vmdk to vsphere datastore", err)
 	}
 
 	volume := &types.Volume{
-		Id:             name,
-		Name:           name,
+		Id:             params.Name,
+		Name:           params.Name,
 		SizeMb:         sizeMb,
 		Attachment:     "",
 		Infrastructure: types.Infrastructure_VSPHERE,

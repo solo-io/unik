@@ -23,17 +23,18 @@ var kernelIdMap = map[string]string{
 	"us-west-2":      "aki-fc8f11cc",
 }
 
-func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (_ *types.Image, err error) {
+func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err error) {
 	images, err := p.ListImages()
 	if err != nil {
 		return nil, lxerrors.New("retrieving image list for existing image", err)
 	}
+
 	for _, image := range images {
-		if image.Name == name {
-			if !force {
-				return nil, lxerrors.New("an image already exists with name '"+name+"', try again with --force", nil)
+		if image.Name == params.Name {
+			if !params.Force {
+				return nil, lxerrors.New("an image already exists with name '"+params.Name+"', try again with --force", nil)
 			} else {
-				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + name)
+				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + params.Name)
 				err = p.DeleteImage(image.Id, true)
 				if err != nil {
 					return nil, lxerrors.New("removing previously existing image", err)
@@ -59,15 +60,15 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 		}
 	}()
 
-	logrus.WithField("raw-image", rawImage).WithField("az", p.config.Zone).Infof("creating boot volume from raw image")
-	volumeId, err = createDataVolumeFromRawImage(s3svc, ec2svc, rawImage.LocalImagePath, p.config.Zone)
+	logrus.WithField("raw-image", params.RawImage).WithField("az", p.config.Zone).Infof("creating boot volume from raw image")
+	volumeId, err = createDataVolumeFromRawImage(s3svc, ec2svc, params.RawImage.LocalImagePath, p.config.Zone)
 	if err != nil {
 		return nil, lxerrors.New("creating aws boot volume", err)
 	}
 
 	logrus.WithField("volume-id", volumeId).Infof("creating snapshot from boot volume")
 	createSnasphotInput := &ec2.CreateSnapshotInput{
-		Description: aws.String("snapshot for unikernel image " + name),
+		Description: aws.String("snapshot for unikernel image " + params.Name),
 		VolumeId:    aws.String(volumeId),
 	}
 	createSnapshotOutput, err := ec2svc.CreateSnapshot(createSnasphotInput)
@@ -86,7 +87,7 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 
 	blockDeviceMappings := []*ec2.BlockDeviceMapping{}
 	rootDeviceName := ""
-	for _, deviceMapping := range rawImage.DeviceMappings {
+	for _, deviceMapping := range params.RawImage.DeviceMappings {
 		if deviceMapping.MountPoint == "/" {
 			blockDeviceMappings = append(blockDeviceMappings, &ec2.BlockDeviceMapping{
 				DeviceName: aws.String(deviceMapping.DeviceName),
@@ -107,7 +108,7 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 	kernelId := kernelIdMap[p.config.Region]
 
 	logrus.WithFields(logrus.Fields{
-		"name":                  name,
+		"name":                  params.Name,
 		"architecture":          architecture,
 		"virtualization-type":   virtualizationType,
 		"kernel-id":             kernelId,
@@ -116,7 +117,7 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 	}).Infof("creating AMI for unikernel image")
 
 	registerImageInput := &ec2.RegisterImageInput{
-		Name:                aws.String(name),
+		Name:                aws.String(params.Name),
 		Architecture:        aws.String(architecture),
 		BlockDeviceMappings: blockDeviceMappings,
 		RootDeviceName:      aws.String(rootDeviceName),
@@ -145,7 +146,7 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 			},
 			&ec2.Tag{
 				Key:   aws.String("Name"),
-				Value: aws.String(name),
+				Value: aws.String(params.Name),
 			},
 		},
 	}
@@ -154,7 +155,7 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 		return nil, lxerrors.New("tagging snapshot, image, and volume", err)
 	}
 
-	rawImageFile, err := os.Stat(rawImage.LocalImagePath)
+	rawImageFile, err := os.Stat(params.RawImage.LocalImagePath)
 	if err != nil {
 		return nil, lxerrors.New("statting raw image file", err)
 	}
@@ -162,8 +163,8 @@ func (p *AwsProvider) Stage(name string, rawImage *types.RawImage, force bool) (
 
 	image := &types.Image{
 		Id:             imageId,
-		Name:           name,
-		DeviceMappings: rawImage.DeviceMappings,
+		Name:           params.Name,
+		DeviceMappings: params.RawImage.DeviceMappings,
 		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_AWS,
 		Created:        time.Now(),

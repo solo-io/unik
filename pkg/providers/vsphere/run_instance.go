@@ -11,27 +11,27 @@ import (
 	"time"
 )
 
-func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
+func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
 	logrus.WithFields(logrus.Fields{
-		"image-id": imageId,
-		"mounts":   mntPointsToVolumeIds,
-		"env":      env,
-	}).Infof("running instance %s", name)
+		"image-id": params.ImageId,
+		"mounts":   params.MntPointsToVolumeIds,
+		"env":      params.Env,
+	}).Infof("running instance %s", params.Name)
 
-	if _, err := p.GetInstance(name); err == nil {
-		return nil, lxerrors.New("instance with name "+name+" already exists. virtualbox provider requires unique names for instances", nil)
+	if _, err := p.GetInstance(params.Name); err == nil {
+		return nil, lxerrors.New("instance with name "+ params.Name +" already exists. virtualbox provider requires unique names for instances", nil)
 	}
 
-	image, err := p.GetImage(imageId)
+	image, err := p.GetImage(params.ImageId)
 	if err != nil {
 		return nil, lxerrors.New("getting image", err)
 	}
 
-	if err := common.VerifyMntsInput(p, image, mntPointsToVolumeIds); err != nil {
+	if err := common.VerifyMntsInput(p, image, params.MntPointsToVolumeIds); err != nil {
 		return nil, lxerrors.New("invalid mapping for volume", err)
 	}
 
-	instanceDir := getInstanceDatastoreDir(name)
+	instanceDir := getInstanceDatastoreDir(params.Name)
 
 	portsUsed := []int{}
 
@@ -40,11 +40,11 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 	defer func() {
 		if err != nil {
 			logrus.WithError(err).Errorf("error encountered, ensuring vm and disks are destroyed")
-			c.PowerOffVm(name)
+			c.PowerOffVm(params.Name)
 			for _, portUsed := range portsUsed {
-				c.DetachDisk(name, portUsed)
+				c.DetachDisk(params.Name, portUsed)
 			}
-			c.DestroyVm(name)
+			c.DestroyVm(params.Name)
 			os.RemoveAll(instanceDir)
 		}
 	}()
@@ -54,16 +54,16 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 	if p.config.DefaultInstanceMemory == 0 {
 		p.config.DefaultInstanceMemory = 512 //ideal for rump
 	}
-	if err := c.CreateVm(name, p.config.DefaultInstanceMemory); err != nil {
+	if err := c.CreateVm(params.Name, p.config.DefaultInstanceMemory); err != nil {
 		return nil, lxerrors.New("creating vm", err)
 	}
 
 	logrus.Debugf("powering on vm to assign mac addr")
-	if err := c.PowerOnVm(name); err != nil {
+	if err := c.PowerOnVm(params.Name); err != nil {
 		return nil, lxerrors.New("failed to power on vm to assign mac addr", err)
 	}
 
-	vm, err := c.GetVm(name)
+	vm, err := c.GetVm(params.Name)
 	if err != nil {
 		return nil, lxerrors.New("failed to retrieve vm info after create", err)
 	}
@@ -81,7 +81,7 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 		logrus.WithFields(logrus.Fields{"vm": vm}).Warnf("vm found, cannot identify mac addr")
 		return nil, lxerrors.New("could not find mac addr on vm", nil)
 	}
-	if err := c.PowerOffVm(name); err != nil {
+	if err := c.PowerOffVm(params.Name); err != nil {
 		return nil, lxerrors.New("failed to power off vm after retrieving mac addr", err)
 	}
 
@@ -90,11 +90,11 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 	if err := c.CopyVmdk(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
 		return nil, lxerrors.New("copying base boot image", err)
 	}
-	if err := c.AttachDisk(name, instanceBootImagePath, 0); err != nil {
+	if err := c.AttachDisk(params.Name, instanceBootImagePath, 0); err != nil {
 		return nil, lxerrors.New("attaching boot vol to instance", err)
 	}
 
-	for mntPoint, volumeId := range mntPointsToVolumeIds {
+	for mntPoint, volumeId := range params.MntPointsToVolumeIds {
 		volume, err := p.GetVolume(volumeId)
 		if err != nil {
 			return nil, lxerrors.New("getting volume", err)
@@ -103,7 +103,7 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 		if err != nil {
 			return nil, lxerrors.New("getting controller port for mnt point", err)
 		}
-		if err := c.AttachDisk(name, getVolumeDatastorePath(volume.Name), controllerPort); err != nil {
+		if err := c.AttachDisk(params.Name, getVolumeDatastorePath(volume.Name), controllerPort); err != nil {
 			return nil, lxerrors.New("attaching disk to vm", err)
 		}
 		portsUsed = append(portsUsed, controllerPort)
@@ -115,12 +115,12 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 	}
 
 	logrus.Debugf("sending env to listener")
-	if _, _, err := lxhttpclient.Post(instanceListenerIp+":3000", "/set_instance_env?mac_address="+macAddr, nil, env); err != nil {
+	if _, _, err := lxhttpclient.Post(instanceListenerIp+":3000", "/set_instance_env?mac_address="+macAddr, nil, params.Env); err != nil {
 		return nil, lxerrors.New("sending instance env to listener", err)
 	}
 
 	logrus.Debugf("powering on vm")
-	if err := c.PowerOnVm(name); err != nil {
+	if err := c.PowerOnVm(params.Name); err != nil {
 		return nil, lxerrors.New("powering on vm", err)
 	}
 
@@ -140,7 +140,7 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 	instanceId := vm.Config.UUID
 	instance := &types.Instance{
 		Id:             instanceId,
-		Name:           name,
+		Name:           params.Name,
 		State:          types.InstanceState_Pending,
 		IpAddress:      instanceIp,
 		Infrastructure: types.Infrastructure_VSPHERE,

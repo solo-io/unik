@@ -12,12 +12,12 @@ import (
 	"time"
 )
 
-func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
+func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
 	logrus.WithFields(logrus.Fields{
-		"image-id": imageId,
-		"mounts":   mntPointsToVolumeIds,
-		"env":      env,
-	}).Infof("running instance %s", name)
+		"image-id": params.ImageId,
+		"mounts":   params.MntPointsToVolumeIds,
+		"env":      params.Env,
+	}).Infof("running instance %s", params.Name)
 
 	var instanceId string
 	ec2svc := p.newEC2()
@@ -46,16 +46,16 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 		}
 	}()
 
-	image, err := p.GetImage(imageId)
+	image, err := p.GetImage(params.ImageId)
 	if err != nil {
 		return nil, lxerrors.New("getting image", err)
 	}
 
-	if err := common.VerifyMntsInput(p, image, mntPointsToVolumeIds); err != nil {
+	if err := common.VerifyMntsInput(p, image, params.MntPointsToVolumeIds); err != nil {
 		return nil, lxerrors.New("invalid mapping for volume", err)
 	}
 
-	envData, err := json.Marshal(env)
+	envData, err := json.Marshal(params.Env)
 	if err != nil {
 		return nil, lxerrors.New("could not convert instance env to json", err)
 	}
@@ -75,20 +75,20 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 		return nil, lxerrors.New("failed to run instance", err)
 	}
 	if len(runInstanceOutput.Instances) < 1 {
-		logrus.WithFields(logrus.Fields{"output": runInstanceOutput}).Errorf("run instance %s failed, produced %v instances, expected 1", name, len(runInstanceOutput.Instances))
+		logrus.WithFields(logrus.Fields{"output": runInstanceOutput}).Errorf("run instance %s failed, produced %v instances, expected 1", params.Name, len(runInstanceOutput.Instances))
 		return nil, lxerrors.New("expected 1 instance to be created", nil)
 	}
 	instanceId = *runInstanceOutput.Instances[0].InstanceId
 
 	if len(runInstanceOutput.Instances) > 1 {
-		logrus.WithFields(logrus.Fields{"output": runInstanceOutput}).Errorf("run instance %s failed, produced %v instances, expected 1", name, len(runInstanceOutput.Instances))
+		logrus.WithFields(logrus.Fields{"output": runInstanceOutput}).Errorf("run instance %s failed, produced %v instances, expected 1", params.Name, len(runInstanceOutput.Instances))
 		return nil, lxerrors.New("expected 1 instance to be created", nil)
 	}
 
 	//must add instance to state before attaching volumes
 	instance := &types.Instance{
 		Id:             instanceId,
-		Name:           name,
+		Name:           params.Name,
 		State:          types.InstanceState_Pending,
 		Infrastructure: types.Infrastructure_AWS,
 		ImageId:        image.Id,
@@ -105,7 +105,7 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 		return nil, lxerrors.New("saving instance volume map to state", err)
 	}
 
-	if len(mntPointsToVolumeIds) > 0 {
+	if len(params.MntPointsToVolumeIds) > 0 {
 		logrus.Debugf("stopping instance for volume attach")
 		waitParam := &ec2.DescribeInstancesInput{
 			InstanceIds: []*string{aws.String(instanceId)},
@@ -117,7 +117,7 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 		if err := p.StopInstance(instanceId); err != nil {
 			return nil, lxerrors.New("failed to stop instance for attaching volumes", err)
 		}
-		for mountPoint, volumeId := range mntPointsToVolumeIds {
+		for mountPoint, volumeId := range params.MntPointsToVolumeIds {
 			logrus.WithFields(logrus.Fields{"volume-id": volumeId}).Debugf("attaching volume %s to intance %s", volumeId, instanceId)
 			if err := p.AttachVolume(volumeId, instanceId, mountPoint); err != nil {
 				return nil, lxerrors.New("attaching volume to instance", err)
@@ -135,7 +135,7 @@ func (p *AwsProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map
 		Tags: []*ec2.Tag{
 			&ec2.Tag{
 				Key:   aws.String("Name"),
-				Value: aws.String(name),
+				Value: aws.String(params.Name),
 			},
 		},
 	}

@@ -10,17 +10,17 @@ import (
 	"time"
 )
 
-func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force bool) (_ *types.Image, err error) {
+func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Image, err error) {
 	images, err := p.ListImages()
 	if err != nil {
 		return nil, lxerrors.New("retrieving image list for existing image", err)
 	}
 	for _, image := range images {
-		if image.Name == name {
-			if !force {
-				return nil, lxerrors.New("an image already exists with name '"+name+"', try again with --force", nil)
+		if image.Name == params.Name {
+			if !params.Force {
+				return nil, lxerrors.New("an image already exists with name '"+ params.Name +"', try again with --force", nil)
 			} else {
-				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + name)
+				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + params.Name)
 				err = p.DeleteImage(image.Id, true)
 				if err != nil {
 					return nil, lxerrors.New("removing previously existing image", err)
@@ -28,7 +28,7 @@ func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force 
 			}
 		}
 	}
-	imagePath := getImagePath(name)
+	imagePath := getImagePath(params.Name)
 	logrus.Debugf("making directory: %s", filepath.Dir(imagePath))
 	if err := os.MkdirAll(filepath.Dir(imagePath), 0777); err != nil {
 		return nil, lxerrors.New("creating directory for boot image", err)
@@ -39,8 +39,8 @@ func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force 
 		}
 	}()
 
-	logrus.WithField("raw-image", rawImage).Infof("creating boot volume from raw image")
-	if err := common.ConvertRawImage("vmdk", rawImage.LocalImagePath, imagePath); err != nil {
+	logrus.WithField("raw-image", params.RawImage).Infof("creating boot volume from raw image")
+	if err := common.ConvertRawImage("vmdk", params.RawImage.LocalImagePath, imagePath); err != nil {
 		return nil, lxerrors.New("converting raw image to vmdk", err)
 	}
 
@@ -51,22 +51,22 @@ func (p *VirtualboxProvider) Stage(name string, rawImage *types.RawImage, force 
 	sizeMb := vmdkFile.Size() >> 20
 
 	logrus.WithFields(logrus.Fields{
-		"name": name,
-		"id":   name,
+		"name": params.Name,
+		"id":   params.Name,
 		"size": sizeMb,
 	}).Infof("creating base vmdk for unikernel image")
 
 	image := &types.Image{
-		Id:             name,
-		Name:           name,
-		DeviceMappings: rawImage.DeviceMappings,
+		Id:             params.Name,
+		Name:           params.Name,
+		DeviceMappings: params.RawImage.DeviceMappings,
 		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_VIRTUALBOX,
 		Created:        time.Now(),
 	}
 
 	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
-		images[name] = image
+		images[params.Name] = image
 		return nil
 	})
 	if err != nil {

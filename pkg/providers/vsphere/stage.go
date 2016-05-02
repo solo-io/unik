@@ -13,17 +13,17 @@ import (
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
-func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force bool) (_ *types.Image, err error) {
+func (p *VsphereProvider) Stage(params types.StageImageParams) (_ *types.Image, err error) {
 	images, err := p.ListImages()
 	if err != nil {
 		return nil, lxerrors.New("retrieving image list for existing image", err)
 	}
 	for _, image := range images {
-		if image.Name == name {
-			if !force {
-				return nil, lxerrors.New("an image already exists with name '"+name+"', try again with --force", nil)
+		if image.Name == params.Name {
+			if !params.Force {
+				return nil, lxerrors.New("an image already exists with name '"+ params.Name +"', try again with --force", nil)
 			} else {
-				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + name)
+				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + params.Name)
 				err = p.DeleteImage(image.Id, true)
 				if err != nil {
 					return nil, lxerrors.New("removing previously existing image", err)
@@ -32,7 +32,7 @@ func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force boo
 		}
 	}
 	c := p.getClient()
-	vsphereImageDir := getImageDatastoreDir(name)
+	vsphereImageDir := getImageDatastoreDir(params.Name)
 	if err := c.Mkdir(vsphereImageDir); err != nil && !strings.Contains(err.Error(), "exists") {
 		return nil, lxerrors.New("creating vsphere directory for image", err)
 	}
@@ -50,8 +50,8 @@ func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force boo
 	defer os.RemoveAll(localVmdkDir)
 	localVmdkFile := filepath.Join(localVmdkDir, "boot.vmdk")
 
-	logrus.WithField("raw-image", rawImage).Infof("creating boot volume from raw image")
-	if err := common.ConvertRawImage("vmdk", rawImage.LocalImagePath, localVmdkFile); err != nil {
+	logrus.WithField("raw-image", params.RawImage).Infof("creating boot volume from raw image")
+	if err := common.ConvertRawImage("vmdk", params.RawImage.LocalImagePath, localVmdkFile); err != nil {
 		return nil, lxerrors.New("converting raw image to vmdk", err)
 	}
 
@@ -62,8 +62,8 @@ func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force boo
 	sizeMb := rawImageFile.Size() >> 20
 
 	logrus.WithFields(logrus.Fields{
-		"name": name,
-		"id":   name,
+		"name": params.Name,
+		"id":   params.Name,
 		"size": sizeMb,
 		"datastore-path": vsphereImageDir,
 	}).Infof("importing base vmdk for unikernel image")
@@ -73,16 +73,16 @@ func (p *VsphereProvider) Stage(name string, rawImage *types.RawImage, force boo
 	}
 
 	image := &types.Image{
-		Id:             name,
-		Name:           name,
-		DeviceMappings: rawImage.DeviceMappings,
+		Id:             params.Name,
+		Name:           params.Name,
+		DeviceMappings: params.RawImage.DeviceMappings,
 		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_VSPHERE,
 		Created:        time.Now(),
 	}
 
 	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
-		images[name] = image
+		images[params.Name] = image
 		return nil
 	})
 	if err != nil {

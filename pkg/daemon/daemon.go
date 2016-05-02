@@ -235,7 +235,13 @@ func (d *UnikDaemon) addEndpoints() {
 			defer os.Remove(rawImage.LocalImagePath)
 			logrus.Debugf("raw image compiled and saved to "+rawImage.LocalImagePath)
 
-			image, err := d.providers[providerType].Stage(name, rawImage, force)
+			params := types.StageImageParams{
+				Name:name,
+				RawImage: rawImage,
+				Force: force,
+			}
+
+			image, err := d.providers[providerType].Stage(params)
 			if err != nil {
 				return nil, http.StatusInternalServerError, lxerrors.New("failed staging image", err)
 			}
@@ -425,7 +431,14 @@ func (d *UnikDaemon) addEndpoints() {
 				return nil, http.StatusInternalServerError, err
 			}
 
-			instance, err := provider.RunInstance(instanceName, imageName, mntPointsToVolumeIds, env)
+			params := types.RunInstanceParams{
+				Name: instanceName,
+				ImageId: imageName,
+				MntPointsToVolumeIds: mntPointsToVolumeIds,
+				Env: env,
+			}
+
+			instance, err := provider.RunInstance(params)
 			if err != nil {
 				return nil, http.StatusInternalServerError, err
 			}
@@ -558,7 +571,12 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 			defer os.RemoveAll(imagePath)
 
-			volume, err := provider.CreateVolume(volumeName, imagePath)
+			params := types.CreateVolumeParams{
+				Name: volumeName,
+				ImagePath: imagePath,
+			}
+
+			volume, err := provider.CreateVolume(params)
 			if err != nil {
 				return nil, http.StatusInternalServerError, lxerrors.New("could not create volume", err)
 			}

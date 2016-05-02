@@ -8,12 +8,12 @@ import (
 type Provider interface {
 	GetConfig() ProviderConfig
 	//Images
-	Stage(name string, rawImage *types.RawImage, force bool) (*types.Image, error)
+	Stage(params types.StageImageParams) (*types.Image, error)
 	ListImages() ([]*types.Image, error)
 	GetImage(nameOrIdPrefix string) (*types.Image, error)
 	DeleteImage(id string, force bool) error
 	//Instances
-	RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (*types.Instance, error)
+	RunInstance(params types.RunInstanceParams) (*types.Instance, error)
 	ListInstances() ([]*types.Instance, error)
 	GetInstance(nameOrIdPrefix string) (*types.Instance, error)
 	DeleteInstance(id string, force bool) error
@@ -21,7 +21,7 @@ type Provider interface {
 	StopInstance(id string) error
 	GetInstanceLogs(id string) (string, error)
 	//Volumes
-	CreateVolume(name, imagePath string) (*types.Volume, error)
+	CreateVolume(params types.CreateVolumeParams) (*types.Volume, error)
 	ListVolumes() ([]*types.Volume, error)
 	GetVolume(nameOrIdPrefix string) (*types.Volume, error)
 	DeleteVolume(id string, force bool) error

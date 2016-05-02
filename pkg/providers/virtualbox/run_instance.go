@@ -13,45 +13,45 @@ import (
 	"time"
 )
 
-func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolumeIds map[string]string, env map[string]string) (_ *types.Instance, err error) {
+func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
 	logrus.WithFields(logrus.Fields{
-		"image-id": imageId,
-		"mounts":   mntPointsToVolumeIds,
-		"env":      env,
-	}).Infof("running instance %s", name)
+		"image-id": params.ImageId,
+		"mounts":   params.MntPointsToVolumeIds,
+		"env":      params.Env,
+	}).Infof("running instance %s", params.Name)
 
-	if _, err := p.GetInstance(name); err == nil {
-		return nil, lxerrors.New("instance with name "+name+" already exists. virtualbox provider requires unique names for instances", nil)
+	if _, err := p.GetInstance(params.Name); err == nil {
+		return nil, lxerrors.New("instance with name "+ params.Name +" already exists. virtualbox provider requires unique names for instances", nil)
 	}
 
-	image, err := p.GetImage(imageId)
+	image, err := p.GetImage(params.ImageId)
 	if err != nil {
 		return nil, lxerrors.New("getting image", err)
 	}
 
-	if err := common.VerifyMntsInput(p, image, mntPointsToVolumeIds); err != nil {
+	if err := common.VerifyMntsInput(p, image, params.MntPointsToVolumeIds); err != nil {
 		return nil, lxerrors.New("invalid mapping for volume", err)
 	}
 
-	instanceDir := getInstanceDir(name)
+	instanceDir := getInstanceDir(params.Name)
 
 	portsUsed := []int{}
 
 	defer func() {
 		if err != nil {
 			logrus.WithError(err).Errorf("error encountered, ensuring vm and disks are destroyed")
-			virtualboxclient.PowerOffVm(name)
+			virtualboxclient.PowerOffVm(params.Name)
 			for _, portUsed := range portsUsed {
-				virtualboxclient.DetachDisk(name, portUsed)
+				virtualboxclient.DetachDisk(params.Name, portUsed)
 			}
-			virtualboxclient.DestroyVm(name)
+			virtualboxclient.DestroyVm(params.Name)
 			os.RemoveAll(instanceDir)
 		}
 	}()
 
 	logrus.Debugf("creating virtualbox vm")
 
-	if err := virtualboxclient.CreateVm(name, virtualboxInstancesDirectory, p.config.AdapterName, p.config.VirtualboxAdapterType); err != nil {
+	if err := virtualboxclient.CreateVm(params.Name, virtualboxInstancesDirectory, p.config.AdapterName, p.config.VirtualboxAdapterType); err != nil {
 		return nil, lxerrors.New("creating vm", err)
 	}
 
@@ -60,11 +60,11 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 	if err := unikos.CopyFile(getImagePath(image.Name), instanceBootImage); err != nil {
 		return nil, lxerrors.New("copying base boot image", err)
 	}
-	if err := virtualboxclient.AttachDisk(name, instanceBootImage, 0); err != nil {
+	if err := virtualboxclient.AttachDisk(params.Name, instanceBootImage, 0); err != nil {
 		return nil, lxerrors.New("attaching boot vol to instance", err)
 	}
 
-	for mntPoint, volumeId := range mntPointsToVolumeIds {
+	for mntPoint, volumeId := range params.MntPointsToVolumeIds {
 		volume, err := p.GetVolume(volumeId)
 		if err != nil {
 			return nil, lxerrors.New("getting volume", err)
@@ -73,14 +73,14 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 		if err != nil {
 			return nil, lxerrors.New("getting controller port for mnt point", err)
 		}
-		if err := virtualboxclient.AttachDisk(name, getVolumePath(volume.Name), controllerPort); err != nil {
+		if err := virtualboxclient.AttachDisk(params.Name, getVolumePath(volume.Name), controllerPort); err != nil {
 			return nil, lxerrors.New("attaching disk to vm", err)
 		}
 		portsUsed = append(portsUsed, controllerPort)
 	}
 
 	logrus.Debugf("setting instance id from mac address")
-	vm, err := virtualboxclient.GetVm(name)
+	vm, err := virtualboxclient.GetVm(params.Name)
 	if err != nil {
 		return nil, lxerrors.New("retrieving created vm from vbox", err)
 	}
@@ -93,12 +93,12 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 	}
 
 	logrus.Debugf("sending env to listener")
-	if _, _, err := lxhttpclient.Post(instanceListenerIp+":3000", "/set_instance_env?mac_address="+macAddr, nil, env); err != nil {
+	if _, _, err := lxhttpclient.Post(instanceListenerIp+":3000", "/set_instance_env?mac_address="+macAddr, nil, params.Env); err != nil {
 		return nil, lxerrors.New("sending instance env to listener", err)
 	}
 
 	logrus.Debugf("powering on vm")
-	if err := virtualboxclient.PowerOnVm(name); err != nil {
+	if err := virtualboxclient.PowerOnVm(params.Name); err != nil {
 		return nil, lxerrors.New("powering on vm", err)
 	}
 
@@ -117,7 +117,7 @@ func (p *VirtualboxProvider) RunInstance(name, imageId string, mntPointsToVolume
 
 	instance := &types.Instance{
 		Id:             instanceId,
-		Name:           name,
+		Name:           params.Name,
 		State:          types.InstanceState_Pending,
 		IpAddress:      instanceIp,
 		Infrastructure: types.Infrastructure_VIRTUALBOX,
