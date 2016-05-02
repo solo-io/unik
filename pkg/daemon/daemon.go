@@ -41,7 +41,9 @@ const (
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_providers := make(providers.Providers)
 	_compilers := make(map[string]compilers.Compiler)
+
 	for _, awsConfig := range config.Providers.Aws {
+		logrus.Infof("Bootstrapping provider %s with config %v", aws_provider, awsConfig)
 		p := aws.NewAwsProvier(awsConfig)
 		s, err := state.BasicStateFromFile(aws.AwsStateFile)
 		if err != nil {
@@ -53,6 +55,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		break
 	}
 	for _, vsphereConfig := range config.Providers.Vsphere {
+		logrus.Infof("Bootstrapping provider %s with config %v", vsphere_provider, vsphereConfig)
 		p, err := vsphere.NewVsphereProvier(vsphereConfig)
 		if err != nil {
 			return nil, lxerrors.New("initializing vsphere provider", err)
@@ -67,6 +70,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		break
 	}
 	for _, virtualboxConfig := range config.Providers.Virtualbox {
+		logrus.Infof("Bootstrapping provider %s with config %v", virtualbox_provider, virtualboxConfig)
 		p, err := virtualbox.NewVirtualboxProvider(virtualboxConfig)
 		if err != nil {
 			return nil, lxerrors.New("initializing virtualbox provider", err)
@@ -442,7 +446,7 @@ func (d *UnikDaemon) addEndpoints() {
 			if err != nil {
 				return nil, http.StatusInternalServerError, lxerrors.New("could not start instance "+instanceId, err)
 			}
-			return nil, http.StatusAccepted, nil
+			return nil, http.StatusOK, nil
 		})
 	})
 	d.server.Post("/instances/:instance_id/stop", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
@@ -459,7 +463,7 @@ func (d *UnikDaemon) addEndpoints() {
 			if err != nil {
 				return nil, http.StatusInternalServerError, lxerrors.New("could not stop instance "+instanceId, err)
 			}
-			return nil, http.StatusInternalServerError, nil
+			return nil, http.StatusOK, nil
 		})
 	})
 
