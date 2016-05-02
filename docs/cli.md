@@ -3,24 +3,29 @@
 The UniK cli wraps calls to UniK's [REST API](api.md) to make using UniK easy.
 
 * Managing Unik
-  * [`unik daemon`]()
-  * [`unik target`]()
-  * [`unik providers`]()
-  * [`unik compilers`]()
+  * [`unik daemon`](cli.md#running-the-daemon)
+  * [`unik target`](cli.md#targeting-the-unik-daemon)
+  * [`unik providers`](cli.md#list-available-providers)
+  * [`unik compilers`](cli.md#list-available-compilers)
 * Images
-  * [`unik build`]()
-  * [`unik images`]()
-  * [`unik describe-image`]()
-  * [`unik delete-image`]()
-  * [`unik stop`]()
-  * [`unik start`]()
-  * [`unik logs`]()
+  * [`unik build`](cli.md#building-an-image)
+  * [`unik images`](cli.md#list-available-images)
+  * [`unik describe-image`](cli.md#get-json-representation-of-a-specifig-image)
+  * [`unik delete-image`](cli.md#delete-an-image)
+* Instances
+  * [`unik run`](cli.md#run-an-instance)
+  * [`unik instances`](cli.md#list-available-instances)
+  * [`unik describe-instance`](cli.md#get-json-representation-of-a-specifig-instance)
+  * [`unik delete-instance`](cli.md#delete-an-instance)
+  * [`unik stop`](cli.md#power-off-an-instance)
+  * [`unik start`](cli.md#power-on-an-instance)
+  * [`unik logs`](cli.md#retrieve-or-follow-instance-logs)
 * Volumes
-  * [`unik create-volume`]()
-  * [`unik attach-volume`]()
-  * [`unik detach-volume`]()
-  * [`unik delete-volume`]()
-  * [`unik volumes`]()
+  * [`unik create-volume`](cli.md#create-a-volume)
+  * [`unik volumes`](cli.md#list-volumes)
+  * [`unik attach-volume`](cli.md#attach-a-volume)
+  * [`unik detach-volume`](cli.md#detach-a-volume)
+  * [`unik delete-volume`](cli.md#delete-a-volume)
 
 #### Running the daemon
 The cli is used to start the UniK daemon. To start the daemon:
@@ -221,6 +226,7 @@ Use `--force` to force deleting an instance that is powered on
 unik stop --instance INSTANCE_NAME
 ```
 Powering off an instance is a necessary step to attach or detach volumes after an instance has been created.
+
 ----
 
 #### Power On an Instance
@@ -292,15 +298,15 @@ can be created.
 Example usage:
 unik create-volume --name myVolume --data ./myApp/data --provider aws
 
-# will create an EBS-backed AWS volume named myVolume using the data found in ./myApp/src,
-# the size will be either 1GB (the default minimum size on AWS) or greater, if the size of the
+* will create an EBS-backed AWS volume named myVolume using the data found in ./myApp/src,
+* the size will be either 1GB (the default minimum size on AWS) or greater, if the size of the
 volume is greater
 
 
 Another example (empty volume):
 unik create-volume -name anotherVolume --size 500 -provider vsphere
 
-# will create a 500mb sparse vmdk file and upload it to the vsphere datastore,
+* will create a 500mb sparse vmdk file and upload it to the vsphere datastore,
 where it can be attached to a vsphere instance
 
 Flags:
@@ -308,6 +314,7 @@ Flags:
 *  `--data string`       (string,special) path to data folder. optional if --size is provided
 *  `--name string`       (string,required) name to give the unikernel. must be unique
 *  `--provider string`   (string,required) name of the target infrastructure to compile for
+
 ---
 
 ##### List Volumes
