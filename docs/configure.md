@@ -37,7 +37,7 @@ Include the provider stub for any provider you wish to use. For example, to use 
 ```
 providers:
   virtualbox:
-    - name: vsphere-1
+    - name: my_virtualbox_provider
       adapter_type: host_only
       adapter_name: vboxnet0
 ```
