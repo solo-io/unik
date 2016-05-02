@@ -51,6 +51,9 @@ func (p *VsphereProvider) RunInstance(name, imageId string, mntPointsToVolumeIds
 
 	logrus.Debugf("creating vsphere vm")
 
+	if p.config.DefaultInstanceMemory == 0 {
+		p.config.DefaultInstanceMemory = 512 //ideal for rump
+	}
 	if err := c.CreateVm(name, p.config.DefaultInstanceMemory); err != nil {
 		return nil, lxerrors.New("creating vm", err)
 	}
