@@ -1,7 +1,9 @@
 all: pull ${SOURCES}
 
+.PHONY: pull containers compilers-rump-base-common compilers-rump-base-hw compilers-rump-base-xen compilers-rump-go-hw compilers-rump-go-xen compilers boot-creator image-creator vsphere-client utils
+
 #pull containers
-.PHONY: pull:
+pull:
 	echo "Pullling containers from docker hub"
 	docker pull projectunik/vsphere-client
 	docker pull projectunik/image-creator
@@ -14,38 +16,39 @@ all: pull ${SOURCES}
 #------
 
 #build containers from source
-.PHONY: containers: compilers utils
+containers: compilers utils
 	echo "Built containers from source"
 
 #compilers
-.PHONY: compilers-rump-base-common:
+compilers: compilers-rump-go-hw compilers-rump-go-xen
+
+compilers-rump-base-common:
 	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.common .
 
-.PHONY: compilers-rump-base-hw: compilers-rump-base-common
+compilers-rump-base-hw: compilers-rump-base-common
 	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.hw .
 
-.PHONY: compilers-rump-base-xen: compilers-rump-base-common
+compilers-rump-base-xen: compilers-rump-base-common
 	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.xen .
 
-.PHONY: compilers-rump-go-hw: compilers-rump-base-hw
+compilers-rump-go-hw: compilers-rump-base-hw
 	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.hw .
 
-.PHONY: compilers-rump-go-xen: compilers-rump-base-xen
+compilers-rump-go-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.xen .
 
-.PHONY: compilers: compilers-rump-go-hw compilers-rump-go-xen
-
 #utils
-.PHONY: boot-creator:
+utils: boot-creator image-creator vsphere-client
+
+boot-creator:
 	cd containers/utils/boot-creator && GOOS=linux go build && docker build -t projectunik/$@ -f Dockerfile . && rm boot-creator
 
-.PHONY: image-creator:
+image-creator:
 	cd containers/utils/image-creator && GOOS=linux go build && docker build -t projectunik/$@ -f Dockerfile . && rm image-creator
 
-.PHONY: vsphere-client:
+vsphere-client:
 	cd containers/utils/vsphere-client && mvn package && docker build -t projectunik/$@ -f Dockerfile . && rm -rf target
 
-.PHONY: utils: boot-creator image-creator vsphere-client
 #------
 
 #binary & install
@@ -60,10 +63,12 @@ install: all ${SOURCES}
 #----
 
 #clean up
-.PHONY: uninstall
+.PHONY: uninstall remove-containers clean
+
+uninstall:
 	rm $(which ${BINARY})
 
-.PHONY: remove-containers
+remove-containers:
 	-docker rmi -f projectunik/vsphere-client
 	-docker rmi -f projectunik/image-creator
 	-docker rmi -f projectunik/boot-creator
@@ -73,7 +78,6 @@ install: all ${SOURCES}
 	-docker rmi -f projectunik/compilers-rump-base-hw
 	-docker rmi -f projectunik/compilers-rump-base-common
 
-.PHONY: clean
 clean:
 	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
 #---
