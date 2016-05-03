@@ -5,8 +5,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
 	"github.com/Sirupsen/logrus"
-	"errors"
-	"fmt"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var volumesCmd = &cobra.Command{
@@ -28,7 +27,7 @@ var volumesCmd = &cobra.Command{
 			logrus.WithField("host", host).Info("listing volumes")
 			volumes, err := client.UnikClient(host).Volumes().All()
 			if err != nil {
-				return errors.New(fmt.Sprintf("listing volumes failed: %v", err))
+				return errors.New("listing volumes failed", err)
 			}
 			printVolumes(volumes...)
 			return nil

@@ -4,7 +4,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere/vsphereclient"
 	"github.com/emc-advanced-dev/unik/pkg/state"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -27,7 +27,7 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 	rawUrl := "https://" + config.VsphereUser + ":" + config.VspherePassword + "@" + strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(config.VsphereURL, "http://"), "https://"), "/sdk") + "/sdk"
 	u, err := url.Parse(rawUrl)
 	if err != nil {
-		return nil, lxerrors.New("parsing vsphere url", err)
+		return nil, errors.New("parsing vsphere url", err)
 	}
 
 	p := &VsphereProvider{
@@ -42,7 +42,7 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 	p.getClient().Mkdir("unik/vsphere/volumes")
 
 	if err := p.DeployInstanceListener(); err != nil && !strings.Contains(err.Error(), "already exists") {
-		return nil, lxerrors.New("deploing virtualbox instance listener", err)
+		return nil, errors.New("deploing virtualbox instance listener", err)
 	}
 
 	return p, nil

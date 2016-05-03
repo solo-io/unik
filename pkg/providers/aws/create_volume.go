@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"time"
 )
@@ -16,7 +16,7 @@ func (p *AwsProvider) CreateVolume(params types.CreateVolumeParams) (*types.Volu
 	ec2svc := p.newEC2()
 	volumeId, err := createDataVolumeFromRawImage(s3svc, ec2svc, params.ImagePath, p.config.Zone)
 	if err != nil {
-		return nil, lxerrors.New("creating aws boot volume", err)
+		return nil, errors.New("creating aws boot volume", err)
 	}
 	tagVolumeInput := &ec2.CreateTagsInput{
 		Resources: []*string{
@@ -31,12 +31,12 @@ func (p *AwsProvider) CreateVolume(params types.CreateVolumeParams) (*types.Volu
 	}
 	_, err = ec2svc.CreateTags(tagVolumeInput)
 	if err != nil {
-		return nil, lxerrors.New("tagging volume", err)
+		return nil, errors.New("tagging volume", err)
 	}
 
 	rawImageFile, err := os.Stat(params.ImagePath)
 	if err != nil {
-		return nil, lxerrors.New("statting raw image file", err)
+		return nil, errors.New("statting raw image file", err)
 	}
 	sizeMb := rawImageFile.Size() >> 20
 
@@ -54,11 +54,11 @@ func (p *AwsProvider) CreateVolume(params types.CreateVolumeParams) (*types.Volu
 		return nil
 	})
 	if err != nil {
-		return nil, lxerrors.New("modifying volume map in state", err)
+		return nil, errors.New("modifying volume map in state", err)
 	}
 	err = p.state.Save()
 	if err != nil {
-		return nil, lxerrors.New("saving volume map to state", err)
+		return nil, errors.New("saving volume map to state", err)
 	}
 
 	return nil, nil

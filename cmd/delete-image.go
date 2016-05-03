@@ -5,7 +5,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var rmiCmd = &cobra.Command{
@@ -21,7 +21,7 @@ var rmiCmd = &cobra.Command{
 				return err
 			}
 			if imageName == "" {
-				return errors.New("must specify --image")
+				return errors.New("must specify --image", nil)
 			}
 			if host == "" {
 				host = clientConfig.Host

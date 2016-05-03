@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/find"
 	"golang.org/x/net/context"
@@ -30,7 +30,7 @@ func NewVsphereClient(u *url.URL, datastore string) *VsphereClient {
 func (vc *VsphereClient) newGovmomiClient() (*govmomi.Client, error) {
 	c, err := govmomi.NewClient(context.TODO(), vc.u, true)
 	if err != nil {
-		return nil, lxerrors.New("creating new govmovi client", err)
+		return nil, errors.New("creating new govmovi client", err)
 	}
 	return c, nil
 }
@@ -45,7 +45,7 @@ func (vc *VsphereClient) newGovmomiFinder() (*find.Finder, error) {
 	// Find one and only datacenter
 	dc, err := f.DefaultDatacenter(context.TODO())
 	if err != nil {
-		return nil, lxerrors.New("finding default datacenter", err)
+		return nil, errors.New("finding default datacenter", err)
 	}
 
 	// Make future calls local to this datacenter
@@ -66,14 +66,14 @@ func (vc *VsphereClient) GetVmByUuid(uuid string) (*VirtualMachine, error) {
 	logrus.WithField("command", cmd.Args).Debugf("running command")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, lxerrors.New("failed running govc vm.info "+ uuid, err)
+		return nil, errors.New("failed running govc vm.info "+ uuid, err)
 	}
 	var vm VmInfo
 	if err := json.Unmarshal(out, &vm); err != nil {
-		return nil, lxerrors.New("unmarshalling json: "+string(out), err)
+		return nil, errors.New("unmarshalling json: "+string(out), err)
 	}
 	if len(vm.VirtualMachines) < 1 {
-		return nil, lxerrors.New("returned virtualmachines had len 0; does vm exist? "+string(out), nil)
+		return nil, errors.New("returned virtualmachines had len 0; does vm exist? "+string(out), nil)
 	}
 	return &vm.VirtualMachines[0], nil
 }
@@ -91,14 +91,14 @@ func (vc *VsphereClient) GetVm(name string) (*VirtualMachine, error) {
 	logrus.WithField("command", cmd.Args).Debugf("running command")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, lxerrors.New("failed running govc vm.info "+ name, err)
+		return nil, errors.New("failed running govc vm.info "+ name, err)
 	}
 	var vm VmInfo
 	if err := json.Unmarshal(out, &vm); err != nil {
-		return nil, lxerrors.New("unmarshalling json: "+string(out), err)
+		return nil, errors.New("unmarshalling json: "+string(out), err)
 	}
 	if len(vm.VirtualMachines) < 1 {
-		return nil, lxerrors.New("returned virtualmachines had len 0; does vm exist? "+string(out), nil)
+		return nil, errors.New("returned virtualmachines had len 0; does vm exist? "+string(out), nil)
 	}
 	return &vm.VirtualMachines[0], nil
 }
@@ -106,7 +106,7 @@ func (vc *VsphereClient) GetVm(name string) (*VirtualMachine, error) {
 func (vc *VsphereClient) GetVmIp(vmName string) (string, error) {
 	vm, err := vc.GetVm(vmName)
 	if err != nil {
-		return "", lxerrors.New("getting vsphere vm", err)
+		return "", errors.New("getting vsphere vm", err)
 	}
 	return vm.Guest.IPAddress, nil
 }
@@ -125,7 +125,7 @@ func (vc *VsphereClient) CreateVm(vmName string, memoryMb int) error {
 	)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("failed running govc vm.create "+vmName, err)
+		return errors.New("failed running govc vm.create "+vmName, err)
 	}
 	return nil
 }
@@ -141,7 +141,7 @@ func (vc *VsphereClient) DestroyVm(vmName string) error {
 	)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("failed running govc vm.destroy "+vmName, err)
+		return errors.New("failed running govc vm.destroy "+vmName, err)
 	}
 	return nil
 }
@@ -173,7 +173,7 @@ func (vc *VsphereClient) Rmdir(folder string) error {
 	)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("failed running govc datastore.rm "+folder, err)
+		return errors.New("failed running govc datastore.rm "+folder, err)
 	}
 	return nil
 }
@@ -181,7 +181,7 @@ func (vc *VsphereClient) Rmdir(folder string) error {
 func (vc *VsphereClient) ImportVmdk(vmdkPath, remoteFolder string) error {
 	vmdkFolder, err := filepath.Abs(filepath.Dir(vmdkPath))
 	if err != nil {
-		return lxerrors.New("getting aboslute path for "+vmdkFolder, err)
+		return errors.New("getting aboslute path for "+vmdkFolder, err)
 	}
 	cmd := exec.Command("docker", "run", "--rm", "-v", vmdkFolder+":"+vmdkFolder,
 		"projectunik/vsphere-client",
@@ -194,7 +194,7 @@ func (vc *VsphereClient) ImportVmdk(vmdkPath, remoteFolder string) error {
 	)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("failed running govc import.vmdk "+ remoteFolder, err)
+		return errors.New("failed running govc import.vmdk "+ remoteFolder, err)
 	}
 	return nil
 }
@@ -212,7 +212,7 @@ func (vc *VsphereClient) UploadFile(srcFile, dest string) error {
 	)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("failed running govc datastore.upload", err)
+		return errors.New("failed running govc datastore.upload", err)
 	}
 	return nil
 }
@@ -230,7 +230,7 @@ func (vc *VsphereClient) DownloadFile(remoteFile, localFile string) error {
 	)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("failed running govc datastore.upload", err)
+		return errors.New("failed running govc datastore.upload", err)
 	}
 	return nil
 }
@@ -251,7 +251,7 @@ func (vc *VsphereClient) CopyVmdk(src, dest string) error {
 	)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("failed running vsphere-client.jar CopyVirtualDisk "+src+" "+dest, err)
+		return errors.New("failed running vsphere-client.jar CopyVirtualDisk "+src+" "+dest, err)
 	}
 	return nil
 }
@@ -267,7 +267,7 @@ func (vc *VsphereClient) Ls(dir string) ([]string, error) {
 	)
 	out, err := cmd.Output()
 	if err != nil {
-		return nil, lxerrors.New("failed running govc datastore.ls "+dir, err)
+		return nil, errors.New("failed running govc datastore.ls "+dir, err)
 	}
 	split := strings.Split(string(out), "\n")
 	contents := []string{}
@@ -291,7 +291,7 @@ func (vc *VsphereClient) PowerOnVm(vmName string) error {
 	)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("failed running govc vm.power (on)", err)
+		return errors.New("failed running govc vm.power (on)", err)
 	}
 	return nil
 }
@@ -308,7 +308,7 @@ func (vc *VsphereClient) PowerOffVm(vmName string) error {
 	)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("failed running govc vm.power (off)", err)
+		return errors.New("failed running govc vm.power (off)", err)
 	}
 	return nil
 }
@@ -330,7 +330,7 @@ func (vc *VsphereClient) AttachDisk(vmName, vmdkPath string, controllerKey int) 
 	)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("failed running vsphere-client.jar AttachVmdk", err)
+		return errors.New("failed running vsphere-client.jar AttachVmdk", err)
 	}
 	return nil
 }
@@ -351,7 +351,7 @@ func (vc *VsphereClient) DetachDisk(vmName string, controllerKey int) error {
 	)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("failed running vsphere-client.jar DetachVmdk", err)
+		return errors.New("failed running vsphere-client.jar DetachVmdk", err)
 	}
 	return nil
 }

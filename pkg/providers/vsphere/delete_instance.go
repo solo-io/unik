@@ -2,32 +2,32 @@ package vsphere
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/Sirupsen/logrus"
 )
 
 func (p *VsphereProvider) DeleteInstance(id string, force bool) error {
 	instance, err := p.GetInstance(id)
 	if err != nil {
-		return lxerrors.New("retrieving instance "+id, err)
+		return errors.New("retrieving instance "+id, err)
 	}
 	if instance.State == types.InstanceState_Running {
 		if force {
 			if err := p.StopInstance(instance.Id); err != nil {
-				return lxerrors.New("stopping instance for deletion", err)
+				return errors.New("stopping instance for deletion", err)
 			}
 		} else {
-			return lxerrors.New("instance "+instance.Id+"is still running. try again with --force or power off instance first", err)
+			return errors.New("instance "+instance.Id+"is still running. try again with --force or power off instance first", err)
 		}
 	}
 	image, err := p.GetImage(instance.ImageId)
 	if err != nil {
-		return lxerrors.New("getting image for instance", err)
+		return errors.New("getting image for instance", err)
 	}
 	volumesToDetach := []*types.Volume{}
 	volumes, err := p.ListVolumes()
 	if err != nil {
-		return lxerrors.New("getting volume list", err)
+		return errors.New("getting volume list", err)
 	}
 	for _, volume := range volumes {
 		if volume.Attachment == instance.Id {
@@ -40,13 +40,13 @@ func (p *VsphereProvider) DeleteInstance(id string, force bool) error {
 	for controllerPort, deviceMapping := range image.DeviceMappings {
 		if deviceMapping.MountPoint != "/" {
 			if err := c.DetachDisk(instance.Id, controllerPort); err != nil {
-				return lxerrors.New("detaching volume from instance", err)
+				return errors.New("detaching volume from instance", err)
 			}
 		}
 	}
 	err = c.DestroyVm(instance.Name)
 	if err != nil {
-		return lxerrors.New("failed to terminate instance "+instance.Id, err)
+		return errors.New("failed to terminate instance "+instance.Id, err)
 	}
 	return p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 		delete(instances, instance.Id)

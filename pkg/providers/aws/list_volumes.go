@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 func (p *AwsProvider) ListVolumes() ([]*types.Volume, error) {
@@ -21,7 +21,7 @@ func (p *AwsProvider) ListVolumes() ([]*types.Volume, error) {
 	}
 	output, err := p.newEC2().DescribeVolumes(param)
 	if err != nil {
-		return nil, lxerrors.New("running ec2 describe volumes ", err)
+		return nil, errors.New("running ec2 describe volumes ", err)
 	}
 	volumes := []*types.Volume{}
 	for _, ec2Volume := range output.Volumes {
@@ -36,7 +36,7 @@ func (p *AwsProvider) ListVolumes() ([]*types.Volume, error) {
 		}
 		if len(ec2Volume.Attachments) > 0 {
 			if len(ec2Volume.Attachments) > 1 {
-				return nil, lxerrors.New("ec2 reports volume to have >1 attachments. wut", nil)
+				return nil, errors.New("ec2 reports volume to have >1 attachments. wut", nil)
 			}
 			volume.Attachment = *ec2Volume.Attachments[0].InstanceId
 		} else {
@@ -47,11 +47,11 @@ func (p *AwsProvider) ListVolumes() ([]*types.Volume, error) {
 			return nil
 		})
 		if err != nil {
-			return nil, lxerrors.New("modifying volume map in state", err)
+			return nil, errors.New("modifying volume map in state", err)
 		}
 		err = p.state.Save()
 		if err != nil {
-			return nil, lxerrors.New("saving modified volume map to state", err)
+			return nil, errors.New("saving modified volume map to state", err)
 		}
 		volumes = append(volumes, volume)
 	}

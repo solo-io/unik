@@ -8,7 +8,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
 	"encoding/json"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var describeImageCmd = &cobra.Command{
@@ -24,7 +24,7 @@ var describeImageCmd = &cobra.Command{
 				host = clientConfig.Host
 			}
 			if name == "" {
-				return errors.New("must specify --image")
+				return errors.New("must specify --image", nil)
 			}
 			image, err := client.UnikClient(host).Images().Get(name)
 			if err != nil {

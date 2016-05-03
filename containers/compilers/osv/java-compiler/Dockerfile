@@ -16,6 +16,9 @@ COPY java-compiler /
 
 VOLUME /project_directory
 
+#Pre-pull osv base image
+RUN capstan pull cloudius/osv-openjdk
+
 ENTRYPOINT ["/java-compiler"]
 
 #run this container with

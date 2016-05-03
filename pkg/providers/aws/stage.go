@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"time"
 )
@@ -26,18 +26,18 @@ var kernelIdMap = map[string]string{
 func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err error) {
 	images, err := p.ListImages()
 	if err != nil {
-		return nil, lxerrors.New("retrieving image list for existing image", err)
+		return nil, errors.New("retrieving image list for existing image", err)
 	}
 
 	for _, image := range images {
 		if image.Name == params.Name {
 			if !params.Force {
-				return nil, lxerrors.New("an image already exists with name '"+params.Name+"', try again with --force", nil)
+				return nil, errors.New("an image already exists with name '"+params.Name+"', try again with --force", nil)
 			} else {
 				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + params.Name)
 				err = p.DeleteImage(image.Id, true)
 				if err != nil {
-					return nil, lxerrors.New("removing previously existing image", err)
+					return nil, errors.New("removing previously existing image", err)
 				}
 			}
 		}
@@ -63,7 +63,7 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 	logrus.WithField("raw-image", params.RawImage).WithField("az", p.config.Zone).Infof("creating boot volume from raw image")
 	volumeId, err = createDataVolumeFromRawImage(s3svc, ec2svc, params.RawImage.LocalImagePath, p.config.Zone)
 	if err != nil {
-		return nil, lxerrors.New("creating aws boot volume", err)
+		return nil, errors.New("creating aws boot volume", err)
 	}
 
 	logrus.WithField("volume-id", volumeId).Infof("creating snapshot from boot volume")
@@ -73,7 +73,7 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 	}
 	createSnapshotOutput, err := ec2svc.CreateSnapshot(createSnasphotInput)
 	if err != nil {
-		return nil, lxerrors.New("creating aws snapshot", err)
+		return nil, errors.New("creating aws snapshot", err)
 	}
 	snapshotId = *createSnapshotOutput.SnapshotId
 
@@ -82,7 +82,7 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 	}
 	err = ec2svc.WaitUntilSnapshotCompleted(snapDesc)
 	if err != nil {
-		return nil, lxerrors.New("waiting for snapshot to complete", err)
+		return nil, errors.New("waiting for snapshot to complete", err)
 	}
 
 	blockDeviceMappings := []*ec2.BlockDeviceMapping{}
@@ -100,7 +100,7 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 		}
 	}
 	if len(blockDeviceMappings) < 1 {
-		return nil, lxerrors.New("did not find root device mapping for image", nil)
+		return nil, errors.New("did not find root device mapping for image", nil)
 	}
 
 	architecture := "x86_64"
@@ -127,7 +127,7 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 
 	registerImageOutput, err := ec2svc.RegisterImage(registerImageInput)
 	if err != nil {
-		return nil, lxerrors.New("registering snapshot as image", err)
+		return nil, errors.New("registering snapshot as image", err)
 	}
 
 	imageId := *registerImageOutput.ImageId
@@ -152,12 +152,12 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 	}
 	_, err = ec2svc.CreateTags(tagObjects)
 	if err != nil {
-		return nil, lxerrors.New("tagging snapshot, image, and volume", err)
+		return nil, errors.New("tagging snapshot, image, and volume", err)
 	}
 
 	rawImageFile, err := os.Stat(params.RawImage.LocalImagePath)
 	if err != nil {
-		return nil, lxerrors.New("statting raw image file", err)
+		return nil, errors.New("statting raw image file", err)
 	}
 	sizeMb := rawImageFile.Size() >> 20
 
@@ -175,11 +175,11 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 		return nil
 	})
 	if err != nil {
-		return nil, lxerrors.New("modifying image map in state", err)
+		return nil, errors.New("modifying image map in state", err)
 	}
 	err = p.state.Save()
 	if err != nil {
-		return nil, lxerrors.New("saving image map to state", err)
+		return nil, errors.New("saving image map to state", err)
 	}
 
 	logrus.WithFields(logrus.Fields{"image": image}).Infof("image created succesfully")

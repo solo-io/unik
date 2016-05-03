@@ -11,7 +11,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/go-martini/martini"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/layer-x/layerx-commons/lxmartini"
 	"io"
 	"net/http"
@@ -60,7 +60,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		logrus.Infof("Bootstrapping provider %s with config %v", vsphere_provider, vsphereConfig)
 		p, err := vsphere.NewVsphereProvier(vsphereConfig)
 		if err != nil {
-			return nil, lxerrors.New("initializing vsphere provider", err)
+			return nil, errors.New("initializing vsphere provider", err)
 		}
 		s, err := state.BasicStateFromFile(vsphere.VsphereStateFile)
 		if err != nil {
@@ -75,7 +75,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		logrus.Infof("Bootstrapping provider %s with config %v", virtualbox_provider, virtualboxConfig)
 		p, err := virtualbox.NewVirtualboxProvider(virtualboxConfig)
 		if err != nil {
-			return nil, lxerrors.New("initializing virtualbox provider", err)
+			return nil, errors.New("initializing virtualbox provider", err)
 		}
 		s, err := state.BasicStateFromFile(virtualbox.VirtualboxStateFile)
 		if err != nil {
@@ -145,7 +145,7 @@ func (d *UnikDaemon) addEndpoints() {
 			for _, provider := range d.providers {
 				images, err := provider.ListImages()
 				if err != nil {
-					return nil, http.StatusInternalServerError, lxerrors.New("could not get image list", err)
+					return nil, http.StatusInternalServerError, errors.New("could not get image list", err)
 				}
 				allImages = append(allImages, images...)
 			}
@@ -173,7 +173,7 @@ func (d *UnikDaemon) addEndpoints() {
 		handle(res, req, func() (interface{}, int, error) {
 			name := params["name"]
 			if name == "" {
-				return nil, http.StatusBadRequest, lxerrors.New("image must be named", nil)
+				return nil, http.StatusBadRequest, errors.New("image must be named", nil)
 			}
 			err := req.ParseMultipartForm(0)
 			if err != nil {
@@ -187,7 +187,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}).Debugf("parsing form file marked 'tarfile'")
 			sourceTar, _, err := req.FormFile("tarfile")
 			if err != nil {
-				return nil, http.StatusBadRequest, lxerrors.New("parsing form file marked 'tarfile", err)
+				return nil, http.StatusBadRequest, errors.New("parsing form file marked 'tarfile", err)
 			}
 			defer sourceTar.Close()
 			forceStr := req.FormValue("force")
@@ -199,7 +199,7 @@ func (d *UnikDaemon) addEndpoints() {
 			args := req.FormValue("args")
 			providerType := req.FormValue("provider")
 			if _, ok := d.providers[providerType]; !ok {
-				return nil, http.StatusBadRequest, lxerrors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
+				return nil, http.StatusBadRequest, errors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
 			}
 
 			compilerSupported := false
@@ -210,12 +210,12 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 
 			if !compilerSupported {
-				return nil, http.StatusBadRequest, lxerrors.New("provider "+providerType+" does not support compiler "+compilerType+"; supported compilers: "+strings.Join(d.providers[providerType].GetConfig().SupportedCompilers, "|"), nil)
+				return nil, http.StatusBadRequest, errors.New("provider "+providerType+" does not support compiler "+compilerType+"; supported compilers: "+strings.Join(d.providers[providerType].GetConfig().SupportedCompilers, "|"), nil)
 			}
 
 			compiler, ok := d.compilers[compilerType]
 			if !ok {
-				return nil, http.StatusBadRequest, lxerrors.New("unikernel type "+ compilerType +" not available for "+providerType+"infrastructure", nil)
+				return nil, http.StatusBadRequest, errors.New("unikernel type "+ compilerType +" not available for "+providerType+"infrastructure", nil)
 			}
 			mntStr := req.FormValue("mounts")
 
@@ -234,7 +234,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}).Debugf("compiling raw image")
 			rawImage, err := compiler.CompileRawImage(sourceTar, args, mountPoints)
 			if err != nil {
-				return nil, http.StatusInternalServerError, lxerrors.New("failed to compile raw image", err)
+				return nil, http.StatusInternalServerError, errors.New("failed to compile raw image", err)
 			}
 			defer os.Remove(rawImage.LocalImagePath)
 			logrus.Debugf("raw image compiled and saved to "+rawImage.LocalImagePath)
@@ -254,7 +254,7 @@ func (d *UnikDaemon) addEndpoints() {
 
 			image, err := d.providers[providerType].Stage(params)
 			if err != nil {
-				return nil, http.StatusInternalServerError, lxerrors.New("failed staging image", err)
+				return nil, http.StatusInternalServerError, errors.New("failed staging image", err)
 			}
 			return image, http.StatusCreated, nil
 		})
@@ -266,7 +266,7 @@ func (d *UnikDaemon) addEndpoints() {
 				logrus.WithFields(logrus.Fields{
 					"request": fmt.Sprintf("%v", req),
 				}).Errorf("image must be named")
-				return nil, http.StatusBadRequest, lxerrors.New("image must be named", nil)
+				return nil, http.StatusBadRequest, errors.New("image must be named", nil)
 			}
 			logrus.WithFields(logrus.Fields{
 				"request": req,
@@ -295,7 +295,7 @@ func (d *UnikDaemon) addEndpoints() {
 			for _, provider := range d.providers {
 				instances, err := provider.ListInstances()
 				if err != nil {
-					return nil, http.StatusInternalServerError, lxerrors.New("could not get instance list", err)
+					return nil, http.StatusInternalServerError, errors.New("could not get instance list", err)
 				}
 				allInstances = append(allInstances, instances...)
 			}
@@ -354,7 +354,7 @@ func (d *UnikDaemon) addEndpoints() {
 				if f, ok := res.(http.Flusher); ok {
 					f.Flush()
 				} else {
-					return nil, http.StatusInternalServerError, lxerrors.New("not a flusher", nil)
+					return nil, http.StatusInternalServerError, errors.New("not a flusher", nil)
 				}
 
 				deleteOnDisconnect := req.URL.Query().Get("delete")
@@ -376,7 +376,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 			logs, err := provider.GetInstanceLogs(instanceId)
 			if err != nil {
-				return nil, http.StatusInternalServerError, lxerrors.New("failed to perform get logs request", err)
+				return nil, http.StatusInternalServerError, errors.New("failed to perform get logs request", err)
 			}
 			return logs, http.StatusOK, nil
 		})
@@ -389,7 +389,7 @@ func (d *UnikDaemon) addEndpoints() {
 
 			imageName := req.URL.Query().Get("image_name")
 			if imageName == "" {
-				return nil, http.StatusBadRequest, lxerrors.New("image must be named", nil)
+				return nil, http.StatusBadRequest, errors.New("image must be named", nil)
 			}
 
 			instanceName := params["name"]
@@ -475,7 +475,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 			err = provider.StartInstance(instanceId)
 			if err != nil {
-				return nil, http.StatusInternalServerError, lxerrors.New("could not start instance "+instanceId, err)
+				return nil, http.StatusInternalServerError, errors.New("could not start instance "+instanceId, err)
 			}
 			return nil, http.StatusOK, nil
 		})
@@ -492,7 +492,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 			err = provider.StopInstance(instanceId)
 			if err != nil {
-				return nil, http.StatusInternalServerError, lxerrors.New("could not stop instance "+instanceId, err)
+				return nil, http.StatusInternalServerError, errors.New("could not stop instance "+instanceId, err)
 			}
 			return nil, http.StatusOK, nil
 		})
@@ -506,7 +506,7 @@ func (d *UnikDaemon) addEndpoints() {
 			for _, provider := range d.providers {
 				volumes, err := provider.ListVolumes()
 				if err != nil {
-					return nil, http.StatusInternalServerError, lxerrors.New("could not retrieve volumes", err)
+					return nil, http.StatusInternalServerError, errors.New("could not retrieve volumes", err)
 				}
 				allVolumes = append(allVolumes, volumes...)
 			}
@@ -525,7 +525,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 			volume, err := provider.GetVolume(volumeName)
 			if err != nil {
-				return nil, http.StatusInternalServerError, lxerrors.New("could not get volume", err)
+				return nil, http.StatusInternalServerError, errors.New("could not get volume", err)
 			}
 			logrus.WithFields(logrus.Fields{
 				"volume": volume,
@@ -547,12 +547,12 @@ func (d *UnikDaemon) addEndpoints() {
 			sizeStr := req.FormValue("size")
 			size, err := strconv.Atoi(sizeStr)
 			if err != nil {
-				return nil, http.StatusBadRequest, lxerrors.New("could not parse given size", err)
+				return nil, http.StatusBadRequest, errors.New("could not parse given size", err)
 			}
 
 			providerType := req.FormValue("provider")
 			if _, ok := d.providers[providerType]; !ok {
-				return nil, http.StatusBadRequest, lxerrors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
+				return nil, http.StatusBadRequest, errors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
 			}
 
 			logrus.WithFields(logrus.Fields{
@@ -571,7 +571,7 @@ func (d *UnikDaemon) addEndpoints() {
 				}).WithError(err).Debugf("creating empty volume started")
 				imagePath, err = unikos.BuildEmptyDataVolume(size)
 				if err != nil {
-					return nil, http.StatusInternalServerError, lxerrors.New("failed building raw image", err)
+					return nil, http.StatusInternalServerError, errors.New("failed building raw image", err)
 				}
 				logrus.WithFields(logrus.Fields{
 					"image": imagePath,
@@ -584,7 +584,7 @@ func (d *UnikDaemon) addEndpoints() {
 				}).Debugf("creating volume started")
 				imagePath, err = unikos.BuildRawDataImage(dataTar, size, provider.GetConfig().UsePartitionTables)
 				if err != nil {
-					return nil, http.StatusInternalServerError, lxerrors.New("creating raw volume image", err)
+					return nil, http.StatusInternalServerError, errors.New("creating raw volume image", err)
 				}
 			}
 			defer os.RemoveAll(imagePath)
@@ -603,7 +603,7 @@ func (d *UnikDaemon) addEndpoints() {
 
 			volume, err := provider.CreateVolume(params)
 			if err != nil {
-				return nil, http.StatusInternalServerError, lxerrors.New("could not create volume", err)
+				return nil, http.StatusInternalServerError, errors.New("could not create volume", err)
 			}
 			logrus.WithFields(logrus.Fields{
 				"volume": volume,
@@ -629,7 +629,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}).Debugf("deleting volume started")
 			err = provider.DeleteVolume(volumeName, force)
 			if err != nil {
-				return nil, http.StatusInternalServerError, lxerrors.New("could not delete volume", err)
+				return nil, http.StatusInternalServerError, errors.New("could not delete volume", err)
 			}
 			logrus.WithFields(logrus.Fields{
 				"volume": volumeName,
@@ -647,7 +647,7 @@ func (d *UnikDaemon) addEndpoints() {
 			instanceId := params["instance_id"]
 			mount := req.URL.Query().Get("mount")
 			if mount == "" {
-				return nil, http.StatusBadRequest, lxerrors.New("must provide a mount point in URL query", nil)
+				return nil, http.StatusBadRequest, errors.New("must provide a mount point in URL query", nil)
 			}
 			logrus.WithFields(logrus.Fields{
 				"instance": instanceId,
@@ -656,7 +656,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}).Debugf("attaching volume to instance")
 			err = provider.AttachVolume(volumeName, instanceId, mount)
 			if err != nil {
-				return nil, http.StatusInternalServerError, lxerrors.New("could not attach volume to instance", err)
+				return nil, http.StatusInternalServerError, errors.New("could not attach volume to instance", err)
 			}
 			logrus.WithFields(logrus.Fields{
 				"instance": instanceId,
@@ -678,7 +678,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}).Debugf("detaching volume from any instance")
 			err = provider.DetachVolume(volumeName)
 			if err != nil {
-				return nil, http.StatusInternalServerError, lxerrors.New("could not detach volume from instance", err)
+				return nil, http.StatusInternalServerError, errors.New("could not detach volume from instance", err)
 			}
 			logrus.WithFields(logrus.Fields{
 				"volume": volumeName,
@@ -722,7 +722,7 @@ func streamOutput(outputFunc func() (string, error), w io.Writer) error {
 		time.Sleep(100 * time.Millisecond)
 		output, err := outputFunc()
 		if err != nil {
-			return lxerrors.New("could not read output", err)
+			return errors.New("could not read output", err)
 		}
 		logLines := strings.Split(output, "\n")
 		for i, _ := range logLines {
@@ -732,7 +732,7 @@ func streamOutput(outputFunc func() (string, error), w io.Writer) error {
 				if f, ok := w.(http.Flusher); ok {
 					f.Flush()
 				} else {
-					return lxerrors.New("w is not a flusher", nil)
+					return errors.New("w is not a flusher", nil)
 				}
 
 				_, err = w.Write([]byte(logLines[linesCounted] + "\n"))
@@ -759,24 +759,24 @@ func respond(res http.ResponseWriter, message interface{}) error {
 		data := []byte(messageString)
 		_, err := res.Write(data)
 		if err != nil {
-			return lxerrors.New("writing data", err)
+			return errors.New("writing data", err)
 		}
 		return nil
 	case error:
 		responseError := message.(error)
 		_, err := res.Write([]byte(responseError.Error()))
 		if err != nil {
-			return lxerrors.New("writing data", err)
+			return errors.New("writing data", err)
 		}
 		return nil
 	}
 	data, err := json.Marshal(message)
 	if err != nil {
-		return lxerrors.New("marshalling message to json", err)
+		return errors.New("marshalling message to json", err)
 	}
 	_, err = res.Write(data)
 	if err != nil {
-		return lxerrors.New("writing data", err)
+		return errors.New("writing data", err)
 	}
 	return nil
 }

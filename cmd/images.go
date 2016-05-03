@@ -5,8 +5,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
 	"github.com/Sirupsen/logrus"
-	"errors"
-	"fmt"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var imagesCmd = &cobra.Command{
@@ -26,7 +25,7 @@ var imagesCmd = &cobra.Command{
 			logrus.WithField("host", host).Info("listing images")
 			images, err := client.UnikClient(host).Images().All()
 			if err != nil {
-				return errors.New(fmt.Sprintf("listing images failed: %v", err))
+				return errors.New("listing images failed", err)
 			}
 			printImages(images...)
 			return nil

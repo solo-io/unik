@@ -18,6 +18,8 @@ const (
 	project_directory = "/project_directory"
 )
 
+var buildImageTimeout = time.Minute * 10
+
 func main() {
 	out, _ := exec.Command("ls", "/").CombinedOutput()
 	fmt.Println(strings.Split(string(out), "\n"))
@@ -56,52 +58,11 @@ func main() {
 
 		capstanCmd := exec.Command("capstan", "run", "-p", "qemu")
 		capstanCmd.Dir = java_main_caller_dir
+		capstanCmd.Stdout = os.Stdout
+		capstanCmd.Stderr = os.Stderr
 		printCommand(capstanCmd)
-		if out, err := capstanCmd.CombinedOutput(); err != nil {
-			logrus.WithError(err).Error(string(out))
-			for {}
-		}
-	}()
-	capstanImage := os.Getenv("HOME") + "/.capstan/instances/qe	out, _ := exec.Command("ls", "/").CombinedOutput()
-	fmt.Println(strings.Split(string(out), "\n"))
-	appInfo, err := wrapJavaApplication(java_main_caller_dir, project_directory)
-	if err != nil {
-		logrus.WithError(err).Errorf("Failed to wrap java project Main Class", err)
-		for {}
-	}
-	logrus.AddHook(&unikutil.AddTraceHook{true})
-	fmt.Printf("read info from java project: %v", appInfo)
-	fmt.Printf("running mvn package")
-
-	mvnPackageCmd := exec.Command("mvn", "package")
-	mvnPackageCmd.Dir = project_directory
-	printCommand(mvnPackageCmd)
-	if out, err := mvnPackageCmd.CombinedOutput(); err != nil {
-		logrus.WithError(err).Error(string(out))
-		for {}
-	}
-
-	mvnInstallCmd := exec.Command("mvn", "install:install-file",
-		"-Dfile=target/" + appInfo.ArtifactId + "-" + appInfo.Version + "-jar-with-dependencies.jar",
-		"-DgroupId=" + appInfo.GroupId,
-		"-DartifactId=" + appInfo.ArtifactId,
-		"-Dversion=" + appInfo.Version,
-		"-Dpackaging=jar")
-	mvnInstallCmd.Dir = project_directory
-	printCommand(mvnInstallCmd)
-	if out, err := mvnInstallCmd.CombinedOutput(); err != nil {
-		logrus.WithError(err).Error(string(out))
-		for {}
-	}
-
-	go func() {
-		fmt.Println("capstain building")
-
-		capstanCmd := exec.Command("capstan", "run", "-p", "qemu")
-		capstanCmd.Dir = java_main_caller_dir
-		printCommand(capstanCmd)
-		if out, err := capstanCmd.CombinedOutput(); err != nil {
-			logrus.WithError(err).Error(string(out))
+		if err := capstanCmd.Run(); err != nil {
+			logrus.WithError(err).Error("captsain build failed")
 			for {}
 		}
 	}()
@@ -111,31 +72,8 @@ func main() {
 	case <-fileReady(capstanImage):
 		fmt.Printf("image ready at %s\n", capstanImage)
 		break
-	case <-time.After(time.Second * 120):
-		logrus.Error("capstan never finished building")
-		for {}
-	}
-
-	fmt.Println("qemu-img creating")
-	convertToRawCmd := exec.Command("qemu-img", "convert",
-		"-O", "vmdk",
-		capstanImage,
-		project_directory + "/boot.vmdk")
-	printCommand(convertToRawCmd)
-	if out, err := convertToRawCmd.CombinedOutput(); err != nil {
-		logrus.WithError(err).Error(string(out))
-		for {}
-	}
-
-	fmt.Println("file created at " + project_directory + "/boot.vmdk")
-	mu/java-main-caller/disk.qcow2"
-
-	select {
-	case <-fileReady(capstanImage):
-		fmt.Printf("image ready at %s\n", capstanImage)
-		break
-	case <-time.After(time.Second * 120):
-		logrus.Error("capstan never finished building")
+	case <-time.After(buildImageTimeout):
+		logrus.Error("timed out waiting for capstan to finish building")
 		for {}
 	}
 
@@ -155,19 +93,24 @@ func main() {
 
 func fileReady(filename string) <-chan struct{} {
 	closeChan := make(chan struct{})
+	fmt.Printf("waiting for file to become ready...\n")
 	go func() {
 		count := 0
 		for {
-			fmt.Printf("waiting for file...%s", count)
 			if _, err := os.Stat(filename); err == nil {
 				close(closeChan)
 				return
 			}
-			time.Sleep(time.Second)
+			//count every 15 sec
+			if count%15 == 0 {
+				fmt.Printf("waiting for file...%v", count)
+			}
+			time.Sleep(time.Second * 1)
 		}
 	}()
 	return closeChan
 }
+
 
 func printCommand(cmd *exec.Cmd) {
 	fmt.Printf("running command from dir %s: %v\n", cmd.Dir, cmd.Args)

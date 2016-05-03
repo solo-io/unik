@@ -3,7 +3,7 @@ package virtualbox
 import (
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/state"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,7 +31,7 @@ func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error
 	}
 
 	if err := p.DeployInstanceListener(config); err != nil && !strings.Contains(err.Error(), "already exists") {
-		return nil, lxerrors.New("deploing virtualbox instance listener", err)
+		return nil, errors.New("deploing virtualbox instance listener", err)
 	}
 
 	return p, nil

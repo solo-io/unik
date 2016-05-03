@@ -5,7 +5,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var rmCmd = &cobra.Command{
@@ -23,7 +23,7 @@ var rmCmd = &cobra.Command{
 				host = clientConfig.Host
 			}
 			if instanceName == "" {
-				return errors.New("must specify --instance")
+				return errors.New("must specify --instance", nil)
 			}
 			logrus.WithFields(logrus.Fields{"host": host, "force": force, "instance": instanceName}).Info("deleting instance")
 			if err := client.UnikClient(host).Instances().Delete(instanceName, force); err != nil {

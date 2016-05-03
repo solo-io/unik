@@ -5,7 +5,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"time"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere/vsphereclient"
 )
@@ -19,7 +19,7 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 	for instanceId := range p.state.GetInstances() {
 		vm, err := c.GetVmByUuid(instanceId)
 		if err != nil {
-			return nil, lxerrors.New("getting vm info for "+instanceId, err)
+			return nil, errors.New("getting vm info for "+instanceId, err)
 		}
 		vms = append(vms, vm)
 	}
@@ -59,7 +59,7 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 
 		instanceListenerIp, err := c.GetVmIp(VsphereUnikInstanceListener)
 		if err != nil {
-			return nil, lxerrors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
+			return nil, errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 		}
 
 		if err := unikutil.Retry(5, time.Duration(2000*time.Millisecond), func() error {
@@ -70,7 +70,7 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 			}
 			return nil
 		}); err != nil {
-			return nil, lxerrors.New("failed to retrieve instance ip", err)
+			return nil, errors.New("failed to retrieve instance ip", err)
 		}
 
 		err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
@@ -78,7 +78,7 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 			return nil
 		})
 		if err != nil {
-			return nil, lxerrors.New("saving instance to state", err)
+			return nil, errors.New("saving instance to state", err)
 		}
 
 		instances = append(instances, instance)

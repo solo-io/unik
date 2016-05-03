@@ -7,7 +7,7 @@ import (
 	"os"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"io/ioutil"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
@@ -60,13 +60,13 @@ var cvCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if name == "" {
-				return errors.New("--name must be set")
+				return errors.New("--name must be set", nil)
 			}
 			if data == "" && size == 0 {
-				return errors.New("either --data or --size must be set")
+				return errors.New("either --data or --size must be set", nil)
 			}
 			if provider == "" {
-				return errors.New("--provider must be set")
+				return errors.New("--provider must be set", nil)
 			}
 			if err := readClientConfig(); err != nil {
 				return err
@@ -90,14 +90,14 @@ var cvCmd = &cobra.Command{
 					defer os.Remove(dataTar.Name())
 				}
 				if err := unikos.Compress(path, dataTar.Name()); err != nil {
-					return errors.New("failed to tar data: " + err.Error())
+					return errors.New("failed to tar data", err)
 				}
 				data = dataTar.Name()
 				logrus.Infof("Data packaged as tarball: %s\n", dataTar.Name())
 			}
 			volume, err := client.UnikClient(host).Volumes().Create(name, data, provider, size, noCleanup)
 			if err != nil {
-				return errors.New("creatinv volume image failed: %v" + err.Error())
+				return errors.New("creatinv volume image failed", err)
 			}
 			printVolumes(volume)
 			return nil

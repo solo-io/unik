@@ -8,7 +8,7 @@ import (
 	"strings"
 	"os"
 	"github.com/emc-advanced-dev/unik/pkg/client"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var providersCmd = &cobra.Command{
@@ -26,7 +26,7 @@ var providersCmd = &cobra.Command{
 			logrus.WithField("host", host).Info("listing providers")
 			providers, err := client.UnikClient(host).AvailableProviders()
 			if err != nil {
-				return errors.New(fmt.Sprintf("listing providers failed: %v", err))
+				return errors.New("listing providers failed", err)
 			}
 			fmt.Printf("%s\n", strings.Join(providers, "\n"))
 			return nil

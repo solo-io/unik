@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
 	"fmt"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var daemonConfigFile, logFile string
@@ -51,14 +51,14 @@ var daemonCmd = &cobra.Command{
 			if logFile != "" {
 				f, err := os.Open(logFile)
 				if err != nil {
-					return errors.New(fmt.Sprintf("failed to open log file %s for writing: %v", logFile, err))
+					return errors.New(fmt.Sprintf("failed to open log file %s for writing", logFile), err)
 				}
 				logrus.AddHook(&unikutil.TeeHook{f})
 			}
 			logrus.WithField("config", daemonConfig).Info("daemon started")
 			d, err := daemon.NewUnikDaemon(daemonConfig)
 			if err != nil {
-				return errors.New("daemon failed to initialize: "+ err.Error())
+				return errors.New("daemon failed to initialize", err)
 			}
 			d.Run(port)
 			return nil

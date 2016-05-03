@@ -10,7 +10,7 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"os/exec"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"path/filepath"
 )
 
@@ -37,7 +37,7 @@ func (osvCompiler *OsvCompiler) CompileRawImage(sourceTar io.ReadCloser, args st
 	unikutil.LogCommand(cmd, true)
 	err = cmd.Run()
 	if err != nil {
-		return nil, lxerrors.New("failed running compilers-osv-java on "+localFolder, err)
+		return nil, errors.New("failed running compilers-osv-java on "+localFolder, err)
 	}
 	logrus.Debugf("finished at %", filepath.Join(localFolder, "boot.vmdk"))
 	for {}

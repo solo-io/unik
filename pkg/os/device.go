@@ -1,7 +1,7 @@
 package os
 
 import (
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"fmt"
 	"os"
 )
@@ -56,7 +56,7 @@ func (s Sectors) ToBytes() Bytes {
 func ToSectors(b DiskSize) (Sectors, error) {
 	inBytes := b.ToBytes()
 	if inBytes%SectorSize != 0 {
-		return 0, errors.New("can't convert to sectors")
+		return 0, errors.New("can't convert to sectors", nil)
 	}
 	return Sectors(inBytes / SectorSize), nil
 }

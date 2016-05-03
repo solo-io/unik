@@ -4,7 +4,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"path/filepath"
 	"time"
@@ -14,30 +14,30 @@ import (
 
 func (p *VsphereProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.Volume, err error) {
 	if _, volumeErr := p.GetImage(params.Name); volumeErr == nil {
-		return nil, lxerrors.New("volume already exists", nil)
+		return nil, errors.New("volume already exists", nil)
 	}
 	c := p.getClient()
 
 	localVmdkDir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
-		return nil, lxerrors.New("creating tmp file", err)
+		return nil, errors.New("creating tmp file", err)
 	}
 	defer os.RemoveAll(localVmdkDir)
 	localVmdkFile := filepath.Join(localVmdkDir, "boot.vmdk")
 	logrus.WithField("raw-image", params.ImagePath).Infof("creating vmdk from raw image")
 	if err := common.ConvertRawImage("vmdk", params.ImagePath, localVmdkFile); err != nil {
-		return nil, lxerrors.New("converting raw image to vmdk", err)
+		return nil, errors.New("converting raw image to vmdk", err)
 	}
 
 	rawImageFile, err := os.Stat(localVmdkFile)
 	if err != nil {
-		return nil, lxerrors.New("statting raw image file", err)
+		return nil, errors.New("statting raw image file", err)
 	}
 	sizeMb := rawImageFile.Size() >> 20
 
 	vsphereVolumeDir := getVolumeDatastoreDir(params.Name)
 	if err := c.Mkdir(vsphereVolumeDir); err != nil {
-		return nil, lxerrors.New("creating vsphere directory for volume", err)
+		return nil, errors.New("creating vsphere directory for volume", err)
 	}
 	defer func() {
 		if err != nil {
@@ -53,7 +53,7 @@ func (p *VsphereProvider) CreateVolume(params types.CreateVolumeParams) (_ *type
 	vsphereVolumePath := getVolumeDatastorePath(params.Name)
 
 	if err := c.ImportVmdk(localVmdkFile, vsphereVolumePath); err != nil {
-		return nil, lxerrors.New("importing data.vmdk to vsphere datastore", err)
+		return nil, errors.New("importing data.vmdk to vsphere datastore", err)
 	}
 
 	volume := &types.Volume{
@@ -70,11 +70,11 @@ func (p *VsphereProvider) CreateVolume(params types.CreateVolumeParams) (_ *type
 		return nil
 	})
 	if err != nil {
-		return nil, lxerrors.New("modifying volume map in state", err)
+		return nil, errors.New("modifying volume map in state", err)
 	}
 	err = p.state.Save()
 	if err != nil {
-		return nil, lxerrors.New("saving volume map to state", err)
+		return nil, errors.New("saving volume map to state", err)
 	}
 	return volume, nil
 }

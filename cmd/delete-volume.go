@@ -5,7 +5,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var volumeName string 
@@ -23,7 +23,7 @@ var rmvCmd = &cobra.Command{
 				return err
 			}
 			if volumeName == "" {
-				return errors.New("must specify --volume")
+				return errors.New("must specify --volume", nil)
 			}
 			if host == "" {
 				host = clientConfig.Host

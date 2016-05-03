@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"io/ioutil"
 	"strings"
 	"github.com/Sirupsen/logrus"
@@ -23,7 +23,7 @@ func wrapJavaApplication(javaWrapperDir, appSourceDir string) (AppInfo, error) {
 	logrus.Info("start1")
 	appPom, err := readPom(appSourceDir + "/pom.xml")
 	if err != nil {
-		return AppInfo{}, lxerrors.New("reading pom", err)
+		return AppInfo{}, errors.New("reading pom", err)
 	}
 	logrus.Info("start2")
 
@@ -33,7 +33,7 @@ func wrapJavaApplication(javaWrapperDir, appSourceDir string) (AppInfo, error) {
 
 	wrapperPomBytes, err := ioutil.ReadFile(javaWrapperDir + "/pom.xml")
 	if err != nil {
-		return AppInfo{}, lxerrors.New("reading app pom bytes", err)
+		return AppInfo{}, errors.New("reading app pom bytes", err)
 	}
 	wrapperPomContents := strings.Replace(string(wrapperPomBytes), "REPLACE_WITH_GROUPID", groupId, -1)
 	wrapperPomContents = strings.Replace(wrapperPomContents, "REPLACE_WITH_ARTIFACTID", artifactId, -1)
@@ -41,12 +41,12 @@ func wrapJavaApplication(javaWrapperDir, appSourceDir string) (AppInfo, error) {
 
 	err = ioutil.WriteFile(javaWrapperDir + "/pom.xml", []byte(wrapperPomContents), 0666)
 	if err != nil {
-		return AppInfo{}, lxerrors.New("writing pom.xml", err)
+		return AppInfo{}, errors.New("writing pom.xml", err)
 	}
 
 	mainClassName, err := appPom.getMainClass()
 	if err != nil {
-		return AppInfo{}, lxerrors.New("retreiving main class from app", err)
+		return AppInfo{}, errors.New("retreiving main class from app", err)
 	}
 	logrus.WithFields(logrus.Fields{
 		"pom": appPom,
@@ -58,13 +58,13 @@ func wrapJavaApplication(javaWrapperDir, appSourceDir string) (AppInfo, error) {
 
 	wrapperMainContentBytes, err := ioutil.ReadFile(javaWrapperDir + "/src/main/java/com/emc/wrapper/Wrapper.java")
 	if err != nil {
-		return AppInfo{}, lxerrors.New("reading java pom bytes", err)
+		return AppInfo{}, errors.New("reading java pom bytes", err)
 	}
 	wrapperMainContents := strings.Replace(string(wrapperMainContentBytes), "REPLACE_WITH_MAIN_CLASS", mainClassName, -1)
 
 	err = ioutil.WriteFile(javaWrapperDir + "/src/main/java/com/emc/wrapper/Wrapper.java", []byte(wrapperMainContents), 0666)
 	if err != nil {
-		return AppInfo{}, lxerrors.New("writing Wrapper class around app class", err)
+		return AppInfo{}, errors.New("writing Wrapper class around app class", err)
 	}
 
 	return AppInfo{ArtifactId: artifactId, GroupId: groupId, Version: version}, nil
@@ -91,7 +91,7 @@ func readPom(filename string) (*project, error) {
 			return handleFeed(se, decoder)
 		}
 	}
-	return nil, lxerrors.New("decoding failed", nil)
+	return nil, errors.New("decoding failed", nil)
 }
 
 
@@ -101,7 +101,7 @@ func handleFeed(se xml.StartElement, decoder *xml.Decoder) (*project, error) {
 		decoder.DecodeElement(&item, &se)
 		return &item, nil
 	}
-	return nil, lxerrors.New(se.Name.Local+"not a project", nil)
+	return nil, errors.New(se.Name.Local+"not a project", nil)
 }
 
 func genericReader(filename string) (io.Reader, *os.File, error) {
@@ -300,5 +300,5 @@ func (project *project) getMainClass() (string, error) {
 			}
 		}
 	}
-	return "", lxerrors.New("main class not found", nil)
+	return "", errors.New("main class not found", nil)
 }

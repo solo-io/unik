@@ -5,7 +5,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var mountPoint string
@@ -33,13 +33,13 @@ var attachCmd = &cobra.Command{
 				return err
 			}
 			if volumeName == "" {
-				return errors.New("must specify --volume")
+				return errors.New("must specify --volume", nil)
 			}
 			if instanceName == "" {
-				return errors.New("must specify --instanceName")
+				return errors.New("must specify --instanceName", nil)
 			}
 			if mountPoint == "" {
-				return errors.New("must specify --mountPoint")
+				return errors.New("must specify --mountPoint", nil)
 			}
 			if host == "" {
 				host = clientConfig.Host

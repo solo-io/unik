@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"bufio"
 	"net"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 func main() {

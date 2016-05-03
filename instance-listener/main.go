@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"flag"
 	"fmt"
 	"github.com/Sirupsen/logrus"

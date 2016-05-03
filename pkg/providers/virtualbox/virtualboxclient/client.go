@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -46,18 +46,18 @@ func vboxManage(args ...string) ([]byte, error) {
 func GetVmIp(vmName string) (string, error) {
 	out, err := vboxManage("guestproperty", "get", vmName, "/VirtualBox/GuestInfo/Net/0/V4/IP")
 	if err != nil {
-		return "", lxerrors.New("retrieving vm ip", err)
+		return "", errors.New("retrieving vm ip", err)
 	}
 	if strings.Contains(string(out), "No value set") {
-		return "", lxerrors.New("ip property not available for this vm", nil)
+		return "", errors.New("ip property not available for this vm", nil)
 	}
 	r, err := regexp.Compile("([0-9]{1,3}[\\.]){3}[0-9]{1,3}")
 	if err != nil {
-		return "", lxerrors.New("compiling regex", err)
+		return "", errors.New("compiling regex", err)
 	}
 	ipAddr := r.Find(out)
 	if ipAddr == nil {
-		return "", lxerrors.New("ip address not found in string "+string(out), nil)
+		return "", errors.New("ip address not found in string "+string(out), nil)
 	}
 	return string(ipAddr), nil
 }
@@ -71,18 +71,18 @@ func parseVmInfo(vmInfo string) (*VboxVm, error) {
 		if strings.HasPrefix(line, "UUID:") {
 			rLineBegin, err := regexp.Compile("UUID:\\ +")
 			if err != nil {
-				return nil, lxerrors.New("compiling regex", err)
+				return nil, errors.New("compiling regex", err)
 			}
 			uuid = string(rLineBegin.ReplaceAll([]byte(line), []byte("")))
 		}
 		if strings.Contains(line, "NIC 1:") { //first network adapter must be the IP we use
 			rLineBegin, err := regexp.Compile("NIC 1:.*MAC. ")
 			if err != nil {
-				return nil, lxerrors.New("compiling regex", err)
+				return nil, errors.New("compiling regex", err)
 			}
 			rLineEnd, err := regexp.Compile(",.*")
 			if err != nil {
-				return nil, lxerrors.New("compiling regex", err)
+				return nil, errors.New("compiling regex", err)
 			}
 			macAddr = formatMac(string(rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(line), []byte("")), []byte(""))))
 			logrus.Debugf("mac address found for vm: %s", macAddr)
@@ -98,10 +98,10 @@ func parseVmInfo(vmInfo string) (*VboxVm, error) {
 		}
 	}
 	if macAddr == "" {
-		return nil, lxerrors.New("mac address not found in vm info: "+string(vmInfo), nil)
+		return nil, errors.New("mac address not found in vm info: "+string(vmInfo), nil)
 	}
 	if uuid == "" {
-		return nil, lxerrors.New("uuid address not found in vm info: "+string(vmInfo), nil)
+		return nil, errors.New("uuid address not found in vm info: "+string(vmInfo), nil)
 	}
 	return &VboxVm{MACAddr: macAddr, Running: running, Devices: devices, UUID: uuid}, nil
 }
@@ -109,20 +109,20 @@ func parseVmInfo(vmInfo string) (*VboxVm, error) {
 func parseDevice(deviceLine string) (*VboxDevice, error) {
 	rLineBegin, err := regexp.Compile("SCSI \\([0-9], [0-15]\\): ")
 	if err != nil {
-		return nil, lxerrors.New("compiling regex", err)
+		return nil, errors.New("compiling regex", err)
 	}
 	rLineEnd, err := regexp.Compile("\\(UUID: .*")
 	if err != nil {
-		return nil, lxerrors.New("compiling regex", err)
+		return nil, errors.New("compiling regex", err)
 	}
 	diskFile := rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(deviceLine), []byte("")), []byte(""))
 	rLineBegin, err = regexp.Compile(".*\\([0-15], ")
 	if err != nil {
-		return nil, lxerrors.New("compiling regex", err)
+		return nil, errors.New("compiling regex", err)
 	}
 	rLineEnd, err = regexp.Compile("\\):.*")
 	if err != nil {
-		return nil, lxerrors.New("compiling regex", err)
+		return nil, errors.New("compiling regex", err)
 	}
 	controllerKey := rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(deviceLine), []byte("")), []byte(""))
 	return &VboxDevice{DiskFile: string(diskFile), ControllerKey: string(controllerKey)}, nil
@@ -131,13 +131,13 @@ func parseDevice(deviceLine string) (*VboxDevice, error) {
 func Vms() ([]*VboxVm, error) {
 	out, err := vboxManage("list", "vms")
 	if err != nil {
-		return nil, lxerrors.New("getting vm list from virtualbox", err)
+		return nil, errors.New("getting vm list from virtualbox", err)
 	}
 	vmNames := []string{}
 	lines := strings.Split(string(out), "\n")
 	r, err := regexp.Compile("\"(.*)\"")
 	if err != nil {
-		return nil, lxerrors.New("compiling regex", err)
+		return nil, errors.New("compiling regex", err)
 	}
 	for _, line := range lines {
 		vmName := r.FindStringSubmatch(line)
@@ -153,11 +153,11 @@ func Vms() ([]*VboxVm, error) {
 		logrus.Debugf("found vm: " + vmName)
 		vmInfo, err := vboxManage("showvminfo", vmName)
 		if err != nil {
-			return nil, lxerrors.New("getting vm info for "+vmName, err)
+			return nil, errors.New("getting vm info for "+vmName, err)
 		}
 		vm, err := parseVmInfo(string(vmInfo))
 		if err != nil {
-			return nil, lxerrors.New("parsing vm info string", err)
+			return nil, errors.New("parsing vm info string", err)
 		}
 		vm.Name = vmName
 		vms = append(vms, vm)
@@ -169,14 +169,14 @@ func Vms() ([]*VboxVm, error) {
 func GetVm(vmNameOrId string) (*VboxVm, error) {
 	vms, err := Vms()
 	if err != nil {
-		return nil, lxerrors.New("getting vm list", err)
+		return nil, errors.New("getting vm list", err)
 	}
 	for _, vm := range vms {
 		if vm.Name == vmNameOrId {
 			return vm, nil
 		}
 	}
-	return nil, lxerrors.New("vm "+ vmNameOrId +" not found", err)
+	return nil, errors.New("vm "+ vmNameOrId +" not found", err)
 }
 
 func CreateVm(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType) error {
@@ -187,23 +187,23 @@ func CreateVm(vmName, baseFolder, adapterName string, adapterType config.Virtual
 	case config.HostOnlyAdapter:
 		nicArgs = []string{"modifyvm", vmName, "--nic1", "hostonly", "--hostonlyadapter1", adapterName, "--nictype1", "virtio"}
 	default:
-		return lxerrors.New(string(adapterType)+" not a valid adapter type, must specify either "+string(config.BridgedAdapter)+" or "+string(config.HostOnlyAdapter)+" network config", nil)
+		return errors.New(string(adapterType)+" not a valid adapter type, must specify either "+string(config.BridgedAdapter)+" or "+string(config.HostOnlyAdapter)+" network config", nil)
 	}
 	if _, err := vboxManage("createvm", "--name", vmName, "--basefolder", baseFolder, "-ostype", "Linux26_64"); err != nil {
-		return lxerrors.New("creating vm", err)
+		return errors.New("creating vm", err)
 	}
 	if _, err := vboxManage("registervm", filepath.Join(baseFolder, vmName, fmt.Sprintf("%s.vbox", vmName))); err != nil {
-		return lxerrors.New("registering vm", err)
+		return errors.New("registering vm", err)
 	}
 	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
-		return lxerrors.New("adding scsi storage controller", err)
+		return errors.New("adding scsi storage controller", err)
 	}
 	//NIC ORDER MATTERS
 	if _, err := vboxManage(nicArgs...); err != nil {
-		return lxerrors.New("setting "+string(adapterType)+" networking on vm", err)
+		return errors.New("setting "+string(adapterType)+" networking on vm", err)
 	}
 	if _, err := vboxManage("modifyvm", vmName, "--nic2", "nat", "--nictype2", "virtio"); err != nil {
-		return lxerrors.New("setting nat networking on vm", err)
+		return errors.New("setting nat networking on vm", err)
 	}
 	return nil
 }
@@ -216,19 +216,19 @@ func CreateVmNatless(vmName, baseFolder, adapterName string, adapterType config.
 	case config.HostOnlyAdapter:
 		nicArgs = []string{"modifyvm", vmName, "--nic1", "hostonly", "--hostonlyadapter1", adapterName, "--nictype1", "virtio"}
 	default:
-		return lxerrors.New(string(adapterType)+" not a valid adapter type, must specify either "+string(config.BridgedAdapter)+" or "+string(config.HostOnlyAdapter)+" network config", nil)
+		return errors.New(string(adapterType)+" not a valid adapter type, must specify either "+string(config.BridgedAdapter)+" or "+string(config.HostOnlyAdapter)+" network config", nil)
 	}
 	if _, err := vboxManage("createvm", "--name", vmName, "--basefolder", baseFolder, "-ostype", "Linux26_64"); err != nil {
-		return lxerrors.New("creating vm", err)
+		return errors.New("creating vm", err)
 	}
 	if _, err := vboxManage("registervm", filepath.Join(baseFolder, vmName, fmt.Sprintf("%s.vbox", vmName))); err != nil {
-		return lxerrors.New("registering vm", err)
+		return errors.New("registering vm", err)
 	}
 	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
-		return lxerrors.New("adding scsi storage controller", err)
+		return errors.New("adding scsi storage controller", err)
 	}
 	if _, err := vboxManage(nicArgs...); err != nil {
-		return lxerrors.New("setting "+string(adapterType)+" networking on vm", err)
+		return errors.New("setting "+string(adapterType)+" networking on vm", err)
 	}
 	return nil
 }
@@ -241,17 +241,17 @@ func ConfigureVmNetwork(vmName, adapterName string, adapterType config.Virtualbo
 	case config.HostOnlyAdapter:
 		nicArgs = []string{"modifyvm", vmName, "--nic1", "hostonly", "--hostonlyadapter1", adapterName, "--nictype1", "virtio"}
 	default:
-		return lxerrors.New(string(adapterType)+" not a valid adapter type, must specify either "+string(config.BridgedAdapter)+" or "+string(config.HostOnlyAdapter)+" network config", nil)
+		return errors.New(string(adapterType)+" not a valid adapter type, must specify either "+string(config.BridgedAdapter)+" or "+string(config.HostOnlyAdapter)+" network config", nil)
 	}
 	if _, err := vboxManage(nicArgs...); err != nil {
-		return lxerrors.New("setting "+string(adapterType)+" networking on vm", err)
+		return errors.New("setting "+string(adapterType)+" networking on vm", err)
 	}
 	return nil
 }
 
 func DestroyVm(vmNameOrId string) error {
 	if _, err := vboxManage("unregistervm", vmNameOrId, "--delete"); err != nil {
-		return lxerrors.New("unregistering and deleting vm", err)
+		return errors.New("unregistering and deleting vm", err)
 	}
 	return nil
 }
@@ -268,14 +268,14 @@ func PowerOffVm(vmNameOrId string) error {
 
 func AttachDisk(vmNameOrId, vmdkPath string, controllerPort int) error {
 	if _, err := vboxManage("storageattach", vmNameOrId, "--storagectl", "SCSI", "--port", fmt.Sprintf("%v", controllerPort), "--type", "hdd", "--medium", vmdkPath); err != nil {
-		return lxerrors.New("attaching storage", err)
+		return errors.New("attaching storage", err)
 	}
 	return nil
 }
 
 func DetachDisk(vmNameOrId string, controllerPort int) error {
 	if _, err := vboxManage("storageattach", vmNameOrId, "--storagectl", "SCSI", "--port", fmt.Sprintf("%v", controllerPort), "--type", "hdd", "--medium", "none"); err != nil {
-		return lxerrors.New("attaching storage", err)
+		return errors.New("attaching storage", err)
 	}
 	return nil
 }

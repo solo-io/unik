@@ -1,7 +1,7 @@
 package main
 
 import (
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"flag"
 	"fmt"
 	"os"

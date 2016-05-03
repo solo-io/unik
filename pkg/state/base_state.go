@@ -3,7 +3,7 @@ package state
 import (
 	"encoding/json"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -33,12 +33,12 @@ func NewBasicState(saveFile string) *basicState {
 func BasicStateFromFile(saveFile string) (*basicState, error) {
 	data, err := ioutil.ReadFile(saveFile)
 	if err != nil {
-		return nil, lxerrors.New("error reading save file "+saveFile, err)
+		return nil, errors.New("error reading save file "+saveFile, err)
 	}
 	var s basicState
 	err = json.Unmarshal(data, &s)
 	if err != nil {
-		return nil, lxerrors.New("failed to unmarshal data "+string(data)+" to memory state", err)
+		return nil, errors.New("failed to unmarshal data "+string(data)+" to memory state", err)
 	}
 	s.saveFile = saveFile
 	return &s, nil
@@ -121,12 +121,12 @@ func (s *basicState) Save() error {
 	defer s.saveLock.Unlock()
 	data, err := json.Marshal(s)
 	if err != nil {
-		return lxerrors.New("failed to marshal memory state to json", err)
+		return errors.New("failed to marshal memory state to json", err)
 	}
 	os.MkdirAll(filepath.Dir(s.saveFile), 0777)
 	err = ioutil.WriteFile(s.saveFile, data, 0777)
 	if err != nil {
-		return lxerrors.New("writing save file "+s.saveFile, err)
+		return errors.New("writing save file "+s.saveFile, err)
 	}
 	return nil
 }

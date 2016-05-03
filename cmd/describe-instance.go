@@ -8,7 +8,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"encoding/json"
 	"github.com/emc-advanced-dev/unik/pkg/client"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var describeInstanceCmd = &cobra.Command{
@@ -24,7 +24,7 @@ var describeInstanceCmd = &cobra.Command{
 				host = clientConfig.Host
 			}
 			if name == "" {
-				return errors.New("must specify --instance")
+				return errors.New("must specify --instance", nil)
 			}
 			instance, err := client.UnikClient(host).Instances().Get(name)
 			if err != nil {

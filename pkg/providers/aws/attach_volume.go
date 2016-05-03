@@ -6,27 +6,27 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 func (p *AwsProvider) AttachVolume(id, instanceId, mntPoint string) error {
 	volume, err := p.GetVolume(id)
 	if err != nil {
-		return lxerrors.New("retrieving volume "+id, err)
+		return errors.New("retrieving volume "+id, err)
 	}
 	if volume.Attachment != "" {
-		return lxerrors.New("volume is already attached to instance "+volume.Attachment, nil)
+		return errors.New("volume is already attached to instance "+volume.Attachment, nil)
 	}
 	instance, err := p.GetInstance(instanceId)
 	if err != nil {
-		return lxerrors.New("retrieving instance "+instanceId, err)
+		return errors.New("retrieving instance "+instanceId, err)
 	}
 	image, err := p.GetImage(instance.ImageId)
 	if err != nil {
-		return lxerrors.New("retrieving image for instance", err)
+		return errors.New("retrieving image for instance", err)
 	}
 	if err := common.VerifyMntsInput(p, image, map[string]string{mntPoint: id}); err != nil {
-		return lxerrors.New("invalid mapping for volume", err)
+		return errors.New("invalid mapping for volume", err)
 	}
 	deviceName, err := common.GetDeviceNameForMnt(image, mntPoint)
 	if err != nil {
@@ -40,22 +40,22 @@ func (p *AwsProvider) AttachVolume(id, instanceId, mntPoint string) error {
 	}
 	_, err = p.newEC2().AttachVolume(param)
 	if err != nil {
-		return lxerrors.New("failed to attach volume "+volume.Id, err)
+		return errors.New("failed to attach volume "+volume.Id, err)
 	}
 	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volume, ok := volumes[volume.Id]
 		if !ok {
-			return lxerrors.New("no record of "+volume.Id+" in the state", nil)
+			return errors.New("no record of "+volume.Id+" in the state", nil)
 		}
 		volume.Attachment = instance.Id
 		return nil
 	})
 	if err != nil {
-		return lxerrors.New("modifying volume map in state", err)
+		return errors.New("modifying volume map in state", err)
 	}
 	err = p.state.Save()
 	if err != nil {
-		return lxerrors.New("saving volume to state", err)
+		return errors.New("saving volume to state", err)
 	}
 	return nil
 }

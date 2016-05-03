@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"time"
 )
 
@@ -40,11 +40,11 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 					return nil
 				})
 				if cleanupErr != nil {
-					logrus.Error(lxerrors.New("modifying instance map in state", cleanupErr))
+					logrus.Error(errors.New("modifying instance map in state", cleanupErr))
 				}
 				cleanupErr = p.state.Save()
 				if cleanupErr != nil {
-					logrus.Error(lxerrors.New("saving instance volume map to state", cleanupErr))
+					logrus.Error(errors.New("saving instance volume map to state", cleanupErr))
 				}
 			}
 		}
@@ -52,16 +52,16 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 
 	image, err := p.GetImage(params.ImageId)
 	if err != nil {
-		return nil, lxerrors.New("getting image", err)
+		return nil, errors.New("getting image", err)
 	}
 
 	if err := common.VerifyMntsInput(p, image, params.MntPointsToVolumeIds); err != nil {
-		return nil, lxerrors.New("invalid mapping for volume", err)
+		return nil, errors.New("invalid mapping for volume", err)
 	}
 
 	envData, err := json.Marshal(params.Env)
 	if err != nil {
-		return nil, lxerrors.New("could not convert instance env to json", err)
+		return nil, errors.New("could not convert instance env to json", err)
 	}
 	encodedData := base64.StdEncoding.EncodeToString(envData)
 	runInstanceInput := &ec2.RunInstancesInput{
@@ -76,17 +76,17 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 
 	runInstanceOutput, err := ec2svc.RunInstances(runInstanceInput)
 	if err != nil {
-		return nil, lxerrors.New("failed to run instance", err)
+		return nil, errors.New("failed to run instance", err)
 	}
 	if len(runInstanceOutput.Instances) < 1 {
 		logrus.WithFields(logrus.Fields{"output": runInstanceOutput}).Errorf("run instance %s failed, produced %v instances, expected 1", params.Name, len(runInstanceOutput.Instances))
-		return nil, lxerrors.New("expected 1 instance to be created", nil)
+		return nil, errors.New("expected 1 instance to be created", nil)
 	}
 	instanceId = *runInstanceOutput.Instances[0].InstanceId
 
 	if len(runInstanceOutput.Instances) > 1 {
 		logrus.WithFields(logrus.Fields{"output": runInstanceOutput}).Errorf("run instance %s failed, produced %v instances, expected 1", params.Name, len(runInstanceOutput.Instances))
-		return nil, lxerrors.New("expected 1 instance to be created", nil)
+		return nil, errors.New("expected 1 instance to be created", nil)
 	}
 
 	//must add instance to state before attaching volumes
@@ -103,10 +103,10 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		instances[instance.Id] = instance
 		return nil
 	}); err != nil {
-		return nil, lxerrors.New("modifying instance map in state", err)
+		return nil, errors.New("modifying instance map in state", err)
 	}
 	if err := p.state.Save(); err != nil {
-		return nil, lxerrors.New("saving instance volume map to state", err)
+		return nil, errors.New("saving instance volume map to state", err)
 	}
 
 	if len(params.MntPointsToVolumeIds) > 0 {
@@ -116,19 +116,19 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		}
 		logrus.Debugf("waiting for instance to reach running state")
 		if err := ec2svc.WaitUntilInstanceRunning(waitParam); err != nil {
-			return nil, lxerrors.New("waiting for instance to reach running state", err)
+			return nil, errors.New("waiting for instance to reach running state", err)
 		}
 		if err := p.StopInstance(instanceId); err != nil {
-			return nil, lxerrors.New("failed to stop instance for attaching volumes", err)
+			return nil, errors.New("failed to stop instance for attaching volumes", err)
 		}
 		for mountPoint, volumeId := range params.MntPointsToVolumeIds {
 			logrus.WithFields(logrus.Fields{"volume-id": volumeId}).Debugf("attaching volume %s to intance %s", volumeId, instanceId)
 			if err := p.AttachVolume(volumeId, instanceId, mountPoint); err != nil {
-				return nil, lxerrors.New("attaching volume to instance", err)
+				return nil, errors.New("attaching volume to instance", err)
 			}
 		}
 		if err := p.StartInstance(instanceId); err != nil {
-			return nil, lxerrors.New("starting instance after volume attach", err)
+			return nil, errors.New("starting instance after volume attach", err)
 		}
 	}
 
@@ -145,7 +145,7 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 	}
 	_, err = ec2svc.CreateTags(tagObjects)
 	if err != nil {
-		return nil, lxerrors.New("tagging snapshot, image, and volume", err)
+		return nil, errors.New("tagging snapshot, image, and volume", err)
 	}
 
 	logrus.WithFields(logrus.Fields{"instance": instance}).Infof("instance created succesfully")

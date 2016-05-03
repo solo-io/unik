@@ -5,7 +5,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var startCmd = &cobra.Command{
@@ -22,7 +22,7 @@ var startCmd = &cobra.Command{
 				host = clientConfig.Host
 			}
 			if instanceName == "" {
-				return errors.New("must specify --instance")
+				return errors.New("must specify --instance", nil)
 			}
 			logrus.WithFields(logrus.Fields{"host": host, "instance": instanceName}).Info("starting instance")
 			if err := client.UnikClient(host).Instances().Start(instanceName); err != nil {

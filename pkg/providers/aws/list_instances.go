@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
@@ -22,7 +22,7 @@ func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 	}
 	output, err := p.newEC2().DescribeInstances(param)
 	if err != nil {
-		return nil, lxerrors.New("running ec2 describe instances ", err)
+		return nil, errors.New("running ec2 describe instances ", err)
 	}
 	updatedInstances := []*types.Instance{}
 	for _, reservation := range output.Reservations {
@@ -48,11 +48,11 @@ func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 					return nil
 				})
 				if err != nil {
-					return nil, lxerrors.New("modifying instance map in state", err)
+					return nil, errors.New("modifying instance map in state", err)
 				}
 				err = p.state.Save()
 				if err != nil {
-					return nil, lxerrors.New("saving modified instance map to state", err)
+					return nil, errors.New("saving modified instance map to state", err)
 				}
 				continue
 			}
@@ -70,11 +70,11 @@ func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 				return nil
 			})
 			if err != nil {
-				return nil, lxerrors.New("modifying instance map in state", err)
+				return nil, errors.New("modifying instance map in state", err)
 			}
 			err = p.state.Save()
 			if err != nil {
-				return nil, lxerrors.New("saving modified instance map to state", err)
+				return nil, errors.New("saving modified instance map to state", err)
 			}
 			updatedInstances = append(updatedInstances, instance)
 		}

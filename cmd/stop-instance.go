@@ -5,7 +5,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var stopCmd = &cobra.Command{
@@ -22,7 +22,7 @@ var stopCmd = &cobra.Command{
 				host = clientConfig.Host
 			}
 			if instanceName == "" {
-				return errors.New("must specify --instance")
+				return errors.New("must specify --instance", nil)
 			}
 			logrus.WithFields(logrus.Fields{"host": host, "instance": instanceName}).Info("stopping instance")
 			if err := client.UnikClient(host).Instances().Stop(instanceName); err != nil {

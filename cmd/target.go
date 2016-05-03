@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"io/ioutil"
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -35,10 +35,10 @@ var targetCmd = &cobra.Command{
 				return nil
 			}
 			if host == "" {
-				return errors.New("--host must be set for target")
+				return errors.New("--host must be set for target", nil)
 			}
 			if err := setClientConfig(host, port); err != nil {
-				return errors.New(fmt.Sprintf("failed to save target to config file: %v", err))
+				return errors.New("failed to save target to config file", err)
 			}
 			logrus.Infof("target set: %s:%v", host, port)
 			return nil
@@ -52,10 +52,10 @@ var targetCmd = &cobra.Command{
 func setClientConfig(host string, port int) error {
 	data, err := yaml.Marshal(config.ClientConfig{Host: fmt.Sprintf("%s:%v", host, port)})
 	if err != nil {
-		return errors.New("failed to convert config to yaml string: "+err.Error())
+		return errors.New("failed to convert config to yaml string ", err)
 	}
 	if err := ioutil.WriteFile(clientConfigFile, data, 0644); err !=nil {
-		return errors.New("failed writing config to file "+ clientConfigFile +": "+err.Error())
+		return errors.New("failed writing config to file "+ clientConfigFile, err)
 	}
 	return nil
 }

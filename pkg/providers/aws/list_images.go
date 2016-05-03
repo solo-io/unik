@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 const UNIK_IMAGE_ID = "UNIK_IMAGE_ID"
@@ -23,7 +23,7 @@ func (p *AwsProvider) ListImages() ([]*types.Image, error) {
 	}
 	output, err := p.newEC2().DescribeImages(param)
 	if err != nil {
-		return nil, lxerrors.New("running ec2 describe images ", err)
+		return nil, errors.New("running ec2 describe images ", err)
 	}
 	images := []*types.Image{}
 	for _, ec2Image := range output.Images {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -16,12 +16,12 @@ import (
 func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool) (string, error) {
 	dataFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
-		return "", lxerrors.New("creating tmp build folder", err)
+		return "", errors.New("creating tmp build folder", err)
 	}
 	defer os.RemoveAll(dataFolder)
 
 	if err := ExtractTar(dataTar, dataFolder); err != nil {
-		return "", lxerrors.New("extracting data tar", err)
+		return "", errors.New("extracting data tar", err)
 	}
 
 	buildDir := filepath.Dir(dataFolder)
@@ -51,7 +51,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool)
 	unikutil.LogCommand(cmd, true)
 	err = cmd.Run()
 	if err != nil {
-		return "", lxerrors.New("failed running image-creator on "+dataFolder, err)
+		return "", errors.New("failed running image-creator on "+dataFolder, err)
 	}
 
 	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
@@ -69,11 +69,11 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool)
 
 func BuildEmptyDataVolume(size int) (string, error) {
 	if size < 1 {
-		return "", lxerrors.New("must specify size > 0", nil)
+		return "", errors.New("must specify size > 0", nil)
 	}
 	dataFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
-		return "", lxerrors.New("creating tmp build folder", err)
+		return "", errors.New("creating tmp build folder", err)
 	}
 	defer os.RemoveAll(dataFolder)
 
@@ -92,7 +92,7 @@ func BuildEmptyDataVolume(size int) (string, error) {
 	unikutil.LogCommand(cmd, true)
 	err = cmd.Run()
 	if err != nil {
-		return "", lxerrors.New("failed running image-creator on "+dataFolder, err)
+		return "", errors.New("failed running image-creator on "+dataFolder, err)
 	}
 
 	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")

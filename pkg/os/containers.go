@@ -7,7 +7,7 @@ import (
 	"github.com/docker/engine-api/types/container"
 	"github.com/docker/engine-api/types/network"
 	"github.com/docker/engine-api/types/strslice"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"golang.org/x/net/context"
 	"io/ioutil"
 )
@@ -71,7 +71,7 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool) error
 			logrus.WithError(err).Warnf("failed to get logs")
 		}
 
-		return lxerrors.New("Returned non zero status", nil)
+		return errors.New("Returned non zero status", nil)
 	}
 
 	return nil

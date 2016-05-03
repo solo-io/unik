@@ -2,7 +2,7 @@ package common
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 func GetDeviceNameForMnt(image *types.Image, mntPoint string) (string, error) {
@@ -11,7 +11,7 @@ func GetDeviceNameForMnt(image *types.Image, mntPoint string) (string, error) {
 			return mapping.DeviceName, nil
 		}
 	}
-	return "", lxerrors.New("no mapping found on image "+image.Id+" for mount point "+mntPoint, nil)
+	return "", errors.New("no mapping found on image "+image.Id+" for mount point "+mntPoint, nil)
 }
 
 func GetControllerPortForMnt(image *types.Image, mntPoint string) (int, error) {
@@ -20,5 +20,5 @@ func GetControllerPortForMnt(image *types.Image, mntPoint string) (int, error) {
 			return controllerPort, nil
 		}
 	}
-	return -1, lxerrors.New("no mapping found on image "+image.Id+" for mount point "+mntPoint, nil)
+	return -1, errors.New("no mapping found on image "+image.Id+" for mount point "+mntPoint, nil)
 }

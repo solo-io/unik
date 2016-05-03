@@ -4,20 +4,20 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 func (p *AwsProvider) DeleteVolume(id string, force bool) error {
 	volume, err := p.GetVolume(id)
 	if err != nil {
-		return lxerrors.New("retrieving volume "+id, err)
+		return errors.New("retrieving volume "+id, err)
 	}
 	if volume.Attachment != "" {
 		if force {
 			if err := p.DetachVolume(volume.Id); err != nil {
-				return lxerrors.New("detaching volume for deletion", err)
+				return errors.New("detaching volume for deletion", err)
 			} else {
-				return lxerrors.New("volume "+volume.Id+" is attached to instance."+volume.Attachment+", try again with --force or detach volume first", err)
+				return errors.New("volume "+volume.Id+" is attached to instance."+volume.Attachment+", try again with --force or detach volume first", err)
 			}
 		}
 	}
@@ -26,18 +26,18 @@ func (p *AwsProvider) DeleteVolume(id string, force bool) error {
 	}
 	_, err = p.newEC2().DeleteVolume(param)
 	if err != nil {
-		return lxerrors.New("failed to terminate volume "+volume.Id, err)
+		return errors.New("failed to terminate volume "+volume.Id, err)
 	}
 	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		delete(volumes, volume.Id)
 		return nil
 	})
 	if err != nil {
-		return lxerrors.New("modifying volume map in state", err)
+		return errors.New("modifying volume map in state", err)
 	}
 	err = p.state.Save()
 	if err != nil {
-		return lxerrors.New("saving volume map to state", err)
+		return errors.New("saving volume map to state", err)
 	}
 	return nil
 }

@@ -24,7 +24,7 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 func init() {
@@ -248,12 +248,12 @@ func createDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string,
 	log.WithFields(log.Fields{"task": *convTaskOutput}).Debug("Convertion task result")
 
 	if len(convTaskOutput.ConversionTasks) != 1 {
-		return "", errors.New("Unexpected number of tasks")
+		return "", errors.New("Unexpected number of tasks", nil)
 	}
 	convTask := convTaskOutput.ConversionTasks[0]
 
 	if convTask.ImportVolume == nil {
-		return "", errors.New("No volume information")
+		return "", errors.New("No volume information", nil)
 	}
 
 	return *convTask.ImportVolume.Volume.Id, nil

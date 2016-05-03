@@ -1,7 +1,7 @@
 package rump
 
 import (
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -17,7 +17,6 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"golang.org/x/net/context"
-	"github.com/layer-x/layerx-commons/lxerrors"
 	"os/exec"
 )
 
@@ -113,7 +112,7 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool) error
 			log.WithField("err", err).Warn("failed to get logs")
 		}
 
-		return errors.New("Returned non zero status")
+		return errors.New("Returned non zero status", nil)
 	}
 
 	return nil
@@ -132,7 +131,7 @@ func execContainer(imageName string, cmds, binds []string, privileged bool) erro
 	cmd := exec.Command("docker", dockerArgs...)
 	unikutil.LogCommand(cmd, true)
 	if err := cmd.Run(); err != nil {
-		return lxerrors.New("running container "+imageName, err)
+		return errors.New("running container "+imageName, err)
 	}
 	return nil
 }

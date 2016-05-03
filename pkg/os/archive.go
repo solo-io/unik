@@ -2,13 +2,12 @@ package os
 
 import (
 	"archive/tar"
-	"errors"
 	log "github.com/Sirupsen/logrus"
 	"io"
 	"os"
 	"path"
 	"os/exec"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 func ExtractTar(tarArchive io.ReadCloser, localFolder string) error {
@@ -51,7 +50,7 @@ func ExtractTar(tarArchive io.ReadCloser, localFolder string) error {
 			outputFile.Close()
 
 		default:
-			return errors.New("Unsupported file type in tar")
+			return errors.New("Unsupported file type in tar", nil)
 		}
 	}
 
@@ -62,7 +61,7 @@ func ExtractTar(tarArchive io.ReadCloser, localFolder string) error {
 func Compress(source, destination string) error {
 	tarCmd := exec.Command("tar", "cf", destination, "-C", source, ".")
 	if out, err := tarCmd.Output(); err != nil {
-		return lxerrors.New("running tar command: "+string(out), err)
+		return errors.New("running tar command: "+string(out), err)
 	}
 	return nil
 }

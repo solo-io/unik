@@ -7,7 +7,7 @@ import (
 	"os"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"io/ioutil"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
@@ -52,16 +52,16 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if name == "" {
-				return errors.New("--name must be set")
+				return errors.New("--name must be set", nil)
 			}
 			if path == "" {
-				return errors.New("--path must be set")
+				return errors.New("--path must be set", nil)
 			}
 			if compiler == "" {
-				return errors.New("--compiler must be set")
+				return errors.New("--compiler must be set", nil)
 			}
 			if provider == "" {
-				return errors.New("--provider must be set")
+				return errors.New("--provider must be set", nil)
 			}
 			if err := readClientConfig(); err != nil {
 				return err
@@ -85,12 +85,12 @@ var buildCmd = &cobra.Command{
 			}
 			defer os.Remove(sourceTar.Name())
 			if err := unikos.Compress(path, sourceTar.Name()); err != nil {
-				return errors.New("failed to tar sources: "+err.Error())
+				return errors.New("failed to tar sources", err)
 			}
 			logrus.Infof("App packaged as tarball: %s\n", sourceTar.Name())
 			image, err := client.UnikClient(host).Images().Build(name, sourceTar.Name(), compiler, provider, runArgs, mountPoints, force, noCleanup)
 			if err != nil {
-				return errors.New("building image failed: "+err.Error())
+				return errors.New("building image failed", err)
 			}
 			printImages(image)
 			return nil

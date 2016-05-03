@@ -1,7 +1,7 @@
 package os
 
 import (
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"path"
 	"text/template"
@@ -92,7 +92,7 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, comma
 	}
 
 	if len(parts) < 1 {
-		return errors.New("No parts created")
+		return errors.New("No parts created", nil)
 	}
 
 	part := parts[0]
@@ -390,7 +390,7 @@ func CreateVolumes(imgFile string, volumes []types.RawVolume, newPartitioner fun
 	parts, err := ListParts(imgLodName)
 
 	if len(parts) != len(volumes) {
-		return errors.New("Not enough parts created!")
+		return errors.New("Not enough parts created!", nil)
 	}
 
 	log.WithFields(log.Fields{"parts": parts, "volsize": sizes}).Debug("Creating volumes")

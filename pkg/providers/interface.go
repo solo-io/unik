@@ -1,7 +1,7 @@
 package providers
 
 import (
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
@@ -51,7 +51,7 @@ func (providers Providers) ProviderForImage(imageId string) (Provider, error) {
 			return provider, nil
 		}
 	}
-	return nil, errors.New("provider not found for image " + imageId)
+	return nil, errors.New("provider not found for image " + imageId, nil)
 }
 
 func (providers Providers) ProviderForInstance(instanceId string) (Provider, error) {
@@ -61,7 +61,7 @@ func (providers Providers) ProviderForInstance(instanceId string) (Provider, err
 			return provider, nil
 		}
 	}
-	return nil, errors.New("provider not found for instance " + instanceId)
+	return nil, errors.New("provider not found for instance " + instanceId, nil)
 }
 
 func (providers Providers) ProviderForVolume(volumeId string) (Provider, error) {
@@ -71,5 +71,5 @@ func (providers Providers) ProviderForVolume(volumeId string) (Provider, error) 
 			return provider, nil
 		}
 	}
-	return nil, errors.New("provider not found for volume " + volumeId)
+	return nil, errors.New("provider not found for volume " + volumeId, nil)
 }

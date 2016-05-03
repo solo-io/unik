@@ -7,7 +7,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"strings"
 	"fmt"
-	"errors"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var instanceName, imageName string
@@ -45,11 +45,10 @@ var runCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if instanceName == "" {
-				return errors.New("--instanceName must be set")
+				return errors.New("--instanceName must be set", nil)
 			}
 			if imageName == "" {
-				logrus.Error("--imageName must be set")
-				return errors.New("--instanceName must be set")
+				return errors.New("--imageName must be set", nil)
 			}
 			if err := readClientConfig(); err != nil {
 				return err
@@ -62,7 +61,7 @@ var runCmd = &cobra.Command{
 			for _, vol := range volumes {
 				pair := strings.Split(vol, ":")
 				if len(pair) != 2 {
-					return errors.New(fmt.Sprintf("invalid format for vol flag: %s", vol))
+					return errors.New(fmt.Sprintf("invalid format for vol flag: %s", vol), nil)
 				}
 				volId := pair[0]
 				mnt := pair[1]
@@ -73,7 +72,7 @@ var runCmd = &cobra.Command{
 			for _, e := range envPairs {
 				pair := strings.Split(e, "=")
 				if len(pair) != 2 {
-					return errors.New(fmt.Sprintf("invalid format for env flag: %s", e))
+					return errors.New(fmt.Sprintf("invalid format for env flag: %s", e), nil)
 				}
 				key := pair[0]
 				val := pair[1]
@@ -89,7 +88,7 @@ var runCmd = &cobra.Command{
 			}).Infof("running unik run")
 			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mounts, env, noCleanup)
 			if err != nil {
-				return errors.New(fmt.Sprintf("running image failed: %v", err))
+				return errors.New(fmt.Sprintf("running image failed: %v", err), nil)
 			}
 			printInstances(instance)
 			return nil

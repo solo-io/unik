@@ -6,7 +6,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"time"
 )
 
@@ -16,7 +16,7 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 	}
 	vms, err := virtualboxclient.Vms()
 	if err != nil {
-		return nil, lxerrors.New("getting vms from virtualbox", err)
+		return nil, errors.New("getting vms from virtualbox", err)
 	}
 	instances := []*types.Instance{}
 	for _, vm := range vms {
@@ -30,7 +30,7 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 
 		instanceListenerIp, err := virtualboxclient.GetVmIp(VboxUnikInstanceListener)
 		if err != nil {
-			return nil, lxerrors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
+			return nil, errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 		}
 
 		if err := unikutil.Retry(5, time.Duration(2000*time.Millisecond), func() error {
@@ -41,7 +41,7 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 			}
 			return nil
 		}); err != nil {
-			return nil, lxerrors.New("failed to retrieve instance ip", err)
+			return nil, errors.New("failed to retrieve instance ip", err)
 		}
 
 		switch vm.Running {
@@ -57,7 +57,7 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 			return nil
 		})
 		if err != nil {
-			return nil, lxerrors.New("saving instance to state", err)
+			return nil, errors.New("saving instance to state", err)
 		}
 
 		instances = append(instances, instance)
