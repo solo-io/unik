@@ -233,6 +233,22 @@ func CreateVmNatless(vmName, baseFolder, adapterName string, adapterType config.
 	return nil
 }
 
+func ConfigureVmNetwork(vmName, adapterName string, adapterType config.VirtualboxAdapterType) error {
+	var nicArgs []string
+	switch adapterType {
+	case config.BridgedAdapter:
+		nicArgs = []string{"modifyvm", vmName, "--nic1", "bridged", "--bridgeadapter1", adapterName, "--nictype1", "virtio"}
+	case config.HostOnlyAdapter:
+		nicArgs = []string{"modifyvm", vmName, "--nic1", "hostonly", "--hostonlyadapter1", adapterName, "--nictype1", "virtio"}
+	default:
+		return lxerrors.New(string(adapterType)+" not a valid adapter type, must specify either "+string(config.BridgedAdapter)+" or "+string(config.HostOnlyAdapter)+" network config", nil)
+	}
+	if _, err := vboxManage(nicArgs...); err != nil {
+		return lxerrors.New("setting "+string(adapterType)+" networking on vm", err)
+	}
+	return nil
+}
+
 func DestroyVm(vmNameOrId string) error {
 	if _, err := vboxManage("unregistervm", vmNameOrId, "--delete"); err != nil {
 		return lxerrors.New("unregistering and deleting vm", err)

@@ -30,7 +30,7 @@ func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error
 		state:  state.NewBasicState(VirtualboxStateFile),
 	}
 
-	if err := p.DeployInstanceListener(); err != nil && !strings.Contains(err.Error(), "already exists") {
+	if err := p.DeployInstanceListener(config); err != nil && !strings.Contains(err.Error(), "already exists") {
 		return nil, lxerrors.New("deploing virtualbox instance listener", err)
 	}
 

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/emc-advanced-dev/unik/pkg/config"
 )
 
 const (
@@ -16,7 +17,16 @@ const (
 	vboxInstanceListenerVmdk = "vbox-instancelistener-base.vmdk"
 )
 
-func (p *VirtualboxProvider) DeployInstanceListener() error {
+func (p *VirtualboxProvider) DeployInstanceListener(config config.Virtualbox) error {
+	if _, err := virtualboxclient.GetVm(VboxUnikInstanceListener); err != nil {
+		logrus.Warnf(VboxUnikInstanceListener+" not found! Beginning deploy...")
+	} else {
+		virtualboxclient.PowerOffVm(VboxUnikInstanceListener)
+		virtualboxclient.ConfigureVmNetwork(VboxUnikInstanceListener, config.AdapterName, config.VirtualboxAdapterType)
+		virtualboxclient.PowerOnVm(VboxUnikInstanceListener)
+		return nil
+	}
+
 	if _, err := os.Stat(vboxInstanceListenerVmdk); err != nil {
 		logrus.WithError(err).Infof("vbox instance listener vmdk not found, attempting to download from " + vboxInstanceListenerUrl)
 		vmdkFile, err := os.Create(vboxInstanceListenerVmdk)
