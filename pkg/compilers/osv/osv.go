@@ -39,8 +39,10 @@ func (osvCompiler *OsvCompiler) CompileRawImage(sourceTar io.ReadCloser, args st
 	if err != nil {
 		return nil, lxerrors.New("failed running compilers-osv-java on "+localFolder, err)
 	}
+	logrus.Debugf("finished at %", filepath.Join(localFolder, "boot.vmdk"))
+	for {}
 	return &types.RawImage{
-		LocalImagePath: filepath.Join(localFolder, "boot.img"),
+		LocalImagePath: filepath.Join(localFolder, "boot.vmdk"),
 		DeviceMappings: []types.DeviceMapping{}, //TODO: not supported yet
 	}, nil
 }
