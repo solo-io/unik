@@ -5,8 +5,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"os"
 	"github.com/emc-advanced-dev/unik/pkg/client"
-	"fmt"
-	"errors"
 )
 
 var psCmd = &cobra.Command{
@@ -23,10 +21,10 @@ var psCmd = &cobra.Command{
 			if host == "" {
 				host = clientConfig.Host
 			}
-			logrus.WithField("host", host).Info("listing images")
+			logrus.WithField("host", host).Info("listing instances")
 			instances, err := client.UnikClient(host).Instances().All()
 			if err != nil {
-				return errors.New(fmt.Sprintf("listing images failed: %v", err))
+				return err
 			}
 			printInstances(instances...)
 			return nil

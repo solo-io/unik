@@ -90,7 +90,7 @@ var buildCmd = &cobra.Command{
 			logrus.Infof("App packaged as tarball: %s\n", sourceTar.Name())
 			image, err := client.UnikClient(host).Images().Build(name, sourceTar.Name(), compiler, provider, runArgs, mountPoints, force, noCleanup)
 			if err != nil {
-				return errors.New("building image failed: %v"+err.Error())
+				return errors.New("building image failed: "+err.Error())
 			}
 			printImages(image)
 			return nil
