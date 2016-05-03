@@ -37,7 +37,7 @@ var buildCmd = &cobra.Command{
 	--force flag
 
 	Example usage:
-		unik build --name myUnikernel --path ./myApp/src --compiler rump-xen --provider aws --mountpoint /foo --mountpoint /bar --args '-myParameter MYVALUE' --force
+		unik build --name myUnikernel --path ./myApp/src --compiler rump-go-xen --provider aws --mountpoint /foo --mountpoint /bar --args '-myParameter MYVALUE' --force
 
 		# will create a unikernel named myUnikernel using the sources found in ./myApp/src,
 		# compiled using rumprun for the xen hypervisor, targeting AWS infrastructure,
@@ -47,7 +47,7 @@ var buildCmd = &cobra.Command{
 		# and deleting any previous existing instances and image for the name myUnikernel before compiling
 
 	Another example (using only the required parameters):
-		unik build -name anotherUnikernel -path ./anotherApp/src -compiler rump-vmware -provider vsphere
+		unik build --name anotherUnikernel --path ./anotherApp/src --compiler rump-go-vmware --provider vsphere
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
