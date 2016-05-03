@@ -7,8 +7,8 @@ import (
 	"io"
 	"os"
 	"path"
-	"path/filepath"
-	"strings"
+	"os/exec"
+	"github.com/layer-x/layerx-commons/lxerrors"
 )
 
 func ExtractTar(tarArchive io.ReadCloser, localFolder string) error {
@@ -60,55 +60,9 @@ func ExtractTar(tarArchive io.ReadCloser, localFolder string) error {
 
 ///http://blog.ralch.com/tutorial/golang-working-with-tar-and-gzip/
 func Compress(source, destination string) error {
-	tarfile, err := os.Create(destination)
-	if err != nil {
-		return err
+	tarCmd := exec.Command("tar", "cf", destination, "-C", source, ".")
+	if out, err := tarCmd.Output(); err != nil {
+		return lxerrors.New("running tar command: "+string(out), err)
 	}
-	defer tarfile.Close()
-
-	tarball := tar.NewWriter(tarfile)
-	defer tarball.Close()
-
-	info, err := os.Stat(source)
-	if err != nil {
-		return nil
-	}
-
-	var baseDir string
-	if info.IsDir() {
-		baseDir = filepath.Base(source)
-	}
-
-	return filepath.Walk(source,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			header, err := tar.FileInfoHeader(info, info.Name())
-			if err != nil {
-				return err
-			}
-
-			if baseDir != "" {
-				header.Name = filepath.Join(filepath.Base(baseDir), strings.TrimPrefix(path, source))
-			}
-
-			header.Name = filepath.Base(path)
-
-			if err := tarball.WriteHeader(header); err != nil {
-				return err
-			}
-
-			if info.IsDir() {
-				return nil
-			}
-
-			file, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
-			_, err = io.Copy(tarball, file)
-			return err
-		})
+	return nil
 }
