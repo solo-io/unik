@@ -24,6 +24,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
+	"github.com/emc-advanced-dev/unik/pkg/compilers/osv"
 )
 
 type UnikDaemon struct {
@@ -100,6 +101,8 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		DockerImage: "projectunik/compilers-rump-go-hw",
 		CreateImage: rump.CreateImageVirtualBox,
 	}
+
+	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvCompiler{}
 
 	d := &UnikDaemon{
 		server:    lxmartini.QuietMartini(),

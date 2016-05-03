@@ -9,6 +9,7 @@ pull:
 	docker pull projectunik/image-creator
 	docker pull projectunik/boot-creator
 	docker pull projectunik/compilers-rump-go-xen
+	docker pull projectunik/compilers-osv-java
 	docker pull projectunik/compilers-rump-go-hw
 	docker pull projectunik/compilers-rump-base-xen
 	docker pull projectunik/compilers-rump-base-hw
@@ -36,6 +37,9 @@ compilers-rump-go-hw: compilers-rump-base-hw
 
 compilers-rump-go-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.xen .
+
+compilers-osv-java:
+    cd containers/osv/java-compiler && GOOS=linux go build -o java-compiler.o && docker build -t projectunik/$@ .
 
 #utils
 utils: boot-creator image-creator vsphere-client
@@ -73,6 +77,7 @@ remove-containers:
 	-docker rmi -f projectunik/image-creator
 	-docker rmi -f projectunik/boot-creator
 	-docker rmi -f projectunik/compilers-rump-go-xen
+	-docker rmi -f projectunik/compilers-osv-java
 	-docker rmi -f projectunik/compilers-rump-go-hw
 	-docker rmi -f projectunik/compilers-rump-base-xen
 	-docker rmi -f projectunik/compilers-rump-base-hw

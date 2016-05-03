@@ -11,6 +11,7 @@ Ensure that each of the following are installed
 - [Docker](http://www.docker.com/) installed and running with at least 8GB available space for building images
 - [`make`](https://www.gnu.org/software/make/)
 - [Golang](https://golang.org/) v1.5 or later
+- [QEMU](http://wiki.qemu.org/Main_Page)
 - [Virtualbox](https://www.virtualbox.org/)
 - `$GOPATH` should be set and `$GOPATH/bin` should be part of your `$PATH` (see https://golang.org/doc/code.html#GOPATH)
 

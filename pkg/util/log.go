@@ -92,7 +92,7 @@ func LogCommand(cmd *exec.Cmd, asDebug bool) {
 	go func() {
 		in := bufio.NewScanner(stderr)
 		for in.Scan() {
-			logrus.Errorf(in.Text())
+			logrus.Debugf(in.Text())
 		}
 	}()
 }

@@ -8,6 +8,7 @@
 - `$GOPATH` should be set and `$GOPATH/bin` should be part of your `$PATH` (see https://golang.org/doc/code.html#GOPATH)
 - [Virtualbox](https://www.virtualbox.org/) (if using the [virtualbox provider](providers/virtualbox.md))
 - [Apache Maven](https://maven.apache.org/) (if using the [vsphere provider](providers/vsphere.md))
+- [QEMU](http://wiki.qemu.org/Main_Page) (if using either [virtualbox provider](providers/virtualbox.md) or [vsphere provider](providers/vsphere.md))
 
 ---
 #### Install

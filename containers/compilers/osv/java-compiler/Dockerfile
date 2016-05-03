@@ -1,0 +1,23 @@
+FROM ubuntu:14.04
+
+ENV GOPATH=$HOME/go
+ENV GOBIN=$GOPATH/bin
+ENV PATH=$GOBIN:/usr/local/go/bin:$PATH
+RUN apt-get update -y
+RUN apt-get install -y qemu maven wget git openjdk-7-jdk curl
+RUN curl https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz | sudo tar xz -C /usr/local && sudo mv /usr/local/go /usr/local/go1.5 && sudo ln -s /usr/local/go1.5 /usr/local/go
+RUN mkdir -p $GOPATH/src/github.com/cloudius-systems
+RUN cd $GOPATH/src/github.com/cloudius-systems && git clone https://github.com/cloudius-systems/capstan
+RUN cd $GOPATH/src/github.com/cloudius-systems/capstan && ./install
+RUN apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY java-main-caller/ /java-main-caller
+COPY java-compiler /
+
+VOLUME /project_directory
+
+ENTRYPOINT ["/java-compiler"]
+
+#run this container with
+#docker run --rm --privileged
+#(TODO: not sure if we need privileged) projectunik/java-compiler
