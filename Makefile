@@ -1,6 +1,6 @@
 all: pull ${SOURCES}
 
-.PHONY: pull containers compilers-rump-base-common compilers-rump-base-hw compilers-rump-base-xen compilers-rump-go-hw compilers-rump-go-xen compilers boot-creator image-creator vsphere-client utils
+.PHONY: pull containers compilers-rump-base-common compilers-rump-base-hw compilers-rump-base-xen compilers-rump-go-hw compilers-rump-go-xen compilers-osv-java compilers boot-creator image-creator vsphere-client utils
 
 #pull containers
 pull:
@@ -21,7 +21,7 @@ containers: compilers utils
 	echo "Built containers from source"
 
 #compilers
-compilers: compilers-rump-go-hw compilers-rump-go-xen
+compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-osv-java
 
 compilers-rump-base-common:
 	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.common .
@@ -39,7 +39,7 @@ compilers-rump-go-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.xen .
 
 compilers-osv-java:
-    cd containers/osv/java-compiler && GOOS=linux go build -o java-compiler.o && docker build -t projectunik/$@ .
+	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@ .
 
 #utils
 utils: boot-creator image-creator vsphere-client
