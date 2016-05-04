@@ -11,7 +11,8 @@ providers:
       datastore: datastore1
       default_instance_memory: 512
   virtualbox:
-    - name: vsphere-1
-      adapter_name: vboxnet0
-      adapter_type: host_only
+    - name: my-vbox
+      adapter_name: "en0: Wi-Fi (AirPort)"
+      adapter_type: bridged
+      version: 0.0.0
 version: 0.0.0

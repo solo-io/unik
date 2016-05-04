@@ -19,7 +19,7 @@ $ git clone https://github.com/emc-advanced-dev/unik.git
 $ cd unik
 $ make install
 ```
-Continue to [configuration](configure.md) to learn how to configure your unik setup
+Continue to [configuration](configure.md) to learn how to configure your UniK setup
 
 ---
 #### Building Containers from Source

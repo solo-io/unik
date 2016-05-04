@@ -11,7 +11,7 @@ Starting the UniK daemon with `unik daemon` requires a `yaml` file with configur
 
 By default, `unik daemon` reads from a configuration file located at `$HOME/.unik/daemon-config.yaml`. We recommend placing your config file there. However, you can specify a different config file with `unik daemon --f <path-to-file>`.
 
-UniK requires valid `yaml` matching the following [example](docs/example-daemon-config.yaml):
+UniK requires valid `yaml` matching the following [example](docs/examples/example-daemon-config.yaml):
 ```
 providers:
   aws:
