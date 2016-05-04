@@ -10,7 +10,7 @@ The job of a compiler is to compile a compressed archive of source files to a ra
 To add compiler support to UniK, you must add the compiler name to compatible providers' `GetConfig()` method, and add the compiler to the `_compilers` map in the Unik API Server constructor function `func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error)` in [`daemon.go`](../pkg/daemon/daemon.go)
 
 Your change should look something like this:
-```
+```go
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers := make(map[string]compilers.Compiler)
   //...

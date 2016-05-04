@@ -34,7 +34,7 @@ Ensure that each of the following are installed
 
 3. Configure UniK daemon
   * Using a text editor, create and save the following to `$HOME/.unik/daemon-config.yaml`:
-  ```
+  ```yaml
   providers:
     virtualbox:
       - name: vsphere-1
@@ -57,7 +57,7 @@ Ensure that each of the following are installed
 0. Open a new terminal window, but leave the window with the daemon running. This window will be used for running UniK CLI commands.
 1. Create a file `httpd.go` using a text editor. Copy and paste the following code in that file:
 
-  ```
+  ```go
   package main
 
   import (

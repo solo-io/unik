@@ -12,7 +12,7 @@ Starting the UniK daemon with `unik daemon` requires a `yaml` file with configur
 By default, `unik daemon` reads from a configuration file located at `$HOME/.unik/daemon-config.yaml`. We recommend placing your config file there. However, you can specify a different config file with `unik daemon --f <path-to-file>`.
 
 UniK requires valid `yaml` matching the following [example](docs/examples/example-daemon-config.yaml):
-```
+```yaml
 providers:
   aws:
     - name: aws-1
@@ -34,7 +34,7 @@ version: 0.0.0
 
 Include the provider stub for any provider you wish to use. For example, to use only Virtualbox, your `daemon-config.yaml` should look like this.
 
-```
+```yaml
 providers:
   virtualbox:
     - name: my_virtualbox_provider
@@ -42,7 +42,7 @@ providers:
       adapter_name: vboxnet0
 ```
 If using both AWS and vSphere, the file should look like so:
-```
+```yaml
 providers:
   aws:
     - name: aws-1
@@ -63,7 +63,7 @@ providers:
 To run on virtualbox, you will need to tell UniK what type of network card to attach to instances. Available options are `host_only` for [Host-Only Networking](https://www.virtualbox.org/manual/ch06.html#network_hostonly), or `bridged` for [Bridged Networking](https://www.virtualbox.org/manual/ch06.html#network_bridged). UniK must also know the name of the network adapter to use. These are the only properties that virtualbox provider requires. (`name` field is not used currently).
 
 In the Virtualbox stub:
-```
+```yaml
   virtualbox:
     - name: any-name-you-want
       adapter_type: ADAPTER_TYPE
@@ -76,7 +76,7 @@ In the Virtualbox stub:
 AWS provider in UniK assumes use of default AWS credential chain. This means either [setting AWS access key id and secret key in your environment](http://docs.aws.amazon.com/aws-sdk-php/v2/guide/credentials.html#environment-credentials), or using the default [AWS configuration file](http://docs.aws.amazon.com/cli/latest/topic/config-vars.html).
 
 Region and zone should be speified like so in the AWS stub:
-```
+```yaml
   aws:
     - name: any-name-you-want
       region: us-west-1
@@ -88,7 +88,7 @@ vSphere provider requires vSphere username, password, url (in the format `http:/
 
 Default memory is optional and can be used to set the amount of memory allocated to each instance. If it is not set, the default amount used is 512mb per instance.
 
-```
+```yaml
   vsphere:
     - name: any-name-you-want
       vsphere_user: user

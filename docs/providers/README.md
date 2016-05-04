@@ -1,6 +1,6 @@
 # Providers
 **Providers** conform to the interface:
-```
+```go
 type Provider interface {
 	GetConfig() ProviderConfig
 	//Images
@@ -38,7 +38,7 @@ Providers perform API calls talk to the hypervisor / cloud provider / infrastruc
 To add an implemented provider to the Daemon, see the Unik API Server constructor function `func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error)` in [`daemon.go`](../pkg/daemon/daemon.go)
 
 Your change should look something like this:
-```
+```go
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_providers := make(providers.Providers)
     //...
