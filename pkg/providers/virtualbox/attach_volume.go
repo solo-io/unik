@@ -6,6 +6,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 )
 
 func (p *VirtualboxProvider) AttachVolume(id, instanceId, mntPoint string) error {
@@ -29,11 +30,11 @@ func (p *VirtualboxProvider) AttachVolume(id, instanceId, mntPoint string) error
 	logrus.Debugf("using storage controller %s", storageType)
 
 	switch storageType {
-	case SCSI_Storage:
+	case compilers.SCSI_Storage:
 		if err := virtualboxclient.AttachDiskSCSI(instance.Id, getVolumePath(volume.Name), controllerPort); err != nil {
 			return errors.New("attaching scsi disk to vm", err)
 		}
-	case SATA_Storage:
+	case compilers.SATA_Storage:
 		if err := virtualboxclient.AttachDiskSATA(instance.Id, getVolumePath(volume.Name), controllerPort); err != nil {
 			return errors.New("attaching sata disk to vm", err)
 		}

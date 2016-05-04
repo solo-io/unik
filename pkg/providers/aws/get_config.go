@@ -8,6 +8,6 @@ import (
 func (p *AwsProvider) GetConfig() providers.ProviderConfig {
 	return providers.ProviderConfig{
 		UsePartitionTables: false,
-		SupportedCompilers: []string{compilers.RUMP_GO_AWS},
+		SupportedCompilers: []string{compilers.RUMP_GO_AWS, compilers.OSV_JAVA_AWS},
 	}
 }

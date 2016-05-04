@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 )
 
 func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Image, err error) {
@@ -40,11 +41,11 @@ func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Imag
 	}()
 
 	logrus.WithField("raw-image", params.RawImage).Infof("creating boot volume from raw image")
-	sourceImageType := RAW
-	if params.RawImage.ExtraConfig[IMAGE_TYPE] == QCOW2 {
-		sourceImageType = QCOW2
+	sourceImageType := compilers.RAW
+	if params.RawImage.ExtraConfig[compilers.IMAGE_TYPE] == compilers.QCOW2 {
+		sourceImageType = compilers.QCOW2
 	}
-	if err := common.ConvertRawImageType(sourceImageType, VMDK, params.RawImage.LocalImagePath, imagePath); err != nil {
+	if err := common.ConvertRawImageType(sourceImageType, compilers.VMDK, params.RawImage.LocalImagePath, imagePath); err != nil {
 		return nil, errors.New("converting raw image to vmdk", err)
 	}
 

@@ -11,6 +11,7 @@ import (
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"os"
 	"time"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 )
 
 func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
@@ -38,7 +39,7 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 	portsUsed := []int{}
 
 	storageType := getStorageType(image.ExtraConfig)
-	logrus.Debugf("using storage controller %s", SCSI_Storage)
+	logrus.Debugf("using storage controller %s", storageType)
 
 	defer func() {
 		if err != nil {
@@ -50,9 +51,9 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 			virtualboxclient.PowerOffVm(params.Name)
 			for _, portUsed := range portsUsed {
 				switch storageType {
-				case SCSI_Storage:
+				case compilers.SCSI_Storage:
 					virtualboxclient.DetachDiskSCSI(params.Name, portUsed)
-				case SATA_Storage:
+				case compilers.SATA_Storage:
 					virtualboxclient.DetachDiskSATA(params.Name, portUsed)
 				}
 			}
@@ -64,11 +65,11 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 	logrus.Debugf("creating virtualbox vm")
 
 	switch storageType {
-	case SCSI_Storage:
+	case compilers.SCSI_Storage:
 		if err := virtualboxclient.CreateVmSCSI(params.Name, virtualboxInstancesDirectory, p.config.AdapterName, p.config.VirtualboxAdapterType); err != nil {
 			return nil, errors.New("creating vm", err)
 		}
-	case SATA_Storage:
+	case compilers.SATA_Storage:
 		if err := virtualboxclient.CreateVmSATA(params.Name, virtualboxInstancesDirectory, p.config.AdapterName, p.config.VirtualboxAdapterType); err != nil {
 			return nil, errors.New("creating vm", err)
 		}
@@ -85,11 +86,11 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 		return nil, errors.New("refreshing disk uuid", err)
 	}
 	switch storageType {
-	case SCSI_Storage:
+	case compilers.SCSI_Storage:
 		if err := virtualboxclient.AttachDiskSCSI(params.Name, instanceBootImage, 0); err != nil {
 			return nil, errors.New("attaching scsi boot vol to instance", err)
 		}
-	case SATA_Storage:
+	case compilers.SATA_Storage:
 		if err := virtualboxclient.AttachDiskSATA(params.Name, instanceBootImage, 0); err != nil {
 			return nil, errors.New("attaching sata boot vol to instance", err)
 		}
@@ -107,11 +108,11 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 			return nil, errors.New("getting controller port for mnt point", err)
 		}
 		switch storageType {
-		case SCSI_Storage:
+		case compilers.SCSI_Storage:
 			if err := virtualboxclient.AttachDiskSCSI(params.Name, getVolumePath(volume.Name), controllerPort); err != nil {
 				return nil, errors.New("attaching scsi disk to vm", err)
 			}
-		case SATA_Storage:
+		case compilers.SATA_Storage:
 			if err := virtualboxclient.AttachDiskSATA(params.Name, getVolumePath(volume.Name), controllerPort); err != nil {
 				return nil, errors.New("attaching sata disk to vm", err)
 			}

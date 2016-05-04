@@ -8,6 +8,10 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"time"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"io/ioutil"
+	"github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 var kernelIdMap = map[string]string{
@@ -61,7 +65,22 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 	}()
 
 	logrus.WithField("raw-image", params.RawImage).WithField("az", p.config.Zone).Infof("creating boot volume from raw image")
-	volumeId, err = createDataVolumeFromRawImage(s3svc, ec2svc, params.RawImage.LocalImagePath, p.config.Zone)
+
+	rawImagePath := params.RawImage.LocalImagePath
+	switch params.RawImage.ExtraConfig[compilers.IMAGE_TYPE] {
+	case compilers.QCOW2:
+		rawImage, err := ioutil.TempFile(util.UnikTmpDir(), "")
+		if err != nil {
+			return nil, errors.New("creating tmp file for qemu img convert", err)
+		}
+		defer os.Remove(rawImage.Name())
+		if err := common.ConvertRawImageType(compilers.QCOW2, compilers.VMDK, params.RawImage.LocalImagePath, rawImage.Name()); err != nil {
+			return nil, errors.New("converting qcow2 to raw image", err)
+		}
+		rawImagePath = rawImage.Name()
+	}
+
+	volumeId, err = createDataVolumeFromRawImage(s3svc, ec2svc, rawImagePath, p.config.Zone)
 	if err != nil {
 		return nil, errors.New("creating aws boot volume", err)
 	}

@@ -102,10 +102,17 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		CreateImage: rump.CreateImageVirtualBox,
 	}
 
-	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvCompiler{
+
+	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{
 		ExtraConfig: types.ExtraConfig{
-			virtualbox.STORAGE_CONTROLLER_TYPE: virtualbox.SATA_Storage,
-			virtualbox.IMAGE_TYPE: virtualbox.QCOW2,
+			compilers.IMAGE_TYPE: compilers.QCOW2,
+		},
+	}
+
+	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{
+		ExtraConfig: types.ExtraConfig{
+			compilers.STORAGE_CONTROLLER_TYPE: compilers.SATA_Storage,
+			compilers.IMAGE_TYPE: compilers.QCOW2,
 		},
 	}
 

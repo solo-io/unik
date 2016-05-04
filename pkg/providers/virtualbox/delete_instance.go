@@ -5,6 +5,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 )
 
 func (p *VirtualboxProvider) DeleteInstance(id string, force bool) error {
@@ -42,11 +43,11 @@ func (p *VirtualboxProvider) DeleteInstance(id string, force bool) error {
 			logrus.Debugf("using storage controller %s", storageType)
 
 			switch storageType {
-			case SCSI_Storage:
+			case compilers.SCSI_Storage:
 				if err := virtualboxclient.DetachDiskSCSI(instance.Id, controllerPort); err != nil {
 					return errors.New("detaching scsi volume from instance", err)
 				}
-			case SATA_Storage:
+			case compilers.SATA_Storage:
 				if err := virtualboxclient.DetachDiskSATA(instance.Id, controllerPort); err != nil {
 					return errors.New("detaching sata volume from instance", err)
 				}

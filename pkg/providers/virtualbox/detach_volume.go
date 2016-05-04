@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 )
 
 func (p *VirtualboxProvider) DetachVolume(id string) error {
@@ -44,11 +45,11 @@ func (p *VirtualboxProvider) DetachVolume(id string) error {
 	logrus.Debugf("using storage controller %s", storageType)
 
 	switch storageType {
-	case SCSI_Storage:
+	case compilers.SCSI_Storage:
 		if err := virtualboxclient.DetachDiskSCSI(instance.Id, controllerPort); err != nil {
 			return errors.New("detaching scsi disk from vm", err)
 		}
-	case SATA_Storage:
+	case compilers.SATA_Storage:
 		if err := virtualboxclient.DetachDiskSATA(instance.Id, controllerPort); err != nil {
 			return errors.New("detaching sata disk from vm", err)
 		}
