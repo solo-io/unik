@@ -133,7 +133,7 @@ func PrepareGrub(folder, rootDeviceName, kernel, commandline string) error {
 	grubPath := path.Join(folder, "boot", "grub")
 	kernelDst := path.Join(folder, "boot", ProgramName)
 
-	os.MkdirAll(grubPath, 0777)
+	os.MkdirAll(grubPath, 0755)
 
 	// copy program.bin.. skip that for now
 	log.WithFields(log.Fields{"src": kernel, "dst": kernelDst}).Debug("copying file")

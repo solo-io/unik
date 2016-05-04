@@ -22,8 +22,9 @@ type VirtualboxProvider struct {
 }
 
 func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error) {
-	os.MkdirAll(virtualboxImagesDirectory, 0777)
-	os.MkdirAll(virtualboxVolumesDirectory, 0777)
+	os.MkdirAll(virtualboxImagesDirectory, 0755)
+	os.MkdirAll(virtualboxInstancesDirectory, 0755)
+	os.MkdirAll(virtualboxVolumesDirectory, 0755)
 
 	p := &VirtualboxProvider{
 		config: config,

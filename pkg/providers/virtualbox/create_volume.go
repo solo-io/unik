@@ -15,7 +15,7 @@ func (p *VirtualboxProvider) CreateVolume(params types.CreateVolumeParams) (_ *t
 		return nil, errors.New("volume already exists", nil)
 	}
 	volumePath := getVolumePath(params.Name)
-	if err := os.MkdirAll(filepath.Dir(volumePath), 0777); err != nil {
+	if err := os.MkdirAll(filepath.Dir(volumePath), 0755); err != nil {
 		return nil, errors.New("creating directory for volume file", err)
 	}
 	defer func() {

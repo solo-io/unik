@@ -30,7 +30,7 @@ func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Imag
 	}
 	imagePath := getImagePath(params.Name)
 	logrus.Debugf("making directory: %s", filepath.Dir(imagePath))
-	if err := os.MkdirAll(filepath.Dir(imagePath), 0777); err != nil {
+	if err := os.MkdirAll(filepath.Dir(imagePath), 0755); err != nil {
 		return nil, errors.New("creating directory for boot image", err)
 	}
 	defer func() {

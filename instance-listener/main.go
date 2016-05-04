@@ -192,7 +192,7 @@ func save(s state, l sync.Mutex) {
 		if err != nil {
 			return err
 		}
-		if err := ioutil.WriteFile(statefile, data, 0777); err != nil {
+		if err := ioutil.WriteFile(statefile, data, 0644); err != nil {
 			return err
 		}
 		return nil
