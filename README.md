@@ -34,8 +34,9 @@ UniK is built to be easily extensible, allowing (and encouraging) adding support
 * java support using [OSv](http://osv.io/)
 * ocaml support using [MirageOs](https://mirage.io/)
 * additional provider support including [OpenStack](https://www.openstack.org/)
-* dynamic volume and parameter configuration at instance runtime (rather than at compile time)
+* dynamic volume and application arguments configuration at instance runtime (rather than at compile time)
 * adding a test suite
 * better code documentation
 * `unik pull` & `unik push` && unikhub for sharing unikernel images
 * multi-account support per provider (i.e. multiple AWS accounts/regions, etc.)
+* migrate from [martini](https://github.com/go-martini/martini) to [echo](https://github.com/labstack/echo)
