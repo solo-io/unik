@@ -150,6 +150,7 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 		Infrastructure: types.Infrastructure_VSPHERE,
 		ImageId:        image.Id,
 		Created:        time.Now(),
+		ExtraConfig:    image.ExtraConfig,
 	}
 
 	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {

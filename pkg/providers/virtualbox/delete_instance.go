@@ -4,6 +4,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/Sirupsen/logrus"
 )
 
 func (p *VirtualboxProvider) DeleteInstance(id string, force bool) error {
@@ -37,8 +38,20 @@ func (p *VirtualboxProvider) DeleteInstance(id string, force bool) error {
 
 	for controllerPort, deviceMapping := range image.DeviceMappings {
 		if deviceMapping.MountPoint != "/" {
-			if err := virtualboxclient.DetachDisk(instance.Id, controllerPort); err != nil {
-				return errors.New("detaching volume from instance", err)
+			storageType := getStorageType(image.ExtraConfig)
+			logrus.Debugf("using storage controller %s", virtualboxclient.SCSI_Storage)
+
+			switch storageType {
+			case virtualboxclient.SCSI_Storage:
+				if err := virtualboxclient.DetachDiskSCSI(instance.Id, controllerPort); err != nil {
+					return errors.New("detaching scsi volume from instance", err)
+				}
+			case virtualboxclient.SATA_Storage:
+				if err := virtualboxclient.DetachDiskSATA(instance.Id, controllerPort); err != nil {
+					return errors.New("detaching sata volume from instance", err)
+				}
+			default:
+				return errors.New("unknown storage type: "+string(storageType), nil)
 			}
 		}
 	}

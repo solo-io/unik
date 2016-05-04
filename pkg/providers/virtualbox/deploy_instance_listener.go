@@ -55,7 +55,7 @@ func (p *VirtualboxProvider) DeployInstanceListener(config config.Virtualbox) er
 	if err := virtualboxclient.RefreshDiskUUID(vboxInstanceListenerVmdk); err != nil {
 		return errors.New("refreshing disk uuid", err)
 	}
-	if err := virtualboxclient.AttachDisk(VboxUnikInstanceListener, "vbox-instancelistener-copy.vmdk", 0); err != nil {
+	if err := virtualboxclient.AttachDiskSCSI(VboxUnikInstanceListener, "vbox-instancelistener-copy.vmdk", 0); err != nil {
 		return errors.New("attaching disk to vm", err)
 	}
 	if err := virtualboxclient.PowerOnVm(VboxUnikInstanceListener); err != nil {

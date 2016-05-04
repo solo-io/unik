@@ -97,6 +97,7 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		Infrastructure: types.Infrastructure_AWS,
 		ImageId:        image.Id,
 		Created:        time.Now(),
+		ExtraConfig:    image.ExtraConfig,
 	}
 
 	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {

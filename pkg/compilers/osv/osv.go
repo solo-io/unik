@@ -14,7 +14,9 @@ import (
 	"path/filepath"
 )
 
-type OsvCompiler struct {}
+type OsvCompiler struct {
+	ExtraConfig types.ExtraConfig
+}
 
 func (osvCompiler *OsvCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (*types.RawImage, error) {
 	localFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
@@ -50,6 +52,7 @@ func (osvCompiler *OsvCompiler) CompileRawImage(sourceTar io.ReadCloser, args st
 
 	return &types.RawImage{
 		LocalImagePath: resultFile.Name(),
+		ExtraConfig: 	osvCompiler.ExtraConfig,
 		DeviceMappings: []types.DeviceMapping{}, //TODO: not supported yet
 	}, nil
 }

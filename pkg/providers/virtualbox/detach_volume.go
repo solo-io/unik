@@ -6,6 +6,7 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"path/filepath"
 	"strconv"
+	"github.com/Sirupsen/logrus"
 )
 
 func (p *VirtualboxProvider) DetachVolume(id string) error {
@@ -39,9 +40,22 @@ func (p *VirtualboxProvider) DetachVolume(id string) error {
 	if err != nil {
 		return errors.New("could not convert "+controllerKey+" to int", err)
 	}
-	if err := virtualboxclient.DetachDisk(instance.Id, controllerPort); err != nil {
-		return errors.New("detaching disk from vm", err)
+	storageType := getStorageType(instance.ExtraConfig)
+	logrus.Debugf("using storage controller %s", virtualboxclient.SCSI_Storage)
+
+	switch storageType {
+	case virtualboxclient.SCSI_Storage:
+		if err := virtualboxclient.DetachDiskSCSI(instance.Id, controllerPort); err != nil {
+			return errors.New("detaching scsi disk from vm", err)
+		}
+	case virtualboxclient.SATA_Storage:
+		if err := virtualboxclient.DetachDiskSATA(instance.Id, controllerPort); err != nil {
+			return errors.New("detaching sata disk from vm", err)
+		}
+	default:
+		return errors.New("unknown storage type: "+string(storageType), nil)
 	}
+
 	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volume, ok := volumes[volume.Id]
 		if !ok {

@@ -60,6 +60,7 @@ func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Imag
 		Id:             params.Name,
 		Name:           params.Name,
 		DeviceMappings: params.RawImage.DeviceMappings,
+		ExtraConfig: params.RawImage.ExtraConfig,
 		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_VIRTUALBOX,
 		Created:        time.Now(),

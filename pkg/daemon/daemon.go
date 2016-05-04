@@ -102,7 +102,9 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		CreateImage: rump.CreateImageVirtualBox,
 	}
 
-	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvCompiler{}
+	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvCompiler{
+		ExtraConfig: types.ExtraConfig{virtualbox.STORAGE_CONTROLLER_TYPE: virtualbox.SATA_CONTROLLER},
+	}
 
 	d := &UnikDaemon{
 		server:    lxmartini.QuietMartini(),

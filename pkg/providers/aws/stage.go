@@ -165,6 +165,7 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 		Id:             imageId,
 		Name:           params.Name,
 		DeviceMappings: params.RawImage.DeviceMappings,
+		ExtraConfig: 	params.RawImage.ExtraConfig,
 		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_AWS,
 		Created:        time.Now(),

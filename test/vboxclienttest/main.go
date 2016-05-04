@@ -47,22 +47,22 @@ func main() {
 			logrus.WithError(err).Fatalf("powering off vm")
 		}
 	case "attach-disk":
-		err := virtualboxclient.AttachDisk("test-scott", diskFile, 0)
+		err := virtualboxclient.AttachDiskSCSI("test-scott", diskFile, 0)
 		if err != nil {
 			logrus.WithError(err).Fatalf("attaching disk to vm")
 		}
 	case "attach-data-disk":
-		err := virtualboxclient.AttachDisk("test-scott", "./data.vmdk", 1)
+		err := virtualboxclient.AttachDiskSCSI("test-scott", "./data.vmdk", 1)
 		if err != nil {
 			logrus.WithError(err).Fatalf("attaching disk to vm")
 		}
 	case "detach-disk":
-		err := virtualboxclient.DetachDisk("test-scott", 0)
+		err := virtualboxclient.DetachDiskSCSI("test-scott", 0)
 		if err != nil {
 			logrus.WithError(err).Fatalf("detaching disk to vm")
 		}
 	case "detach-data-disk":
-		err := virtualboxclient.DetachDisk("test-scott", 1)
+		err := virtualboxclient.DetachDiskSCSI("test-scott", 1)
 		if err != nil {
 			logrus.WithError(err).Fatalf("detaching disk to vm")
 		}
@@ -79,7 +79,7 @@ func main() {
 		if err := unikos.CopyFile("instancelistener-base.vmdk", "instancelistener-copy.vmdk"); err != nil {
 			logrus.WithError(err).Fatalf("copying instance listener vmdk")
 		}
-		if err := virtualboxclient.AttachDisk(virtualbox.VboxUnikInstanceListener, "instancelistener-copy.vmdk", 0); err != nil {
+		if err := virtualboxclient.AttachDiskSCSI(virtualbox.VboxUnikInstanceListener, "instancelistener-copy.vmdk", 0); err != nil {
 			logrus.WithError(err).Fatalf("attaching disk to vm")
 		}
 		if err := virtualboxclient.PowerOnVm(virtualbox.VboxUnikInstanceListener); err != nil {
