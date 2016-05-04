@@ -49,3 +49,9 @@ UniK is built to be easily extensible, allowing (and encouraging) adding support
 * find an alternative to the [Instance Listener](docs/instance_listener.md) for bootstrapping instances on private networks
 
 UniK is still experimental! APIs and compatibility is subject to change. We are looking for community support to help identify potential bugs and compatibility issues. Please open a Github issue for any problems you may experience, and join us on our [slack channel](http://project-unik.io)
+
+---
+
+### Thanks
+
+**UniK** would not be possible without the valuable open-source work of projects in the unikernel community. We would like to extend a special thank-you to [rumpkernel](https://github.com/rumpkernel/), [deferpanic](https://github.com/deferpanic), and [cloudius systems](https://github.com/cloudius-systems).
