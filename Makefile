@@ -45,10 +45,10 @@ compilers-osv-java:
 utils: boot-creator image-creator vsphere-client
 
 boot-creator:
-	cd containers/utils/boot-creator && GOOS=linux go build && docker build -t projectunik/$@ -f Dockerfile . && rm boot-creator
+	cd containers/utils/boot-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build && docker build -t projectunik/$@ -f Dockerfile . && rm boot-creator
 
 image-creator:
-	cd containers/utils/image-creator && GOOS=linux go build && docker build -t projectunik/$@ -f Dockerfile . && rm image-creator
+	cd containers/utils/image-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build && docker build -t projectunik/$@ -f Dockerfile . && rm image-creator
 
 vsphere-client:
 	cd containers/utils/vsphere-client && mvn package && docker build -t projectunik/$@ -f Dockerfile . && rm -rf target
@@ -62,7 +62,7 @@ SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 BINARY=unik
 
 install: all ${SOURCES}
-	go install
+	GO15VENDOREXPERIMENT=1 go install
 
 #----
 
