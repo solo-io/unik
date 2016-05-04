@@ -52,6 +52,9 @@ func (p *VirtualboxProvider) DeployInstanceListener(config config.Virtualbox) er
 	if err := unikos.CopyFile(vboxInstanceListenerVmdk, "vbox-instancelistener-copy.vmdk"); err != nil {
 		return errors.New("copying instance listener vmdk", err)
 	}
+	if err := virtualboxclient.RefreshDiskUUID(VboxUnikInstanceListener); err != nil {
+		return errors.New("refreshing disk uuid", err)
+	}
 	if err := virtualboxclient.AttachDisk(VboxUnikInstanceListener, "vbox-instancelistener-copy.vmdk", 0); err != nil {
 		return errors.New("attaching disk to vm", err)
 	}

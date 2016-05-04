@@ -266,6 +266,11 @@ func PowerOffVm(vmNameOrId string) error {
 	return err
 }
 
+func RefreshDiskUUID(diskPath string) error {
+	_, err := vboxManage("internalcommands", "sethduuid", diskPath)
+	return err
+}
+
 func AttachDisk(vmNameOrId, vmdkPath string, controllerPort int) error {
 	if _, err := vboxManage("storageattach", vmNameOrId, "--storagectl", "SCSI", "--port", fmt.Sprintf("%v", controllerPort), "--type", "hdd", "--medium", vmdkPath); err != nil {
 		return errors.New("attaching storage", err)

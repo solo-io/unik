@@ -14,3 +14,12 @@ func ConvertRawImage(imageType, inputFile, outputFile string) error {
 	}
 	return nil
 }
+
+func ConvertRawImageType(sourceType, targetType, inputFile, outputFile string) error {
+	cmd := exec.Command("qemu-img", "convert", "-f", sourceType, "-O", targetType, inputFile, outputFile)
+	logrus.WithField("command", cmd.Args).Debugf("running qemu-img command")
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return errors.New("failed converting raw image to "+targetType+": "+string(out), err)
+	}
+	return nil
+}

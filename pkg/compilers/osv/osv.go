@@ -39,10 +39,17 @@ func (osvCompiler *OsvCompiler) CompileRawImage(sourceTar io.ReadCloser, args st
 	if err != nil {
 		return nil, errors.New("failed running compilers-osv-java on "+localFolder, err)
 	}
-	logrus.Debugf("finished at %", filepath.Join(localFolder, "boot.vmdk"))
-	for {}
+	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "osv-vmdk")
+	if err != nil {
+		return nil, errors.New("failed to create tmpfile for result", err)
+	}
+
+	if err := os.Rename(filepath.Join(localFolder, "boot.raw"), resultFile.Name()); err != nil {
+		return nil, errors.New("failed to rename result file", err)
+	}
+
 	return &types.RawImage{
-		LocalImagePath: filepath.Join(localFolder, "boot.vmdk"),
+		LocalImagePath: resultFile.Name(),
 		DeviceMappings: []types.DeviceMapping{}, //TODO: not supported yet
 	}, nil
 }
