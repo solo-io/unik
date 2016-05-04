@@ -83,7 +83,7 @@ func main() {
 		"-O", "qcow2",
 		"-o", "compat=0.10",
 		capstanImage,
-		capstanImage+".compatible")
+		project_directory + "/boot.qcow2")
 	printCommand(convertToCompatibleCmd)
 	if out, err := convertToCompatibleCmd.CombinedOutput(); err != nil {
 		logrus.WithError(err).Error(string(out))
@@ -91,22 +91,19 @@ func main() {
 	}
 
 
-	fmt.Println("qemu-img creating")
-	convertToRawCmd := exec.Command("qemu-img", "convert",
-		"-f", "qcow2",
-		"-O", "raw",
-		capstanImage+".compatible",
-		project_directory + "/boot.raw")
-	printCommand(convertToRawCmd)
-	if out, err := convertToRawCmd.CombinedOutput(); err != nil {
-		logrus.WithError(err).Error(string(out))
-		os.Exit(-1)
-	}
+	//fmt.Println("qemu-img creating")
+	//convertToRawCmd := exec.Command("qemu-img", "convert",
+	//	"-f", "qcow2",
+	//	"-O", "raw",
+	//	capstanImage+".compatible",
+	//	project_directory + "/boot.raw")
+	//printCommand(convertToRawCmd)
+	//if out, err := convertToRawCmd.CombinedOutput(); err != nil {
+	//	logrus.WithError(err).Error(string(out))
+	//	os.Exit(-1)
+	//}
 
-	//fmt.Println("up to here:  ", capstanImage)
-	//for{}
-
-	fmt.Println("file created at " + project_directory + "/boot.raw")
+	fmt.Println("file created at " + project_directory + "/boot.qcow2")
 }
 
 func fileReady(filename string) <-chan struct{} {

@@ -26,14 +26,14 @@ func (p *VirtualboxProvider) AttachVolume(id, instanceId, mntPoint string) error
 		return errors.New("getting controller port for mnt point", err)
 	}
 	storageType := getStorageType(image.ExtraConfig)
-	logrus.Debugf("using storage controller %s", virtualboxclient.SCSI_Storage)
+	logrus.Debugf("using storage controller %s", storageType)
 
 	switch storageType {
-	case virtualboxclient.SCSI_Storage:
+	case SCSI_Storage:
 		if err := virtualboxclient.AttachDiskSCSI(instance.Id, getVolumePath(volume.Name), controllerPort); err != nil {
 			return errors.New("attaching scsi disk to vm", err)
 		}
-	case virtualboxclient.SATA_Storage:
+	case SATA_Storage:
 		if err := virtualboxclient.AttachDiskSATA(instance.Id, getVolumePath(volume.Name), controllerPort); err != nil {
 			return errors.New("attaching sata disk to vm", err)
 		}

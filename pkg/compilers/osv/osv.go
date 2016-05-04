@@ -18,7 +18,7 @@ type OsvCompiler struct {
 	ExtraConfig types.ExtraConfig
 }
 
-func (osvCompiler *OsvCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (*types.RawImage, error) {
+func (osvCompiler *OsvCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (_ *types.RawImage, err error) {
 	localFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return nil, err
@@ -41,12 +41,18 @@ func (osvCompiler *OsvCompiler) CompileRawImage(sourceTar io.ReadCloser, args st
 	if err != nil {
 		return nil, errors.New("failed running compilers-osv-java on "+localFolder, err)
 	}
+
 	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "osv-vmdk")
 	if err != nil {
 		return nil, errors.New("failed to create tmpfile for result", err)
 	}
+	defer func(){
+		if err != nil {
+			os.Remove(resultFile.Name())
+		}
+	}()
 
-	if err := os.Rename(filepath.Join(localFolder, "boot.raw"), resultFile.Name()); err != nil {
+	if err := os.Rename(filepath.Join(localFolder, "boot.qcow2"), resultFile.Name()); err != nil {
 		return nil, errors.New("failed to rename result file", err)
 	}
 

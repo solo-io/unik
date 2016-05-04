@@ -11,11 +11,6 @@ import (
 	"strings"
 )
 
-const (
-	SCSI_Storage = "SCSI_Storage"
-	SATA_Storage = "SATA_Storage"
-)
-
 type VboxVm struct {
 	Name    string
 	UUID    string
@@ -184,7 +179,7 @@ func GetVm(vmNameOrId string) (*VboxVm, error) {
 	return nil, errors.New("vm "+ vmNameOrId +" not found", err)
 }
 
-func CreateVm(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType, storageType string) error {
+func CreateVmSCSI(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType) error {
 	var nicArgs []string
 	switch adapterType {
 	case config.BridgedAdapter:
@@ -200,15 +195,37 @@ func CreateVm(vmName, baseFolder, adapterName string, adapterType config.Virtual
 	if _, err := vboxManage("registervm", filepath.Join(baseFolder, vmName, fmt.Sprintf("%s.vbox", vmName))); err != nil {
 		return errors.New("registering vm", err)
 	}
-	switch storageType {
-	case SCSI_Storage:
-		if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
-			return errors.New("adding scsi storage controller", err)
-		}
-	case SATA_Storage:
-		if _, err := vboxManage("storagectl", vmName, "--name", "SATA Controller", "--add", "sata", "--controller", "IntelAHCI"); err != nil {
-			return errors.New("adding sata storage controller", err)
-		}
+	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
+		return errors.New("adding scsi storage controller", err)
+	}
+	//NIC ORDER MATTERS
+	if _, err := vboxManage(nicArgs...); err != nil {
+		return errors.New("setting "+string(adapterType)+" networking on vm", err)
+	}
+	if _, err := vboxManage("modifyvm", vmName, "--nic2", "nat", "--nictype2", "virtio"); err != nil {
+		return errors.New("setting nat networking on vm", err)
+	}
+	return nil
+}
+
+func CreateVmSATA(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType) error {
+	var nicArgs []string
+	switch adapterType {
+	case config.BridgedAdapter:
+		nicArgs = []string{"modifyvm", vmName, "--nic1", "bridged", "--bridgeadapter1", adapterName, "--nictype1", "virtio"}
+	case config.HostOnlyAdapter:
+		nicArgs = []string{"modifyvm", vmName, "--nic1", "hostonly", "--hostonlyadapter1", adapterName, "--nictype1", "virtio"}
+	default:
+		return errors.New(string(adapterType)+" not a valid adapter type, must specify either "+string(config.BridgedAdapter)+" or "+string(config.HostOnlyAdapter)+" network config", nil)
+	}
+	if _, err := vboxManage("createvm", "--name", vmName, "--basefolder", baseFolder, "-ostype", "Linux26_64"); err != nil {
+		return errors.New("creating vm", err)
+	}
+	if _, err := vboxManage("registervm", filepath.Join(baseFolder, vmName, fmt.Sprintf("%s.vbox", vmName))); err != nil {
+		return errors.New("registering vm", err)
+	}
+	if _, err := vboxManage("storagectl", vmName, "--name", "SATA Controller", "--add", "sata", "--controller", "IntelAHCI"); err != nil {
+		return errors.New("adding sata storage controller", err)
 	}
 	//NIC ORDER MATTERS
 	if _, err := vboxManage(nicArgs...); err != nil {

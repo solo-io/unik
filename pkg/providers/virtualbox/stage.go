@@ -40,7 +40,11 @@ func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Imag
 	}()
 
 	logrus.WithField("raw-image", params.RawImage).Infof("creating boot volume from raw image")
-	if err := common.ConvertRawImage("vmdk", params.RawImage.LocalImagePath, imagePath); err != nil {
+	sourceImageType := RAW
+	if params.RawImage.ExtraConfig[IMAGE_TYPE] == QCOW2 {
+		sourceImageType = QCOW2
+	}
+	if err := common.ConvertRawImageType(sourceImageType, VMDK, params.RawImage.LocalImagePath, imagePath); err != nil {
 		return nil, errors.New("converting raw image to vmdk", err)
 	}
 

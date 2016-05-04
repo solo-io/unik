@@ -27,7 +27,7 @@ func main() {
 		}
 		logrus.WithField("vms", vms).Info("get vms succeeded")
 	case "create-vm":
-		err := virtualboxclient.CreateVm("test-scott", baseFolder, hostnetworkName, config.HostOnlyAdapter)
+		err := virtualboxclient.CreateVmSCSI("test-scott", baseFolder, hostnetworkName, config.HostOnlyAdapter)
 		if err != nil {
 			logrus.WithError(err).Fatalf("creating vm")
 		}

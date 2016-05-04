@@ -103,7 +103,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	}
 
 	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvCompiler{
-		ExtraConfig: types.ExtraConfig{virtualbox.STORAGE_CONTROLLER_TYPE: virtualbox.SATA_CONTROLLER},
+		ExtraConfig: types.ExtraConfig{
+			virtualbox.STORAGE_CONTROLLER_TYPE: virtualbox.SATA_Storage,
+			virtualbox.IMAGE_TYPE: virtualbox.QCOW2,
+		},
 	}
 
 	d := &UnikDaemon{

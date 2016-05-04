@@ -46,7 +46,7 @@ public class Bootstrap {
                     setEnv(env);
                     envSet.lazySet(true);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    System.out.printf("udp bootstrap failed: "+ex.toString());
                 }
             }
         });
@@ -61,8 +61,7 @@ public class Bootstrap {
                     setEnv(env);
                     envSet.lazySet(true);
                 } catch (IOException ex) {
-                    System.out.printf("ec2 bootstrap failed...");
-                    ex.printStackTrace();
+                    System.out.printf("ec2 bootstrap failed: "+ex.toString());
                 }
             }
         });
@@ -127,14 +126,27 @@ public class Bootstrap {
 
 
     private static String getMacAddress() throws UnknownHostException, SocketException, MacAddressNotFoundException {
-        InetAddress ip = InetAddress.getLocalHost();
-        System.out.println("Current IP address : " + ip.getHostAddress());
+//        Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+//        while (ifaces.hasMoreElements()) {
+//            NetworkInterface iface = ifaces.nextElement();
+//            StringBuilder sb = new StringBuilder();
+//            byte[] mac = iface.getHardwareAddress();
+//            for (int i = 0; i < mac.length; i++) {
+//                String macString = String.format("%02X%s", mac[i], (i < mac.length - 1) ? ":" : "");
+//                sb.append(macString.toLowerCase());
+//            }
+//            System.out.println("Known Interface: " + iface.getDisplayName() + " " + sb.toString() + " "+ (iface.getInetAddresses().hasMoreElements() ? iface.getInetAddresses().nextElement().toString() : ""));
+//        }
 
-        Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
         byte[] mac = new byte[1];
+        Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
         while (ifaces.hasMoreElements()) {
             NetworkInterface network = ifaces.nextElement();
             System.out.println("Interface name: " + network.getName());
+            if (!network.getDisplayName().contains("eth0")) {
+                System.out.println("Seeking first network card, skipping interface " + network.getName());
+                continue;
+            }
             if (network.getHardwareAddress() != null) {
                 mac = network.getHardwareAddress();
                 break;

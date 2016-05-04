@@ -39,14 +39,14 @@ func (p *VirtualboxProvider) DeleteInstance(id string, force bool) error {
 	for controllerPort, deviceMapping := range image.DeviceMappings {
 		if deviceMapping.MountPoint != "/" {
 			storageType := getStorageType(image.ExtraConfig)
-			logrus.Debugf("using storage controller %s", virtualboxclient.SCSI_Storage)
+			logrus.Debugf("using storage controller %s", storageType)
 
 			switch storageType {
-			case virtualboxclient.SCSI_Storage:
+			case SCSI_Storage:
 				if err := virtualboxclient.DetachDiskSCSI(instance.Id, controllerPort); err != nil {
 					return errors.New("detaching scsi volume from instance", err)
 				}
-			case virtualboxclient.SATA_Storage:
+			case SATA_Storage:
 				if err := virtualboxclient.DetachDiskSATA(instance.Id, controllerPort); err != nil {
 					return errors.New("detaching sata volume from instance", err)
 				}
