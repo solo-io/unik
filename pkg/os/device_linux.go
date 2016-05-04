@@ -149,7 +149,7 @@ func ListParts(device BlockDevice) ([]Part, error) {
 		//validate Part is consistent:
 		if end-start != size-1 {
 			log.WithFields(log.Fields{"start": start, "end": end, "size": size}).Error("Sizes not consistent")
-			return parts, errors.New("Sizes are inconsistent. part not continous?")
+			return parts, errors.New("Sizes are inconsistent. part not continous?", nil)
 		}
 
 		var part Part
@@ -192,13 +192,13 @@ func getDevicePart(device string, part int64) string {
 func getByteNumber(token string) (Bytes, error) {
 	tokenLen := len(token)
 	if tokenLen == 0 {
-		return 0, errors.New("Not a number")
+		return 0, errors.New("Not a number", nil)
 	}
 	// remove the B
 
 	if token[tokenLen-1] != 'B' {
 
-		return 0, errors.New("Unknown unit for number")
+		return 0, errors.New("Unknown unit for number", nil)
 	}
 
 	res, err := strconv.ParseInt(token[:tokenLen-1], 0, 0)

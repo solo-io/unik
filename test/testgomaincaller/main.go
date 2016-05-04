@@ -5,7 +5,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"github.com/emc-advanced-dev/pkg/errors"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"

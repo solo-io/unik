@@ -28,7 +28,7 @@ func (m *volumeslice) Set(value string) error {
 	volparts := strings.Split(value, ",")
 
 	if (len(volparts) != 1) && (len(volparts) != 2) {
-		return errors.New("bad format")
+		return errors.New("bad format", nil)
 	}
 
 	folder := volparts[0]
