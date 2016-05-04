@@ -1,0 +1,13 @@
+clone:
+  tags: true
+  path: github.com/vmware/govmomi
+build:
+  image: golang:1.5
+  pull: true
+  commands:
+    - go get golang.org/x/tools/cmd/vet
+    - go get golang.org/x/tools/cmd/goimports
+    - go get
+    - make all
+    - govc/build.sh
+
