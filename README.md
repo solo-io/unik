@@ -16,7 +16,7 @@ UniK is built to be easily extensible, allowing (and encouraging) adding support
   - Using the [command line interface](docs/cli.md)
   - Compiling [Go](docs/compilers/rump.md#golang) Applications to Unikernels
   - Compiling [Java](docs/compilers/osv.md#java) Applications to Unikernels
-  - Compiling [C/C++](docks/compilers/rump.md#c++) Applications to Unikernels
+  - Compiling [C/C++](docs/compilers/rump.md#c++) Applications to Unikernels
 - **Developer Documentation**
   - UniK's [REST API](docs/api.md)
   - Adding [compiler](docs/compilers/README.md) support
