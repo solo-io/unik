@@ -14,7 +14,11 @@ func (p *AwsProvider) CreateVolume(params types.CreateVolumeParams) (*types.Volu
 	logrus.WithField("raw-image", params.ImagePath).WithField("az", p.config.Zone).Infof("creating data volume from raw image")
 	s3svc := p.newS3()
 	ec2svc := p.newEC2()
-	volumeId, err := createDataVolumeFromRawImage(s3svc, ec2svc, params.ImagePath, p.config.Zone)
+	imageFile, err := os.Stat(params.ImagePath)
+	if err != nil {
+		return nil, errors.New("stat image file", err)
+	}
+	volumeId, err := createDataVolumeFromRawImage(s3svc, ec2svc, params.ImagePath, imageFile.Size(), types.ImageFormat_RAW, p.config.Zone)
 	if err != nil {
 		return nil, errors.New("creating aws boot volume", err)
 	}

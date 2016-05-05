@@ -5,7 +5,7 @@ import (
 	"io"
 
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	uniktypes "github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 
 	"fmt"
@@ -21,10 +21,10 @@ import (
 
 type RumpCompiler struct {
 	DockerImage string
-	CreateImage func(kernel, args string, mntPoints []string) (*uniktypes.RawImage, error)
+	CreateImage func(kernel, args string, mntPoints []string) (*types.RawImage, error)
 }
 
-func (r *RumpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (*uniktypes.RawImage, error) {
+func (r *RumpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (*types.RawImage, error) {
 	localFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return nil, err

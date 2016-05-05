@@ -2,9 +2,7 @@ package aws
 
 import (
 	"encoding/xml"
-	"io/ioutil"
 	"os"
-	"path"
 	"time"
 
 	"bytes"
@@ -13,7 +11,6 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -21,75 +18,21 @@ import (
 
 	"math/rand"
 
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-
 	"github.com/emc-advanced-dev/pkg/errors"
+	"strings"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-const diskImageRaw = "RAW"
-
-func uploadFileToAws(s3svc *s3.S3, file, bucket, path string) error {
-	fileInfo, err := os.Stat(file)
-	if err != nil {
-		return nil
-	}
-
-	reader, err := os.Open(file)
-	if err != nil {
-		return nil
-	}
-	defer reader.Close()
-	return uploadToAws(s3svc, reader, fileInfo.Size(), bucket, path)
-}
-
-func uploadToAws(s3svc *s3.S3, body io.ReadSeeker, size int64, bucket, path string) error {
-
-	// upload
-	params := &s3.PutObjectInput{
-		Bucket:        aws.String(bucket), // required
-		Key:           aws.String(path),   // required
-		ACL:           aws.String("private"),
-		Body:          body,
-		ContentLength: aws.Int64(size),
-		ContentType:   aws.String("application/octet-stream"),
-	}
-
-	_, err := s3svc.PutObject(params)
-
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func createDataVolume(s3svc *s3.S3, ec2svc *ec2.EC2, folder string, az string) (string, error) {
-	dir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
-	if err != nil {
-		return "", err
-	}
-	defer os.RemoveAll(dir)
-	imgFile := path.Join(dir, "vol.img")
-
-	// only one partition - creat msdos partition which is most supported
-	partitioner := func(device string) unikos.Partitioner { return &unikos.MsDosPartioner{Device: device} }
-	unikos.CreateVolumes(imgFile, []types.RawVolume{types.RawVolume{Path: folder}}, partitioner)
-	log.WithFields(log.Fields{"imgFile": imgFile}).Debug("Created temp image")
-
-	return createDataVolumeFromRawImage(s3svc, ec2svc, imgFile, az)
-
-}
-
-func createDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string, az string) (string, error) {
-
+func createDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string, imageSize int64, imageFormat types.ImageFormat, az string) (string, error) {
 	fileInfo, err := os.Stat(imgFile)
 	if err != nil {
 		return "", err
 	}
+
 
 	// upload the image file to aws
 	bucket := fmt.Sprintf("unik-tmp-%d", rand.Int63())
@@ -103,7 +46,7 @@ func createDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string,
 
 	log.Debug("Uploading image to aws")
 
-	if err := uploadFileToAws(s3svc, imgFile, bucket, pathInBucket); err != nil {
+	if err := uploadFileToAws(s3svc, imgFile, fileInfo.Size(), bucket, pathInBucket); err != nil {
 		return "", err
 	}
 
@@ -158,12 +101,12 @@ func createDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string,
 
 	m := manifest{
 		Version:         "2010-11-15",
-		FileFormat:      diskImageRaw,
+		FileFormat:      strings.ToUpper(string(imageFormat)),
 		Importer:        importer{"unik", "1", "2016-04-01"},
 		SelfDestructUrl: deleteManiUrlStr,
 		ImportSpec: importSpec{
 			Size:       fileInfo.Size(),
-			VolumeSize: toGigs(fileInfo.Size()),
+			VolumeSize: toGigs(imageSize),
 			Parts: parts{
 				Count: 1,
 				Parts: []part{
@@ -212,8 +155,8 @@ func createDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string,
 	volparams := &ec2.ImportVolumeInput{
 		AvailabilityZone: aws.String(az), // Required
 		Image: &ec2.DiskImageDetail{ // Required
-			Bytes:             aws.Int64(fileInfo.Size()), // Required
-			Format:            aws.String(diskImageRaw),   // Required
+			Bytes:             aws.Int64(toGigs(imageSize)), // Required
+			Format:            aws.String(strings.ToUpper(string(imageFormat))),   // Required
 			ImportManifestUrl: aws.String(getManiUrlStr),  // Required
 		},
 		Volume: &ec2.VolumeDetail{ // Required
@@ -260,48 +203,37 @@ func createDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string,
 
 }
 
+func uploadFileToAws(s3svc *s3.S3, file string, fileSize int64, bucket, path string) error {
+	reader, err := os.Open(file)
+	if err != nil {
+		return nil
+	}
+	defer reader.Close()
+	return uploadToAws(s3svc, reader, fileSize, bucket, path)
+}
+
+func uploadToAws(s3svc *s3.S3, body io.ReadSeeker, size int64, bucket, path string) error {
+
+	// upload
+	params := &s3.PutObjectInput{
+		Bucket:        aws.String(bucket), // required
+		Key:           aws.String(path),   // required
+		ACL:           aws.String("private"),
+		Body:          body,
+		ContentLength: aws.Int64(size),
+		ContentType:   aws.String("application/octet-stream"),
+	}
+
+	_, err := s3svc.PutObject(params)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func toGigs(i int64) int64 {
 	return 1 + (i >> 20)
-}
-
-type manifest struct {
-	XMLName xml.Name `xml:"manifest"`
-
-	Version         string   `xml:"version"`
-	FileFormat      string   `xml:"file-format"`
-	Importer        importer `xml:"importer"`
-	SelfDestructUrl string   `xml:"self-destruct-url"`
-
-	ImportSpec importSpec `xml:"import"`
-}
-
-type importer struct {
-	Name    string `xml:"name"`
-	Version string `xml:"version"`
-	Release string `xml:"release"`
-}
-
-type importSpec struct {
-	Size       int64 `xml:"size"`
-	VolumeSize int64 `xml:"volume-size"`
-	Parts      parts `xml:"parts"`
-}
-type parts struct {
-	Count int    `xml:"count,attr"`
-	Parts []part `xml:"part"`
-}
-
-type part struct {
-	Index     int       `xml:"index,attr"`
-	ByteRange byteRange `xml:"byte-range"`
-	Key       string    `xml:"key"`
-	HeadUrl   string    `xml:"head-url"`
-	GetUrl    string    `xml:"get-url"`
-	DeleteUrl string    `xml:"delete-url"`
-}
-type byteRange struct {
-	Start int64 `xml:"start,attr"`
-	End   int64 `xml:"end,attr"`
 }
 
 func createBucket(s3svc *s3.S3, bucketName string) error {
@@ -353,4 +285,44 @@ func deleteVolume(e2svc *ec2.EC2, volumeId string) error {
 	}
 	_, err := e2svc.DeleteVolume(param)
 	return err
+}
+
+type manifest struct {
+	XMLName xml.Name `xml:"manifest"`
+
+	Version         string   `xml:"version"`
+	FileFormat      string   `xml:"file-format"`
+	Importer        importer `xml:"importer"`
+	SelfDestructUrl string   `xml:"self-destruct-url"`
+
+	ImportSpec importSpec `xml:"import"`
+}
+
+type importer struct {
+	Name    string `xml:"name"`
+	Version string `xml:"version"`
+	Release string `xml:"release"`
+}
+
+type importSpec struct {
+	Size       int64 `xml:"size"`
+	VolumeSize int64 `xml:"volume-size"`
+	Parts      parts `xml:"parts"`
+}
+type parts struct {
+	Count int    `xml:"count,attr"`
+	Parts []part `xml:"part"`
+}
+
+type part struct {
+	Index     int       `xml:"index,attr"`
+	ByteRange byteRange `xml:"byte-range"`
+	Key       string    `xml:"key"`
+	HeadUrl   string    `xml:"head-url"`
+	GetUrl    string    `xml:"get-url"`
+	DeleteUrl string    `xml:"delete-url"`
+}
+type byteRange struct {
+	Start int64 `xml:"start,attr"`
+	End   int64 `xml:"end,attr"`
 }

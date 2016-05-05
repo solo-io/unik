@@ -28,7 +28,7 @@ func (p *VirtualboxProvider) CreateVolume(params types.CreateVolumeParams) (_ *t
 		}
 	}()
 	logrus.WithField("raw-image", params.ImagePath).Infof("creating volume from raw image")
-	if err := common.ConvertRawImage("vmdk", params.ImagePath, volumePath); err != nil {
+	if err := common.ConvertRawImage(types.ImageFormat_RAW, types.ImageFormat_VMDK, params.ImagePath, volumePath); err != nil {
 		return nil, errors.New("converting raw image to vmdk", err)
 	}
 

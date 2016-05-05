@@ -10,6 +10,7 @@ import (
 	"os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/emc-advanced-dev/unik/pkg/config"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 const (
@@ -46,7 +47,7 @@ func (p *VirtualboxProvider) DeployInstanceListener(config config.Virtualbox) er
 	}
 
 	logrus.Infof("deploying virtualbox instance listener")
-	if err := virtualboxclient.CreateVmNatless(VboxUnikInstanceListener, os.Getenv("PWD"), p.config.AdapterName, p.config.VirtualboxAdapterType); err != nil {
+	if err := virtualboxclient.CreateVmNatless(VboxUnikInstanceListener, os.Getenv("PWD"), p.config.AdapterName, p.config.VirtualboxAdapterType, types.StorageDriver_SCSI); err != nil {
 		return errors.New("creating vm", err)
 	}
 	if err := unikos.CopyFile(vboxInstanceListenerVmdk, "vbox-instancelistener-copy.vmdk"); err != nil {
@@ -55,7 +56,7 @@ func (p *VirtualboxProvider) DeployInstanceListener(config config.Virtualbox) er
 	if err := virtualboxclient.RefreshDiskUUID(vboxInstanceListenerVmdk); err != nil {
 		return errors.New("refreshing disk uuid", err)
 	}
-	if err := virtualboxclient.AttachDiskSCSI(VboxUnikInstanceListener, "vbox-instancelistener-copy.vmdk", 0); err != nil {
+	if err := virtualboxclient.AttachDisk(VboxUnikInstanceListener, "vbox-instancelistener-copy.vmdk", 0, types.StorageDriver_SCSI); err != nil {
 		return errors.New("attaching disk to vm", err)
 	}
 	if err := virtualboxclient.PowerOnVm(VboxUnikInstanceListener); err != nil {

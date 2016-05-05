@@ -10,7 +10,6 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"time"
-	"github.com/emc-advanced-dev/unik/pkg/compilers"
 )
 
 func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
@@ -67,8 +66,8 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 	encodedData := base64.StdEncoding.EncodeToString(envData)
 
 	var instanceType *string
-	switch image.ExtraConfig[compilers.VIRTUALIZATION_TYPE]{
-	case compilers.HVM:
+	switch image.StageSpec.XenVirtualizationType {
+	case types.XenVirtualizationType_HVM:
 		instanceType = aws.String("t2.micro")
 	}
 
@@ -106,7 +105,6 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		Infrastructure: types.Infrastructure_AWS,
 		ImageId:        image.Id,
 		Created:        time.Now(),
-		ExtraConfig:    image.ExtraConfig,
 	}
 
 	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {

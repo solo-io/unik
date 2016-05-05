@@ -8,7 +8,6 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"time"
-	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"io/ioutil"
 	"github.com/emc-advanced-dev/unik/pkg/util"
@@ -66,21 +65,35 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 
 	logrus.WithField("raw-image", params.RawImage).WithField("az", p.config.Zone).Infof("creating boot volume from raw image")
 
-	rawImagePath := params.RawImage.LocalImagePath
-	switch params.RawImage.ExtraConfig[compilers.IMAGE_TYPE] {
-	case compilers.QCOW2:
+	rawImageFile, err := os.Stat(params.RawImage.LocalImagePath)
+	if err != nil {
+		return nil, errors.New("statting raw image file", err)
+	}
+
+	imageSize := rawImageFile.Size()
+
+	switch params.RawImage.StageSpec.ImageFormat {
+	case types.ImageFormat_QCOW2:
 		rawImage, err := ioutil.TempFile(util.UnikTmpDir(), "")
 		if err != nil {
 			return nil, errors.New("creating tmp file for qemu img convert", err)
 		}
 		defer os.Remove(rawImage.Name())
-		if err := common.ConvertRawImageType(compilers.QCOW2, compilers.VMDK, params.RawImage.LocalImagePath, rawImage.Name()); err != nil {
-			return nil, errors.New("converting qcow2 to raw image", err)
+		//vpc indicates VHD image type to qemu-img
+		if err := common.ConvertRawImage(types.ImageFormat_QCOW2, types.ImageFormat_VHD, params.RawImage.LocalImagePath, rawImage.Name()); err != nil {
+			return nil, errors.New("converting qcow2 to vhd image", err)
 		}
-		rawImagePath = rawImage.Name()
+		os.Remove(params.RawImage.LocalImagePath)
+		//point at the new image
+		params.RawImage.LocalImagePath = rawImage.Name()
+		params.RawImage.StageSpec.ImageFormat = types.ImageFormat_VHD
+		imageSize, err = common.GetVirtualImageSize(params.RawImage.LocalImagePath, params.RawImage.StageSpec.ImageFormat)
+		if err != nil {
+			return nil, errors.New("getting virtual image size", err)
+		}
 	}
 
-	volumeId, err = createDataVolumeFromRawImage(s3svc, ec2svc, rawImagePath, p.config.Zone)
+	volumeId, err = createDataVolumeFromRawImage(s3svc, ec2svc, params.RawImage.LocalImagePath, imageSize, params.RawImage.StageSpec.ImageFormat, p.config.Zone)
 	if err != nil {
 		return nil, errors.New("creating aws boot volume", err)
 	}
@@ -106,7 +119,7 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 
 	blockDeviceMappings := []*ec2.BlockDeviceMapping{}
 	rootDeviceName := ""
-	for _, deviceMapping := range params.RawImage.DeviceMappings {
+	for _, deviceMapping := range params.RawImage.RunSpec.DeviceMappings {
 		if deviceMapping.MountPoint == "/" {
 			blockDeviceMappings = append(blockDeviceMappings, &ec2.BlockDeviceMapping{
 				DeviceName: aws.String(deviceMapping.DeviceName),
@@ -123,18 +136,16 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 	}
 
 	architecture := "x86_64"
-	virtualizationType := compilers.PARAVIRTUAL
 	kernelId := aws.String(kernelIdMap[p.config.Region])
-	switch params.RawImage.ExtraConfig[compilers.VIRTUALIZATION_TYPE] {
-	case compilers.HVM:
-		virtualizationType = compilers.HVM
+	switch params.RawImage.StageSpec.XenVirtualizationType {
+	case types.XenVirtualizationType_HVM:
 		kernelId = nil //no kernel id for HVM
 	}
 
 	logrus.WithFields(logrus.Fields{
 		"name":                  params.Name,
 		"architecture":          architecture,
-		"virtualization-type":   virtualizationType,
+		"virtualization-type":   params.RawImage.StageSpec.XenVirtualizationType,
 		"kernel-id":             kernelId,
 		"block-device-mappings": blockDeviceMappings,
 		"root-device-name":      rootDeviceName,
@@ -145,7 +156,7 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 		Architecture:        aws.String(architecture),
 		BlockDeviceMappings: blockDeviceMappings,
 		RootDeviceName:      aws.String(rootDeviceName),
-		VirtualizationType:  aws.String(virtualizationType),
+		VirtualizationType:  aws.String(string(params.RawImage.StageSpec.XenVirtualizationType)),
 		KernelId:            kernelId,
 	}
 
@@ -179,17 +190,13 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 		return nil, errors.New("tagging snapshot, image, and volume", err)
 	}
 
-	rawImageFile, err := os.Stat(params.RawImage.LocalImagePath)
-	if err != nil {
-		return nil, errors.New("statting raw image file", err)
-	}
-	sizeMb := rawImageFile.Size() >> 20
+	sizeMb := imageSize >> 20
 
 	image := &types.Image{
 		Id:             imageId,
 		Name:           params.Name,
-		DeviceMappings: params.RawImage.DeviceMappings,
-		ExtraConfig: 	params.RawImage.ExtraConfig,
+		RunSpec:	params.RawImage.RunSpec,
+		StageSpec:	params.RawImage.StageSpec,
 		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_AWS,
 		Created:        time.Now(),

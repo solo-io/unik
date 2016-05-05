@@ -6,7 +6,7 @@ import (
 )
 
 func GetDeviceNameForMnt(image *types.Image, mntPoint string) (string, error) {
-	for _, mapping := range image.DeviceMappings {
+	for _, mapping := range image.RunSpec.DeviceMappings {
 		if mntPoint == mapping.MountPoint {
 			return mapping.DeviceName, nil
 		}
@@ -15,7 +15,7 @@ func GetDeviceNameForMnt(image *types.Image, mntPoint string) (string, error) {
 }
 
 func GetControllerPortForMnt(image *types.Image, mntPoint string) (int, error) {
-	for controllerPort, mapping := range image.DeviceMappings {
+	for controllerPort, mapping := range image.RunSpec.DeviceMappings {
 		if mntPoint == mapping.MountPoint {
 			return controllerPort, nil
 		}

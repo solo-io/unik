@@ -7,7 +7,6 @@ import (
 )
 
 type OsvAwsCompiler struct {
-	ExtraConfig types.ExtraConfig
 }
 
 func (osvCompiler *OsvAwsCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (_ *types.RawImage, err error) {
@@ -17,9 +16,14 @@ func (osvCompiler *OsvAwsCompiler) CompileRawImage(sourceTar io.ReadCloser, args
 	}
 	return &types.RawImage{
 		LocalImagePath: resultFile,
-		ExtraConfig: 	osvCompiler.ExtraConfig,
-		DeviceMappings: []types.DeviceMapping{
-			types.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"},
+		StageSpec: types.StageSpec{
+			ImageFormat: types.ImageFormat_QCOW2,
+			XenVirtualizationType: types.XenVirtualizationType_HVM,
+		},
+		RunSpec: types.RunSpec{
+			DeviceMappings: []types.DeviceMapping{
+				types.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"},
+			},
 		},
 	}, nil
 }
