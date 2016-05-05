@@ -100,19 +100,6 @@ func main() {
 		os.Exit(-1)
 	}
 
-
-	//fmt.Println("qemu-img creating")
-	//convertToRawCmd := exec.Command("qemu-img", "convert",
-	//	"-f", "qcow2",
-	//	"-O", "raw",
-	//	capstanImage+".compatible",
-	//	project_directory + "/boot.raw")
-	//printCommand(convertToRawCmd)
-	//if out, err := convertToRawCmd.CombinedOutput(); err != nil {
-	//	logrus.WithError(err).Error(string(out))
-	//	os.Exit(-1)
-	//}
-
 	fmt.Println("file created at " + project_directory + "/boot.qcow2")
 }
 
