@@ -5,13 +5,15 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Bootstrap {
     public static ByteArrayOutputStream logBuffer = new ByteArrayOutputStream();
@@ -27,57 +29,71 @@ public class Bootstrap {
         System.setErr(stderr);
 
         //listen to requests for logs
-        WrapperServer.ServerThread serverThread = new WrapperServer.ServerThread(new WrapperServer());
-        serverThread.setDaemon(true);
-        serverThread.start();
+        try {
+            HttpServer server = HttpServer.create(new InetSocketAddress(9876), 0);
+            server.createContext("/logs", new ServeLogs());
+            server.setExecutor(null); // creates a default executor
+            server.start();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("starting logs server failed, exiting...");
+            try {
+                Thread.sleep(15000);
+            } catch (Exception e) {
+                //ignore
+            }
+            System.exit(-1);
+        }
 
         System.out.printf("unik v0.0 bootstrapping beginning...");
-
-        final AtomicBoolean envSet = new AtomicBoolean(false);
 
         //instance listener bootstrap
         Thread udpListenThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                System.out.printf("attempting to bootstrap with udp brodacst..");
+                System.out.printf("attempting to bootstrap with udp brodacst..\n");
                 try {
-                    String listenerIp = getListenerIp(envSet); //needs to be closed
+                    String listenerIp = getListenerIp(); //needs to be closed
                     Map<String, String> env = registerWithListener(listenerIp);
-                    setEnv(env);
-                    envSet.lazySet(true);
+//                    setEnv(env);
+                    System.out.println("udp bootstrap successful.");
                 } catch (Exception ex) {
                     System.out.printf("udp bootstrap failed: "+ex.toString());
                 }
             }
         });
 
-        //bootstrap from ec2 metadata
-        Thread ec2BootstrapThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                System.out.printf("attempting to bootstrap with ec2 metadata..");
-                try {
-                    Map<String, String> env = getEnvEc2();
-                    setEnv(env);
-                    envSet.lazySet(true);
-                } catch (IOException ex) {
-                    System.out.printf("ec2 bootstrap failed: "+ex.toString());
-                }
-            }
-        });
+//        //bootstrap from ec2 metadata
+//        Thread ec2BootstrapThread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                System.out.printf("attempting to bootstrap with ec2 metadata..");
+//                try {
+//                    Map<String, String> env = getEnvEc2();
+////                    setEnv(env);
+//                    envSet.value = true;
+//                    System.out.println("ec2 bootstrap successful.");
+//                } catch (IOException ex) {
+//                    System.out.printf("ec2 bootstrap failed: "+ex.toString());
+//                }
+//            }
+//        });
 
         udpListenThread.setDaemon(true);
-        ec2BootstrapThread.setDaemon(true);
+//        ec2BootstrapThread.setDaemon(true);
 
         udpListenThread.start();
-        ec2BootstrapThread.start();
+//        ec2BootstrapThread.start();
 
         System.out.println("waiting for env to be set");
-        while (!envSet.get()) {
-            //no op
+        try {
+            udpListenThread.join();
+        } catch (InterruptedException ex) {
+
+            System.out.println("failed to wait for udp thread to complete!");
         }
 
-        System.out.println(ec2BootstrapThread.isAlive());
+//        System.out.println(ec2BootstrapThread.isAlive());
         System.out.println(udpListenThread.isAlive());
 
         System.out.printf("calling main\n");
@@ -91,11 +107,11 @@ public class Bootstrap {
         return gson.fromJson(resp, stringStringMap);
     }
 
-    private static String getListenerIp(AtomicBoolean envSet) throws IOException, InterruptedException {
+    private static String getListenerIp() throws IOException {
         System.out.println("listening for udp heartbeat...");
         DatagramSocket serverSocket = new DatagramSocket(9876);
         byte[] receiveData = new byte[1024];
-        while (!envSet.get()) {
+        while (true) {
             System.out.println("creating datagram receive packet...");
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
             System.out.println("trying to receive packet...");
@@ -110,9 +126,7 @@ public class Bootstrap {
                 String[] parts = unikMessage.split(":");
                 return parts[1];
             }
-            Thread.sleep(1000);
         }
-        return "";
     }
 
     private static Map<String, String> registerWithListener(String listenerIp) throws IOException, MacAddressNotFoundException {
@@ -126,18 +140,6 @@ public class Bootstrap {
 
 
     private static String getMacAddress() throws UnknownHostException, SocketException, MacAddressNotFoundException {
-//        Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
-//        while (ifaces.hasMoreElements()) {
-//            NetworkInterface iface = ifaces.nextElement();
-//            StringBuilder sb = new StringBuilder();
-//            byte[] mac = iface.getHardwareAddress();
-//            for (int i = 0; i < mac.length; i++) {
-//                String macString = String.format("%02X%s", mac[i], (i < mac.length - 1) ? ":" : "");
-//                sb.append(macString.toLowerCase());
-//            }
-//            System.out.println("Known Interface: " + iface.getDisplayName() + " " + sb.toString() + " "+ (iface.getInetAddresses().hasMoreElements() ? iface.getInetAddresses().nextElement().toString() : ""));
-//        }
-
         byte[] mac = new byte[1];
         Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
         while (ifaces.hasMoreElements()) {
@@ -207,10 +209,21 @@ public class Bootstrap {
     }
 
 
-    public interface LibC extends Library {
+    private interface LibC extends Library {
         int setenv(String name, String value, int overwrite);
     }
 
-    private static class MacAddressNotFoundException extends Exception {
+    private static class MacAddressNotFoundException extends Exception {}
+
+    private static class ServeLogs implements HttpHandler {
+        @Override
+        public void handle(HttpExchange t) throws IOException {
+            byte[] bytes = Bootstrap.logBuffer.toByteArray();
+            System.out.println("Response length: "+bytes.length);
+            OutputStream os = t.getResponseBody();
+            t.sendResponseHeaders(200, bytes.length);
+            os.write(bytes);
+            os.close();
+        }
     }
 }
