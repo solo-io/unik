@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"time"
+	"path/filepath"
 )
 
 //expect project directory at /project_directory; mount w/ -v FOLDER:/project_directory
@@ -30,6 +31,15 @@ func main() {
 	}
 	logrus.AddHook(&unikutil.AddTraceHook{true})
 	fmt.Printf("read info from java project: %v\n", appInfo)
+
+	fmt.Printf("runnning mvn clean")
+	mvnClean := exec.Command("mvn", "clean")
+	mvnClean.Dir = project_directory
+	if err := mvnClean.Run(); err != nil {
+		fmt.Printf("mvn clean failed, simply cleaning up %s/target", project_directory)
+		os.RemoveAll(filepath.Join(project_directory, "target"))
+	}
+
 	fmt.Printf("running mvn package\n")
 
 	mvnPackageCmd := exec.Command("mvn", "package")

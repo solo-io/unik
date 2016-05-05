@@ -218,11 +218,11 @@ public class Bootstrap {
     private static class ServeLogs implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
-            String response = new String(Bootstrap.logBuffer.toByteArray());
-            System.out.println("Response length: "+response.length());
+            byte[] bytes = Bootstrap.logBuffer.toByteArray();
+            System.out.println("Response length: "+bytes.length);
             OutputStream os = t.getResponseBody();
-            t.sendResponseHeaders(200, response.length());
-            os.write(response.getBytes());
+            t.sendResponseHeaders(200, bytes.length);
+            os.write(bytes);
             os.close();
         }
     }
