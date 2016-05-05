@@ -1,25 +1,25 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/client"
 )
 
 var detachCmd = &cobra.Command{
-	Use:   "detach-volume",
+	Use:     "detach-volume",
 	Aliases: []string{"detach"},
-	Short: "Detach an attached volume from a stopped instance",
+	Short:   "Detach an attached volume from a stopped instance",
 	Long: `Detaches a volume to a stopped instance at a specified mount point.
-	You specify the volume by name or id.
+You specify the volume by name or id.
 
-	After detaching the volume, the volume can be mounted to another instance.
+After detaching the volume, the volume can be mounted to another instance.
 
-	If the instance is not stopped, detach will result in an error.
-	`,
-	
+If the instance is not stopped, detach will result in an error.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if err := readClientConfig(); err != nil {

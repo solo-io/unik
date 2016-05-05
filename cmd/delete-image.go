@@ -1,20 +1,21 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/client"
 )
 
 var rmiCmd = &cobra.Command{
-	Use:   "delete-image",
+	Use:     "delete-image",
 	Aliases: []string{"rmi"},
-	Short: "Delete a unikernel image",
+	Short:   "Delete a unikernel image",
 	Long: `Deletes an image.
-	You may specify the image by name or id.`,
-	
+You may specify the image by name or id.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if err := readClientConfig(); err != nil {

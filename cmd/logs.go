@@ -1,13 +1,15 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/client"
-	"os"
-	"github.com/emc-advanced-dev/pkg/errors"
-	"fmt"
 	"bufio"
+	"fmt"
+	"os"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/client"
 )
 
 var follow, deleteOnDisconnect bool
@@ -17,28 +19,28 @@ var logsCmd = &cobra.Command{
 	Short: "retrieve the logs (stdout) of a unikernel instance",
 	Long: `Retrieves logs from a running unikernel instance.
 
-	Cannot be used on an instance in powered-off state.
-	Use the --follow flag to attach to the instance's stdout
-	Use --delete in combination with --follow to force automatic instance
-	deletion when the HTTP connection to the instance is broken (by client
-	disconnect). The --delete flag is typically intended for use with
-	orchestration software such as cluster managers which may require
-	a persistent http connection managed instances.
+Cannot be used on an instance in powered-off state.
+Use the --follow flag to attach to the instance's stdout
+Use --delete in combination with --follow to force automatic instance
+deletion when the HTTP connection to the instance is broken (by client
+disconnect). The --delete flag is typically intended for use with
+orchestration software such as cluster managers which may require
+a persistent http connection managed instances.
 
-	You may specify the instance by name or id.
+You may specify the instance by name or id.
 
-	Example usage:
-		unik logs --instancce myInstance
+Example usage:
+	unik logs --instancce myInstance
 
-		# will return captured stdout from myInstance since boot time
+	# will return captured stdout from myInstance since boot time
 
-		unik logs --instance myInstance --follow --delete
+	unik logs --instance myInstance --follow --delete
 
-		# will open an http connection between the cli and unik
-		backend which streams stdout from the instance to the client
-		# when the client disconnects (i.e. with Ctrl+C) unik will
-		automatically power down and terminate the instance
-		`,
+	# will open an http connection between the cli and unik
+	backend which streams stdout from the instance to the client
+	# when the client disconnects (i.e. with Ctrl+C) unik will
+	automatically power down and terminate the instance
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if err := readClientConfig(); err != nil {

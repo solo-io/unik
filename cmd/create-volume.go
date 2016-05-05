@@ -1,13 +1,15 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/client"
-	"os"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"io/ioutil"
+	"os"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/client"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
@@ -18,44 +20,44 @@ var cvCmd = &cobra.Command{
 	Use:   "create-volume",
 	Short: "Create a unik-managed data volume",
 	Long: `Create a data volume which can be attached to and detached from
-	unik-managed instances.
+unik-managed instances.
 
-	Volumes can be created from a directory, which will copy the contents
-	of the directory onto the voume. Empty volume can also be created.
+Volumes can be created from a directory, which will copy the contents
+of the directory onto the voume. Empty volume can also be created.
 
-	Volumes will persist after instances are deleted, allowing application data
-	to be persisted beyond the lifecycle of individual instances.
+Volumes will persist after instances are deleted, allowing application data
+to be persisted beyond the lifecycle of individual instances.
 
-	If specifying a data folder (with --data), specifying a size for the volume is
-	not necessary. UniK will automatically size the volume to fit the data provided.
-	A larger volume can be requested with the --size flag.
+If specifying a data folder (with --data), specifying a size for the volume is
+not necessary. UniK will automatically size the volume to fit the data provided.
+A larger volume can be requested with the --size flag.
 
-	If no data directory is provided, --size is a required parameter to specify the
-	desired size for the empty volume to be createad.
+If no data directory is provided, --size is a required parameter to specify the
+desired size for the empty volume to be createad.
 
-	Volumes are created for a specific provider, specified with the --provider flag.
-	Volumes can only be attached to instances of the same provider type.
-	To see a list of available providers, run 'unik providers'
+Volumes are created for a specific provider, specified with the --provider flag.
+Volumes can only be attached to instances of the same provider type.
+To see a list of available providers, run 'unik providers'
 
-	Volume names must be unique. If a volume exists with the same name, you will be
-	required to remove the volume with 'unik delete-volume' before the new volume
-	can be created.
+Volume names must be unique. If a volume exists with the same name, you will be
+required to remove the volume with 'unik delete-volume' before the new volume
+can be created.
 
-	--size parameter uses MB
+--size parameter uses MB
 
-	Example usage:
-		unik create-volume --name myVolume --data ./myApp/data --provider aws
+Example usage:
+	unik create-volume --name myVolume --data ./myApp/data --provider aws
 
-		# will create an EBS-backed AWS volume named myVolume using the data found in ./myApp/src,
-		# the size will be either 1GB (the default minimum size on AWS) or greater, if the size of the
-		volume is greater
+	# will create an EBS-backed AWS volume named myVolume using the data found in ./myApp/src,
+	# the size will be either 1GB (the default minimum size on AWS) or greater, if the size of the
+	volume is greater
 
 
-	Another example (empty volume):
-		unik create-volume -name anotherVolume --size 500 -provider vsphere
+Another example (empty volume):
+	unik create-volume -name anotherVolume --size 500 -provider vsphere
 
-		# will create a 500mb sparse vmdk file and upload it to the vsphere datastore,
-		where it can be attached to a vsphere instance
+	# will create a 500mb sparse vmdk file and upload it to the vsphere datastore,
+	where it can be attached to a vsphere instance
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
@@ -75,11 +77,11 @@ var cvCmd = &cobra.Command{
 				host = clientConfig.Host
 			}
 			logrus.WithFields(logrus.Fields{
-				"name": name,
-				"data": data,
-				"size": size,
+				"name":     name,
+				"data":     data,
+				"size":     size,
 				"provider": provider,
-				"host": host,
+				"host":     host,
 			}).Infof("creating volume")
 			if data != "" {
 				dataTar, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")

@@ -1,13 +1,15 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/client"
-	"os"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"io/ioutil"
+	"os"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/client"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
@@ -20,34 +22,34 @@ var buildCmd = &cobra.Command{
 	Short: "Build a unikernel image from source code files",
 	Long: `Compiles source files into a runnable unikernel image.
 
-	Images must be compiled for a specific provider, specified with the --provider flag
-	To see a list of available providers, run 'unik providers'
+Images must be compiled for a specific provider, specified with the --provider flag
+To see a list of available providers, run 'unik providers'
 
-	A unikernel compiler that is compatible with the provider must be specified with the --compiler flag
-	To see a list of available compilers, run 'unik compilers'
+A unikernel compiler that is compatible with the provider must be specified with the --compiler flag
+To see a list of available compilers, run 'unik compilers'
 
-	If you wish to attach volumes to instances of an image, the image must be compiled in advance
-	with a list of the expected mount points. e.g. for an application that reads from a '/data' folder,
-	the unikernel should be compiled with the flag -mount /data
+If you wish to attach volumes to instances of an image, the image must be compiled in advance
+with a list of the expected mount points. e.g. for an application that reads from a '/data' folder,
+the unikernel should be compiled with the flag -mount /data
 
-	Runtime arguments to be passed to your unikernel must also be specified at compile time.
-	You can specify arguments as a single string passed to the --args flag
+Runtime arguments to be passed to your unikernel must also be specified at compile time.
+You can specify arguments as a single string passed to the --args flag
 
-	Image names must be unique. If an image exists with the same name, you can force overwriting with the
-	--force flag
+Image names must be unique. If an image exists with the same name, you can force overwriting with the
+--force flag
 
-	Example usage:
-		unik build --name myUnikernel --path ./myApp/src --compiler rump-go-xen --provider aws --mountpoint /foo --mountpoint /bar --args '-myParameter MYVALUE' --force
+Example usage:
+	unik build --name myUnikernel --path ./myApp/src --compiler rump-go-xen --provider aws --mountpoint /foo --mountpoint /bar --args '-myParameter MYVALUE' --force
 
-		# will create a unikernel named myUnikernel using the sources found in ./myApp/src,
-		# compiled using rumprun for the xen hypervisor, targeting AWS infrastructure,
-		# expecting a volume to be mounted at /foo at runtime,
-		# expecting another volume to be mounted at /bar at runtime,
-		# passing '-myParameter MYVALUE' as arguments to the application when it is run,
-		# and deleting any previous existing instances and image for the name myUnikernel before compiling
+	# will create a unikernel named myUnikernel using the sources found in ./myApp/src,
+	# compiled using rumprun for the xen hypervisor, targeting AWS infrastructure,
+	# expecting a volume to be mounted at /foo at runtime,
+	# expecting another volume to be mounted at /bar at runtime,
+	# passing '-myParameter MYVALUE' as arguments to the application when it is run,
+	# and deleting any previous existing instances and image for the name myUnikernel before compiling
 
-	Another example (using only the required parameters):
-		unik build --name anotherUnikernel --path ./anotherApp/src --compiler rump-go-vmware --provider vsphere
+Another example (using only the required parameters):
+	unik build --name anotherUnikernel --path ./anotherApp/src --compiler rump-go-vmware --provider vsphere
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
@@ -70,14 +72,14 @@ var buildCmd = &cobra.Command{
 				host = clientConfig.Host
 			}
 			logrus.WithFields(logrus.Fields{
-				"name": name,
-				"path": path,
-				"compiler": compiler,
-				"provider": provider ,
-				"args": args,
+				"name":        name,
+				"path":        path,
+				"compiler":    compiler,
+				"provider":    provider,
+				"args":        args,
 				"mountPoints": mountPoints,
-				"force": force,
-				"host": host,
+				"force":       force,
+				"host":        host,
 			}).Infof("running unik build")
 			sourceTar, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
 			if err != nil {
