@@ -1,20 +1,21 @@
 package cmd
 
 import (
-	"fmt"
-
-	"github.com/spf13/cobra"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/client"
-	"os"
 	"encoding/json"
+	"fmt"
+	"os"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/client"
 )
 
 var describeImageCmd = &cobra.Command{
 	Use:   "describe-image",
 	Short: "Get image info as a Json string",
-	Long: `Get a json representation of an image as it is stored in unik.`,
+	Long:  `Get a json representation of an image as it is stored in unik.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if err := readClientConfig(); err != nil {

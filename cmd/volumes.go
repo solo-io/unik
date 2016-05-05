@@ -1,11 +1,13 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
+
 	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/client"
 )
 
 var volumesCmd = &cobra.Command{
@@ -13,9 +15,9 @@ var volumesCmd = &cobra.Command{
 	Short: "List available unik-managed volumes",
 	Long: `Lists all available unik-managed volumes across providers.
 
-	ATTACHED-INSTANCE gives the instance ID of the instance a volume
-	is attached to, if any. Only volumes that have no attachment are
-	available to be attached to an instance.`,
+ATTACHED-INSTANCE gives the instance ID of the instance a volume
+is attached to, if any. Only volumes that have no attachment are
+available to be attached to an instance.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if err := readClientConfig(); err != nil {

@@ -1,13 +1,15 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/Sirupsen/logrus"
-	"os"
-	"github.com/emc-advanced-dev/unik/pkg/client"
-	"strings"
 	"fmt"
+	"os"
+	"strings"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/client"
 )
 
 var instanceName, imageName string
@@ -17,31 +19,31 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run a unikernel instance from a compiled image",
 	Long: `Deploys a running instance from a unik-compiled unikernel disk image.
-	The instance will be deployed on the provider the image was compiled for.
-	e.g. if the image was compiled for virtualbox, unik will attempt to deploy
-	the image on the configured virtualbox environment.
+The instance will be deployed on the provider the image was compiled for.
+e.g. if the image was compiled for virtualbox, unik will attempt to deploy
+the image on the configured virtualbox environment.
 
-	'unik run' requires a unik-managed volume (see 'unik volumes' and 'unik create volume')
-	to be attached and mounted to each mount point specified at image compilation time.
-	This means that if the image was compiled with two mount points, /data1 and /data2,
-	'unik run' requires 2 available volumes to be attached to the instance at runtime, which
-	must be specified with the flags --vol SOME_VOLUME_NAME:/data1 --vol ANOTHER_VOLUME_NAME:/data2
-	If no mount points are required for the image, volumes cannot be attached.
+'unik run' requires a unik-managed volume (see 'unik volumes' and 'unik create volume')
+to be attached and mounted to each mount point specified at image compilation time.
+This means that if the image was compiled with two mount points, /data1 and /data2,
+'unik run' requires 2 available volumes to be attached to the instance at runtime, which
+must be specified with the flags --vol SOME_VOLUME_NAME:/data1 --vol ANOTHER_VOLUME_NAME:/data2
+If no mount points are required for the image, volumes cannot be attached.
 
-	environment variables can be set at runtime through the use of the -env flag.
+environment variables can be set at runtime through the use of the -env flag.
 
-	Example usage:
-		unik run --instanceName newInstance --imageName myImage --vol myVol:/mount1 --vol yourVol:/mount2 --env foo=bar --env another=one
+Example usage:
+	unik run --instanceName newInstance --imageName myImage --vol myVol:/mount1 --vol yourVol:/mount2 --env foo=bar --env another=one
 
-		# will create and run an instance of myImage on the provider environment myImage is compiled for
-		# instance will be named newInstance
-		# instance will attempt to mount unik-managed volume myVol to /mount1
-		# instance will attempt to mount unik-managed volume yourVol to /mount2
-		# instance will boot with env variable 'foo' set to 'bar'
-		# instance will boot with env variable 'another' set to 'one'
+	# will create and run an instance of myImage on the provider environment myImage is compiled for
+	# instance will be named newInstance
+	# instance will attempt to mount unik-managed volume myVol to /mount1
+	# instance will attempt to mount unik-managed volume yourVol to /mount2
+	# instance will boot with env variable 'foo' set to 'bar'
+	# instance will boot with env variable 'another' set to 'one'
 
-		# note that run must take exactly one --vol argument for each mount point defined in the image specification
-	`,
+	# note that run must take exactly one --vol argument for each mount point defined in the image specification
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if instanceName == "" {
@@ -81,10 +83,10 @@ var runCmd = &cobra.Command{
 
 			logrus.WithFields(logrus.Fields{
 				"instanceName": instanceName,
-				"imageName": imageName,
-				"env": env,
-				"mounts": mounts,
-				"host": host,
+				"imageName":    imageName,
+				"env":          env,
+				"mounts":       mounts,
+				"host":         host,
 			}).Infof("running unik run")
 			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mounts, env, noCleanup)
 			if err != nil {

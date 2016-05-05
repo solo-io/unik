@@ -1,18 +1,19 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/Sirupsen/logrus"
 	"os"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/emc-advanced-dev/unik/pkg/client"
 )
 
 var psCmd = &cobra.Command{
-	Use:   "instances",
+	Use:     "instances",
 	Aliases: []string{"ps"},
-	Short: "List pending/running/stopped unik instances",
-	Long: `Lists all unik-managed instances across providers.
-	`,
+	Short:   "List pending/running/stopped unik instances",
+	Long:    `Lists all unik-managed instances across providers.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if err := readClientConfig(); err != nil {
