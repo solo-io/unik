@@ -42,13 +42,6 @@
     </dependency>
 
     <dependency>
-      <groupId>tv.cntt</groupId>
-      <artifactId>sinetja</artifactId>
-      <version>1.2</version>
-    </dependency>
-
-
-    <dependency>
       <groupId>REPLACE_WITH_GROUPID</groupId>
       <artifactId>REPLACE_WITH_ARTIFACTID</artifactId>
       <version>REPLACE_WITH_VERSION</version>

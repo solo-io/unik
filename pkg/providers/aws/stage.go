@@ -123,8 +123,13 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 	}
 
 	architecture := "x86_64"
-	virtualizationType := "paravirtual"
-	kernelId := kernelIdMap[p.config.Region]
+	virtualizationType := compilers.PARAVIRTUAL
+	kernelId := aws.String(kernelIdMap[p.config.Region])
+	switch params.RawImage.ExtraConfig[compilers.VIRTUALIZATION_TYPE] {
+	case compilers.HVM:
+		virtualizationType = compilers.HVM
+		kernelId = nil //no kernel id for HVM
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"name":                  params.Name,
@@ -141,7 +146,7 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 		BlockDeviceMappings: blockDeviceMappings,
 		RootDeviceName:      aws.String(rootDeviceName),
 		VirtualizationType:  aws.String(virtualizationType),
-		KernelId:            aws.String(kernelId),
+		KernelId:            kernelId,
 	}
 
 	registerImageOutput, err := ec2svc.RegisterImage(registerImageInput)

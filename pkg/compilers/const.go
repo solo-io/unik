@@ -19,10 +19,15 @@ const (
 	SCSI_Storage = "SCSI_Storage"
 	SATA_Storage = "SATA_Storage"
 
-	//qemu-img convert config
+	//Image Output Type
 	IMAGE_TYPE = "IMAGE_TYPE"
 
 	RAW = "raw"
 	VMDK = "vmdk"
 	QCOW2 = "qcow2"
+
+	//How should this image be virtualized? (EC2)
+	VIRTUALIZATION_TYPE = "VIRTUALIZATION_TYPE"
+	PARAVIRTUAL = "paravirtual"
+	HVM = "hvm"
 )

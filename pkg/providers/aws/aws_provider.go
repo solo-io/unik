@@ -37,7 +37,9 @@ func (p *AwsProvider) newEC2() *ec2.EC2 {
 		Region:      aws.String(p.config.Region),
 	})
 	sess.Handlers.Send.PushFront(func(r *request.Request) {
-		logrus.WithFields(logrus.Fields{"request": r}).Debugf("request sent to aws")
+		if r != nil {
+			logrus.WithFields(logrus.Fields{"params": r.Params}).Debugf("request sent to ec2")
+		}
 	})
 	return ec2.New(sess)
 }
@@ -47,7 +49,9 @@ func (p *AwsProvider) newS3() *s3.S3 {
 		Region:      aws.String(p.config.Region),
 	})
 	sess.Handlers.Send.PushFront(func(r *request.Request) {
-		logrus.WithFields(logrus.Fields{"request": r}).Debugf("request sent to aws")
+		if r != nil {
+			logrus.WithFields(logrus.Fields{"params": r.Params}).Debugf("request sent to s3")
+		}
 	})
 	return s3.New(sess)
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"time"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 )
 
 func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
@@ -64,6 +65,13 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		return nil, errors.New("could not convert instance env to json", err)
 	}
 	encodedData := base64.StdEncoding.EncodeToString(envData)
+
+	var instanceType *string
+	switch image.ExtraConfig[compilers.VIRTUALIZATION_TYPE]{
+	case compilers.HVM:
+		instanceType = aws.String("t2.micro")
+	}
+
 	runInstanceInput := &ec2.RunInstancesInput{
 		ImageId:  aws.String(image.Id),
 		MinCount: aws.Int64(1),
@@ -71,6 +79,7 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		Placement: &ec2.Placement{
 			AvailabilityZone: aws.String(p.config.Zone),
 		},
+		InstanceType: instanceType,
 		UserData: aws.String(encodedData),
 	}
 

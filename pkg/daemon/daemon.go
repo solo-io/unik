@@ -106,6 +106,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{
 		ExtraConfig: types.ExtraConfig{
 			compilers.IMAGE_TYPE: compilers.QCOW2,
+			compilers.VIRTUALIZATION_TYPE: compilers.HVM,
 		},
 	}
 
