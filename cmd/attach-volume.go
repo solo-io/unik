@@ -1,32 +1,33 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/client"
 )
 
 var mountPoint string
 
 var attachCmd = &cobra.Command{
-	Use:   "attach-volume",
+	Use:     "attach-volume",
 	Aliases: []string{"attach"},
-	Short: "Attach a volume to a stopped instance",
+	Short:   "Attach a volume to a stopped instance",
 	Long: `Attaches a volume to a stopped instance at a specified mount point.
-	You specify the volume by name or id.
+You specify the volume by name or id.
 
-	The volume must be attached to an available mount point on the instance.
-	Mount points are image-specific, and are determined when the image is compiled.
+The volume must be attached to an available mount point on the instance.
+Mount points are image-specific, and are determined when the image is compiled.
 
-	For a list of mount points on the image for this instance, run unik images, or
-	unik describe image
+For a list of mount points on the image for this instance, run unik images, or
+unik describe image
 
-	If the specified mount point is occupied by another volume, the command will result
-	in an error
-	`,
-	
+If the specified mount point is occupied by another volume, the command will result
+in an error
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if err := readClientConfig(); err != nil {

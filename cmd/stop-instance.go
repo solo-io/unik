@@ -1,18 +1,20 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/client"
 	"os"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/client"
 )
 
 var stopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop a running unikernel instance",
 	Long: `Stops a running instance.
-	You may specify the instance by name or id.`,
+You may specify the instance by name or id.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if err := readClientConfig(); err != nil {

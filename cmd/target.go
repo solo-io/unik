@@ -3,13 +3,15 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
-	"github.com/emc-advanced-dev/unik/pkg/config"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"io/ioutil"
-	"github.com/Sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 	"os"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
+
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/config"
 )
 
 var show bool
@@ -18,13 +20,13 @@ var targetCmd = &cobra.Command{
 	Use:   "target",
 	Short: "Configure unik daemon URL for cli client commands",
 	Long: `Sets the host url of the unik daemon for cli commands.
-	If running unik locally, use 'unik target --host localhost'
+If running unik locally, use 'unik target --host localhost'
 
-	args:
-	--host: <string, required>: host/ip address of the host running the unik daemon
-	--port: <int, optional>: port the daemon is running on (default: 3000)
+args:
+--host: <string, required>: host/ip address of the host running the unik daemon
+--port: <int, optional>: port the daemon is running on (default: 3000)
 
-	--show: <bool,optional>: shows the current target that is set`,
+--show: <bool,optional>: shows the current target that is set`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if show {
@@ -54,8 +56,8 @@ func setClientConfig(host string, port int) error {
 	if err != nil {
 		return errors.New("failed to convert config to yaml string ", err)
 	}
-	if err := ioutil.WriteFile(clientConfigFile, data, 0644); err !=nil {
-		return errors.New("failed writing config to file "+ clientConfigFile, err)
+	if err := ioutil.WriteFile(clientConfigFile, data, 0644); err != nil {
+		return errors.New("failed writing config to file "+clientConfigFile, err)
 	}
 	return nil
 }

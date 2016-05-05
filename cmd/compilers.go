@@ -15,18 +15,20 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/client"
 	"fmt"
-	"strings"
 	"os"
+	"strings"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
+	"github.com/emc-advanced-dev/unik/pkg/client"
 )
 
 var compilersCmd = &cobra.Command{
 	Use:   "compilers",
 	Short: "List available unikernel compilers",
-	Long: `Returns a list of compilers available to the targeted unik backend.`,
+	Long:  `Returns a list of compilers available to the targeted unik backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
 			if err := readClientConfig(); err != nil {
