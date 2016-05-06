@@ -28,7 +28,7 @@ To learn more about the motivation behind project UniK, read our [blog](https://
 
 ### Supported unikernel types:
 * **rump**: UniK supports compiling C/C++ and Go code into [rumprun](docs/compilers/rump.md) unikernels
-* **OSv**: UniK supports compiling Java code into [OSv](http://osv.io/) unikernels (currently only compatible with Virtualbox provider)
+* **OSv**: UniK supports compiling Java code into [OSv](http://osv.io/) unikernels (currently only compatible with Virtualbox and AWS providers)
 
 *We are looking for community help to add support for more unikernel types and languages.*
 
@@ -39,7 +39,7 @@ To learn more about the motivation behind project UniK, read our [blog](https://
 
 ### Roadmap:
 * nodejs support using [rump kernel](http://rumpkernel.org)
-* extend [OSv](http://osv.io/) support AWS and vSphere providers
+* extend [OSv](http://osv.io/) support vSphere provider
 * ocaml support using [MirageOs](https://mirage.io/)
 * additional provider support including [OpenStack](https://www.openstack.org/)
 * dynamic volume and application arguments configuration at instance runtime (rather than at compile time)
