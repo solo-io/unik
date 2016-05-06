@@ -139,9 +139,16 @@ const (
 	StorageDriver_IDE = "IDE"
 )
 
+type VsphereNetworkType string
+const (
+	VsphereNetworkType_E1000 = "e1000"
+	VsphereNetworkType_VMXNET3 = "vmxnet3"
+)
+
 type RunSpec struct {
 	DeviceMappings []DeviceMapping `json:"DeviceMappings"` //required for all providers
 	StorageDriver StorageDriver `json:"StorageDriver,omitempty"`
+	VsphereNetworkType VsphereNetworkType `json:"StorageDriver,VsphereNetworkType"`
 }
 
 type DeviceMapping struct {

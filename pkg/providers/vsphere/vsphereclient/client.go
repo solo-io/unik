@@ -112,7 +112,7 @@ func (vc *VsphereClient) GetVmIp(vmName string) (string, error) {
 	return vm.Guest.IPAddress, nil
 }
 
-func (vc *VsphereClient) CreateVm(vmName string, memoryMb int) error {
+func (vc *VsphereClient) CreateVm(vmName string, memoryMb int, networkType types.VsphereNetworkType) error {
 	cmd := exec.Command("docker", "run", "--rm",
 		"projectunik/vsphere-client",
 		"govc",
@@ -122,6 +122,7 @@ func (vc *VsphereClient) CreateVm(vmName string, memoryMb int) error {
 		"--force=true",
 		fmt.Sprintf("--m=%v", memoryMb),
 		"--on=false",
+		fmt.Sprintf("-net.adapter=%s", networkType),
 		vmName,
 	)
 	unikutil.LogCommand(cmd, true)

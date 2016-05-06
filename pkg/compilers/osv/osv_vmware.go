@@ -23,6 +23,7 @@ func (osvCompiler *OsvVmwareCompiler) CompileRawImage(sourceTar io.ReadCloser, a
 				types.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"},
 			},
 			StorageDriver: types.StorageDriver_IDE,
+			VsphereNetworkType: types.VsphereNetworkType_VMXNET3,
 		},
 	}, nil
 }
