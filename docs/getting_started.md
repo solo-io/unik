@@ -8,7 +8,7 @@ In this tutorial we'll be:
 ### Installing UniK
 #### Prerequisites
 Ensure that each of the following are installed
-- [Docker](http://www.docker.com/) installed and running with at least 8GB available space for building images
+- [Docker](http://www.docker.com/) installed and running with at least 4GB available space for building images
 - [`make`](https://www.gnu.org/software/make/)
 - [Golang](https://golang.org/) v1.5 or later
 - [QEMU](http://wiki.qemu.org/Main_Page)
