@@ -9,7 +9,7 @@ import (
 type OsvVirtualboxCompiler struct {}
 
 func (osvCompiler *OsvVirtualboxCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (_ *types.RawImage, err error) {
-	resultFile, err := compileRawImage(sourceTar, args, mntPoints)
+	resultFile, err := compileRawImage(sourceTar, args, mntPoints, false)
 	if err != nil {
 		return nil, errors.New("failed to compile raw osv image", err)
 	}

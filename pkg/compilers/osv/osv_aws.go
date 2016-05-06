@@ -10,7 +10,7 @@ type OsvAwsCompiler struct {
 }
 
 func (osvCompiler *OsvAwsCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (_ *types.RawImage, err error) {
-	resultFile, err := compileRawImage(sourceTar, args, mntPoints)
+	resultFile, err := compileRawImage(sourceTar, args, mntPoints, true)
 	if err != nil {
 		return nil, errors.New("failed to compile raw osv image", err)
 	}

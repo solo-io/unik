@@ -12,7 +12,7 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 )
 
-func compileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (string, error) {
+func compileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string, useEc2Bootstrap bool) (string, error) {
 	localFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return "", err
@@ -27,6 +27,9 @@ func compileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (
 		"-v", localFolder+"/:/project_directory/",
 		"projectunik/compilers-osv-java",
 	)
+	if useEc2Bootstrap {
+		cmd.Args = append(cmd.Args, "-ec2", "true")
+	}
 	logrus.WithFields(logrus.Fields{
 		"command": cmd.Args,
 	}).Debugf("running compilers-osv-java container")
