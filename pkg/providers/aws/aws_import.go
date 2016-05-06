@@ -33,7 +33,6 @@ func createDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string,
 		return "", err
 	}
 
-
 	// upload the image file to aws
 	bucket := fmt.Sprintf("unik-tmp-%d", rand.Int63())
 
@@ -160,7 +159,7 @@ func createDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string,
 			ImportManifestUrl: aws.String(getManiUrlStr),  // Required
 		},
 		Volume: &ec2.VolumeDetail{ // Required
-			Size: aws.Int64(1), // Required
+			Size: aws.Int64(toGigs(imageSize)), // Required
 		},
 	}
 	task, err := ec2svc.ImportVolume(volparams)
@@ -233,7 +232,7 @@ func uploadToAws(s3svc *s3.S3, body io.ReadSeeker, size int64, bucket, path stri
 }
 
 func toGigs(i int64) int64 {
-	return 1 + (i >> 20)
+	return 1 + (i >> 30)
 }
 
 func createBucket(s3svc *s3.S3, bucketName string) error {
