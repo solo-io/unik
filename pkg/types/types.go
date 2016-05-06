@@ -29,7 +29,7 @@ type Image struct {
 	SizeMb         int64           `json:"SizeMb"`
 	Infrastructure Infrastructure  `json:"Infrastructure"`
 	Created        time.Time       `json:"Created"`
-	StageSpec      StageSpec       `json:"RunSpec"`
+	StageSpec      StageSpec       `json:"StageSpec"`
 	RunSpec        RunSpec         `json:"RunSpec"`
 }
 
@@ -109,7 +109,7 @@ func (volume *Volume) String() string {
 
 type RawImage struct {
 	LocalImagePath string          `json:"LocalImagePath"`
-	StageSpec      StageSpec       `json:"RunSpec"`
+	StageSpec      StageSpec       `json:"StageSpec"`
 	RunSpec        RunSpec         `json:"RunSpec"`
 }
 
