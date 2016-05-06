@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"encoding/json"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 type VsphereClient struct {
@@ -313,7 +314,7 @@ func (vc *VsphereClient) PowerOffVm(vmName string) error {
 	return nil
 }
 
-func (vc *VsphereClient) AttachDisk(vmName, vmdkPath string, controllerKey int) error {
+func (vc *VsphereClient) AttachDisk(vmName, vmdkPath string, controllerKey int, deviceType types.StorageDriver) error {
 	password, _ := vc.u.User.Password()
 	cmd := exec.Command("docker", "run", "--rm",
 		"projectunik/vsphere-client",
@@ -326,6 +327,7 @@ func (vc *VsphereClient) AttachDisk(vmName, vmdkPath string, controllerKey int) 
 		password,
 		vmName,
 		"["+vc.ds+"] "+vmdkPath,
+		string(deviceType),
 		fmt.Sprintf("%v", controllerKey),
 	)
 	unikutil.LogCommand(cmd, true)
@@ -335,7 +337,7 @@ func (vc *VsphereClient) AttachDisk(vmName, vmdkPath string, controllerKey int) 
 	return nil
 }
 
-func (vc *VsphereClient) DetachDisk(vmName string, controllerKey int) error {
+func (vc *VsphereClient) DetachDisk(vmName string, controllerKey int, deviceType types.StorageDriver) error {
 	password, _ := vc.u.User.Password()
 	cmd := exec.Command("docker", "run", "--rm",
 		"projectunik/vsphere-client",
@@ -347,6 +349,7 @@ func (vc *VsphereClient) DetachDisk(vmName string, controllerKey int) error {
 		vc.u.User.Username(),
 		password,
 		vmName,
+		string(deviceType),
 		fmt.Sprintf("%v", controllerKey),
 	)
 	unikutil.LogCommand(cmd, true)

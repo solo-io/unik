@@ -22,7 +22,7 @@ func (osvCompiler *OsvVmwareCompiler) CompileRawImage(sourceTar io.ReadCloser, a
 			DeviceMappings: []types.DeviceMapping{
 				types.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"},
 			},
-			StorageDriver: types.StorageDriver_SATA,
+			StorageDriver: types.StorageDriver_IDE,
 		},
 	}, nil
 }

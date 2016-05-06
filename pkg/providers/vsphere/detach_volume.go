@@ -21,6 +21,10 @@ func (p *VsphereProvider) DetachVolume(id string) error {
 	if err != nil {
 		return errors.New("retrieving instance "+instanceId, err)
 	}
+	image, err := p.GetImage(instance.ImageId)
+	if err != nil {
+		return errors.New("retrieving image "+instance.ImageId, err)
+	}
 	vm, err := virtualboxclient.GetVm(instance.Id)
 	if err != nil {
 		return errors.New("retreiving vm from virtualbox", err)
@@ -39,7 +43,7 @@ func (p *VsphereProvider) DetachVolume(id string) error {
 	if err != nil {
 		return errors.New("could not convert "+controllerKey+" to int", err)
 	}
-	if err := p.getClient().DetachDisk(instance.Id, controllerPort); err != nil {
+	if err := p.getClient().DetachDisk(instance.Id, controllerPort, image.RunSpec.StorageDriver); err != nil {
 		return errors.New("detaching disk from vm", err)
 	}
 	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {

@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 const (
@@ -66,7 +67,7 @@ func (p *VsphereProvider) DeployInstanceListener() error {
 	if err := c.CreateVm(VsphereUnikInstanceListener, 512); err != nil {
 		return errors.New("creating vm", err)
 	}
-	if err := c.AttachDisk(VsphereUnikInstanceListener, "unik/"+vsphereInstanceListenerVmdk, 0); err != nil {
+	if err := c.AttachDisk(VsphereUnikInstanceListener, "unik/"+vsphereInstanceListenerVmdk, 0, types.StorageDriver_SCSI); err != nil {
 		return errors.New("attaching disk to vm", err)
 	}
 	if err := c.PowerOnVm(VsphereUnikInstanceListener); err != nil {

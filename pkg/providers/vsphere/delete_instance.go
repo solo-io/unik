@@ -39,7 +39,7 @@ func (p *VsphereProvider) DeleteInstance(id string, force bool) error {
 	c := p.getClient()
 	for controllerPort, deviceMapping := range image.RunSpec.DeviceMappings {
 		if deviceMapping.MountPoint != "/" {
-			if err := c.DetachDisk(instance.Id, controllerPort); err != nil {
+			if err := c.DetachDisk(instance.Id, controllerPort, image.RunSpec.StorageDriver); err != nil {
 				return errors.New("detaching volume from instance", err)
 			}
 		}

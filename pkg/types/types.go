@@ -136,6 +136,7 @@ type StorageDriver string
 const (
 	StorageDriver_SCSI = "SCSI"
 	StorageDriver_SATA = "SATA"
+	StorageDriver_IDE = "IDE"
 )
 
 type RunSpec struct {

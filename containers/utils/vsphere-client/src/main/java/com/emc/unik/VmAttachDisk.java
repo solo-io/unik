@@ -1,6 +1,5 @@
 package com.emc.unik;
 
-
 import java.net.URL;
 
 import com.vmware.vim25.*;
@@ -14,15 +13,16 @@ public class VmAttachDisk {
         }
 
         if (args[0].equals("VmAttachDisk")) {
-            if (args.length != 7) {
+            if (args.length != 8) {
                 System.err.println("Usage: java VmAttachDisk <url> " +
-                        "<username> <password> <vmname> <vmdkPath> <deviceKey>");
+                        "<username> <password> <vmname> <vmdkPath> <DeviceType: SCSI|IDE> <deviceSlot>");
                 System.exit(-1);
             }
 
             String vmname = args[4];
             String vmdkPath = args[5];
-            int deviceKey = Integer.parseInt(args[6]);
+            String deviceType = args[6];
+            int deviceSlot = Integer.parseInt(args[7]);
 
             ServiceInstance si = new ServiceInstance(
                     new URL(args[1]), args[2], args[3], true);
@@ -37,9 +37,15 @@ public class VmAttachDisk {
                 System.exit(-1);
             }
 
-            int scsiKey = getScsiDeviceKey(vm);
-            if (scsiKey == -1) {
-                System.out.println("could not find scsi controller device on ");
+            int storageDeviceKey = -1;
+            if (deviceType.contains("SCSI")) {
+                storageDeviceKey = getScsiDeviceKey(vm);
+            } else if (deviceType.contains("IDE")) {
+                storageDeviceKey = getIdeDeviceKey(vm);
+            }
+
+            if (storageDeviceKey == -1) {
+                System.out.println("could not find controller device type: "+deviceType);
                 System.exit(-1);
             }
 
@@ -47,7 +53,7 @@ public class VmAttachDisk {
 
             // mode: persistent|independent_persistent,independent_nonpersistent
             String diskMode = "persistent";
-            VirtualDeviceConfigSpec vdiskSpec = createExistingDiskSpec(vmdkPath, scsiKey, deviceKey, diskMode);
+            VirtualDeviceConfigSpec vdiskSpec = createExistingDiskSpec(vmdkPath, storageDeviceKey, deviceSlot, diskMode);
             VirtualDeviceConfigSpec[] vdiskSpecArray = {vdiskSpec};
             vmConfigSpec.setDeviceChange(vdiskSpecArray);
 
@@ -61,12 +67,13 @@ public class VmAttachDisk {
         if (args[0].equals("VmDetachDisk")) {
             if (args.length != 7) {
                 System.err.println("Usage: java VmAttachDisk <url> " +
-                        "<username> <password> <vmname> <deviceKey>");
+                        "<username> <password> <vmname>  <DeviceType: SCSI|IDE> <deviceSlot>");
                 System.exit(-1);
             }
 
             String vmname = args[4];
-            int deviceKey = Integer.parseInt(args[5]);
+            String deviceType = args[6];
+            int deviceSlot = Integer.parseInt(args[6]);
 
             ServiceInstance si = new ServiceInstance(
                     new URL(args[1]), args[2], args[3], true);
@@ -81,15 +88,21 @@ public class VmAttachDisk {
                 System.exit(-1);
             }
 
-            int scsiKey = getScsiDeviceKey(vm);
-            if (scsiKey == -1) {
-                System.out.println("could not find scsi controller device on ");
+            int storageDeviceKey = -1;
+            if (deviceType.contains("SCSI")) {
+                storageDeviceKey = getScsiDeviceKey(vm);
+            } else if (deviceType.contains("IDE")) {
+                storageDeviceKey = getIdeDeviceKey(vm);
+            }
+
+            if (storageDeviceKey == -1) {
+                System.out.println("could not find controller device type: "+deviceType);
                 System.exit(-1);
             }
 
             VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
 
-            VirtualDeviceConfigSpec vdiskSpec = createRemoveDiskSpec(scsiKey, deviceKey);
+            VirtualDeviceConfigSpec vdiskSpec = createRemoveDiskSpec(storageDeviceKey, deviceSlot);
             VirtualDeviceConfigSpec[] vdiskSpecArray = {vdiskSpec};
             vmConfigSpec.setDeviceChange(vdiskSpecArray);
 
@@ -189,6 +202,17 @@ public class VmAttachDisk {
                 VirtualSCSIController vscsi = (VirtualSCSIController) vd;
                 System.out.println("found scsi controller:"+vscsi.getScsiCtlrUnitNumber()+" "+vscsi.getUnitNumber()+" "+vscsi.getKey());
                 return vscsi.getKey();
+            }
+        }
+        return -1;
+    }
+
+    private static int getIdeDeviceKey(VirtualMachine vm) {
+        for (VirtualDevice vd : vm.getConfig().getHardware().getDevice()) {
+            if (vd instanceof VirtualIDEController) {
+                VirtualIDEController vide = (VirtualIDEController) vd;
+                System.out.println("found ide controller:"+" "+vide.getUnitNumber()+" "+vide.getKey());
+                return vide.getKey();
             }
         }
         return -1;

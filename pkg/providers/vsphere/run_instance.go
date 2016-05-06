@@ -46,7 +46,7 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 			logrus.WithError(err).Errorf("error encountered, ensuring vm and disks are destroyed")
 			c.PowerOffVm(params.Name)
 			for _, portUsed := range portsUsed {
-				c.DetachDisk(params.Name, portUsed)
+				c.DetachDisk(params.Name, portUsed, image.RunSpec.StorageDriver)
 			}
 			c.DestroyVm(params.Name)
 			os.RemoveAll(instanceDir)
@@ -94,7 +94,7 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 	if err := c.CopyVmdk(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
 		return nil, errors.New("copying base boot image", err)
 	}
-	if err := c.AttachDisk(params.Name, instanceBootImagePath, 0); err != nil {
+	if err := c.AttachDisk(params.Name, instanceBootImagePath, 0, image.RunSpec.StorageDriver); err != nil {
 		return nil, errors.New("attaching boot vol to instance", err)
 	}
 
@@ -107,7 +107,7 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 		if err != nil {
 			return nil, errors.New("getting controller port for mnt point", err)
 		}
-		if err := c.AttachDisk(params.Name, getVolumeDatastorePath(volume.Name), controllerPort); err != nil {
+		if err := c.AttachDisk(params.Name, getVolumeDatastorePath(volume.Name), controllerPort, image.RunSpec.StorageDriver); err != nil {
 			return nil, errors.New("attaching disk to vm", err)
 		}
 		portsUsed = append(portsUsed, controllerPort)

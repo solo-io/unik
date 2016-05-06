@@ -8,6 +8,6 @@ import (
 func (p *VsphereProvider) GetConfig() providers.ProviderConfig {
 	return providers.ProviderConfig{
 		UsePartitionTables: true,
-		SupportedCompilers: []string{compilers.RUMP_GO_VMWARE},
+		SupportedCompilers: []string{compilers.RUMP_GO_VMWARE, compilers.OSV_JAVA_VMAWRE},
 	}
 }
