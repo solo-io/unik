@@ -52,6 +52,7 @@ func CreateImageVmware(kernel string, args string, mntPoints []string) (*types.R
 	}
 
 	res.LocalImagePath = imgFile
+	res.StageSpec.ImageFormat = types.ImageFormat_RAW
 	res.RunSpec.StorageDriver = types.StorageDriver_SCSI
 	return res, nil
 

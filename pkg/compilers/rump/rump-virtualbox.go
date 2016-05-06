@@ -70,6 +70,7 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*typ
 	}
 
 	res.LocalImagePath = imgFile
+	res.StageSpec.ImageFormat = types.ImageFormat_RAW
 	res.RunSpec.StorageDriver = types.StorageDriver_SCSI
 	return res, nil
 
