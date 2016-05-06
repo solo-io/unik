@@ -66,6 +66,9 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 	if err := unikos.CopyFile(getImagePath(image.Name), instanceBootImage); err != nil {
 		return nil, errors.New("copying base boot image", err)
 	}
+	if err := virtualboxclient.RefreshDiskUUID(instanceBootImage); err != nil {
+		return nil, errors.New("refreshing disk uuid", err)
+	}
 	if err := virtualboxclient.AttachDisk(params.Name, instanceBootImage, 0, image.RunSpec.StorageDriver); err != nil {
 		return nil, errors.New("attaching boot vol to instance", err)
 	}
