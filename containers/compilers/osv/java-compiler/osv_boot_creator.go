@@ -9,22 +9,30 @@ import (
 	"github.com/Sirupsen/logrus"
 	"time"
 	"path/filepath"
+	"flag"
 )
 
 //expect project directory at /project_directory; mount w/ -v FOLDER:/project_directory
 //output dir will be /project_directory
 //output files to whatever is mounted to /project_directory
 const (
-	java_main_caller_dir = "/java-main-caller"
+	java_main_caller_udp_bootstrap_dir = "/java-main-caller-udp-bootstrap"
+	java_main_caller_ec2_bootstrap_dir = "/java-main-caller-ec2-bootstrap"
 	project_directory = "/project_directory"
 )
 
 var buildImageTimeout = time.Minute * 10
 
 func main() {
+	useEc2Bootstrap := flag.Bool("ec2", false, "indicates whether to compile using the wrapper for ec2")
+	flag.Parse()
+	javaMainCallerDir := java_main_caller_udp_bootstrap_dir //use udp by default
+	if *useEc2Bootstrap {
+		javaMainCallerDir = java_main_caller_ec2_bootstrap_dir
+	}
 	out, _ := exec.Command("ls", "/").CombinedOutput()
 	fmt.Println(strings.Split(string(out), "\n"))
-	appInfo, err := wrapJavaApplication(java_main_caller_dir, project_directory)
+	appInfo, err := wrapJavaApplication(javaMainCallerDir, project_directory)
 	if err != nil {
 		logrus.WithError(err).Errorf("Failed to wrap java project Main Class", err)
 		os.Exit(-1)
@@ -67,7 +75,7 @@ func main() {
 		fmt.Println("capstain building")
 
 		capstanCmd := exec.Command("capstan", "run", "-p", "qemu")
-		capstanCmd.Dir = java_main_caller_dir
+		capstanCmd.Dir = javaMainCallerDir
 		capstanCmd.Stdout = os.Stdout
 		capstanCmd.Stderr = os.Stderr
 		printCommand(capstanCmd)
@@ -76,7 +84,7 @@ func main() {
 			os.Exit(-1)
 		}
 	}()
-	capstanImage := os.Getenv("HOME") + "/.capstan/instances/qemu/java-main-caller/disk.qcow2"
+	capstanImage := filepath.Join(os.Getenv("HOME"), ".capstan", "instances", "qemu", javaMainCallerDir, "disk.qcow2")
 
 	select {
 	case <-fileReady(capstanImage):
@@ -99,19 +107,6 @@ func main() {
 		logrus.WithError(err).Error(string(out))
 		os.Exit(-1)
 	}
-
-
-	//fmt.Println("qemu-img creating")
-	//convertToRawCmd := exec.Command("qemu-img", "convert",
-	//	"-f", "qcow2",
-	//	"-O", "raw",
-	//	capstanImage+".compatible",
-	//	project_directory + "/boot.raw")
-	//printCommand(convertToRawCmd)
-	//if out, err := convertToRawCmd.CombinedOutput(); err != nil {
-	//	logrus.WithError(err).Error(string(out))
-	//	os.Exit(-1)
-	//}
 
 	fmt.Println("file created at " + project_directory + "/boot.qcow2")
 }

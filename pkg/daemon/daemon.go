@@ -103,19 +103,9 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	}
 
 
-	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{
-		ExtraConfig: types.ExtraConfig{
-			compilers.IMAGE_TYPE: compilers.QCOW2,
-			compilers.VIRTUALIZATION_TYPE: compilers.HVM,
-		},
-	}
+	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{}
 
-	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{
-		ExtraConfig: types.ExtraConfig{
-			compilers.STORAGE_CONTROLLER_TYPE: compilers.SATA_Storage,
-			compilers.IMAGE_TYPE: compilers.QCOW2,
-		},
-	}
+	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{}
 
 	d := &UnikDaemon{
 		server:    lxmartini.QuietMartini(),

@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/compilers"
 )
 
 func (p *VirtualboxProvider) DetachVolume(id string) error {
@@ -22,6 +21,10 @@ func (p *VirtualboxProvider) DetachVolume(id string) error {
 	instance, err := p.GetInstance(instanceId)
 	if err != nil {
 		return errors.New("retrieving instance "+instanceId, err)
+	}
+	image, err := p.GetImage(instance.ImageId)
+	if err != nil {
+		return errors.New("retrieving image "+instance.ImageId, err)
 	}
 	vm, err := virtualboxclient.GetVm(instance.Id)
 	if err != nil {
@@ -41,20 +44,10 @@ func (p *VirtualboxProvider) DetachVolume(id string) error {
 	if err != nil {
 		return errors.New("could not convert "+controllerKey+" to int", err)
 	}
-	storageType := getStorageType(instance.ExtraConfig)
-	logrus.Debugf("using storage controller %s", storageType)
+	logrus.Debugf("using storage controller %s", image.RunSpec.StorageDriver)
 
-	switch storageType {
-	case compilers.SCSI_Storage:
-		if err := virtualboxclient.DetachDiskSCSI(instance.Id, controllerPort); err != nil {
-			return errors.New("detaching scsi disk from vm", err)
-		}
-	case compilers.SATA_Storage:
-		if err := virtualboxclient.DetachDiskSATA(instance.Id, controllerPort); err != nil {
-			return errors.New("detaching sata disk from vm", err)
-		}
-	default:
-		return errors.New("unknown storage type: "+string(storageType), nil)
+	if err := virtualboxclient.DetachDisk(instance.Id, controllerPort, image.RunSpec.StorageDriver); err != nil {
+		return errors.New("detaching disk from vm", err)
 	}
 
 	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {

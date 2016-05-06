@@ -8,7 +8,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 const GrubTemplate = `default=0
@@ -209,7 +209,7 @@ func formatDeviceAndCopyContents(folder string, dev BlockDevice) error {
 	return nil
 }
 
-func CreateSingleVolume(rootFile string, folder types.RawVolume) error {
+func CreateSingleVolume(rootFile string, folder unikutil.RawVolume) error {
 	ext2Overhead := MegaBytes(2).ToBytes()
 
 	size := folder.Size
@@ -263,7 +263,7 @@ func copyToPart(folder string, part Resource) error {
 
 }
 
-func CreatePartitionedVolumes(imgFile string, volumes map[string]types.RawVolume) ([]string, error) {
+func CreatePartitionedVolumes(imgFile string, volumes map[string]unikutil.RawVolume) ([]string, error) {
 	sizes := make(map[string]Bytes)
 	var orderedKeys []string
 	var totalSize Bytes
@@ -327,7 +327,7 @@ func CreatePartitionedVolumes(imgFile string, volumes map[string]types.RawVolume
 	return orderedKeys, nil
 }
 
-func CreateVolumes(imgFile string, volumes []types.RawVolume, newPartitioner func(device string) Partitioner) error {
+func CreateVolumes(imgFile string, volumes []unikutil.RawVolume, newPartitioner func(device string) Partitioner) error {
 
 	if len(volumes) == 0 {
 		return nil

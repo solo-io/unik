@@ -25,7 +25,7 @@ func (p *VsphereProvider) CreateVolume(params types.CreateVolumeParams) (_ *type
 	defer os.RemoveAll(localVmdkDir)
 	localVmdkFile := filepath.Join(localVmdkDir, "boot.vmdk")
 	logrus.WithField("raw-image", params.ImagePath).Infof("creating vmdk from raw image")
-	if err := common.ConvertRawImage("vmdk", params.ImagePath, localVmdkFile); err != nil {
+	if err := common.ConvertRawImage(types.ImageFormat_RAW, types.ImageFormat_VMDK, params.ImagePath, localVmdkFile); err != nil {
 		return nil, errors.New("converting raw image to vmdk", err)
 	}
 

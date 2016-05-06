@@ -8,20 +8,20 @@ import (
 )
 
 func VerifyMntsInput(p providers.Provider, image *types.Image, mntPointsToVolumeIds map[string]string) error {
-	for _, deviceMapping := range image.DeviceMappings {
+	for _, deviceMapping := range image.RunSpec.DeviceMappings {
 		if deviceMapping.MountPoint == "/" {
 			//ignore boot mount point
 			continue
 		}
 		_, ok := mntPointsToVolumeIds[deviceMapping.MountPoint]
 		if !ok {
-			logrus.WithFields(logrus.Fields{"required-device-mappings": image.DeviceMappings}).Errorf("requied mount point missing: %s", deviceMapping.MountPoint)
+			logrus.WithFields(logrus.Fields{"required-device-mappings": image.RunSpec.DeviceMappings}).Errorf("requied mount point missing: %s", deviceMapping.MountPoint)
 			return errors.New("required mount point missing from input", nil)
 		}
 	}
 	for mntPoint, volumeId := range mntPointsToVolumeIds {
 		mntPointExists := false
-		for _, deviceMapping := range image.DeviceMappings {
+		for _, deviceMapping := range image.RunSpec.DeviceMappings {
 			if deviceMapping.MountPoint == mntPoint {
 				mntPointExists = true
 				break

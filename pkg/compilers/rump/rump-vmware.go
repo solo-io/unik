@@ -3,10 +3,10 @@ package rump
 import (
 	"fmt"
 
-	uniktypes "github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func CreateImageVmware(kernel string, args string, mntPoints []string) (*uniktypes.RawImage, error) {
+func CreateImageVmware(kernel string, args string, mntPoints []string) (*types.RawImage, error) {
 
 	// create rump config
 	var c rumpConfig
@@ -17,9 +17,9 @@ func CreateImageVmware(kernel string, args string, mntPoints []string) (*uniktyp
 		c.Cmdline = "program.bin" + " " + args
 	}
 
-	res := &uniktypes.RawImage{}
+	res := &types.RawImage{}
 	// add root -> sd0 mapping
-	res.DeviceMappings = append(res.DeviceMappings, uniktypes.DeviceMapping{MountPoint: "/", DeviceName: "sd0"})
+	res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings, types.DeviceMapping{MountPoint: "/", DeviceName: "sd0"})
 
 	for i, mntPoint := range mntPoints {
 		deviceMapped := fmt.Sprintf("sd1%c", 'a'+i)
@@ -31,7 +31,7 @@ func CreateImageVmware(kernel string, args string, mntPoints []string) (*uniktyp
 		}
 
 		c.Blk = append(c.Blk, blk)
-		res.DeviceMappings = append(res.DeviceMappings, uniktypes.DeviceMapping{MountPoint: mntPoint, DeviceName: deviceMapped})
+		res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings, types.DeviceMapping{MountPoint: mntPoint, DeviceName: deviceMapped})
 	}
 
 	// aws network
@@ -52,6 +52,7 @@ func CreateImageVmware(kernel string, args string, mntPoints []string) (*uniktyp
 	}
 
 	res.LocalImagePath = imgFile
+	res.RunSpec.StorageDriver = types.StorageDriver_SCSI
 	return res, nil
 
 }

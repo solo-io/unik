@@ -51,7 +51,7 @@ func (p *VsphereProvider) Stage(params types.StageImageParams) (_ *types.Image, 
 	localVmdkFile := filepath.Join(localVmdkDir, "boot.vmdk")
 
 	logrus.WithField("raw-image", params.RawImage).Infof("creating boot volume from raw image")
-	if err := common.ConvertRawImage("vmdk", params.RawImage.LocalImagePath, localVmdkFile); err != nil {
+	if err := common.ConvertRawImage(params.RawImage.StageSpec.ImageFormat, types.ImageFormat_VMDK, params.RawImage.LocalImagePath, localVmdkFile); err != nil {
 		return nil, errors.New("converting raw image to vmdk", err)
 	}
 
@@ -75,8 +75,8 @@ func (p *VsphereProvider) Stage(params types.StageImageParams) (_ *types.Image, 
 	image := &types.Image{
 		Id:             params.Name,
 		Name:           params.Name,
-		DeviceMappings: params.RawImage.DeviceMappings,
-		ExtraConfig: params.RawImage.ExtraConfig,
+		StageSpec:	params.RawImage.StageSpec,
+		RunSpec:	params.RawImage.RunSpec,
 		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_VSPHERE,
 		Created:        time.Now(),

@@ -62,13 +62,13 @@ func printImages(images ...*types.Image) {
 }
 
 func printImage(image *types.Image) {
-	if len(image.DeviceMappings) == 0 {
+	if len(image.RunSpec.DeviceMappings) == 0 {
 		fmt.Printf("%-20.20s %-20.20s %-14.14s %-20.20s %-6.6v \n", image.Name, image.Id, image.Infrastructure, image.Created.String(), image.SizeMb)
-	} else if len(image.DeviceMappings) > 0 {
-		fmt.Printf("%-20.20s %-20.20s %-14.14s %-20.20s %-6.6v %-20.20s\n", image.Name, image.Id, image.Infrastructure, image.Created.String(), image.SizeMb, image.DeviceMappings[0].MountPoint)
-		if len(image.DeviceMappings) > 1 {
-			for i := 1; i < len(image.DeviceMappings); i++ {
-				fmt.Printf("%94.90s\n", image.DeviceMappings[i].MountPoint)
+	} else if len(image.RunSpec.DeviceMappings) > 0 {
+		fmt.Printf("%-20.20s %-20.20s %-14.14s %-20.20s %-6.6v %-20.20s\n", image.Name, image.Id, image.Infrastructure, image.Created.String(), image.SizeMb, image.RunSpec.DeviceMappings[0].MountPoint)
+		if len(image.RunSpec.DeviceMappings) > 1 {
+			for i := 1; i < len(image.RunSpec.DeviceMappings); i++ {
+				fmt.Printf("%94.90s\n", image.RunSpec.DeviceMappings[i].MountPoint)
 			}
 		}
 	}

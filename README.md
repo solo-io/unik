@@ -57,3 +57,5 @@ UniK is still experimental! APIs and compatibility is subject to change. We are 
 ### Thanks
 
 **UniK** would not be possible without the valuable open-source work of projects in the unikernel community. We would like to extend a special thank-you to [rumpkernel](https://github.com/rumpkernel/), [deferpanic](https://github.com/deferpanic), and [cloudius systems](https://github.com/cloudius-systems).
+
+<!--(for contributors): push images: for i in $(docker images | grep projectunik/ | awk '{print $1}'); do docker push $i; done-->

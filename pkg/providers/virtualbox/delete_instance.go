@@ -5,7 +5,6 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/compilers"
 )
 
 func (p *VirtualboxProvider) DeleteInstance(id string, force bool) error {
@@ -37,22 +36,11 @@ func (p *VirtualboxProvider) DeleteInstance(id string, force bool) error {
 		}
 	}
 
-	for controllerPort, deviceMapping := range image.DeviceMappings {
+	for controllerPort, deviceMapping := range image.RunSpec.DeviceMappings {
 		if deviceMapping.MountPoint != "/" {
-			storageType := getStorageType(image.ExtraConfig)
-			logrus.Debugf("using storage controller %s", storageType)
-
-			switch storageType {
-			case compilers.SCSI_Storage:
-				if err := virtualboxclient.DetachDiskSCSI(instance.Id, controllerPort); err != nil {
-					return errors.New("detaching scsi volume from instance", err)
-				}
-			case compilers.SATA_Storage:
-				if err := virtualboxclient.DetachDiskSATA(instance.Id, controllerPort); err != nil {
-					return errors.New("detaching sata volume from instance", err)
-				}
-			default:
-				return errors.New("unknown storage type: "+string(storageType), nil)
+			logrus.Debugf("using storage controller %s", image.RunSpec.StorageDriver)
+			if err := virtualboxclient.DetachDisk(instance.Id, controllerPort, image.RunSpec.StorageDriver); err != nil {
+				return errors.New("detaching scsi volume from instance", err)
 			}
 		}
 	}

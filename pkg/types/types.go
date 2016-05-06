@@ -26,22 +26,22 @@ const (
 type Image struct {
 	Id             string          `json:"Id"`
 	Name           string          `json:"Name"`
-	DeviceMappings []DeviceMapping `json:"DeviceMappings"`
 	SizeMb         int64           `json:"SizeMb"`
 	Infrastructure Infrastructure  `json:"Infrastructure"`
 	Created        time.Time       `json:"Created"`
-	ExtraConfig    ExtraConfig     `json:"ExtraConfig"`
+	StageSpec      StageSpec       `json:"StageSpec"`
+	RunSpec        RunSpec         `json:"RunSpec"`
 }
 
 func (image *Image) Copy() *Image {
 	return &Image{
 		Id:             image.Id,
 		Name:           image.Name,
-		DeviceMappings: image.DeviceMappings,
 		SizeMb:         image.SizeMb,
 		Infrastructure: image.Infrastructure,
 		Created:        image.Created,
-		ExtraConfig:    image.ExtraConfig,
+		StageSpec:      image.StageSpec,
+		RunSpec:        image.RunSpec,
 	}
 }
 
@@ -60,7 +60,6 @@ type Instance struct {
 	ImageId        string         `json:"ImageId"`
 	Infrastructure Infrastructure `json:"Infrastructure"`
 	Created        time.Time      `json:"Created"`
-	ExtraConfig    ExtraConfig    `json:"ExtraConfig"`
 }
 
 func (instance *Instance) Copy() *Instance {
@@ -71,7 +70,6 @@ func (instance *Instance) Copy() *Instance {
 		Name:           instance.Name,
 		State:          instance.State,
 		Created:        instance.Created,
-		ExtraConfig:        instance.ExtraConfig,
 	}
 }
 
@@ -109,23 +107,43 @@ func (volume *Volume) String() string {
 	return fmt.Sprintf("%+v", *volume)
 }
 
+type RawImage struct {
+	LocalImagePath string          `json:"LocalImagePath"`
+	StageSpec      StageSpec       `json:"StageSpec"`
+	RunSpec        RunSpec         `json:"RunSpec"`
+}
+
+type ImageFormat string
+const (
+	ImageFormat_RAW ImageFormat = "raw"
+	ImageFormat_QCOW2 ImageFormat = "qcow2"
+	ImageFormat_VHD ImageFormat = "vhd"
+	ImageFormat_VMDK ImageFormat = "vmdk"
+)
+
+type XenVirtualizationType string
+const (
+	XenVirtualizationType_HVM = "hvm"
+	XenVirtualizationType_Paravirtual = "paravirtual"
+)
+
+type StageSpec struct {
+	ImageFormat ImageFormat `json:"ImageFormat"` //required for all providers
+	XenVirtualizationType ImageFormat `json:"XenVirtualizationType,omitempty"`
+}
+
+type StorageDriver string
+const (
+	StorageDriver_SCSI = "SCSI"
+	StorageDriver_SATA = "SATA"
+)
+
+type RunSpec struct {
+	DeviceMappings []DeviceMapping `json:"DeviceMappings"` //required for all providers
+	StorageDriver StorageDriver `json:"StorageDriver,omitempty"`
+}
+
 type DeviceMapping struct {
 	MountPoint string `json:"MountPoint"`
 	DeviceName string `json:"DeviceName"`
-}
-
-//ExtraConfig exists for Compilers to specify special instructions to provider; should be used
-//in the case that an Image/Instance/Volume should be run with non-default parameters
-//(e.g. attach SATA controller instead of SCSI)
-type ExtraConfig map[string]string
-
-type RawImage struct {
-	LocalImagePath string          `json:"LocalImagePath"`
-	ExtraConfig    ExtraConfig     `json:"ExtraConfig"`
-	DeviceMappings []DeviceMapping `json:"DeviceMappings"`
-}
-
-type RawVolume struct {
-	Path string `json:"Path"`
-	Size int64  `json:"Size"`
 }

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 type VboxVm struct {
@@ -179,7 +180,7 @@ func GetVm(vmNameOrId string) (*VboxVm, error) {
 	return nil, errors.New("vm "+ vmNameOrId +" not found", err)
 }
 
-func CreateVmSCSI(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType) error {
+func CreateVm(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType, storageDriver types.StorageDriver) error {
 	var nicArgs []string
 	switch adapterType {
 	case config.BridgedAdapter:
@@ -195,8 +196,15 @@ func CreateVmSCSI(vmName, baseFolder, adapterName string, adapterType config.Vir
 	if _, err := vboxManage("registervm", filepath.Join(baseFolder, vmName, fmt.Sprintf("%s.vbox", vmName))); err != nil {
 		return errors.New("registering vm", err)
 	}
-	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
-		return errors.New("adding scsi storage controller", err)
+	switch storageDriver {
+	case types.StorageDriver_SCSI:
+		if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
+			return errors.New("adding scsi storage controller", err)
+		}
+	case types.StorageDriver_SATA:
+		if _, err := vboxManage("storagectl", vmName, "--name", "SATA Controller", "--add", "sata", "--controller", "IntelAHCI"); err != nil {
+			return errors.New("adding sata storage controller", err)
+		}
 	}
 	//NIC ORDER MATTERS
 	if _, err := vboxManage(nicArgs...); err != nil {
@@ -208,7 +216,7 @@ func CreateVmSCSI(vmName, baseFolder, adapterName string, adapterType config.Vir
 	return nil
 }
 
-func CreateVmSATA(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType) error {
+func CreateVmNatless(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType, storageDriver types.StorageDriver) error {
 	var nicArgs []string
 	switch adapterType {
 	case config.BridgedAdapter:
@@ -224,37 +232,15 @@ func CreateVmSATA(vmName, baseFolder, adapterName string, adapterType config.Vir
 	if _, err := vboxManage("registervm", filepath.Join(baseFolder, vmName, fmt.Sprintf("%s.vbox", vmName))); err != nil {
 		return errors.New("registering vm", err)
 	}
-	if _, err := vboxManage("storagectl", vmName, "--name", "SATA Controller", "--add", "sata", "--controller", "IntelAHCI"); err != nil {
-		return errors.New("adding sata storage controller", err)
-	}
-	//NIC ORDER MATTERS
-	if _, err := vboxManage(nicArgs...); err != nil {
-		return errors.New("setting "+string(adapterType)+" networking on vm", err)
-	}
-	if _, err := vboxManage("modifyvm", vmName, "--nic2", "nat", "--nictype2", "virtio"); err != nil {
-		return errors.New("setting nat networking on vm", err)
-	}
-	return nil
-}
-
-func CreateVmNatless(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType) error {
-	var nicArgs []string
-	switch adapterType {
-	case config.BridgedAdapter:
-		nicArgs = []string{"modifyvm", vmName, "--nic1", "bridged", "--bridgeadapter1", adapterName, "--nictype1", "virtio"}
-	case config.HostOnlyAdapter:
-		nicArgs = []string{"modifyvm", vmName, "--nic1", "hostonly", "--hostonlyadapter1", adapterName, "--nictype1", "virtio"}
-	default:
-		return errors.New(string(adapterType)+" not a valid adapter type, must specify either "+string(config.BridgedAdapter)+" or "+string(config.HostOnlyAdapter)+" network config", nil)
-	}
-	if _, err := vboxManage("createvm", "--name", vmName, "--basefolder", baseFolder, "-ostype", "Linux26_64"); err != nil {
-		return errors.New("creating vm", err)
-	}
-	if _, err := vboxManage("registervm", filepath.Join(baseFolder, vmName, fmt.Sprintf("%s.vbox", vmName))); err != nil {
-		return errors.New("registering vm", err)
-	}
-	if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
-		return errors.New("adding scsi storage controller", err)
+	switch storageDriver {
+	case types.StorageDriver_SCSI:
+		if _, err := vboxManage("storagectl", vmName, "--name", "SCSI", "--add", "scsi", "--controller", "LsiLogic"); err != nil {
+			return errors.New("adding scsi storage controller", err)
+		}
+	case types.StorageDriver_SATA:
+		if _, err := vboxManage("storagectl", vmName, "--name", "SATA Controller", "--add", "sata", "--controller", "IntelAHCI"); err != nil {
+			return errors.New("adding sata storage controller", err)
+		}
 	}
 	if _, err := vboxManage(nicArgs...); err != nil {
 		return errors.New("setting "+string(adapterType)+" networking on vm", err)
@@ -300,28 +286,48 @@ func RefreshDiskUUID(diskPath string) error {
 	return err
 }
 
-func AttachDiskSCSI(vmNameOrId, vmdkPath string, controllerPort int) error {
+func AttachDisk(vmNameOrId, vmdkPath string, controllerPort int, storageDriver types.StorageDriver) error {
+	switch storageDriver{
+	case types.StorageDriver_SCSI:
+		return attachDiskSCSI(vmNameOrId, vmdkPath, controllerPort)
+	case types.StorageDriver_SATA:
+		return attachDiskSATA(vmNameOrId, vmdkPath, controllerPort)
+	}
+	return errors.New("unknown storage driver "+string(storageDriver), nil)
+}
+
+func DetachDisk(vmNameOrId string, controllerPort int, storageDriver types.StorageDriver) error {
+	switch storageDriver{
+	case types.StorageDriver_SCSI:
+		return detachDiskSCSI(vmNameOrId, controllerPort)
+	case types.StorageDriver_SATA:
+		return detachDiskSATA(vmNameOrId, controllerPort)
+	}
+	return errors.New("unknown storage driver "+string(storageDriver), nil)
+}
+
+func attachDiskSCSI(vmNameOrId, vmdkPath string, controllerPort int) error {
 	if _, err := vboxManage("storageattach", vmNameOrId, "--storagectl", "SCSI", "--port", fmt.Sprintf("%v", controllerPort), "--type", "hdd", "--medium", vmdkPath); err != nil {
 		return errors.New("attaching storage", err)
 	}
 	return nil
 }
 
-func DetachDiskSCSI(vmNameOrId string, controllerPort int) error {
+func detachDiskSCSI(vmNameOrId string, controllerPort int) error {
 	if _, err := vboxManage("storageattach", vmNameOrId, "--storagectl", "SCSI", "--port", fmt.Sprintf("%v", controllerPort), "--type", "hdd", "--medium", "none"); err != nil {
 		return errors.New("attaching storage", err)
 	}
 	return nil
 }
 
-func AttachDiskSATA(vmNameOrId, vmdkPath string, controllerPort int) error {
+func attachDiskSATA(vmNameOrId, vmdkPath string, controllerPort int) error {
 	if _, err := vboxManage("storageattach", vmNameOrId, "--storagectl", "SATA Controller", "--port", fmt.Sprintf("%v", controllerPort), "--type", "hdd", "--medium", vmdkPath); err != nil {
 		return errors.New("attaching storage", err)
 	}
 	return nil
 }
 
-func DetachDiskSATA(vmNameOrId string, controllerPort int) error {
+func detachDiskSATA(vmNameOrId string, controllerPort int) error {
 	if _, err := vboxManage("storageattach", vmNameOrId, "--storagectl", "SATA Controller", "--port", fmt.Sprintf("%v", controllerPort), "--type", "hdd", "--medium", "none"); err != nil {
 		return errors.New("attaching storage", err)
 	}
