@@ -6,9 +6,9 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 )
 
-type OsvVirtualboxCompiler struct {}
+type OsvVmwareCompiler struct {}
 
-func (osvCompiler *OsvVirtualboxCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (_ *types.RawImage, err error) {
+func (osvCompiler *OsvVmwareCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (_ *types.RawImage, err error) {
 	resultFile, err := compileRawImage(sourceTar, args, mntPoints, false)
 	if err != nil {
 		return nil, errors.New("failed to compile raw osv image", err)

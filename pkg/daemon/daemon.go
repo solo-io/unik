@@ -104,8 +104,8 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 
 
 	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{}
-
 	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{}
+	_compilers[compilers.OSV_JAVA_VMAWRE] = &osv.OsvVmwareCompiler{}
 
 	d := &UnikDaemon{
 		server:    lxmartini.QuietMartini(),
