@@ -13,7 +13,6 @@ import (
 
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 type volumeslice []unikutil.RawVolume
