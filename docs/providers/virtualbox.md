@@ -21,6 +21,8 @@ providers:
 ```
 Depending on whether you prefer running instances on [HostOnly](https://www.virtualbox.org/manual/ch06.html#network_hostonly) network or [Bridged](https://www.virtualbox.org/manual/ch06.html#network_bridged) mode.
 
+If you are running a Host-Only network, make sure DHCP is enabled. See more about configuring Virtualbox networks here: https://www.thomas-krenn.com/en/wiki/Network_Configuration_in_VirtualBox.
+
 We recommend running with HostOnly networking, as it is guaranteed to support *UDP broadcast*, which is a necessary prequisite for bootstrapping UniK instances (see [instance listerner](../instance_listener.md)). UniK will attach a NAT adapter as a second interface to enable Virtualbox instances to reach the internet.
 
 UniK stores Virtualbox data in the following paths:
