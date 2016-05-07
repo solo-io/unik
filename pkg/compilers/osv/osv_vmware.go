@@ -8,6 +8,9 @@ import (
 
 type OsvVmwareCompiler struct {}
 
+
+const OSV_VMWARE_MEMORY = 512
+
 func (osvCompiler *OsvVmwareCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (_ *types.RawImage, err error) {
 	resultFile, err := compileRawImage(sourceTar, args, mntPoints, false)
 	if err != nil {
@@ -24,6 +27,7 @@ func (osvCompiler *OsvVmwareCompiler) CompileRawImage(sourceTar io.ReadCloser, a
 			},
 			StorageDriver: types.StorageDriver_IDE,
 			VsphereNetworkType: types.VsphereNetworkType_VMXNET3,
+			DefaultInstanceMemory: OSV_VMWARE_MEMORY,
 		},
 	}, nil
 }

@@ -55,9 +55,14 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 		}
 	}()
 
+	//if not set, use default
+	if params.InstanceMemory <= 0 {
+		params.InstanceMemory = image.RunSpec.DefaultInstanceMemory
+	}
+
 	logrus.Debugf("creating virtualbox vm")
 
-	if err := virtualboxclient.CreateVm(params.Name, virtualboxInstancesDirectory, p.config.AdapterName, p.config.VirtualboxAdapterType, image.RunSpec.StorageDriver); err != nil {
+	if err := virtualboxclient.CreateVm(params.Name, virtualboxInstancesDirectory, params.InstanceMemory, p.config.AdapterName, p.config.VirtualboxAdapterType, image.RunSpec.StorageDriver); err != nil {
 		return nil, errors.New("creating vm", err)
 	}
 

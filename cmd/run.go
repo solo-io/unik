@@ -14,6 +14,7 @@ import (
 
 var instanceName, imageName string
 var volumes, envPairs []string
+var instanceMemory int
 
 var runCmd = &cobra.Command{
 	Use:   "run",
@@ -33,7 +34,7 @@ If no mount points are required for the image, volumes cannot be attached.
 environment variables can be set at runtime through the use of the -env flag.
 
 Example usage:
-	unik run --instanceName newInstance --imageName myImage --vol myVol:/mount1 --vol yourVol:/mount2 --env foo=bar --env another=one
+	unik run --instanceName newInstance --imageName myImage --vol myVol:/mount1 --vol yourVol:/mount2 --env foo=bar --env another=one --memory 1234
 
 	# will create and run an instance of myImage on the provider environment myImage is compiled for
 	# instance will be named newInstance
@@ -41,6 +42,7 @@ Example usage:
 	# instance will attempt to mount unik-managed volume yourVol to /mount2
 	# instance will boot with env variable 'foo' set to 'bar'
 	# instance will boot with env variable 'another' set to 'one'
+	# instance will get 1234 MB of memory
 
 	# note that run must take exactly one --vol argument for each mount point defined in the image specification
 `,
@@ -88,7 +90,7 @@ Example usage:
 				"mounts":       mounts,
 				"host":         host,
 			}).Infof("running unik run")
-			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mounts, env, noCleanup)
+			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mounts, env, instanceMemory, noCleanup)
 			if err != nil {
 				return errors.New(fmt.Sprintf("running image failed: %v", err), nil)
 			}
@@ -110,5 +112,6 @@ func init() {
 	to the instance at boot time. volumes must be attached to the instance for each mount point expected by the image.
 	run 'unik image <image_name>' to see the mount points required for the image.
 	specified in the format 'volume_id:mount_point'`)
+	runCmd.Flags().IntVar(&instanceMemory, "instanceMemory", 0, "<int, optional> amount of memory (in MB) to assign to the instance. if none is given, the provider default will be used")
 	runCmd.Flags().BoolVar(&noCleanup, "no-cleanup", false, "<bool, optional> for debugging; do not clean up artifacts for instances that fail to launch")
 }

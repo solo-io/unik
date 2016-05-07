@@ -180,7 +180,7 @@ func GetVm(vmNameOrId string) (*VboxVm, error) {
 	return nil, errors.New("vm "+ vmNameOrId +" not found", err)
 }
 
-func CreateVm(vmName, baseFolder, adapterName string, adapterType config.VirtualboxAdapterType, storageDriver types.StorageDriver) error {
+func CreateVm(vmName, baseFolder string, memoryMb int, adapterName string, adapterType config.VirtualboxAdapterType, storageDriver types.StorageDriver) error {
 	var nicArgs []string
 	switch adapterType {
 	case config.BridgedAdapter:
@@ -211,6 +211,9 @@ func CreateVm(vmName, baseFolder, adapterName string, adapterType config.Virtual
 		return errors.New("setting "+string(adapterType)+" networking on vm", err)
 	}
 	if _, err := vboxManage("modifyvm", vmName, "--nic2", "nat", "--nictype2", "virtio"); err != nil {
+		return errors.New("setting nat networking on vm", err)
+	}
+	if _, err := vboxManage("modifyvm", vmName, "--memory", fmt.Sprintf("%v", memoryMb)); err != nil {
 		return errors.New("setting nat networking on vm", err)
 	}
 	return nil

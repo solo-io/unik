@@ -65,10 +65,14 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 	}
 	encodedData := base64.StdEncoding.EncodeToString(envData)
 
-	var instanceType *string
-	switch image.StageSpec.XenVirtualizationType {
-	case types.XenVirtualizationType_HVM:
-		instanceType = aws.String("t2.micro")
+	//if not set, use default
+	if params.InstanceMemory <= 0 {
+		params.InstanceMemory = image.RunSpec.DefaultInstanceMemory
+	}
+
+	instanceType, err := getInstanceType(image.StageSpec.XenVirtualizationType, params.InstanceMemory)
+	if err != nil {
+		return nil, errors.New("could not find instance type for specified memory", err)
 	}
 
 	runInstanceInput := &ec2.RunInstancesInput{
@@ -78,7 +82,7 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		Placement: &ec2.Placement{
 			AvailabilityZone: aws.String(p.config.Zone),
 		},
-		InstanceType: instanceType,
+		InstanceType: aws.String(instanceType),
 		UserData: aws.String(encodedData),
 	}
 
@@ -159,4 +163,52 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 	logrus.WithFields(logrus.Fields{"instance": instance}).Infof("instance created succesfully")
 
 	return instance, nil
+}
+
+type instanceType struct {
+	memory int
+	name string
+}
+
+var hvmInstanceTypes = []instanceType{
+	instanceType{memory: 512, name: "t2.nano"},
+	instanceType{memory: 1024, name: "t2.micro"},
+	instanceType{memory: 2048, name: "t2.small"},
+	instanceType{memory: 4096, name: "t2.medium"},
+	instanceType{memory: 8192, name: "t2.large"},
+	instanceType{memory: 16384, name: "m4.xlarge"},
+}
+
+var pvInstanceTypes = []instanceType{
+	instanceType{memory: 1741, name: "m1.small"},
+	instanceType{memory: 3789, name: "m1.medium"},
+	instanceType{memory: 7680, name: "m1.large"},
+	instanceType{memory: 15360, name: "m1.xlarge"},
+}
+
+func getInstanceType(virtualizationType types.XenVirtualizationType, memoryRequirement int) (string, error) {
+	instanceTypeName := ""
+	switch virtualizationType {
+	case types.XenVirtualizationType_HVM:
+		for _, instanceType := range hvmInstanceTypes {
+			if instanceType.memory > memoryRequirement {
+				instanceTypeName = instanceType.name
+			}
+		}
+		if instanceTypeName == "" {
+			return "", errors.New("memory requirement too large", nil)
+		}
+		return instanceTypeName, nil
+	case types.XenVirtualizationType_Paravirtual:
+		for _, instanceType := range pvInstanceTypes {
+			if instanceType.memory > memoryRequirement {
+				instanceTypeName = instanceType.name
+			}
+		}
+		if instanceTypeName == "" {
+			return "", errors.New("memory requirement too large", nil)
+		}
+		return instanceTypeName, nil
+	}
+	return "", errors.New("unknown virtualization type "+string(virtualizationType), nil)
 }

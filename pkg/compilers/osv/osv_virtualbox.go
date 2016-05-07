@@ -6,6 +6,8 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 )
 
+const OSV_VIRTUALBOX_MEMORY = 256
+
 type OsvVirtualboxCompiler struct {}
 
 func (osvCompiler *OsvVirtualboxCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (_ *types.RawImage, err error) {
@@ -23,6 +25,7 @@ func (osvCompiler *OsvVirtualboxCompiler) CompileRawImage(sourceTar io.ReadClose
 				types.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"},
 			},
 			StorageDriver: types.StorageDriver_SATA,
+			DefaultInstanceMemory: OSV_VIRTUALBOX_MEMORY,
 		},
 	}, nil
 }

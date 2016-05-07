@@ -181,7 +181,7 @@ environment variables can be set at runtime through the use of the -env flag.
 Example usage:
 
 ```
-unik run --instanceName newInstance --imageName myImage --vol myVol:/mount1 --vol yourVol:/mount2 --env foo=bar --env another=one
+unik run --instanceName newInstance --imageName myImage --vol myVol:/mount1 --vol yourVol:/mount2 --env foo=bar --env another=one --memory 1234
 ```
   * will create and run an instance of myImage on the provider environment myImage is compiled for
   * instance will be named newInstance
@@ -189,6 +189,7 @@ unik run --instanceName newInstance --imageName myImage --vol myVol:/mount1 --vo
   * instance will attempt to mount unik-managed volume yourVol to /mount2
   * instance will boot with env variable `foo` set to `bar`
   * instance will boot with env variable `another` set to `one`
+  * instance will get 1234 MB of memory
   * note that run must take **exactly** one --vol argument for each mount point defined in the image specification
 
 Flags:
@@ -196,6 +197,7 @@ Flags:
   *  `--imageName string`      (string,required) image to use
   *  `--instanceName string`   (string,required) name to give the instance. must be unique
   *  `--vol value`             (string,repeated) each --vol flag specifies one volume id and the corresponding mount point to attach to the instance at boot time. volumes must be attached to the instance for each mount point expected by the image. run 'unik image (image_name)' to see the mount points required for the image. specified in the format 'volume_id:mount_point' (default [])
+  * `--instanceMemory`      (int, optional) amount of memory (in MB) to assign to the instance. if none is given, the provider default will be used
   * `--no-cleanup`          (bool, optional) tell UniK not to clean up any artifacts from the launch instance process if launching fails. for debugging purposes.
 
 ---

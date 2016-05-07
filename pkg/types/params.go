@@ -1,11 +1,12 @@
 package types
 
 type RunInstanceParams struct {
-	Name string
-	ImageId string
+	Name                 string
+	ImageId              string
 	MntPointsToVolumeIds map[string]string
-	Env map[string]string
-	NoCleanup bool
+	Env                  map[string]string
+	InstanceMemory       int
+	NoCleanup            bool
 }
 
 type StageImageParams struct {

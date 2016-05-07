@@ -22,7 +22,6 @@ type Vsphere struct {
 	VspherePassword string `yaml:"vsphere_password"`
 	VsphereURL      string `yaml:"vsphere_url"`
 	Datastore       string `yaml:"datastore"`
-	DefaultInstanceMemory int `yaml:"default_instance_memory"`
 }
 
 type Virtualbox struct {

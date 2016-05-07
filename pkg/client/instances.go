@@ -6,19 +6,14 @@ import (
 	"net/http"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"encoding/json"
-	"strings"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"io"
+	"github.com/emc-advanced-dev/unik/pkg/daemon"
 )
 
 type instances struct {
 	unikIP string
 }
-
-const envDelimiter = "DEFAULT_DELIMETER"
-const envPairDelimiter = "DEFAULT_PAIR_DELIMETER"
-const mntDelimiter = ","
-const mntPairDelimiter = ":"
 
 func (i *instances) All() ([]*types.Instance, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/instances", nil)
@@ -85,21 +80,16 @@ func (i *instances) AttachLogs(id string, deleteOnDisconnect bool) (io.ReadClose
 	return resp.Body, nil
 }
 
-func (i *instances) Run(instanceName, imageName string, mounts, env map[string]string, noCleanup bool) (*types.Instance, error) {
-	envPairs := []string{}
-	for key, val := range env {
-		envPairs = append(envPairs, fmt.Sprintf("%s%s%s", key, envPairDelimiter, val))
+func (i *instances) Run(instanceName, imageName string, mounts, env map[string]string, memoryMb int, noCleanup bool) (*types.Instance, error) {
+	runInstanceRequest := daemon.RunInstanceRequest{
+		InstanceName: instanceName,
+		ImageName: imageName,
+		Mounts: mounts,
+		Env: env,
+		MemoryMb: memoryMb,
+		NoCleanup: noCleanup,
 	}
-	envStr := strings.Join(envPairs, envDelimiter)
-
-	mntPairs := []string{}
-	for key, val := range mounts {
-		mntPairs = append(mntPairs, fmt.Sprintf("%s%s%s", key, mntPairDelimiter, val))
-	}
-	mntStr := strings.Join(mntPairs, mntDelimiter)
-
-	query := fmt.Sprintf("?image_name=%s&useDelimiter=%s&usePairDelimiter=%s&env=%s&mounts=%s&no_cleanup=%v", imageName, envDelimiter, envPairDelimiter, envStr, mntStr, noCleanup)
-	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+instanceName+"/run"+query, nil, nil)
+	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/run", nil, runInstanceRequest)
 	if err != nil  {
 		return nil, errors.New("request failed", err)
 	}

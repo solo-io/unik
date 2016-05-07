@@ -25,6 +25,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/osv"
+	"io/ioutil"
 )
 
 type UnikDaemon struct {
@@ -384,79 +385,37 @@ func (d *UnikDaemon) addEndpoints() {
 			return logs, http.StatusOK, nil
 		})
 	})
-	d.server.Post("/instances/:name/run", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+	d.server.Post("/instances/run", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		handle(res, req, func() (interface{}, int, error) {
 			logrus.WithFields(logrus.Fields{
 				"request": req, "query": req.URL.Query(),
 			}).Debugf("recieved run request")
 
-			imageName := req.URL.Query().Get("image_name")
-			if imageName == "" {
+			body, err := ioutil.ReadAll(req.Body)
+			if err != nil {
+				return nil, http.StatusBadRequest, errors.New("could not read request body", err)
+			}
+			var runInstanceRequest RunInstanceRequest
+			if err := json.Unmarshal(body, &runInstanceRequest); err != nil {
+				return nil, http.StatusBadRequest, errors.New("failed to parse request json", err)
+			}
+
+			if runInstanceRequest.ImageName == "" {
 				return nil, http.StatusBadRequest, errors.New("image must be named", nil)
 			}
 
-			instanceName := params["name"]
-
-			envDelimiter := req.URL.Query().Get("useDelimiter")
-			if envDelimiter == "" {
-				envDelimiter = ","
-			}
-			envPairDelimiter := req.URL.Query().Get("usePairDelimiter")
-			if envPairDelimiter == "" {
-				envPairDelimiter = "="
-			}
-
-			env := make(map[string]string)
-			fullEnvString := req.URL.Query().Get("env")
-			if len(fullEnvString) > 0 {
-				envPairs := strings.Split(fullEnvString, envDelimiter)
-				for _, envPair := range envPairs {
-					splitEnv := strings.Split(envPair, envPairDelimiter)
-					if len(splitEnv) != 2 {
-						logrus.WithFields(logrus.Fields{
-							"envPair": envPair,
-						}).Warnf("was given a env string with an invalid format, ignoring")
-						continue
-					}
-					env[splitEnv[0]] = splitEnv[1]
-				}
-			}
-
-			mntPointsToVolumeIds := make(map[string]string)
-			fullMountsString := req.URL.Query().Get("mounts")
-			if len(fullMountsString) > 0 {
-				//expected format:
-				//vol1:/mount1,vol2:/mount2,...
-				mountVolumePairs := strings.Split(fullMountsString, ",")
-				for _, mountVolumePair := range mountVolumePairs {
-					mountVolumeTuple := strings.Split(mountVolumePair, ":")
-					if len(mountVolumeTuple) != 2 {
-						logrus.WithFields(logrus.Fields{
-							"mountVolumePair": mountVolumePair,
-						}).Warnf("was given a mount-volume pair string with an invalid format, ignoring")
-						continue
-					}
-					mntPointsToVolumeIds[mountVolumeTuple[1]] = mountVolumeTuple[0]
-				}
-			}
-
-			provider, err := d.providers.ProviderForImage(imageName)
+			provider, err := d.providers.ProviderForImage(runInstanceRequest.ImageName)
 			if err != nil {
-				return nil, http.StatusInternalServerError, err
-			}
-
-			noCleanupStr := req.FormValue("no_cleanup")
-			var noCleanup bool
-			if strings.ToLower(noCleanupStr) == "true" {
-				noCleanup = true
+				return nil, http.StatusBadRequest, err
 			}
 
 			params := types.RunInstanceParams{
-				Name: instanceName,
-				ImageId: imageName,
-				MntPointsToVolumeIds: mntPointsToVolumeIds,
-				Env: env,
-				NoCleanup: noCleanup,
+				Name: runInstanceRequest.InstanceName,
+				ImageId: runInstanceRequest.ImageName,
+				MntPointsToVolumeIds: runInstanceRequest.Mounts,
+				Env: runInstanceRequest.Env,
+				InstanceMemory: runInstanceRequest.MemoryMb,
+				NoCleanup: runInstanceRequest.NoCleanup,
 			}
 
 			instance, err := provider.RunInstance(params)

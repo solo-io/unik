@@ -128,8 +128,8 @@ const (
 )
 
 type StageSpec struct {
-	ImageFormat ImageFormat `json:"ImageFormat"` //required for all providers
-	XenVirtualizationType ImageFormat `json:"XenVirtualizationType,omitempty"`
+	ImageFormat ImageFormat `json:"ImageFormat"` //required for all compilers
+	XenVirtualizationType XenVirtualizationType `json:"XenVirtualizationType,omitempty"`
 }
 
 type StorageDriver string
@@ -146,7 +146,8 @@ const (
 )
 
 type RunSpec struct {
-	DeviceMappings []DeviceMapping `json:"DeviceMappings"` //required for all providers
+	DeviceMappings []DeviceMapping `json:"DeviceMappings"` //required for all compilers
+	DefaultInstanceMemory int `json:"DefaultInstanceMemory"` //required for all compilers
 	StorageDriver StorageDriver `json:"StorageDriver,omitempty"`
 	VsphereNetworkType VsphereNetworkType `json:"StorageDriver,VsphereNetworkType"`
 }

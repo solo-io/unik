@@ -64,7 +64,7 @@ func (p *VsphereProvider) DeployInstanceListener() error {
 	}
 
 	logrus.Infof("deploying vsphere instance listener")
-	if err := c.CreateVm(VsphereUnikInstanceListener, 512, types.VsphereNetworkType_E1000); err != nil {
+	if err := c.CreateVm(VsphereUnikInstanceListener, 256, types.VsphereNetworkType_E1000); err != nil {
 		return errors.New("creating vm", err)
 	}
 	if err := c.AttachDisk(VsphereUnikInstanceListener, "unik/"+vsphereInstanceListenerVmdk, 0, types.StorageDriver_SCSI); err != nil {
