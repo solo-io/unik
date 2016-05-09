@@ -60,6 +60,7 @@ func CreateImageAws(kernel string, args string, mntPoints []string) (*types.RawI
 		ImageFormat: types.ImageFormat_RAW,
 		XenVirtualizationType: types.XenVirtualizationType_Paravirtual,
 	}
+	res.RunSpec.DefaultInstanceMemory = 1024
 	
 	return res, nil
 
