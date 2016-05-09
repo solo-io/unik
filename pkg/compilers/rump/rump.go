@@ -35,7 +35,7 @@ func (r *RumpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mnt
 		return nil, err
 	}
 
-	if err := r.runContainer(localFolder); err != nil {
+	if err := r.runContainer(localFolder, nil); err != nil {
 		return nil, err
 	}
 

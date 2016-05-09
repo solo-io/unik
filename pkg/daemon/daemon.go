@@ -103,11 +103,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		CreateImage: rump.CreateImageVirtualBox,
 	}
 
-	_compilers[compilers.RUMP_NODEJS_VIRTUALBOX] = &rump.RumpCompiler{
+	_compilers[compilers.RUMP_NODEJS_VIRTUALBOX] = &rump.RumpNodeCompiler{
 		DockerImage: "projectunik/compilers-rump-nodejs-hw",
 		CreateImage: rump.CreateImageVirtualBox,
 	}
-
 
 	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{}
 	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{}

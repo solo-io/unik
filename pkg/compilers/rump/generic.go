@@ -36,7 +36,7 @@ func BuildBootableImage(kernel, cmdline string) (string, error) {
 	cmds := []string{"-d", contextDir, "-p", kernelBaseName, "-a", cmdline}
 	binds := []string{directory + ":" + contextDir, "/dev/:/dev/"}
 
-	if err := RunContainer("projectunik/boot-creator", cmds, binds, true); err != nil {
+	if err := RunContainer("projectunik/boot-creator", cmds, binds, true, nil); err != nil {
 		return "", err
 	}
 
@@ -53,7 +53,7 @@ func BuildBootableImage(kernel, cmdline string) (string, error) {
 	return resultFile.Name(), nil
 }
 
-func RunContainer(imageName string, cmds, binds []string, privileged bool) error {
+func RunContainer(imageName string, cmds, binds []string, privileged bool, envPairs []string) error {
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		return err
@@ -62,6 +62,7 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool) error
 	config := &container.Config{
 		Image: imageName,
 		Cmd:   strslice.StrSlice(cmds),
+		Env: envPairs,
 	}
 	hostConfig := &container.HostConfig{
 		Binds:      binds,
@@ -118,13 +119,16 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool) error
 	return nil
 }
 
-func execContainer(imageName string, cmds, binds []string, privileged bool) error {
+func execContainer(imageName string, cmds, binds []string, privileged bool, env map[string]string) error {
 	dockerArgs := []string{"run", "--rm"}
 	if privileged {
 		dockerArgs = append(dockerArgs, "--privileged")
 	}
 	for _, bind := range binds {
 		dockerArgs = append(dockerArgs, "-v", bind)
+	}
+	for key, val := range env {
+		dockerArgs = append(dockerArgs, "-e", fmt.Sprintf("%s=%s", key, val))
 	}
 	dockerArgs = append(dockerArgs, imageName)
 	dockerArgs = append(dockerArgs, cmds...)
@@ -136,7 +140,6 @@ func execContainer(imageName string, cmds, binds []string, privileged bool) erro
 	return nil
 }
 
-func (r *RumpCompiler) runContainer(localFolder string) error {
-
-	return RunContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false)
+func (r *RumpCompiler) runContainer(localFolder string, envPairs []string) error {
+	return RunContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, envPairs)
 }
