@@ -1,6 +1,6 @@
 all: pull ${SOURCES}
 
-.PHONY: pull containers compilers-rump-base-common compilers-rump-base-hw compilers-rump-base-xen compilers-rump-go-hw compilers-rump-go-xen compilers-osv-java compilers boot-creator image-creator vsphere-client utils
+.PHONY: pull containers compilers-rump-base-common compilers-rump-base-hw compilers-rump-base-xen compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers boot-creator image-creator vsphere-client utils
 
 #pull containers
 pull:
@@ -8,9 +8,11 @@ pull:
 	docker pull projectunik/vsphere-client
 	docker pull projectunik/image-creator
 	docker pull projectunik/boot-creator
-	docker pull projectunik/compilers-rump-go-xen
 	docker pull projectunik/compilers-osv-java
 	docker pull projectunik/compilers-rump-go-hw
+	docker pull projectunik/compilers-rump-go-xen
+	docker pull projectunik/compilers-rump-nodjs-hw
+	docker pull projectunik/compilers-rump-nodjs-xen
 	docker pull projectunik/compilers-rump-base-xen
 	docker pull projectunik/compilers-rump-base-hw
 	docker pull projectunik/compilers-rump-base-common
@@ -21,7 +23,7 @@ containers: compilers utils
 	echo "Built containers from source"
 
 #compilers
-compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-osv-java
+compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java
 
 compilers-rump-base-common:
 	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.common .
@@ -37,6 +39,12 @@ compilers-rump-go-hw: compilers-rump-base-hw
 
 compilers-rump-go-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.xen .
+
+compilers-rump-nodejs-hw: compilers-rump-base-hw
+	cd containers/compilers/rump/nodejs && docker build -t projectunik/$@ -f Dockerfile.hw .
+
+compilers-rump-nodejs-xen: compilers-rump-base-xen
+	cd containers/compilers/rump/nodejs && docker build -t projectunik/$@ -f Dockerfile.xen .
 
 compilers-osv-java:
 	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@ .
@@ -76,9 +84,11 @@ remove-containers:
 	-docker rmi -f projectunik/vsphere-client
 	-docker rmi -f projectunik/image-creator
 	-docker rmi -f projectunik/boot-creator
-	-docker rmi -f projectunik/compilers-rump-go-xen
 	-docker rmi -f projectunik/compilers-osv-java
+	-docker rmi -f projectunik/compilers-rump-go-xen
 	-docker rmi -f projectunik/compilers-rump-go-hw
+	-docker rmi -f projectunik/compilers-rump-nodejs-hw
+	-docker rmi -f projectunik/compilers-rump-nodejs-xen
 	-docker rmi -f projectunik/compilers-rump-base-xen
 	-docker rmi -f projectunik/compilers-rump-base-hw
 	-docker rmi -f projectunik/compilers-rump-base-common

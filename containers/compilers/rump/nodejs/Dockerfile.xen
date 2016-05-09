@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-base-hw
+FROM projectunik/compilers-rump-base-xen
 
 RUN apt-get update
 RUN apt-get install -y python
@@ -12,9 +12,9 @@ RUN cd /opt/nodejs/rumprun-packages/nodejs && \
 VOLUME /opt/code
 WORKDIR /opt/nodejs/rumprun-packages/nodejs
 
-ENV RUMP_BAKE=hw_generic
+ENV RUMP_BAKE=xen_pv
 
-# RUN LIKE THIS: docker run --rm -v /path/to/code:/opt/code projectunik/compilers-rump-nodejs-hw
+# RUN LIKE THIS: docker run --rm -v /path/to/code:/opt/code projectunik/compilers-rump-nodejs-xen
 CMD set -x && \
     cp -r /opt/code . && \
     x86_64-rumprun-netbsd-cookfs code.fs code && \
