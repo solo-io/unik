@@ -164,7 +164,7 @@ func getListenerIp(closeChan <-chan struct{}) (string, error) {
 		return "", err
 	}
 	for {
-		log.Printf("listening...")
+		log.Printf("UDP Server listening on %s:%v", "0.0.0.0",9876)
 		data := make([]byte, 4096)
 		_, remoteAddr, err := socket.ReadFromUDP(data)
 		if err != nil {
