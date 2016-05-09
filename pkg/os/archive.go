@@ -50,7 +50,7 @@ func ExtractTar(tarArchive io.ReadCloser, localFolder string) error {
 			outputFile.Close()
 
 		default:
-			return errors.New("Unsupported file type in tar", nil)
+			continue
 		}
 	}
 
