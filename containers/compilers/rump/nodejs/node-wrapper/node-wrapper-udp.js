@@ -48,7 +48,6 @@ console.log("unik v0.0 boostrapping beginning udp broadcast...");
 function registerWithListener(listenerIp) {
   require('macaddress').one(function (err, mac) {
     console.log("Mac address for this host: %s", mac);
-    var querystring = require('querystring');
     var options = {
       hostname: listenerIp,
       port: 3000,

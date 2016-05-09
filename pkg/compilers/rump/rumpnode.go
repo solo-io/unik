@@ -21,8 +21,15 @@ import (
 // the container expectes code in /opt/code and will produce program.bin in the same folder.
 // we need to take the program bin and combine with json config produce an image
 
+const (
+	BootstrapTypeEC2 = "ec2"
+	BootstrapTypeUDP = "udp"
+)
+
+
 type RumpNodeCompiler struct {
 	DockerImage string
+	BootstrapType string //ec2 vs udp
 	CreateImage func(kernel, args string, mntPoints []string) (*types.RawImage, error)
 }
 
@@ -58,7 +65,12 @@ func (r *RumpNodeCompiler) CompileRawImage(sourceTar io.ReadCloser, args string,
 
 	logrus.Debugf("using main file %s", config.MainFile)
 
-	if err := execContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, map[string]string{"MAIN_FILE": config.MainFile}); err != nil {
+	env := map[string]string{
+		"MAIN_FILE": config.MainFile,
+		"BOOTSTRAP_TYPE": r.BootstrapType,
+	}
+
+	if err := execContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, env); err != nil {
 		return nil, err
 	}
 
