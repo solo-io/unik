@@ -13,8 +13,8 @@ To learn more about the motivation behind project UniK, read our [blog](https://
   - [Configuring the daemon](docs/configure.md)
   - [Launching the InstanceListener](docs/instance_listener.md)
 - **Getting Started**
-  - [Run your first unikernel](docs/getting_started.md) with UniK
-  - [Run your first Java unikernel](docs/getting_started_java.md) on AWS with UniK **New**
+  - [Run your first Go unikernel](docs/getting_started.md) on Virtualbox with UniK
+  - [Run your first Java unikernel](docs/getting_started_java.md) on AWS with UniK
 - **User Documenation**
   - Using the [command line interface](docs/cli.md)
   - Compiling [Go](docs/compilers/rump.md#golang) Applications to Unikernels
@@ -28,7 +28,7 @@ To learn more about the motivation behind project UniK, read our [blog](https://
 ---
 
 ### Supported unikernel types:
-* **rump**: UniK supports compiling C/C++ and Go code into [rumprun](docs/compilers/rump.md) unikernels
+* **rump**: UniK supports compiling [C/C++](docs/compilers/rump.md#c++), [Node.js](docs/compilers/rump.md#node.js) and [Go](docs/compilers/rump.md#golang) code into [rumprun](docs/compilers/rump.md) unikernels
 * **OSv**: UniK supports compiling Java code into [OSv](http://osv.io/) unikernels
 
 *We are looking for community help to add support for more unikernel types and languages.*
@@ -39,7 +39,6 @@ To learn more about the motivation behind project UniK, read our [blog](https://
 * [vSphere](docs/providers/vsphere.md)
 
 ### Roadmap:
-* nodejs support using [rump kernel](http://rumpkernel.org)
 * ocaml support using [MirageOs](https://mirage.io/)
 * additional provider support including [OpenStack](https://www.openstack.org/)
 * dynamic volume and application arguments configuration at instance runtime (rather than at compile time)
