@@ -13,8 +13,8 @@ To learn more about the motivation behind project UniK, read our [blog](https://
   - [Configuring the daemon](docs/configure.md)
   - [Launching the InstanceListener](docs/instance_listener.md)
 - **Getting Started**
-  - [Run your first unikernel](docs/getting_started.md) with UniK
-  - [Run your first Java unikernel](docs/getting_started_java.md) on AWS with UniK **New**
+  - [Run your first Go unikernel](docs/getting_started.md) on Virtualbox with UniK
+  - [Run your first Java unikernel](docs/getting_started_java.md) on AWS with UniK
 - **User Documenation**
   - Using the [command line interface](docs/cli.md)
   - Compiling [Go](docs/compilers/rump.md#golang) Applications to Unikernels
