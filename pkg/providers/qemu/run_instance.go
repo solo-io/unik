@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -42,6 +43,7 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	}
 
 	instanceDir := getInstanceDir(params.Name)
+	os.Mkdir(instanceDir, 0755)
 
 	defer func() {
 		if err != nil {
@@ -64,7 +66,10 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	kernel := getKernelFileName(instanceDir)
 	// TODO run qemu
 
-	cmd := exec.Command("qemu-system-x86_64", "-m", "128", "-kernel", kernel, "-append", cmdline)
+	// qemu double comma escape
+	cmdline = strings.Replace(cmdline, ",", ",,", -1)
+
+	cmd := exec.Command("qemu-system-x86_64", "-m", "128", "-net", "nic,model=virtio", "-kernel", kernel, "-append", cmdline)
 
 	if err := cmd.Start(); err != nil {
 		return nil, errors.New("Can't start qemu - make sure it's in your path.", nil)
