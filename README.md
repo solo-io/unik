@@ -17,6 +17,7 @@ To learn more about the motivation behind project UniK, read our [blog](https://
   - [Run your first Java unikernel](docs/getting_started_java.md) on AWS with UniK
 - **User Documenation**
   - Using the [command line interface](docs/cli.md)
+  - Compiling [Node.js](docs/compilers/rump.md#nodejs) Applications to Unikernels
   - Compiling [Go](docs/compilers/rump.md#golang) Applications to Unikernels
   - Compiling [Java](docs/compilers/osv.md#java) Applications to Unikernels
   - Compiling [C/C++](docs/compilers/rump.md#c++) Applications to Unikernels
@@ -28,7 +29,7 @@ To learn more about the motivation behind project UniK, read our [blog](https://
 ---
 
 ### Supported unikernel types:
-* **rump**: UniK supports compiling [C/C++](docs/compilers/rump.md#c++), [Node.js](docs/compilers/rump.md#node.js) and [Go](docs/compilers/rump.md#golang) code into [rumprun](docs/compilers/rump.md) unikernels
+* **rump**: UniK supports compiling [C/C++](docs/compilers/rump.md#c++), [Node.js](docs/compilers/rump.md#nodejs) and [Go](docs/compilers/rump.md#golang) code into [rumprun](docs/compilers/rump.md) unikernels
 * **OSv**: UniK supports compiling Java code into [OSv](http://osv.io/) unikernels
 
 *We are looking for community help to add support for more unikernel types and languages.*
