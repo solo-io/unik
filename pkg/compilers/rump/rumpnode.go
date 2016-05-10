@@ -1,8 +1,6 @@
 package rump
 
 import (
-	"io"
-
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
@@ -11,10 +9,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"github.com/Sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 	"path/filepath"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"gopkg.in/yaml.v2"
 )
 
 // uses rump docker conter container
@@ -26,27 +25,26 @@ const (
 	BootstrapTypeUDP = "udp"
 )
 
-
 type RumpNodeCompiler struct {
-	DockerImage string
+	DockerImage   string
 	BootstrapType string //ec2 vs udp
-	CreateImage func(kernel, args string, mntPoints []string) (*types.RawImage, error)
+	CreateImage   func(kernel, args string, mntPoints []string) (*types.RawImage, error)
 }
 
 type nodeProjectConfig struct {
 	MainFile string `yaml:"main_file"`
 }
 
-func (r *RumpNodeCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (*types.RawImage, error) {
-	args = "/code/node-wrapper.js" + args
+func (r *RumpNodeCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
+	args := "/code/node-wrapper.js " + params.Args
 
 	localFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return nil, err
 	}
 	defer os.RemoveAll(localFolder)
-	logrus.Debugf("extracting uploaded files to "+localFolder)
-	if err := unikos.ExtractTar(sourceTar, localFolder); err != nil {
+	logrus.Debugf("extracting uploaded files to " + localFolder)
+	if err := unikos.ExtractTar(params.SourceTar, localFolder); err != nil {
 		return nil, err
 	}
 
@@ -66,7 +64,7 @@ func (r *RumpNodeCompiler) CompileRawImage(sourceTar io.ReadCloser, args string,
 	logrus.Debugf("using main file %s", config.MainFile)
 
 	env := map[string]string{
-		"MAIN_FILE": config.MainFile,
+		"MAIN_FILE":      config.MainFile,
 		"BOOTSTRAP_TYPE": r.BootstrapType,
 	}
 
@@ -77,5 +75,5 @@ func (r *RumpNodeCompiler) CompileRawImage(sourceTar io.ReadCloser, args string,
 	// now we should program.bin
 	resultFile := path.Join(localFolder, "program.bin")
 
-	return r.CreateImage(resultFile, args, mntPoints)
+	return r.CreateImage(resultFile, args, params.MntPoints)
 }

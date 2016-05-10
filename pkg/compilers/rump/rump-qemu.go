@@ -38,7 +38,7 @@ func CreateImageQemu(kernel string, args string, mntPoints []string) (*uniktypes
 
 		c.Blk = append(c.Blk, blk)
 		logrus.Debugf("adding mount point to image: %s:%s", mntPoint, deviceMapped)
-		res.DeviceMappings = append(res.DeviceMappings,
+		res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings,
 			uniktypes.DeviceMapping{MountPoint: mntPoint, DeviceName: deviceMapped})
 	}
 

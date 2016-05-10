@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,7 +12,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/docker/docker/pkg/ioutils"
+	dockerioutils "github.com/docker/docker/pkg/ioutils"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/osv"
@@ -90,7 +91,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		_providers[virtualbox_provider] = p
 		break
 	}
-// TODO add bootstraps and baker.
+	// TODO add bootstraps and baker.
 	for _, qemuConfig := range config.Providers.Qemu {
 		logrus.Infof("Bootstrapping provider %s with config %v", qemu_provider, qemuConfig)
 		p, err := qemu.NewQemuProvider(qemuConfig)
@@ -132,18 +133,18 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	}
 
 	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpNodeCompiler{
-		DockerImage: "projectunik/compilers-rump-nodejs-xen",
-		CreateImage: rump.CreateImageAws,
+		DockerImage:   "projectunik/compilers-rump-nodejs-xen",
+		CreateImage:   rump.CreateImageAws,
 		BootstrapType: rump.BootstrapTypeEC2,
 	}
 	_compilers[compilers.RUMP_NODEJS_VIRTUALBOX] = &rump.RumpNodeCompiler{
-		DockerImage: "projectunik/compilers-rump-nodejs-hw",
-		CreateImage: rump.CreateImageVirtualBox,
+		DockerImage:   "projectunik/compilers-rump-nodejs-hw",
+		CreateImage:   rump.CreateImageVirtualBox,
 		BootstrapType: rump.BootstrapTypeUDP,
 	}
 	_compilers[compilers.RUMP_NODEJS_VMWARE] = &rump.RumpNodeCompiler{
-		DockerImage: "projectunik/compilers-rump-nodejs-hw",
-		CreateImage: rump.CreateImageVmware,
+		DockerImage:   "projectunik/compilers-rump-nodejs-hw",
+		CreateImage:   rump.CreateImageVmware,
 		BootstrapType: rump.BootstrapTypeUDP,
 	}
 
@@ -417,7 +418,7 @@ func (d *UnikDaemon) addEndpoints() {
 					defer provider.DeleteInstance(instanceId, true)
 				}
 
-				output := ioutils.NewWriteFlusher(res)
+				output := dockerioutils.NewWriteFlusher(res)
 				logFn := func() (string, error) {
 					return provider.GetInstanceLogs(instanceId)
 				}
@@ -461,12 +462,12 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 
 			params := types.RunInstanceParams{
-				Name: runInstanceRequest.InstanceName,
-				ImageId: runInstanceRequest.ImageName,
+				Name:                 runInstanceRequest.InstanceName,
+				ImageId:              runInstanceRequest.ImageName,
 				MntPointsToVolumeIds: runInstanceRequest.Mounts,
-				Env: runInstanceRequest.Env,
-				InstanceMemory: runInstanceRequest.MemoryMb,
-				NoCleanup: runInstanceRequest.NoCleanup,
+				Env:                  runInstanceRequest.Env,
+				InstanceMemory:       runInstanceRequest.MemoryMb,
+				NoCleanup:            runInstanceRequest.NoCleanup,
 			}
 
 			instance, err := provider.RunInstance(params)

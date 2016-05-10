@@ -61,7 +61,8 @@ func (p *QemuProvider) Stage(params types.StageImageParams) (_ *types.Image, err
 	image := &types.Image{
 		Id:             params.Name,
 		Name:           params.Name,
-		DeviceMappings: params.RawImage.DeviceMappings,
+		RunSpec:        params.RawImage.RunSpec,
+		StageSpec:      params.RawImage.StageSpec,
 		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_QEMU,
 		Created:        time.Now(),

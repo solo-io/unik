@@ -1,26 +1,27 @@
 package osv
 
 import (
-	"path/filepath"
 	"io/ioutil"
-	"io"
 	"os"
-	"github.com/Sirupsen/logrus"
 	"os/exec"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"path/filepath"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
-func compileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string, useEc2Bootstrap bool) (string, error) {
+func compileRawImage(params types.CompileImageParams, useEc2Bootstrap bool) (string, error) {
 	localFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return "", err
 	}
 	// TODO add no cleaup support
 	defer os.RemoveAll(localFolder)
-	logrus.Debugf("extracting uploaded files to "+localFolder)
-	if err := unikos.ExtractTar(sourceTar, localFolder); err != nil {
+	logrus.Debugf("extracting uploaded files to " + localFolder)
+	if err := unikos.ExtractTar(params.SourceTar, localFolder); err != nil {
 		return "", err
 	}
 	cmd := exec.Command("docker", "run", "--rm", "--privileged",
@@ -44,7 +45,7 @@ func compileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string, u
 	if err != nil {
 		return "", errors.New("failed to create tmpfile for result", err)
 	}
-	defer func(){
+	defer func() {
 		if err != nil {
 			os.Remove(resultFile.Name())
 		}

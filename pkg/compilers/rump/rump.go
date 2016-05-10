@@ -44,7 +44,7 @@ func (r *RumpCompiler) CompileRawImage(params uniktypes.CompileImageParams) (*un
 		return nil, err
 	}
 
-	if err := r.runContainer(localFolder); err != nil {
+	if err := r.runContainer(localFolder, nil); err != nil {
 		return nil, err
 	}
 
@@ -55,7 +55,7 @@ func (r *RumpCompiler) CompileRawImage(params uniktypes.CompileImageParams) (*un
 		return nil, lxerrors.New("No program found - compilation failed", nil)
 	}
 
-	if err := RunContainer(r.BakeImageName, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false); err != nil {
+	if err := RunContainer(r.BakeImageName, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, nil); err != nil {
 		return nil, lxerrors.New("Baking failed", err)
 	}
 
