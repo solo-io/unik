@@ -24,6 +24,5 @@ CMD set -x && \
     cp -r /opt/node-wrapper/* code/ && \
     mv code/node-wrapper-${BOOTSTRAP_TYPE}.js code/node-wrapper.js && \
     perl -pi -e 's/\/\/CALL_NODE_MAIN_HERE/require("\.\/$ENV{MAIN_FILE}")/g' code/node-wrapper.js && \
-    cat code/node-wrapper.js && \
     x86_64-rumprun-netbsd-cookfs code.fs code && \
     rumprun-bake -m "add code.fs" $RUMP_BAKE /opt/code/program.bin /opt/nodejs/rumprun-packages/nodejs/build-4.3.0/out/Release/node-default

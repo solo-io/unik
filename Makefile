@@ -11,8 +11,8 @@ pull:
 	docker pull projectunik/compilers-osv-java
 	docker pull projectunik/compilers-rump-go-hw
 	docker pull projectunik/compilers-rump-go-xen
-	docker pull projectunik/compilers-rump-nodjs-hw
-	docker pull projectunik/compilers-rump-nodjs-xen
+	docker pull projectunik/compilers-rump-nodejs-hw
+	docker pull projectunik/compilers-rump-nodejs-xen
 	docker pull projectunik/compilers-rump-base-xen
 	docker pull projectunik/compilers-rump-base-hw
 	docker pull projectunik/compilers-rump-base-common
