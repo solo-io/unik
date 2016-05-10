@@ -17,6 +17,7 @@ func compileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string, u
 	if err != nil {
 		return "", err
 	}
+	// TODO add no cleaup support
 	defer os.RemoveAll(localFolder)
 	logrus.Debugf("extracting uploaded files to "+localFolder)
 	if err := unikos.ExtractTar(sourceTar, localFolder); err != nil {

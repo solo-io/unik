@@ -1,13 +1,16 @@
 package rump
 
 import (
-	"github.com/emc-advanced-dev/pkg/errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 
+	"github.com/emc-advanced-dev/pkg/errors"
+
 	log "github.com/Sirupsen/logrus"
+
+	"os/exec"
 
 	"github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
@@ -17,7 +20,6 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"golang.org/x/net/context"
-	"os/exec"
 )
 
 func BuildBootableImage(kernel, cmdline string) (string, error) {
@@ -78,7 +80,7 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool, envPa
 	}
 	defer cli.ContainerRemove(context.Background(), types.ContainerRemoveOptions{ContainerID: container.ID})
 
-	log.WithFields(log.Fields{"id": container.ID, "cmd": cmds, "binds": binds}).Info("Created container")
+	log.WithFields(log.Fields{"id": container.ID, "cmd": cmds, "binds": binds, "imageName": imageName}).Info("Created container")
 
 	if err := cli.ContainerStart(context.Background(), container.ID); err != nil {
 		log.WithField("err", err).Error("ContainerStart")

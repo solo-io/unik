@@ -15,6 +15,8 @@ pull:
 	docker pull projectunik/compilers-rump-nodjs-xen
 	docker pull projectunik/compilers-rump-base-xen
 	docker pull projectunik/compilers-rump-base-hw
+	docker pull projectunik/compilers-rump-baker-xen
+	docker pull projectunik/compilers-rump-baker-hw
 	docker pull projectunik/compilers-rump-base-common
 #------
 
@@ -23,7 +25,7 @@ containers: compilers utils
 	echo "Built containers from source"
 
 #compilers
-compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java
+compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers-rump-baker-hw compilers-rump-baker-xen
 
 compilers-rump-base-common:
 	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.common .
@@ -49,6 +51,15 @@ compilers-rump-nodejs-xen: compilers-rump-base-xen
 compilers-osv-java:
 	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@ .
 
+compilers-rump-baker-hw: compilers-rump-go-hw
+	cd containers/compilers/rump/baker && docker build -t projectunik/$@ -f Dockerfile.hw .
+
+compilers-rump-baker-xen: compilers-rump-go-xen
+	cd containers/compilers/rump/baker && docker build -t projectunik/$@ -f Dockerfile.xen .
+
+debuggers-rump-go-hw: compilers-rump-go-hw
+	cd containers/debuggers/rump/go && docker build -t projectunik/$@ -f Dockerfile.hw .
+	
 #utils
 utils: boot-creator image-creator vsphere-client
 
@@ -92,6 +103,8 @@ remove-containers:
 	-docker rmi -f projectunik/compilers-rump-base-xen
 	-docker rmi -f projectunik/compilers-rump-base-hw
 	-docker rmi -f projectunik/compilers-rump-base-common
+	-docker rmi -f projectunik/compilers-rump-baker-hw
+	-docker rmi -f projectunik/compilers-rump-baker-xen
 
 clean:
 	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi

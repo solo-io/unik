@@ -2,21 +2,21 @@ package rump
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"regexp"
 )
 
 func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*types.RawImage, error) {
 
 	// create rump config
-	var c multinetRumpConfig
+	var c rumpConfig
 
 	if args == "" {
-		c.Cmdline = "program.bin"
+		c = setRumpCmdLine(c, "program.bin", nil)
 	} else {
-		c.Cmdline = "program.bin" + " " + args
+		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "))
 	}
 
 	res := &types.RawImage{}
@@ -40,27 +40,21 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*typ
 	}
 
 	// virtualbox network
-	c.Net1 = &net{
+	c.Net = &net{
 		If:     "vioif0",
 		Type:   "inet",
 		Method: DHCP,
 	}
-	c.Net2 = &net{
+	c.Net1 = &net{
 		If:     "vioif1",
 		Type:   "inet",
 		Method: DHCP,
 	}
 
-	cmdline, err := ToRumpJsonMultiNet(c)
+	cmdline, err := ToRumpJson(c)
 	if err != nil {
 		return nil, err
 	}
-
-	r, err := regexp.Compile("net[1-9]")
-	if err != nil {
-		return nil, err
-	}
-	cmdline = string(r.ReplaceAll([]byte(cmdline), []byte("net")))
 
 	logrus.Debugf("writing rump json config: %s", cmdline)
 

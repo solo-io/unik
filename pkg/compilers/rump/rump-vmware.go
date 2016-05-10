@@ -2,6 +2,7 @@ package rump
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
@@ -12,9 +13,9 @@ func CreateImageVmware(kernel string, args string, mntPoints []string) (*types.R
 	var c rumpConfig
 
 	if args == "" {
-		c.Cmdline = "program.bin"
+		c = setRumpCmdLine(c, "program.bin", nil)
 	} else {
-		c.Cmdline = "program.bin" + " " + args
+		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "))
 	}
 
 	res := &types.RawImage{}

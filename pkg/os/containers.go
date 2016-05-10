@@ -1,6 +1,8 @@
 package os
 
 import (
+	"io/ioutil"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
@@ -9,7 +11,6 @@ import (
 	"github.com/docker/engine-api/types/strslice"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"golang.org/x/net/context"
-	"io/ioutil"
 )
 
 func RunContainer(imageName string, cmds, binds []string, privileged bool) error {
@@ -36,7 +37,7 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool) error
 	}
 	defer cli.ContainerRemove(context.Background(), types.ContainerRemoveOptions{ContainerID: container.ID})
 
-	logrus.WithField("id", container.ID).Errorf("Created container")
+	logrus.WithFields(logrus.Fields{"id": container.ID, "imageName": imageName}).Infof("Created container")
 
 	if err := cli.ContainerStart(context.Background(), container.ID); err != nil {
 		logrus.WithError(err).Errorf("ContainerStart")

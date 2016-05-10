@@ -8,6 +8,7 @@ type Providers struct {
 	Aws        []Aws        `yaml:"aws"`
 	Vsphere    []Vsphere    `yaml:"vsphere"`
 	Virtualbox []Virtualbox `yaml:"virtualbox"`
+	Qemu       []Qemu       `yaml:"qemu"`
 }
 
 type Aws struct {
@@ -29,6 +30,15 @@ type Virtualbox struct {
 	AdapterName           string                `yaml:"adapter_name"`
 	VirtualboxAdapterType VirtualboxAdapterType `yaml:"adapter_type"`
 }
+
+type Qemu struct {
+	Name string `yaml:"name"`
+}
+
+const (
+	QemuKernelFileName = "kernel"
+	QemuArgsFileName   = "args"
+)
 
 type VirtualboxAdapterType string
 

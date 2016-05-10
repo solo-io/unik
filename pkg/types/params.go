@@ -1,12 +1,14 @@
 package types
 
+import "io"
+
 type RunInstanceParams struct {
-	Name                 string
-	ImageId              string
+	Name string
+	ImageId string
 	MntPointsToVolumeIds map[string]string
-	Env                  map[string]string
+	Env map[string]string
 	InstanceMemory       int
-	NoCleanup            bool
+	NoCleanup bool
 }
 
 type StageImageParams struct {
@@ -19,5 +21,12 @@ type StageImageParams struct {
 type CreateVolumeParams struct {
 	Name string
 	ImagePath string
+	NoCleanup bool
+}
+
+type CompileImageParams struct {
+	SourceTar io.ReadCloser
+	Args      string
+	MntPoints []string
 	NoCleanup bool
 }

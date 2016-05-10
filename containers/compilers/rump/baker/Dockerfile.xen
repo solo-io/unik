@@ -1,0 +1,20 @@
+FROM projectunik/compilers-rump-go-xen
+
+COPY stub/ /opt/stub/
+
+RUN set -x && cd  /opt/stub/ && \
+    cp /tmp/build/gomaincaller.go  /tmp/build/mainstub.c . && \
+    CC=x86_64-rumprun-netbsd-gcc CGO_ENABLED=1 GOOS=rumprun /usr/local/go/bin/go build -buildmode=c-archive -v -a -x  *.go && \
+    RUMPRUN_STUBLINK=succeed x86_64-rumprun-netbsd-gcc -g -o stub mainstub.c $(find . -name "*.a") && \
+    rm -f /opt/code/mainstub.c /opt/code/gomaincaller.go    
+ 
+
+COPY logger/ /opt/logger/
+RUN set -x && cd  /opt/logger/ && \
+    cp /tmp/build/gomaincaller.go  /tmp/build/mainstub.c . && \
+    CC=x86_64-rumprun-netbsd-gcc CGO_ENABLED=1 GOOS=rumprun /usr/local/go/bin/go build -buildmode=c-archive -v -a -x *.go && \
+    RUMPRUN_STUBLINK=succeed x86_64-rumprun-netbsd-gcc -g -o logger mainstub.c $(find . -name "*.a") && \
+    rm -f /opt/code/mainstub.c /opt/code/gomaincaller.go    
+    
+    
+CMD rumprun-bake $RUMP_BAKE program.bin /opt/stub/stub program /opt/logger/logger

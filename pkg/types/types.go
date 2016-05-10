@@ -21,6 +21,7 @@ const (
 	Infrastructure_AWS        Infrastructure = "AWS"
 	Infrastructure_VSPHERE    Infrastructure = "VSPHERE"
 	Infrastructure_VIRTUALBOX Infrastructure = "VIRTUALBOX"
+	Infrastructure_QEMU       Infrastructure = "QEMU"
 )
 
 type Image struct {

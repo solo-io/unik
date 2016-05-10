@@ -32,5 +32,4 @@ CMD set -x && \
     (if [ -d Godeps ]; then GO15VENDOREXPERIMENT=1 godep restore; fi) && \
     CC=x86_64-rumprun-netbsd-gcc CGO_ENABLED=1 GOOS=rumprun /usr/local/go/bin/go build -buildmode=c-archive -v -a -x  *.go && \
     RUMPRUN_STUBLINK=succeed x86_64-rumprun-netbsd-gcc -g -o program mainstub.c $(find . -name "*.a") && \
-    rm -f /opt/code/mainstub.c /opt/code/gomaincaller.go && \
-    rumprun-bake $RUMP_BAKE program.bin program
+    rm -f /opt/code/mainstub.c /opt/code/gomaincaller.go
