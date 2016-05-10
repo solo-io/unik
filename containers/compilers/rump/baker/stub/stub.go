@@ -47,48 +47,50 @@ func main() {
 	log.SetOutput(os.Stdout)
 
 	log.Printf("unik v0.0 boostrapping beginning...")
+	/*
+		envChan := make(chan map[string]string)
 
-	envChan := make(chan map[string]string)
+		closeChan := make(chan struct{})
 
-	closeChan := make(chan struct{})
-
-	go func() {
-		listenerIp, err := getListenerIp(closeChan)
-		if err != nil {
-			log.Printf("err getting listener ip: %v", err)
-			return
-		}
-		if env, err := registerWithListener(listenerIp); err != nil {
-			log.Printf("err registering with listener: %v", err)
-			return
-		} else {
-			envChan <- env
-		}
-	}()
-
-	errChan := make(chan error)
-	go func() {
-		env, err := getEnvAmazon()
-		envChan <- env
-		errChan <- err
-		close(closeChan)
-	}()
-
-envLoop:
-	for {
-		log.Printf("waiting for UniK bootstrap")
-		select {
-		case env := <-envChan:
-			if env != nil {
-				log.Printf("env was set: %v", env)
-				setEnv(env)
-				break envLoop
+		go func() {
+			listenerIp, err := getListenerIp(closeChan)
+			if err != nil {
+				log.Printf("err getting listener ip: %v", err)
+				return
 			}
-		case err := <-errChan:
-			log.Printf("error: %v", err)
-		}
-	}
+			if env, err := registerWithListener(listenerIp); err != nil {
+				log.Printf("err registering with listener: %v", err)
+				return
+			} else {
+				envChan <- env
+			}
+		}()
 
+			errChan := make(chan error)
+			go func() {
+				env, err := getEnvAmazon()
+				envChan <- env
+				errChan <- err
+				close(closeChan)
+			}()
+
+
+			   envLoop:
+			   	for {
+			   		log.Printf("waiting for UniK bootstrap")
+			   		select {
+			   		case env := <-envChan:
+			   			if env != nil {
+			   				log.Printf("env was set: %v", env)
+			   				setEnv(env)
+			   				break envLoop
+			   			}
+			   		case err := <-errChan:
+			   			log.Printf("error: %v", err)
+			   		}
+			   	}
+	*/
+	//?
 	log.Printf("continuing to main\n")
 }
 

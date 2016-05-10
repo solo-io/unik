@@ -69,7 +69,11 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	// qemu double comma escape
 	cmdline = strings.Replace(cmdline, ",", ",,", -1)
 
-	cmd := exec.Command("qemu-system-x86_64", "-m", "128", "-net", "nic,model=virtio", "-kernel", kernel, "-append", cmdline)
+	cmd := exec.Command("qemu-system-x86_64", "-s", "-m", "128", "-net",
+		"nic,model=virtio,netdev=mynet0", "-netdev", "user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9",
+		"-kernel", kernel, "-append", cmdline)
+
+	logrus.Debugf("creating qemu command: %s", cmd.Args)
 
 	if err := cmd.Start(); err != nil {
 		return nil, errors.New("Can't start qemu - make sure it's in your path.", nil)

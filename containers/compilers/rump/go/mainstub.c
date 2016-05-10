@@ -1,5 +1,6 @@
 
 int main() {
- 	rump_pub_lwproc_releaselwp(); /* XXX */
+// 	rump_pub_lwproc_releaselwp(); /* XXX */
 	gomaincaller();
+	return 0;
 }
