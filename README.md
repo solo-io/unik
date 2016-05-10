@@ -7,7 +7,7 @@ UniK is built to be easily extensible, allowing (and encouraging) adding support
 To learn more about the motivation behind project UniK, read our [blog](https://github.com/emc-advanced-dev/unik/wiki/UniK:-Build-and-Run-Unikernels-with-Ease) post.
 
 UniK is an active project that is growing with new features every day. 
-To stay up-to-date on UniK, follow us @ProjectUnik
+To stay up-to-date on UniK, follow us [@ProjectUnik](https://twitter.com/ProjectUniK).
 
 ---
 ### Documentation
