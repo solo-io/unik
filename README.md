@@ -49,9 +49,10 @@ To stay up-to-date on UniK, follow us [@ProjectUnik](https://twitter.com/Project
 * `unik pull` & `unik push` && unikhub for sharing unikernel images
 * multi-account support per provider (i.e. multiple AWS accounts/regions, etc.)
 * migrate from [martini](https://github.com/go-martini/martini) to [echo](https://github.com/labstack/echo)
-* find an alternative to the [Instance Listener](docs/instance_listener.md) for bootstrapping instances on private networks
+* deploy the [Instance Listener](docs/instance_listener.md) as a unikernel
 * compile unik binary inside of a container to break Go dependency
 * self-healing state (i.e. unik can identify when instances/imgaes/volumes no longer exist and self-correct rather than throwing errors)
+* mount boot volume and stop cookfs-ing filesystem (especiall for scripting languages) to reduce memory footprint, allow persistence writing to boot vol
 
 UniK is still experimental! APIs and compatibility is subject to change. We are looking for community support to help identify potential bugs and compatibility issues. Please open a Github issue for any problems you may experience, and join us on our [slack channel](http://project-unik.io)
 
