@@ -24,7 +24,6 @@ providers:
       vsphere_password: password
       vsphere_url: url
       datastore: datastore1
-      default_instance_memory: 512
   virtualbox:
     - name: vsphere-1
       adapter_name: vboxnet0

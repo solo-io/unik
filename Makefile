@@ -1,4 +1,4 @@
-all: pull ${SOURCES}
+all: pull ${SOURCES} binary
 
 .PHONY: pull containers compilers-rump-base-common compilers-rump-base-hw compilers-rump-base-xen compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers boot-creator image-creator vsphere-client qemu-util utils
 
@@ -67,14 +67,30 @@ qemu-util:
 
 #------
 
-#binary & install
+#binary
 SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 BINARY=unik
+UNAME=$(uname)
 
-install: all ${SOURCES}
-	GO15VENDOREXPERIMENT=1 go install
+binary: ${SOURCES}
+	ifeq ($(UNAME),Linux)
+		TARGET_OS=linux
+	endif
+	ifeq (Darwin,$UNAME)
+		TARGET_OS=darwin
+	endif
+	ifeq (,$TARGET_OS)
+		echo "Unknown platform $UNAME"
+		exit 1
+	endif
+	echo Building for platform $UNAME
+	docker build -t projectunik/$@ -f Dockerfile .
+	mkdir -p ./_build
+	docker run --rm -v $PWD/_build:/opt/build -e TARGET_OS=$TARGET_OS projectunik/$@
+	docker rmi -f projectunik/$@
+	echo "Install finished! UniK binary can be found at $PWD/_build/unik"
 
 #----
 
