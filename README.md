@@ -5,6 +5,7 @@ UniK (pronounced you-neek) is a tool for compiling application sources into unik
 UniK is built to be easily extensible, allowing (and encouraging) adding support for unikernel [compilers](docs/compilers/README.md) and cloud [providers](docs/providers/README.md). See [architecture](docs/architecture.md) for a better understanding of UniK's pluggable code design.
 
 To learn more about the motivation behind project UniK, read our [blog](https://github.com/emc-advanced-dev/unik/wiki/UniK:-Build-and-Run-Unikernels-with-Ease) post.<BR>
+To stay up-to-date on UniK, follow us [@ProjectUnik](https://twitter.com/ProjectUniK).
 
 ---
 ### Documentation
