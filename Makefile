@@ -11,6 +11,7 @@ pull:
 	docker pull projectunik/qemu-util
 	docker pull projectunik/compilers-osv-java
 	docker pull projectunik/compilers-rump-go-hw
+	docker pull projectunik/compilers-rump-go-hw-no-wrapper
 	docker pull projectunik/compilers-rump-go-xen
 	docker pull projectunik/compilers-rump-nodejs-hw
 	docker pull projectunik/compilers-rump-nodejs-xen
@@ -24,7 +25,7 @@ containers: compilers utils
 	echo "Built containers from source"
 
 #compilers
-compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java
+compilers: compilers-rump-go-hw compilers-rump-go-hw-no-wrapper compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java
 
 compilers-rump-base-common:
 	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.common .
@@ -37,6 +38,9 @@ compilers-rump-base-xen: compilers-rump-base-common
 
 compilers-rump-go-hw: compilers-rump-base-hw
 	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.hw .
+
+compilers-rump-go-hw-no-wrapper: compilers-rump-base-hw
+	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.hw.no-wrapper .
 
 compilers-rump-go-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.xen .
@@ -110,6 +114,7 @@ remove-containers:
 	-docker rmi -f projectunik/compilers-osv-java
 	-docker rmi -f projectunik/compilers-rump-go-xen
 	-docker rmi -f projectunik/compilers-rump-go-hw
+	-docker rmi -f projectunik/compilers-rump-go-hw-no-wrapper
 	-docker rmi -f projectunik/compilers-rump-nodejs-hw
 	-docker rmi -f projectunik/compilers-rump-nodejs-xen
 	-docker rmi -f projectunik/compilers-rump-base-xen
