@@ -21,3 +21,9 @@ type CreateVolumeParams struct {
 	ImagePath string
 	NoCleanup bool
 }
+
+type CompileImageParams struct {
+	SourcesDir string
+	Args       string
+	MntPoints  []string
+}

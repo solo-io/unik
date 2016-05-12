@@ -1,7 +1,6 @@
 package osv
 
 import (
-	"io"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
 )
@@ -11,8 +10,8 @@ type OsvAwsCompiler struct {
 
 const OSV_AWS_MEMORY = 1024
 
-func (osvCompiler *OsvAwsCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (_ *types.RawImage, err error) {
-	resultFile, err := compileRawImage(sourceTar, args, mntPoints, true)
+func (osvCompiler *OsvAwsCompiler) CompileRawImage(params types.CompileImageParams) (_ *types.RawImage, err error) {
+	resultFile, err := compileRawImage(params, true)
 	if err != nil {
 		return nil, errors.New("failed to compile raw osv image", err)
 	}

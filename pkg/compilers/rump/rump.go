@@ -2,17 +2,11 @@ package rump
 
 import (
 	"encoding/json"
-	"io"
-
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-
 	"fmt"
-	"io/ioutil"
-	"os"
 	"path"
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 // uses rump docker conter container
@@ -24,25 +18,21 @@ type RumpCompiler struct {
 	CreateImage func(kernel, args string, mntPoints []string) (*types.RawImage, error)
 }
 
-func (r *RumpCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (*types.RawImage, error) {
-	localFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
-	if err != nil {
-		return nil, err
-	}
-	defer os.RemoveAll(localFolder)
-	logrus.Debugf("extracting uploaded files to "+localFolder)
-	if err := unikos.ExtractTar(sourceTar, localFolder); err != nil {
-		return nil, err
-	}
+func (r *RumpCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
+	sourcesDir := params.SourcesDir
 
-	if err := r.runContainer(localFolder, nil); err != nil {
+	if err := r.runContainer(sourcesDir, nil); err != nil {
 		return nil, err
 	}
 
 	// now we should program.bin
-	resultFile := path.Join(localFolder, "program.bin")
-
-	return r.CreateImage(resultFile, args, mntPoints)
+	resultFile := path.Join(sourcesDir, "program.bin")
+	logrus.Debugf("finished kernel binary at %s", resultFile)
+	img, err := r.CreateImage(resultFile, params.Args, params.MntPoints)
+	if err != nil {
+		return nil, errors.New("creating boot volume from kernel binary", err)
+	}
+	return img, nil
 }
 
 // rump special json

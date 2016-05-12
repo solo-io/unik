@@ -1,7 +1,6 @@
 package osv
 
 import (
-	"io"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
 )
@@ -10,8 +9,8 @@ const OSV_VIRTUALBOX_MEMORY = 256
 
 type OsvVirtualboxCompiler struct {}
 
-func (osvCompiler *OsvVirtualboxCompiler) CompileRawImage(sourceTar io.ReadCloser, args string, mntPoints []string) (_ *types.RawImage, err error) {
-	resultFile, err := compileRawImage(sourceTar, args, mntPoints, false)
+func (osvCompiler *OsvVirtualboxCompiler) CompileRawImage(params types.CompileImageParams) (_ *types.RawImage, err error) {
+	resultFile, err := compileRawImage(params, false)
 	if err != nil {
 		return nil, errors.New("failed to compile raw osv image", err)
 	}

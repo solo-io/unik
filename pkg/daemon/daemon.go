@@ -26,6 +26,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/osv"
 	"io/ioutil"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 type UnikDaemon struct {
@@ -207,6 +208,15 @@ func (d *UnikDaemon) addEndpoints() {
 				return nil, http.StatusBadRequest, errors.New("parsing form file marked 'tarfile", err)
 			}
 			defer sourceTar.Close()
+			sourcesDir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
+			if err != nil {
+				return nil, http.StatusInternalServerError, errors.New("creating tmp dir for src files", err)
+			}
+			defer os.RemoveAll(sourcesDir)
+			logrus.Debugf("extracting uploaded files to "+ sourcesDir)
+			if err := unikos.ExtractTar(sourceTar, sourcesDir); err != nil {
+				return nil, http.StatusInternalServerError, errors.New("extracting sources", err)
+			}
 			forceStr := req.FormValue("force")
 			var force bool
 			if strings.ToLower(forceStr) == "true" {
@@ -249,7 +259,14 @@ func (d *UnikDaemon) addEndpoints() {
 				"compiler":     compilerType,
 				"provider":	providerType,
 			}).Debugf("compiling raw image")
-			rawImage, err := compiler.CompileRawImage(sourceTar, args, mountPoints)
+
+			compileParams := types.CompileImageParams{
+				SourcesDir: sourcesDir,
+				Args: args,
+				MntPoints: mountPoints,
+			}
+
+			rawImage, err := compiler.CompileRawImage(compileParams)
 			if err != nil {
 				return nil, http.StatusInternalServerError, errors.New("failed to compile raw image", err)
 			}
@@ -261,20 +278,14 @@ func (d *UnikDaemon) addEndpoints() {
 				noCleanup = true
 			}
 
-			if !noCleanup {
-				defer os.Remove(rawImage.LocalImagePath)
-			}
-
-			params := types.StageImageParams{
+			stageParams := types.StageImageParams{
 				Name:name,
 				RawImage: rawImage,
 				Force: force,
 				NoCleanup: noCleanup,
 			}
 
-			logrus.WithField("params", params).Debugf("staging raw image")
-
-			image, err := d.providers[providerType].Stage(params)
+			image, err := d.providers[providerType].Stage(stageParams)
 			if err != nil {
 				return nil, http.StatusInternalServerError, errors.New("failed staging image", err)
 			}
