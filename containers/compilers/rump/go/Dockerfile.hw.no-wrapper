@@ -21,7 +21,7 @@ RUN cd /tmp/gorump/go/src && \
 RUN mkdir /tmp/build/
 RUN go get github.com/tools/godep
 
-COPY gomaincaller.go /tmp/build/
+COPY gomaincaller-no-wrapper.go /tmp/build/gomaincaller.go
 COPY genstub $GOPATH/bin/
 
 ENV RUMP_BAKE=hw_generic

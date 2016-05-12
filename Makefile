@@ -1,6 +1,25 @@
+SOURCEDIR=.
+SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
+
 all: pull ${SOURCES} binary
 
-.PHONY: pull containers compilers-rump-base-common compilers-rump-base-hw compilers-rump-base-xen compilers-rump-go-hw compilers-rump-go-hw-no-wrapper compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers boot-creator image-creator vsphere-client qemu-util utils
+.PHONY: pull
+.PHONY: containers
+.PHONY: compilers-rump-base-common
+.PHONY: compilers-rump-base-hw
+.PHONY: compilers-rump-base-xen
+.PHONY: compilers-rump-go-hw
+.PHONY: compilers-rump-go-hw-no-wrapper
+.PHONY: compilers-rump-go-xen
+.PHONY: compilers-rump-nodejs-hw
+.PHONY: compilers-rump-nodejs-xen
+.PHONY: compilers-osv-java
+.PHONY: compilers
+.PHONY: boot-creator
+.PHONY: image-creator
+.PHONY: vsphere-client
+.PHONY: qemu-util
+.PHONY: utils
 
 #pull containers
 pull:
@@ -42,6 +61,9 @@ compilers-rump-go-hw: compilers-rump-base-hw
 compilers-rump-go-hw-no-wrapper: compilers-rump-base-hw
 	cd containers/compilers/rump/go && GOOS=linux go build -o genstub genstub.go && docker build -t projectunik/$@ -f Dockerfile.hw.no-wrapper . && rm genstub
 
+compilers-rump-go-hw-no-wrapper: compilers-rump-base-hw
+	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.hw.no-wrapper .
+
 compilers-rump-go-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/go && GOOS=linux go build -o genstub genstub.go && docker build -t projectunik/$@ -f Dockerfile.xen . && rm genstub
 
@@ -75,8 +97,6 @@ qemu-util:
 #------
 
 #binary
-SOURCEDIR=.
-SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 BINARY=unik
 UNAME=$(shell uname)
