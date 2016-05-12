@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"encoding/json"
+	"path/filepath"
 )
 
 func ConvertRawImage(sourceFormat, targetFormat types.ImageFormat, inputFile, outputFile string) error {
@@ -13,7 +14,10 @@ func ConvertRawImage(sourceFormat, targetFormat types.ImageFormat, inputFile, ou
 	if targetFormat == types.ImageFormat_VHD {
 		targetFormatName = "vpc" //for some reason qemu calls VHD disks vpc
 	}
-	cmd := exec.Command("qemu-img", "convert", "-f", string(sourceFormat), "-O", targetFormatName, inputFile, outputFile)
+	dir := filepath.Dir(inputFile)
+	cmd := exec.Command("docker", "run", "--rm", "-v", dir+":"+dir,
+		"projectunik/qemu-util",
+		"qemu-img", "convert", "-f", string(sourceFormat), "-O", targetFormatName, inputFile, outputFile)
 	logrus.WithField("command", cmd.Args).Debugf("running command")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return errors.New("failed converting raw image to "+string(targetFormat)+": "+string(out), err)
@@ -26,7 +30,10 @@ func GetVirtualImageSize(imageFile string, imageFormat types.ImageFormat) (int64
 	if imageFormat == types.ImageFormat_VHD {
 		formatName = "vpc" //for some reason qemu calls VHD disks vpc
 	}
-	cmd := exec.Command("qemu-img", "info", "--output", "json", "-f", formatName, imageFile)
+	dir := filepath.Dir(imageFile)
+	cmd := exec.Command("docker", "run", "--rm", "-v", dir+":"+dir,
+		"projectunik/qemu-util",
+		"qemu-img", "info", "--output", "json", "-f", formatName, imageFile)
 	logrus.WithField("command", cmd.Args).Debugf("running command")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
