@@ -1,6 +1,6 @@
 all: pull ${SOURCES}
 
-.PHONY: pull containers compilers-rump-base-common compilers-rump-base-hw compilers-rump-base-xen compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers boot-creator image-creator vsphere-client utils
+.PHONY: pull containers compilers-rump-base-common compilers-rump-base-hw compilers-rump-base-xen compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers boot-creator image-creator vsphere-client qemu-util utils
 
 #pull containers
 pull:
@@ -8,6 +8,7 @@ pull:
 	docker pull projectunik/vsphere-client
 	docker pull projectunik/image-creator
 	docker pull projectunik/boot-creator
+	docker pull projectunik/qemu-img
 	docker pull projectunik/compilers-osv-java
 	docker pull projectunik/compilers-rump-go-hw
 	docker pull projectunik/compilers-rump-go-xen
@@ -50,7 +51,7 @@ compilers-osv-java:
 	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@ .
 
 #utils
-utils: boot-creator image-creator vsphere-client
+utils: boot-creator image-creator vsphere-client qemu-util
 
 boot-creator:
 	cd containers/utils/boot-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build && docker build -t projectunik/$@ -f Dockerfile . && rm boot-creator
@@ -60,6 +61,9 @@ image-creator:
 
 vsphere-client:
 	cd containers/utils/vsphere-client && mvn package && docker build -t projectunik/$@ -f Dockerfile . && rm -rf target
+
+qemu-util:
+	cd containers/utils/qemu-util && docker build -t projectunik/$@ -f Dockerfile .
 
 #------
 
