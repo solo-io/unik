@@ -57,7 +57,7 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 			break
 		}
 
-		instanceListenerIp, err := c.GetVmIp(VsphereUnikInstanceListener)
+		instanceListenerIp, err := common.GetInstanceListenerIp(timeout)
 		if err != nil {
 			return nil, errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 		}
