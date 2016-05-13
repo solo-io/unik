@@ -70,8 +70,8 @@ func main() {
 		}
 	}()
 	m := http.NewServeMux()
-	m.Handle("/register", func(res http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
+	m.HandleFunc("/register", func(res http.ResponseWriter, req *http.Request) {
+		if req.Method != "POST" {
 			res.WriteHeader(http.StatusNotFound)
 			return
 		} 
@@ -109,8 +109,8 @@ func main() {
 		log.Printf("responding with data: %s", data)
 		fmt.Fprintf(res, "%s", data)
 	})
-	m.Handle("/set_instance_env", func(res http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
+	m.HandleFunc("/set_instance_env", func(res http.ResponseWriter, req *http.Request) {
+		if req.Method != "POST" {
 			res.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -137,8 +137,8 @@ func main() {
 		go save(s, saveLock)
 		res.WriteHeader(http.StatusAccepted)
 	})
-	m.Handle("/instances", func(res http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodGet {
+	m.HandleFunc("/instances", func(res http.ResponseWriter, req *http.Request) {
+		if req.Method != "GET" {
 			res.WriteHeader(http.StatusNotFound)
 			return
 		}

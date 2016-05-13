@@ -23,23 +23,27 @@ func GetInstanceListenerIp(timeout time.Duration) (string, error) {
 	if err != nil {
 		return "", errors.New("opening udp socket", err)
 	}
-	for {
+	resultc := make(chan string)
+	errc := make(chan error)
+	go func(){
 		logrus.Infof("UDP Server listening on %s:%v", "0.0.0.0", 9876)
 		data := make([]byte, 4096)
 		_, remoteAddr, err := socket.ReadFromUDP(data)
 		if err != nil {
-			return "", errors.New("reading udp data", err)
+			errc <- errors.New("reading udp data", err)
 		}
 		logrus.Infof("received an ip from %s with data: %s", remoteAddr.IP.String(), string(data))
 		if strings.Contains(string(data), "unik") {
 			data = bytes.Trim(data, "\x00")
-			return strings.Split(string(data), ":")[1], nil
+			resultc <- strings.Split(string(data), ":")[1]
 		}
-		select {
-		case <-closeChan:
-			return "", errors.New("getting instance listener ip timed out after "+timeout.String(), nil)
-		default:
-			continue
-		}
+	}()
+	select {
+	case <-closeChan:
+		return "", errors.New("getting instance listener ip timed out after "+timeout.String(), nil)
+	case result := <- resultc:
+		return result, nil
+	case err := <- errc:
+		return "", err
 	}
 }
