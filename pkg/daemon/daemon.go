@@ -253,13 +253,16 @@ func (d *UnikDaemon) addEndpoints() {
 			if err != nil {
 				return nil, http.StatusInternalServerError, errors.New("failed to compile raw image", err)
 			}
-			defer os.Remove(rawImage.LocalImagePath)
 			logrus.Debugf("raw image compiled and saved to "+rawImage.LocalImagePath)
 
 			noCleanupStr := req.FormValue("no_cleanup")
 			var noCleanup bool
 			if strings.ToLower(noCleanupStr) == "true" {
 				noCleanup = true
+			}
+
+			if !noCleanup {
+				defer os.Remove(rawImage.LocalImagePath)
 			}
 
 			params := types.StageImageParams{
@@ -553,7 +556,7 @@ func (d *UnikDaemon) addEndpoints() {
 				if err != nil {
 					return nil, http.StatusBadRequest, errors.New("could not parse given size", err)
 				}
-				imagePath, err = unikos.BuildRawDataImage(dataTar, size, provider.GetConfig().UsePartitionTables)
+				imagePath, err = unikos.BuildRawDataImage(dataTar, unikos.MegaBytes(size), provider.GetConfig().UsePartitionTables)
 				if err != nil {
 					return nil, http.StatusInternalServerError, errors.New("creating raw volume image", err)
 				}
@@ -573,7 +576,7 @@ func (d *UnikDaemon) addEndpoints() {
 					"size": size,
 					"name": volumeName,
 				}).Debugf("creating empty volume started")
-				imagePath, err = unikos.BuildEmptyDataVolume(size)
+				imagePath, err = unikos.BuildEmptyDataVolume(unikos.MegaBytes(size))
 				if err != nil {
 					return nil, http.StatusInternalServerError, errors.New("failed building raw image", err)
 				}
@@ -592,7 +595,9 @@ func (d *UnikDaemon) addEndpoints() {
 				}
 			}
 
-			defer os.RemoveAll(imagePath)
+			if !noCleanup {
+				defer os.RemoveAll(imagePath)
+			}
 
 			params := types.CreateVolumeParams{
 				Name: volumeName,

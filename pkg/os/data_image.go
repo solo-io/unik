@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 )
 
-func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool) (string, error) {
+func BuildRawDataImage(dataTar io.ReadCloser, size MegaBytes, usePartitionTables bool) (string, error) {
 	dataFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
 	if err != nil {
 		return "", errors.New("creating tmp build folder", err)
@@ -33,7 +33,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool)
 			"-v", buildDir+"/:/opt/vol/",
 			"projectunik/image-creator",
 			"-p", fmt.Sprintf("%v", usePartitionTables),
-			"-v", filepath.Base(dataFolder), fmt.Sprintf(",%v", size),
+			"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes()),
 		)
 	} else {
 		cmd = exec.Command("docker", "run", "--rm", "--privileged",
@@ -67,7 +67,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size int, usePartitionTables bool)
 	return resultFile.Name(), nil
 }
 
-func BuildEmptyDataVolume(size int) (string, error) {
+func BuildEmptyDataVolume(size MegaBytes) (string, error) {
 	if size < 1 {
 		return "", errors.New("must specify size > 0", nil)
 	}
@@ -83,7 +83,7 @@ func BuildEmptyDataVolume(size int) (string, error) {
 		"-v", "/dev/:/dev/",
 		"-v", buildDir+"/:/opt/vol/",
 		"projectunik/image-creator",
-		"-v", filepath.Base(dataFolder), fmt.Sprintf(",%v", size),
+		"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes()),
 	)
 
 	logrus.WithFields(logrus.Fields{

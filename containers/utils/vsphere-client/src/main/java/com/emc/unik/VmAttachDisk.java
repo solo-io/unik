@@ -61,6 +61,10 @@ public class VmAttachDisk {
             System.out.println(task.waitForTask());
             if (task.getTaskInfo() != null && task.getTaskInfo().getDescription() != null) {
                 System.out.println(task.getTaskInfo().getDescription().getMessage());
+                if (task.getTaskInfo().getDescription().getMessage().contains("success")) {
+                    return;
+                }
+                System.exit(-1);
             }
         }
 
@@ -111,6 +115,10 @@ public class VmAttachDisk {
             if (task.getTaskInfo() != null && task.getTaskInfo().getDescription() != null) {
                 System.out.println(task.getTaskInfo().getDescription().getMessage());
             }
+            if (task.getTaskInfo().getDescription().getMessage().contains("success")) {
+                return;
+            }
+            System.exit(-1);
         }
         if (args[0].equals("CopyFile")) {
             if (args.length != 6) {
@@ -138,6 +146,10 @@ public class VmAttachDisk {
             if (copyTask.getTaskInfo() != null && copyTask.getTaskInfo().getDescription() != null) {
                 System.out.println(copyTask.getTaskInfo().getDescription().getMessage());
             }
+            if (copyTask.getTaskInfo().getDescription().getMessage().contains("success")) {
+                return;
+            }
+            System.exit(-1);
         }
         if (args[0].equals("CopyVirtualDisk")) {
             if (args.length != 6) {

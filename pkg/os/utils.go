@@ -263,70 +263,6 @@ func copyToPart(folder string, part Resource) error {
 
 }
 
-func CreatePartitionedVolumes(imgFile string, volumes map[string]unikutil.RawVolume) ([]string, error) {
-	sizes := make(map[string]Bytes)
-	var orderedKeys []string
-	var totalSize Bytes
-
-	ext2Overhead := MegaBytes(2).ToBytes()
-	firstPartFffest := MegaBytes(2).ToBytes()
-
-	for mntPoint, localDir := range volumes {
-		cursize, err := GetDirSize(localDir.Path)
-		if err != nil {
-			return nil, err
-		}
-		sizes[mntPoint] = Bytes(cursize) + ext2Overhead
-		totalSize += sizes[mntPoint]
-		orderedKeys = append(orderedKeys, mntPoint)
-	}
-	sizeVolume := Bytes((SectorSize + totalSize + totalSize/10) &^ (SectorSize - 1))
-	sizeVolume += MegaBytes(4).ToBytes()
-
-	log.WithFields(log.Fields{"imgFile": imgFile, "size": sizeVolume.ToPartedFormat()}).Debug("Creating image file")
-	err := createSparseFile(imgFile, sizeVolume)
-	if err != nil {
-		return nil, err
-	}
-
-	imgLo := NewLoDevice(imgFile)
-	imgLodName, err := imgLo.Acquire()
-	if err != nil {
-		return nil, err
-	}
-	defer imgLo.Release()
-
-	var p Partitioner
-	p = &DiskLabelPartioner{imgLodName.Name()}
-
-	p.MakeTable()
-	var start Bytes = firstPartFffest
-	for _, mntPoint := range orderedKeys {
-		end := start + sizes[mntPoint]
-		log.WithFields(log.Fields{"start": start, "end": end}).Debug("Creating partition")
-		err := p.MakePart("ext2", start, end)
-		if err != nil {
-			return nil, err
-		}
-		curParts, err := ListParts(imgLodName)
-		if err != nil {
-			return nil, err
-		}
-		start = curParts[len(curParts)-1].Offset().ToBytes() + curParts[len(curParts)-1].Size().ToBytes()
-	}
-
-	parts, err := ListParts(imgLodName)
-
-	log.WithFields(log.Fields{"parts": parts, "volsize": sizes}).Debug("Creating volumes")
-	for i, mntPoint := range orderedKeys {
-		localDir := volumes[mntPoint].Path
-
-		copyToPart(localDir, parts[i])
-	}
-
-	return orderedKeys, nil
-}
-
 func CreateVolumes(imgFile string, volumes []unikutil.RawVolume, newPartitioner func(device string) Partitioner) error {
 
 	if len(volumes) == 0 {
@@ -396,7 +332,9 @@ func CreateVolumes(imgFile string, volumes []unikutil.RawVolume, newPartitioner 
 	log.WithFields(log.Fields{"parts": parts, "volsize": sizes}).Debug("Creating volumes")
 	for i, v := range volumes {
 
-		copyToPart(v.Path, parts[i])
+		if err := copyToPart(v.Path, parts[i]); err != nil {
+			return err
+		}
 	}
 
 	return nil
