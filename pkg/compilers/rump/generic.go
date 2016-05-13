@@ -1,7 +1,9 @@
 package rump
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -64,7 +66,7 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool, envPa
 	config := &container.Config{
 		Image: imageName,
 		Cmd:   strslice.StrSlice(cmds),
-		Env: envPairs,
+		Env:   envPairs,
 	}
 	hostConfig := &container.HostConfig{
 		Binds:      binds,
@@ -87,6 +89,11 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool, envPa
 		return err
 	}
 
+	if err := handleLogs(cli, container.ID, os.Stdout); err != nil {
+		log.WithFields(log.Fields{"err": err, "containerId": container.ID}).Warning("Error handling container logs")
+
+	}
+
 	status, err := cli.ContainerWait(context.Background(), container.ID)
 	if err != nil {
 		return err
@@ -95,29 +102,41 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool, envPa
 	if status != 0 {
 		log.WithField("status", status).Error("Container exit status non zero")
 
-		options := types.ContainerLogsOptions{
-			ContainerID: container.ID,
-			ShowStdout:  true,
-			ShowStderr:  true,
-			Follow:      true,
-			Tail:        "all",
-		}
-		reader, err := cli.ContainerLogs(context.Background(), options)
-		if err != nil {
-			log.WithField("err", err).Error("ContainerLogs")
-			return err
-		}
-		defer reader.Close()
+		var logbuf bytes.Buffer
 
-		if res, err := ioutil.ReadAll(reader); err == nil {
-			log.Error(string(res))
-		} else {
-			log.WithField("err", err).Warn("failed to get logs")
+		if err := handleLogs(cli, container.ID, &logbuf); err != nil {
+			log.WithFields(log.Fields{"err": err, "containerId": container.ID}).Warning("Error handling container logs")
+
 		}
 
+		// print logs to log
+		log.Error(logbuf.String())
 		return errors.New("Returned non zero status", nil)
 	}
 
+	return nil
+}
+
+func handleLogs(cli *client.Client, ContainerID string, out io.Writer) error {
+
+	options := types.ContainerLogsOptions{
+		ContainerID: ContainerID,
+		ShowStdout:  true,
+		ShowStderr:  true,
+		Follow:      true,
+		Tail:        "all",
+	}
+
+	reader, err := cli.ContainerLogs(context.Background(), options)
+	if err != nil {
+		log.WithField("err", err).Error("ContainerLogs")
+		return err
+	}
+	defer reader.Close()
+
+	if _, err := io.Copy(out, reader); err != nil {
+		log.WithField("err", err).Warn("failed to get logs")
+	}
 	return nil
 }
 
