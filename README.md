@@ -8,6 +8,11 @@ To learn more about the motivation behind project UniK, read our [blog](https://
 To stay up-to-date on UniK, follow us [@ProjectUnik](https://twitter.com/ProjectUniK).
 
 ---
+
+### *Update*:
+UniK no longer requires `go` or `qemu` as dependencies! All dependencies for UniK are now bundled into docker, including compilation of UniK itself. `make install` will no longer install UniK to your path. Instead, run `make` to pull containers and compile unik in an isolated (containerized) context with no need for dependencies. The UniK executable will be placed in `unik/_build/`. We recommend placing this binary in a path directory (such as `/usr/local/bin`) to make it easily accessible from anywhere on your system.
+
+---
 ### Documentation
 - **Installation**
   - [Install UniK](docs/install.md)
@@ -50,7 +55,6 @@ To stay up-to-date on UniK, follow us [@ProjectUnik](https://twitter.com/Project
 * multi-account support per provider (i.e. multiple AWS accounts/regions, etc.)
 * migrate from [martini](https://github.com/go-martini/martini) to [echo](https://github.com/labstack/echo)
 * deploy the [Instance Listener](docs/instance_listener.md) as a unikernel
-* compile unik binary inside of a container to break Go dependency
 * self-healing state (i.e. unik can identify when instances/imgaes/volumes no longer exist and self-correct rather than throwing errors)
 * mount boot volume and stop cookfs-ing filesystem (especiall for scripting languages) to reduce memory footprint, allow persistence writing to boot vol
 
