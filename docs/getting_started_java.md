@@ -10,21 +10,21 @@ In this tutorial we'll be:
 Ensure that each of the following are installed
 - [Docker](http://www.docker.com/) installed and running with at least 4GB available space for building images
 - [`make`](https://www.gnu.org/software/make/)
-- [Golang](https://golang.org/) v1.5 or later
-- [QEMU](http://wiki.qemu.org/Main_Page)
 - [Maven](https://maven.apache.org/install.html)
-- `$GOPATH` should be set and `$GOPATH/bin` should be part of your `$PATH` (see https://golang.org/doc/code.html#GOPATH)
 
 #### Install, configure, and launch UniK
 1. Install UniK
   ```
-  $ mkdir -p $GOPATH/src/github.com/emc-advanced-dev
-  $ cd $GOPATH/src/github.com/emc-advanced-dev
   $ git clone https://github.com/emc-advanced-dev/unik.git
   $ cd unik
-  $ make install
+  $ make
   ```
-  note: `make install` will take quite a few minutes the first time it runs. the UniK `Makefile` is pulling all of the Docker images that bundle UniK's dependencies.
+  note: `make` will take quite a few minutes the first time it runs. the UniK `Makefile` is pulling all of the Docker images that bundle UniK's dependencies.
+
+  Then, place the `unik` executable in your `$PATH` to make running UniK commands easier:
+  ```
+  $ mv _build/unik /usr/local/bin/
+  ```
 
 2. Configure your AWS credentials in your environment, or in the file `~/.aws/credentials` (see [AWS provder](providers/aws.md))
 

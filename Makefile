@@ -114,5 +114,5 @@ remove-containers:
 	-docker rmi -f projectunik/compilers-rump-base-common
 
 clean:
-	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
+	rm -rf ./_build
 #---

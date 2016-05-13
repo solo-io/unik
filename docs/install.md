@@ -8,19 +8,22 @@
 ---
 #### Install
 ```
-$ mkdir -p $GOPATH/src/github.com/emc-advanced-dev
-$ cd $GOPATH/src/github.com/emc-advanced-dev
 $ git clone https://github.com/emc-advanced-dev/unik.git
 $ cd unik
-$ make install
+$ make
+$ _build/unik
+Unik is a tool for compiling application source code
+into bootable disk images. Unik also runs and manages unikernel
+instances across infrastructures.
+...
 ```
+
+This will place the `unik` executable at **unik/_build/unik**. Run UniK commands with `./_build/unik`, or move the binary to somewhere in your path, such as `/usr/local/bin` to run commands from anywhere with `unik [command]`
+
 Continue to [configuration](configure.md) to learn how to configure your UniK setup
-
-This will place the `unik` binary in your current directory (unik root). Run UniK commands with `./unik`, or move the binary to somewhere in your path, such as `/usr/local/bin`
-
 ---
 #### Building Containers from Source
-By default, `make install` will pull all of the necessary container images from [Docker Hub](https://hub.docker.com/).
+By default, `make` will pull all of the necessary container images from [Docker Hub](https://hub.docker.com/).
 If you wish to build containers from sources, you will need:
 - [Golang](https://golang.org/) v1.5 or later
 - `$GOPATH` should be set and `$GOPATH/bin` should be part of your `$PATH` (see https://golang.org/doc/code.html#GOPATH)
