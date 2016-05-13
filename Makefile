@@ -52,7 +52,7 @@ compilers-rump-nodejs-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/nodejs && docker build -t projectunik/$@ -f Dockerfile.xen .
 
 compilers-osv-java:
-	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@ .
+	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@ .  && rm java-compiler
 
 debuggers-rump-base-hw: compilers-rump-base-hw
 	cd containers/debuggers/rump/base && docker build -t projectunik/$@ -f Dockerfile.hw .
@@ -86,6 +86,7 @@ ifeq ($(UNAME),Linux)
 else ifeq ($(UNAME),Darwin)
 	TARGET_OS=darwin
 endif
+
 binary: ${SOURCES}
 ifeq (,$(TARGET_OS))
 	echo "Unknown platform $(UNAME)"

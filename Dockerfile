@@ -16,4 +16,9 @@ WORKDIR $GOPATH/src/github.com/emc-advanced-dev/unik
 
 VOLUME /opt/build
 
-CMD GOOS=${TARGET_OS} go build -o /opt/build/unik
+RUN apt-get install -y git
+RUN go get -u github.com/jteeuwen/go-bindata/...
+
+CMD go-bindata -o instance-listener/bindata/instance_listener_data.go instance-listener/main.go && \
+    perl -pi -e 's/package main/package bindata/g' instance-listener/bindata/instance_listener_data.go && \
+    GOOS=${TARGET_OS} go build -o /opt/build/unik
