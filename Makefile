@@ -8,7 +8,7 @@ pull:
 	docker pull projectunik/vsphere-client
 	docker pull projectunik/image-creator
 	docker pull projectunik/boot-creator
-	docker pull projectunik/qemu-img
+	docker pull projectunik/qemu-util
 	docker pull projectunik/compilers-osv-java
 	docker pull projectunik/compilers-rump-go-hw
 	docker pull projectunik/compilers-rump-go-xen
@@ -72,25 +72,25 @@ SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 BINARY=unik
-UNAME=$(uname)
-
+UNAME=$(shell uname)
+TARGET_OS=
+ifeq ($(UNAME),Linux)
+	TARGET_OS=linux
+else ifeq ($(UNAME),Darwin)
+	TARGET_OS=darwin
+endif
 binary: ${SOURCES}
-	ifeq ($(UNAME),Linux)
-		TARGET_OS=linux
-	endif
-	ifeq (Darwin,$UNAME)
-		TARGET_OS=darwin
-	endif
-	ifeq (,$TARGET_OS)
-		echo "Unknown platform $UNAME"
-		exit 1
-	endif
-	echo Building for platform $UNAME
+ifeq (,$(TARGET_OS))
+	echo "Unknown platform $(UNAME)"
+	echo "Unknown platform $(TARGET_OS)"
+	exit 1
+endif
+	echo Building for platform $(UNAME)
 	docker build -t projectunik/$@ -f Dockerfile .
 	mkdir -p ./_build
-	docker run --rm -v $PWD/_build:/opt/build -e TARGET_OS=$TARGET_OS projectunik/$@
+	docker run --rm -v $(PWD)/_build:/opt/build -e TARGET_OS=$(TARGET_OS) projectunik/$@
 	docker rmi -f projectunik/$@
-	echo "Install finished! UniK binary can be found at $PWD/_build/unik"
+	echo "Install finished! UniK binary can be found at $(PWD)/_build/unik"
 
 #----
 
