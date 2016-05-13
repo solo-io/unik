@@ -1,7 +1,7 @@
 FROM projectunik/compilers-rump-base-common
 
 ENV PLATFORM=hw
-ENV BUILDRUMP_EXTRA=
+ENV BUILDRUMP_EXTRA="-D"
 
 RUN cd /opt/rumprun && \
     ./build-rr.sh -d $DESTDIR -o ./obj $PLATFORM build -- $BUILDRUMP_EXTRA && \

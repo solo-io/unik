@@ -57,7 +57,7 @@ compilers-rump-baker-hw: compilers-rump-go-hw
 compilers-rump-baker-xen: compilers-rump-go-xen
 	cd containers/compilers/rump/baker && docker build -t projectunik/$@ -f Dockerfile.xen .
 
-debuggers-rump-go-hw: compilers-rump-go-hw
+debuggers-rump-go-hw: compilers-rump-baker-hw
 	cd containers/debuggers/rump/go && docker build -t projectunik/$@ -f Dockerfile.hw .
 	
 #utils
