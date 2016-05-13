@@ -114,7 +114,7 @@ func init() {
 	RootCmd.AddCommand(cvCmd)
 	cvCmd.Flags().StringVar(&name, "name", "", "<string,required> name to give the unikernel. must be unique")
 	cvCmd.Flags().StringVar(&data, "data", "", "<string,special> path to data folder. optional if --size is provided")
-	cvCmd.Flags().IntVar(&size, "compiler", 0, "<int,special> size to create volume in MB. optional if --data is provided")
+	cvCmd.Flags().IntVar(&size, "size", 0, "<int,special> size to create volume in MB. optional if --data is provided")
 	cvCmd.Flags().StringVar(&provider, "provider", "", "<string,required> name of the target infrastructure to compile for")
 	cvCmd.Flags().BoolVar(&noCleanup, "no-cleanup", false, "<bool, optional> for debugging; do not clean up artifacts for volumes that fail to build")
 }

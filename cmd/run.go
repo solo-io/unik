@@ -69,7 +69,7 @@ Example usage:
 				}
 				volId := pair[0]
 				mnt := pair[1]
-				mounts[volId] = mnt
+				mounts[mnt] = volId
 			}
 
 			env := make(map[string]string)

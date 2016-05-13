@@ -23,7 +23,7 @@ func (p *VsphereProvider) CreateVolume(params types.CreateVolumeParams) (_ *type
 		return nil, errors.New("creating tmp file", err)
 	}
 	defer os.RemoveAll(localVmdkDir)
-	localVmdkFile := filepath.Join(localVmdkDir, "boot.vmdk")
+	localVmdkFile := filepath.Join(localVmdkDir, "data.vmdk")
 	logrus.WithField("raw-image", params.ImagePath).Infof("creating vmdk from raw image")
 	if err := common.ConvertRawImage(types.ImageFormat_RAW, types.ImageFormat_VMDK, params.ImagePath, localVmdkFile); err != nil {
 		return nil, errors.New("converting raw image to vmdk", err)
@@ -50,9 +50,7 @@ func (p *VsphereProvider) CreateVolume(params types.CreateVolumeParams) (_ *type
 		}
 	}()
 
-	vsphereVolumePath := getVolumeDatastorePath(params.Name)
-
-	if err := c.ImportVmdk(localVmdkFile, vsphereVolumePath); err != nil {
+	if err := c.ImportVmdk(localVmdkFile, vsphereVolumeDir); err != nil {
 		return nil, errors.New("importing data.vmdk to vsphere datastore", err)
 	}
 

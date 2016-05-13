@@ -149,7 +149,7 @@ type RunSpec struct {
 	DeviceMappings []DeviceMapping `json:"DeviceMappings"` //required for all compilers
 	DefaultInstanceMemory int `json:"DefaultInstanceMemory"` //required for all compilers
 	StorageDriver StorageDriver `json:"StorageDriver,omitempty"`
-	VsphereNetworkType VsphereNetworkType `json:"StorageDriver,VsphereNetworkType"`
+	VsphereNetworkType VsphereNetworkType `json:"VsphereNetworkType"`
 }
 
 type DeviceMapping struct {

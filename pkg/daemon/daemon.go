@@ -269,6 +269,8 @@ func (d *UnikDaemon) addEndpoints() {
 				NoCleanup: noCleanup,
 			}
 
+			logrus.WithField("params", params).Debugf("staging raw image")
+
 			image, err := d.providers[providerType].Stage(params)
 			if err != nil {
 				return nil, http.StatusInternalServerError, errors.New("failed staging image", err)
@@ -511,64 +513,86 @@ func (d *UnikDaemon) addEndpoints() {
 	d.server.Post("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		handle(res, req, func() (interface{}, int, error) {
 			volumeName := params["volume_name"]
-			err := req.ParseMultipartForm(0)
-			if err != nil {
-				return nil, http.StatusInternalServerError, err
-			}
-			logrus.WithFields(logrus.Fields{
-				"req": req,
-			}).Debugf("parsing multipart form")
-
-			sizeStr := req.FormValue("size")
-			size, err := strconv.Atoi(sizeStr)
-			if err != nil {
-				return nil, http.StatusBadRequest, errors.New("could not parse given size", err)
-			}
-
-			providerType := req.FormValue("provider")
-			if _, ok := d.providers[providerType]; !ok {
-				return nil, http.StatusBadRequest, errors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
-			}
-
-			logrus.WithFields(logrus.Fields{
-				"form": req.Form,
-			}).Debugf("seeking form file marked 'tarfile'")
-
 			var imagePath string
-
-			provider := d.providers[providerType]
-
-			dataTar, header, err := req.FormFile("tarfile")
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"size": size,
-					"name": volumeName,
-				}).WithError(err).Debugf("creating empty volume started")
-				imagePath, err = unikos.BuildEmptyDataVolume(size)
+			var provider providers.Provider
+			var noCleanup bool
+			if req.Header.Get("Content-type") == "multipart/form-data" {
+				logrus.Info("received request with form-data")
+				err := req.ParseMultipartForm(0)
 				if err != nil {
-					return nil, http.StatusInternalServerError, errors.New("failed building raw image", err)
+					return nil, http.StatusInternalServerError, err
 				}
 				logrus.WithFields(logrus.Fields{
-					"image": imagePath,
-				}).Infof("raw image created")
-			} else {
+					"req": req,
+				}).Debugf("parsing multipart form")
+				dataTar, header, err := req.FormFile("tarfile")
+				if err != nil {
+					return nil, http.StatusInternalServerError, errors.New("failed to retrieve form-data for tarfe", err)
+				}
 				defer dataTar.Close()
+				providerType := req.FormValue("provider")
+				if _, ok := d.providers[providerType]; !ok {
+					return nil, http.StatusBadRequest, errors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
+				}
+				provider = d.providers[providerType]
+
+				logrus.WithFields(logrus.Fields{
+					"form": req.Form,
+				}).Debugf("seeking form file marked 'tarfile'")
 				logrus.WithFields(logrus.Fields{
 					"tarred-data": header.Filename,
 					"name":        volumeName,
+					"provider":    providerType,
 				}).Debugf("creating volume started")
+
+				sizeStr := req.URL.Query().Get("size")
+				if sizeStr == "" {
+					sizeStr = "0"
+				}
+				size, err := strconv.Atoi(sizeStr)
+				if err != nil {
+					return nil, http.StatusBadRequest, errors.New("could not parse given size", err)
+				}
 				imagePath, err = unikos.BuildRawDataImage(dataTar, size, provider.GetConfig().UsePartitionTables)
 				if err != nil {
 					return nil, http.StatusInternalServerError, errors.New("creating raw volume image", err)
 				}
-			}
-			defer os.RemoveAll(imagePath)
 
-			noCleanupStr := req.FormValue("no_cleanup")
-			var noCleanup bool
-			if strings.ToLower(noCleanupStr) == "true" {
-				noCleanup = true
+				noCleanupStr := req.FormValue("no_cleanup")
+				if strings.ToLower(noCleanupStr) == "true" {
+					noCleanup = true
+				}
+			} else {
+				logrus.Info("received request for empty volume")
+				sizeStr := req.URL.Query().Get("size")
+				size, err := strconv.Atoi(sizeStr)
+				if err != nil {
+					return nil, http.StatusBadRequest, errors.New("could not parse given size", err)
+				}
+				logrus.WithFields(logrus.Fields{
+					"size": size,
+					"name": volumeName,
+				}).Debugf("creating empty volume started")
+				imagePath, err = unikos.BuildEmptyDataVolume(size)
+				if err != nil {
+					return nil, http.StatusInternalServerError, errors.New("failed building raw image", err)
+				}
+				providerType := req.URL.Query().Get("provider")
+				if _, ok := d.providers[providerType]; !ok {
+					return nil, http.StatusBadRequest, errors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
+				}
+				provider = d.providers[providerType]
+				logrus.WithFields(logrus.Fields{
+					"image": imagePath,
+				}).Infof("raw image created")
+
+				noCleanupStr := req.URL.Query().Get("no_cleanup")
+				if strings.ToLower(noCleanupStr) == "true" {
+					noCleanup = true
+				}
 			}
+
+			defer os.RemoveAll(imagePath)
 
 			params := types.CreateVolumeParams{
 				Name: volumeName,
@@ -609,7 +633,7 @@ func (d *UnikDaemon) addEndpoints() {
 			logrus.WithFields(logrus.Fields{
 				"volume": volumeName,
 			}).Infof("volume deleted")
-			return volumeName, http.StatusNoContent, nil
+			return nil, http.StatusNoContent, nil
 		})
 	})
 	d.server.Post("/volumes/:volume_name/attach/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {

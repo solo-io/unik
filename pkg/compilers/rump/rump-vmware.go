@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/Sirupsen/logrus"
 )
 
 func CreateImageVmware(kernel string, args string, mntPoints []string) (*types.RawImage, error) {
@@ -56,6 +57,7 @@ func CreateImageVmware(kernel string, args string, mntPoints []string) (*types.R
 	res.RunSpec.StorageDriver = types.StorageDriver_SCSI
 	res.RunSpec.VsphereNetworkType = types.VsphereNetworkType_E1000
 	res.RunSpec.DefaultInstanceMemory = 512
+	logrus.WithField("runspec", res.RunSpec).Infof("created raw vmware image")
 	return res, nil
 
 }
