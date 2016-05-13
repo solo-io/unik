@@ -217,7 +217,7 @@ func (d *UnikDaemon) addEndpoints() {
 			return image, http.StatusOK, nil
 		})
 	})
-	d.server.Post("/images/:name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+	d.server.Post("/images/:name/create", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		handle(res, req, func() (interface{}, int, error) {
 			name := params["name"]
 			if name == "" {
