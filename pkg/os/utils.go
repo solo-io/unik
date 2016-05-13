@@ -1,10 +1,11 @@
 package os
 
 import (
-	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"path"
 	"text/template"
+
+	"github.com/emc-advanced-dev/pkg/errors"
 
 	log "github.com/Sirupsen/logrus"
 
@@ -321,7 +322,9 @@ func CreatePartitionedVolumes(imgFile string, volumes map[string]unikutil.RawVol
 	for i, mntPoint := range orderedKeys {
 		localDir := volumes[mntPoint].Path
 
-		copyToPart(localDir, parts[i])
+		if err := copyToPart(localDir, parts[i]); err != nil {
+			return nil, err
+		}
 	}
 
 	return orderedKeys, nil
@@ -396,7 +399,9 @@ func CreateVolumes(imgFile string, volumes []unikutil.RawVolume, newPartitioner 
 	log.WithFields(log.Fields{"parts": parts, "volsize": sizes}).Debug("Creating volumes")
 	for i, v := range volumes {
 
-		copyToPart(v.Path, parts[i])
+		if err := copyToPart(v.Path, parts[i]); err != nil {
+			return err
+		}
 	}
 
 	return nil
