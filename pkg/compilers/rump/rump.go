@@ -20,8 +20,10 @@ type RumpCompiler struct {
 
 func (r *RumpCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
 	sourcesDir := params.SourcesDir
-
-	if err := r.runContainer(sourcesDir, nil); err != nil {
+	containerEnv := []string{
+		fmt.Sprintf("APP_ARGS=%s", params.Args),
+	}
+	if err := r.runContainer(sourcesDir, containerEnv); err != nil {
 		return nil, err
 	}
 
