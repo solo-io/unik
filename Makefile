@@ -61,9 +61,6 @@ compilers-rump-go-hw: compilers-rump-base-hw
 compilers-rump-go-hw-no-wrapper: compilers-rump-base-hw
 	cd containers/compilers/rump/go && GOOS=linux go build -o genstub genstub.go && docker build -t projectunik/$@ -f Dockerfile.hw.no-wrapper . && rm genstub
 
-compilers-rump-go-hw-no-wrapper: compilers-rump-base-hw
-	cd containers/compilers/rump/go && docker build -t projectunik/$@ -f Dockerfile.hw.no-wrapper .
-
 compilers-rump-go-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/go && GOOS=linux go build -o genstub genstub.go && docker build -t projectunik/$@ -f Dockerfile.xen . && rm genstub
 
