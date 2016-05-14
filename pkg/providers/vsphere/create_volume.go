@@ -43,7 +43,7 @@ func (p *VsphereProvider) CreateVolume(params types.CreateVolumeParams) (_ *type
 		if err != nil {
 			if  params.NoCleanup {
 				logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed volume %s at %s", params.Name, vsphereVolumeDir)
-				return
+					return
 			}
 			logrus.WithError(err).Warnf("creating volume failed, cleaning up volume on datastore")
 			c.Rmdir(vsphereVolumeDir)

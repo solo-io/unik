@@ -7,7 +7,6 @@ import (
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
-	"os"
 	"time"
 )
 
@@ -43,13 +42,13 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 				logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed instance %s001", params.Name)
 				return
 			}
-			logrus.WithError(err).Errorf("error encountered, ensuring vm and disks are destroyed")
+			logrus.WithError(err).Warnf("error encountered, ensuring vm and disks are destroyed")
 			c.PowerOffVm(params.Name)
 			for _, portUsed := range portsUsed {
 				c.DetachDisk(params.Name, portUsed, image.RunSpec.StorageDriver)
 			}
 			c.DestroyVm(params.Name)
-			os.RemoveAll(instanceDir)
+			c.Rmdir(instanceDir)
 		}
 	}()
 
