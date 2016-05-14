@@ -76,7 +76,7 @@ Another example (using only the required parameters):
 				"path":        path,
 				"compiler":    compiler,
 				"provider":    provider,
-				"args":        args,
+				"args":        runArgs,
 				"mountPoints": mountPoints,
 				"force":       force,
 				"host":        host,
