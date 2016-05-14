@@ -1,0 +1,3 @@
+[submodule "containers/compilers/rump/go/gorump"]
+	path = containers/compilers/rump/go/gorump
+	url = https://github.com/emc-advanced-dev/gorump.git

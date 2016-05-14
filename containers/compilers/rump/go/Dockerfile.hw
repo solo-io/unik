@@ -6,10 +6,10 @@ ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
 RUN curl https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz | sudo tar xz -C /usr/local && \
     mv /usr/local/go /usr/local/go1.5 && ln -s /usr/local/go1.5 /usr/local/go && \
-    cd /tmp && git clone https://github.com/deferpanic/gorump
+    echo "not doing this: cd /tmp && git clone https://github.com/deferpanic/gorump"
 
 COPY fixgo.sh /tmp/
-
+COPY gorump /tmp/gorump/
 
 RUN cd /tmp/gorump/go/src && \
     bash /tmp/fixgo.sh && \
