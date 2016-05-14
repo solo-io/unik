@@ -36,7 +36,7 @@ func BuildBootableImage(kernel, cmdline string) (string, error) {
 	cmds := []string{"-d", contextDir, "-p", kernelBaseName, "-a", cmdline}
 	binds := []string{directory + ":" + contextDir, "/dev/:/dev/"}
 
-	if err := RunContainer("projectunik/boot-creator", cmds, binds, true, nil); err != nil {
+	if err := execContainer("projectunik/boot-creator", cmds, binds, true, nil); err != nil {
 		return "", err
 	}
 
