@@ -13,7 +13,7 @@ func main() {
 	argString := flag.String("args", "", "arguments as a single string")
 	outFile := flag.String("o", "", "output file to write to")
 	flag.Parse()
-	args := []string{}
+	args := []string{"\"program.bin\""}
 	for _, arg := range strings.Split(*argString, " ") {
 		args = append(args,
 		fmt.Sprintf("\"%s\"", arg))

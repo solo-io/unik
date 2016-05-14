@@ -32,6 +32,10 @@ func main() {
 	}
 	dataPrefix := flag.String("prefix", "unik_", "prefix for data sent via udp (for identification purposes")
 	flag.Parse()
+	for i, arg := range flag.Args() {
+
+		log.Printf("flagarg %v: %s", i, arg)
+	}
 	if *dataPrefix == "unik_" {
 		log.Printf("ERROR: must provide -prefix")
 		return

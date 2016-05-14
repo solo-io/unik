@@ -70,7 +70,7 @@ func compileInstanceListener(sourceDir string) (*types.RawImage, error) {
 
 	params := types.CompileImageParams{
 		SourcesDir: sourceDir,
-		Args: "-prefix="+instanceListenerPrefix,
+		Args: "-prefix "+instanceListenerPrefix,
 		//MntPoints: []string{"/data"},
 	}
 	rumpGoCompiler := &rump.RumpCompiler{
