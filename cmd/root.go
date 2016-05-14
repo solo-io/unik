@@ -42,13 +42,14 @@ func readClientConfig() error {
 	data, err := ioutil.ReadFile(clientConfigFile)
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to read client configuration file at " + clientConfigFile + `\n
-		Try setting your config with 'unik target HOST_URL'`)
+Try setting your config with 'unik target --host HOST_URL'`)
 		return err
 	}
 	data = bytes.Replace(data, []byte("\n"), []byte{}, -1)
 	if err := yaml.Unmarshal(data, &clientConfig); err != nil {
 		logrus.WithError(err).Errorf("failed to parse client configuration yaml at " + clientConfigFile + `\n
-		Please ensure config file contains valid yaml.'`)
+Please ensure config file contains valid yaml.'\n
+Try setting your config with 'unik target --host HOST_URL'`)
 		return err
 	}
 	return nil

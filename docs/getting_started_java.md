@@ -44,7 +44,7 @@ Ensure that each of the following are installed
   * Open a new terminal window/tab. This terminal will be where we leave the UniK daemon running.
   * from any directory, run `unik daemon` (Optional: `unik daemon --debug` for more verbose output)
   * After this is finished, UniK is running and ready to accept commands from the cli.
-
+  * Open a new terminal and type `unik target --host localhost` to set the CLI target to the your local machine.
 ---
 
 #### Write a Java HTTP server using Maven

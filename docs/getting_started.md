@@ -26,7 +26,7 @@ Ensure that each of the following are installed
   ```
   $ mv _build/unik /usr/local/bin/
   ```
-  
+
 2. Configure a Host-Only Network on Virtualbox
   * Open Virtualbox
   * Open **Preferences** > **Network** > **Host-only Networks**
@@ -51,7 +51,7 @@ Ensure that each of the following are installed
   * UniK will download a 3.3GB vmdk file from Amazon S3. This file is the boot image for the Unik Instance Listener. The instance listener is a small Ubuntu VM that helps bootstrap UniK instances running on Virtualbox.
   * After UniK finishes downloading the vmdk, it will deploy the Instance Listener VM on virtualbox
   * After this is finished, UniK is running and ready to accept commands.
-
+  * Open a new terminal and type `unik target --host localhost` to set the CLI target to the your local machine.
 ---
 
 #### Write a Go HTTP server
