@@ -16,6 +16,7 @@ var VsphereImagesDirectory = "unik/vsphere/images/"
 var VsphereVolumesDirectory = "unik/vsphere/volumes/"
 
 const VsphereUnikInstanceListener = "VsphereUnikInstanceListener"
+const instanceListenerPrefix = "unik_vsphere"
 
 type VsphereProvider struct {
 	config config.Vsphere

@@ -12,8 +12,10 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-	"time"
 	"log"
+	"time"
+	"flag"
+	"os"
 )
 
 const statefile = "/data/statefile.json"
@@ -24,6 +26,20 @@ type state struct {
 }
 
 func main() {
+	args := os.Args
+	for i, arg := range args {
+		log.Printf("arg %v: %s", i, arg)
+	}
+	dataPrefix := flag.String("prefix", "unik_", "prefix for data sent via udp (for identification purposes")
+	flag.Parse()
+	if *dataPrefix == "unik_" {
+		log.Printf("ERROR: must provide -prefix")
+		return
+	}
+	if *dataPrefix == "" {
+		log.Printf("ERROR: -prefix cannot be \"\"")
+		return
+	}
 	ipMapLock := sync.RWMutex{}
 	envMapLock := sync.RWMutex{}
 	saveLock := sync.Mutex{}
@@ -42,31 +58,35 @@ func main() {
 
 	listenerIp, err := getLocalIp()
 	if err != nil {
-		log.Fatalf("failed to get local ip: %v", err)
+		log.Printf("ERROR: failed to get local ip: %v", err)
+		return
 	}
 
 	log.Printf("Starting unik discovery (udp heartbeat broadcast) with ip %s", listenerIp.String())
-	info := []byte("unik:" + listenerIp.String())
+	info := []byte(*dataPrefix +":"+ listenerIp.String())
 	listenerIpMask := listenerIp.DefaultMask()
 	BROADCAST_IPv4 := reverseMask(listenerIp, listenerIpMask)
 	if listenerIpMask == nil {
-		log.Fatalf("listener-ip: %v; listener-ip-mask: %v; could not calculate broadcast address", listenerIp, listenerIpMask)
+		log.Printf("ERROR: listener-ip: %v; listener-ip-mask: %v; could not calculate broadcast address", listenerIp, listenerIpMask)
+		return
 	}
 	socket, err := net.DialUDP("udp4", nil, &net.UDPAddr{
 		IP:   BROADCAST_IPv4,
 		Port: 9876,
 	})
 	if err != nil {
-		log.Fatalf(fmt.Sprintf("broadcast-ip: %v; failed to dial udp broadcast connection", BROADCAST_IPv4))
+		log.Printf(fmt.Sprintf("ERROR: broadcast-ip: %v; failed to dial udp broadcast connection", BROADCAST_IPv4))
+		return
 	}
 	go func() {
 		for {
 			_, err = socket.Write(info)
 			if err != nil {
-				log.Fatalf("broadcast-ip: %v; failed writing to broadcast udp socket: "+err.Error(), BROADCAST_IPv4)
+				log.Printf("ERROR: broadcast-ip: %v; failed writing to broadcast udp socket: "+err.Error(), BROADCAST_IPv4)
+				return
 			}
 			log.Printf("broadcasting...")
-			time.Sleep(2000 * time.Millisecond)
+			time.Sleep(1000 * time.Millisecond)
 		}
 	}()
 	m := http.NewServeMux()

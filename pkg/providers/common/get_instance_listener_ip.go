@@ -9,19 +9,25 @@ import (
 	"time"
 )
 
-func GetInstanceListenerIp(timeout time.Duration) (string, error) {
+var socket *net.UDPConn
+
+func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, error) {
 	closeChan := make(chan struct{})
 	go func(){
 		<-time.After(timeout)
 		close(closeChan)
 	}()
 	logrus.Infof("listening for udp heartbeat...")
-	socket, err := net.ListenUDP("udp4", &net.UDPAddr{
-		IP:   net.IPv4(0, 0, 0, 0),
-		Port: 9876,
-	})
-	if err != nil {
-		return "", errors.New("opening udp socket", err)
+	var err error
+	//only initialize socket once
+	if socket == nil {
+		socket, err = net.ListenUDP("udp4", &net.UDPAddr{
+			IP:   net.IPv4(0, 0, 0, 0),
+			Port: 9876,
+		})
+		if err != nil {
+			return "", errors.New("opening udp socket", err)
+		}
 	}
 	resultc := make(chan string)
 	errc := make(chan error)
@@ -33,7 +39,7 @@ func GetInstanceListenerIp(timeout time.Duration) (string, error) {
 			errc <- errors.New("reading udp data", err)
 		}
 		logrus.Infof("received an ip from %s with data: %s", remoteAddr.IP.String(), string(data))
-		if strings.Contains(string(data), "unik") {
+		if strings.Contains(string(data), dataPrefix) {
 			data = bytes.Trim(data, "\x00")
 			resultc <- strings.Split(string(data), ":")[1]
 		}
