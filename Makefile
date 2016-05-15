@@ -50,6 +50,9 @@ compilers-rump-nodejs-xen: compilers-rump-base-xen
 compilers-osv-java:
 	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@ .
 
+debuggers-rump-base-hw: compilers-rump-base-hw
+	cd containers/debuggers/rump/base && docker build -t projectunik/$@ -f Dockerfile.hw .
+
 #utils
 utils: boot-creator image-creator vsphere-client qemu-util
 
