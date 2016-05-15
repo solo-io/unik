@@ -97,6 +97,6 @@ func printVolumes(volume ...*types.Volume) {
 }
 
 func printVolume(volume *types.Volume) {
-	fmt.Printf("%-15.15s %-15.15s %-14.14s %-20.20s %-20.20v %-12.12s\n",
+	fmt.Printf("%-15.15s %-15.15s %-14.14s %-20.20s %-20.20v %-12.12d\n",
 		volume.Name, volume.Id, volume.Infrastructure, volume.Created.String(), volume.Attachment, volume.SizeMb)
 }
