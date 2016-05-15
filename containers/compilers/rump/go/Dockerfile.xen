@@ -4,17 +4,16 @@ ENV GOROOT=/usr/local/go
 ENV GOPATH=$HOME/go
 ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
-RUN curl https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz |  tar xz -C /usr/local && \
+RUN curl https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz | tar xz -C /usr/local && \
     mv /usr/local/go /usr/local/go1.5 && ln -s /usr/local/go1.5 /usr/local/go && \
     cd /tmp && git clone https://github.com/deferpanic/gorump
 
 COPY fixgo.sh /tmp/
 
-
 RUN cd /tmp/gorump/go/src && \
     bash /tmp/fixgo.sh && \
     GOROOT_BOOTSTRAP=/usr/local/go GOOS=rumprun GOARCH=amd64 ./make.bash && \
-    cd /tmp &&  mv gorump/go /usr/local/go1.5-patched && \
+    cd /tmp && mv gorump/go /usr/local/go1.5-patched && \
     rm /usr/local/go  && \
     ln -s /usr/local/go1.5-patched /usr/local/go
 
