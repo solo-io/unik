@@ -20,8 +20,8 @@ RUMP_COMPONENT(RUMP_COMPONENT_DEV)
     int i;
 	devmajor_t bmaj, cmaj;
     
-    char bDevice[] = "/dev/sd1";
-    char cDevice[] = "/dev/rsd1";
+    char bDevice[] = "/dev/sd0";
+    char cDevice[] = "/dev/rsd0";
 
 	config_init_component(cfdriver_ioconf_scsipi,
 	    cfattach_ioconf_scsipi, cfdata_ioconf_scsipi);
@@ -30,8 +30,8 @@ RUMP_COMPONENT(RUMP_COMPONENT_DEV)
 	FLAWLESSCALL(devsw_attach("sd", &sd_bdevsw, &bmaj, &sd_cdevsw, &cmaj));
 
     for (i=0; i < 8; i++) {
-        bDevice[7] = '1' + i;
-        cDevice[8] = '1' + i;
+        bDevice[7] = '0' + i;
+        cDevice[8] = '0' + i;
     
         FLAWLESSCALL(rump_vfs_makedevnodes(S_IFBLK, bDevice, 'a',
             bmaj, MAXPARTITIONS*i, 8));
