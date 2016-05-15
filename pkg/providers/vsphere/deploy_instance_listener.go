@@ -6,9 +6,7 @@ import (
 	"os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/unik/instance-listener/bindata"
 	"io/ioutil"
-	"path/filepath"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"time"
@@ -25,6 +23,7 @@ func (p *VsphereProvider) deployInstanceListener() (err error) {
 	}
 	logrus.Infof("cannot contact instance listener... cleaning up previous if it exists..")
 	c := p.getClient()
+	c.PowerOffVm(VsphereUnikInstanceListener)
 	c.DestroyVm(VsphereUnikInstanceListener)
 	logrus.Infof("compiling new instance listener")
 	sourceDir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
@@ -32,7 +31,7 @@ func (p *VsphereProvider) deployInstanceListener() (err error) {
 		return errors.New("creating temp dir for instance listener source", err)
 	}
 	defer os.RemoveAll(sourceDir)
-	rawImage, err := compileInstanceListener(sourceDir)
+	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "projectunik/compilers-rump-go-hw-no-wrapper", rump.CreateImageVmware)
 	if err != nil {
 		return errors.New("compiling instance listener source to unikernel", err)
 	}
@@ -57,27 +56,6 @@ func (p *VsphereProvider) deployInstanceListener() (err error) {
 		return errors.New("launching instance of instance listener", err)
 	}
 	return nil
-}
-
-func compileInstanceListener(sourceDir string) (*types.RawImage, error) {
-	mainData, err := bindata.Asset("instance-listener/main.go")
-	if err != nil {
-		return nil, errors.New("reading binary data of instance listener main", err)
-	}
-	if err := ioutil.WriteFile(filepath.Join(sourceDir, "main.go"), mainData, 0644); err != nil {
-		return nil, errors.New("copying contents of instance listener main.go", err)
-	}
-
-	params := types.CompileImageParams{
-		SourcesDir: sourceDir,
-		Args: "-prefix "+instanceListenerPrefix,
-		MntPoints: []string{"/data"},
-	}
-	rumpGoCompiler := &rump.RumpCompiler{
-		DockerImage: "projectunik/compilers-rump-go-hw-no-wrapper",
-		CreateImage: rump.CreateImageVmware,
-	}
-	return rumpGoCompiler.CompileRawImage(params)
 }
 
 func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {

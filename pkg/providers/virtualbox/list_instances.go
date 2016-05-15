@@ -28,7 +28,7 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 			continue
 		}
 
-		instanceListenerIp, err := virtualboxclient.GetVmIp(VboxUnikInstanceListener)
+		instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout)
 		if err != nil {
 			return nil, errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 		}

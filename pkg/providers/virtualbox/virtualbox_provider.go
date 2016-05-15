@@ -15,6 +15,7 @@ var virtualboxInstancesDirectory = os.Getenv("HOME") + "/.unik/virtualbox/instan
 var virtualboxVolumesDirectory = os.Getenv("HOME") + "/.unik/virtualbox/volumes/"
 
 const VboxUnikInstanceListener = "VboxUnikInstanceListener"
+const instanceListenerPrefix = "unik_virtualbox"
 
 type VirtualboxProvider struct {
 	config config.Virtualbox

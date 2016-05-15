@@ -43,26 +43,6 @@ func vboxManage(args ...string) ([]byte, error) {
 	return out, nil
 }
 
-//for vms with virtualbox guest additions
-func GetVmIp(vmName string) (string, error) {
-	out, err := vboxManage("guestproperty", "get", vmName, "/VirtualBox/GuestInfo/Net/0/V4/IP")
-	if err != nil {
-		return "", errors.New("retrieving vm ip", err)
-	}
-	if strings.Contains(string(out), "No value set") {
-		return "", errors.New("ip property not available for this vm", nil)
-	}
-	r, err := regexp.Compile("([0-9]{1,3}[\\.]){3}[0-9]{1,3}")
-	if err != nil {
-		return "", errors.New("compiling regex", err)
-	}
-	ipAddr := r.Find(out)
-	if ipAddr == nil {
-		return "", errors.New("ip address not found in string "+string(out), nil)
-	}
-	return string(ipAddr), nil
-}
-
 func parseVmInfo(vmInfo string) (*VboxVm, error) {
 	var uuid, macAddr string
 	var running bool

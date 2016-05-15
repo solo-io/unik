@@ -101,7 +101,7 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 	macAddr := vm.MACAddr
 	instanceId := vm.UUID
 
-	instanceListenerIp, err := virtualboxclient.GetVmIp(VboxUnikInstanceListener)
+	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout)
 	if err != nil {
 		return nil, errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 	}
