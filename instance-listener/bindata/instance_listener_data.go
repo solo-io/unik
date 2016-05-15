@@ -83,7 +83,7 @@ func instanceListenerMainGo() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "instance-listener/main.go", size: 6174, mode: os.FileMode(420), modTime: time.Unix(1463326342, 0)}
+	info := bindataFileInfo{name: "instance-listener/main.go", size: 6174, mode: os.FileMode(420), modTime: time.Unix(1463328709, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
