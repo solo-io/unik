@@ -32,21 +32,30 @@ func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, er
 	resultc := make(chan string)
 	errc := make(chan error)
 	go func(){
-		logrus.Infof("UDP Server listening on %s:%v", "0.0.0.0", 9876)
-		data := make([]byte, 4096)
-		_, remoteAddr, err := socket.ReadFromUDP(data)
-		if err != nil {
-			errc <- errors.New("reading udp data", err)
-		}
-		logrus.Infof("received an ip from %s with data: %s", remoteAddr.IP.String(), string(data))
-		if strings.Contains(string(data), dataPrefix) {
-			data = bytes.Trim(data, "\x00")
-			resultc <- strings.Split(string(data), ":")[1]
+		for {
+			logrus.Infof("UDP Server listening on %s:%v", "0.0.0.0", 9876)
+			data := make([]byte, 4096)
+			_, remoteAddr, err := socket.ReadFromUDP(data)
+			if err != nil {
+				errc <- errors.New("reading udp data", err)
+				return
+			}
+			logrus.Infof("received an ip from %s with data: %s", remoteAddr.IP.String(), string(data))
+			if strings.Contains(string(data), dataPrefix) {
+				data = bytes.Trim(data, "\x00")
+				resultc <- strings.Split(string(data), ":")[1]
+				return
+			}
+			select {
+			case <-closeChan:
+				errc <- errors.New("getting instance listener ip timed out after "+timeout.String(), nil)
+				return
+			default:
+				continue
+			}
 		}
 	}()
 	select {
-	case <-closeChan:
-		return "", errors.New("getting instance listener ip timed out after "+timeout.String(), nil)
 	case result := <- resultc:
 		return result, nil
 	case err := <- errc:

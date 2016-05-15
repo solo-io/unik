@@ -71,7 +71,7 @@ func compileInstanceListener(sourceDir string) (*types.RawImage, error) {
 	params := types.CompileImageParams{
 		SourcesDir: sourceDir,
 		Args: "-prefix "+instanceListenerPrefix,
-		//MntPoints: []string{"/data"},
+		MntPoints: []string{"/data"},
 	}
 	rumpGoCompiler := &rump.RumpCompiler{
 		DockerImage: "projectunik/compilers-rump-go-hw-no-wrapper",
@@ -91,16 +91,15 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 	}
 	defer os.Remove(imagePath)
 
-	//TODO: UNCOMMENT VOLUME THINGY
-	//instanceListenerData := "InstanceListenerData"
-	//params := types.CreateVolumeParams{
-	//	Name: instanceListenerData,
-	//	ImagePath: imagePath,
-	//}
-	//instanceListenerVol, err := p.CreateVolume(params)
-	//if err != nil {
-	//	return errors.New("creating data vol for instance listener", err)
-	//}
+	instanceListenerData := "InstanceListenerData"
+	params := types.CreateVolumeParams{
+		Name: instanceListenerData,
+		ImagePath: imagePath,
+	}
+	instanceListenerVol, err := p.CreateVolume(params)
+	if err != nil {
+		return errors.New("creating data vol for instance listener", err)
+	}
 
 	c := p.getClient()
 
@@ -111,8 +110,8 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 			c.PowerOffVm(VsphereUnikInstanceListener)
 			c.DestroyVm(VsphereUnikInstanceListener)
 			c.Rmdir(instanceDir)
-			//p.DeleteVolume(instanceListenerVol.Id, true)
-			//c.Rmdir(getVolumeDatastorePath(instanceListenerData))
+			p.DeleteVolume(instanceListenerVol.Id, true)
+			c.Rmdir(getVolumeDatastorePath(instanceListenerData))
 		}
 	}()
 
@@ -131,27 +130,27 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		return errors.New("attaching boot vol to instance", err)
 	}
 
-	//controllerPort, err := common.GetControllerPortForMnt(image, "/data")
-	//if err != nil {
-	//	return errors.New("getting controller port for mnt point", err)
-	//}
-	//logrus.Infof("attaching %s to %s on controller port %v", instanceListenerVol.Id, VsphereUnikInstanceListener, controllerPort)
-	//if err := c.AttachDisk(VsphereUnikInstanceListener, getVolumeDatastorePath(instanceListenerVol.Name), controllerPort, image.RunSpec.StorageDriver); err != nil {
-	//	return errors.New("attaching disk to vm", err)
-	//}
-	//if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
-	//	volume, ok := volumes[instanceListenerVol.Id]
-	//	if !ok {
-	//		return errors.New("no record of "+volume.Id+" in the state", nil)
-	//	}
-	//	volume.Attachment = instanceListenerVol.Id
-	//	return nil
-	//}); err != nil {
-	//	return errors.New("modifying volumes in state", err)
-	//}
-	//if err := p.state.Save(); err != nil {
-	//	return errors.New("saving instance volume map to state", err)
-	//}
+	controllerPort, err := common.GetControllerPortForMnt(image, "/data")
+	if err != nil {
+		return errors.New("getting controller port for mnt point", err)
+	}
+	logrus.Infof("attaching %s to %s on controller port %v", instanceListenerVol.Id, VsphereUnikInstanceListener, controllerPort)
+	if err := c.AttachDisk(VsphereUnikInstanceListener, getVolumeDatastorePath(instanceListenerVol.Name), controllerPort, image.RunSpec.StorageDriver); err != nil {
+		return errors.New("attaching disk to vm", err)
+	}
+	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+		volume, ok := volumes[instanceListenerVol.Id]
+		if !ok {
+			return errors.New("no record of "+volume.Id+" in the state", nil)
+		}
+		volume.Attachment = instanceListenerVol.Id
+		return nil
+	}); err != nil {
+		return errors.New("modifying volumes in state", err)
+	}
+	if err := p.state.Save(); err != nil {
+		return errors.New("saving instance volume map to state", err)
+	}
 
 	logrus.Debugf("powering on vm")
 	if err := c.PowerOnVm(VsphereUnikInstanceListener); err != nil {

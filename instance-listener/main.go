@@ -83,13 +83,13 @@ func main() {
 		return
 	}
 	go func() {
+		log.Printf("broadcasting...")
 		for {
 			_, err = socket.Write(info)
 			if err != nil {
 				log.Printf("ERROR: broadcast-ip: %v; failed writing to broadcast udp socket: "+err.Error(), BROADCAST_IPv4)
 				return
 			}
-			log.Printf("broadcasting...")
 			time.Sleep(1000 * time.Millisecond)
 		}
 	}()
