@@ -13,6 +13,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"net/url"
 )
 
 var daemonConfigFile, logFile string
@@ -57,6 +58,16 @@ Example usage:
 				}
 				logrus.AddHook(&unikutil.TeeHook{f})
 			}
+
+			//don't print vsphere password
+			redactions := []string{}
+			for _, vsphereConfig := range daemonConfig.Providers.Vsphere {
+				redactions = append(redactions, vsphereConfig.VspherePassword, url.QueryEscape(vsphereConfig.VspherePassword))
+			}
+			logrus.SetFormatter(&unikutil.RedactedTextFormatter{
+				Redactions: redactions,
+			})
+
 			logrus.WithField("config", daemonConfig).Info("daemon started")
 			d, err := daemon.NewUnikDaemon(daemonConfig)
 			if err != nil {
