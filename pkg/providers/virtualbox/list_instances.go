@@ -35,9 +35,13 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 
 		if err := unikutil.Retry(5, time.Duration(2000*time.Millisecond), func() error {
 			logrus.Debugf("getting instance ip")
-			instance.IpAddress, err = common.GetInstanceIp(instanceListenerIp, 3000, macAddr)
-			if err != nil {
-				return err
+			if instance.Name == VboxUnikInstanceListener {
+				instance.IpAddress = instanceListenerIp
+			} else {
+				instance.IpAddress, err = common.GetInstanceIp(instanceListenerIp, 3000, macAddr)
+				if err != nil {
+					return err
+				}
 			}
 			return nil
 		}); err != nil {
