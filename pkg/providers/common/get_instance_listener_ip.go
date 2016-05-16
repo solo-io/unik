@@ -12,10 +12,10 @@ import (
 var socket *net.UDPConn
 
 func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, error) {
-	closeChan := make(chan struct{})
+	errc := make(chan error)
 	go func(){
 		<-time.After(timeout)
-		close(closeChan)
+		errc <- errors.New("getting instance listener ip timed out after "+timeout.String(), nil)
 	}()
 	logrus.Infof("listening for udp heartbeat...")
 	var err error
@@ -30,7 +30,6 @@ func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, er
 		}
 	}
 	resultc := make(chan string)
-	errc := make(chan error)
 	go func(){
 		logrus.Infof("UDP Server listening on %s:%v", "0.0.0.0", 9876)
 		for {
@@ -45,13 +44,6 @@ func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, er
 				data = bytes.Trim(data, "\x00")
 				resultc <- strings.Split(string(data), ":")[1]
 				return
-			}
-			select {
-			case <-closeChan:
-				errc <- errors.New("getting instance listener ip timed out after "+timeout.String(), nil)
-				return
-			default:
-				continue
 			}
 		}
 	}()
