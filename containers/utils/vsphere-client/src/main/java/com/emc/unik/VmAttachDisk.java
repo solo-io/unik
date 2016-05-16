@@ -177,7 +177,14 @@ public class VmAttachDisk {
             VirtualDiskSpec copyDiskSpec = new VirtualDiskSpec();
             copyDiskSpec.setDiskType(VirtualDiskType.thin.name());
             copyDiskSpec.setAdapterType(VirtualDiskAdapterType.ide.name());
-            Task cTask = diskManager.copyVirtualDisk_Task(srcPath, dc, dstPath, dc, copyDiskSpec, new Boolean(true));
+            Task cTask = null;
+            try {
+                cTask = diskManager.copyVirtualDisk_Task(srcPath, dc, dstPath, dc, copyDiskSpec, new Boolean(true));
+            } catch (InvalidArgument e){
+                e.getInvalidProperty();
+                e.printStackTrace();
+                System.exit(-1);
+            }
 
             if (cTask.waitForTask().equals(Task.SUCCESS)) {
                 System.out.println("Disk copied successfully!");
