@@ -10,6 +10,8 @@ To stay up-to-date on UniK, follow us [@ProjectUnik](https://twitter.com/Project
 ---
 
 ### *Update*:
+The UniK Instance Listener, which is required for bootstrapping instances on Virtualbox and vSphere providers is now deployed as a unikernel! No more downloads from AWS. UniK now will automatically compile and deploy the Instance Listener as a unikernel when the **daemon** is launched. Read the updated [instance listener documentation](docs/instance_listener.md).
+
 UniK no longer requires `go` or `qemu` as dependencies! All dependencies for UniK are now bundled into docker, including compilation of UniK itself. `make install` will no longer install UniK to your path. Instead, run `make` to pull containers and compile unik in an isolated (containerized) context with no need for dependencies. The UniK executable will be placed in `unik/_build/`. We recommend placing this binary in a path directory (such as `/usr/local/bin`) to make it easily accessible from anywhere on your system.
 
 ---
@@ -47,7 +49,6 @@ UniK no longer requires `go` or `qemu` as dependencies! All dependencies for Uni
 * [vSphere](docs/providers/vsphere.md)
 
 ### Roadmap:
-* ocaml support using [MirageOs](https://mirage.io/)
 * additional provider support including [OpenStack](https://www.openstack.org/)
 * dynamic volume and application arguments configuration at instance runtime (rather than at compile time)
 * adding a test suite
@@ -55,9 +56,9 @@ UniK no longer requires `go` or `qemu` as dependencies! All dependencies for Uni
 * `unik pull` & `unik push` && unikhub for sharing unikernel images
 * multi-account support per provider (i.e. multiple AWS accounts/regions, etc.)
 * migrate from [martini](https://github.com/go-martini/martini) to [echo](https://github.com/labstack/echo)
-* deploy the [Instance Listener](docs/instance_listener.md) as a unikernel
 * self-healing state (i.e. unik can identify when instances/imgaes/volumes no longer exist and self-correct rather than throwing errors)
 * mount boot volume and stop cookfs-ing filesystem (especiall for scripting languages) to reduce memory footprint, allow persistence writing to boot vol
+* ocaml support using [MirageOs](https://mirage.io/)
 
 UniK is still experimental! APIs and compatibility is subject to change. We are looking for community support to help identify potential bugs and compatibility issues. Please open a Github issue for any problems you may experience, and join us on our [slack channel](http://project-unik.io)
 
