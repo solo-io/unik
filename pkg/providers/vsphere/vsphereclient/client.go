@@ -211,14 +211,14 @@ func (vc *VsphereClient) ImportVmdk(vmdkPath, remoteFolder string) error {
 
 func (vc *VsphereClient) UploadFile(srcFile, dest string) error {
 	srcDir := filepath.Dir(srcFile)
-	cmd := exec.Command("docker", "run", "--rm", "-v", srcDir+":"+srcDir,
+	cmd := exec.Command("docker", "run", "--rm", "-v", srcDir+":/tmp",
 		"projectunik/vsphere-client",
 		"govc",
 		"datastore.upload",
 		"-ds", vc.ds,
 		"-k",
 		"-u", formatUrl(vc.u),
-		srcFile,
+		"/tmp/"+srcFile,
 		dest,
 	)
 	unikutil.LogCommand(cmd, true)
