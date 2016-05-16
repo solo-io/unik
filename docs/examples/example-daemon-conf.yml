@@ -2,14 +2,14 @@ providers:
   aws:
     - name: aws-1
       region: us-west-1
-      zone: us-west-1a
+      zone: us-west-1b
   vsphere:
     - name: vsphere-1
       vsphere_user: user
       vsphere_password: password
       vsphere_url: url
       datastore: datastore1
-      default_instance_memory: 512
+      network: VM Network
   virtualbox:
     - name: my-vbox
       adapter_name: "en0: Wi-Fi (AirPort)"

@@ -59,7 +59,7 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 		params.InstanceMemory = image.RunSpec.DefaultInstanceMemory
 	}
 
-	if err := c.CreateVm(params.Name, params.InstanceMemory, image.RunSpec.VsphereNetworkType); err != nil {
+	if err := c.CreateVm(params.Name, params.InstanceMemory, image.RunSpec.VsphereNetworkType, p.config.NetworkLabel); err != nil {
 		return nil, errors.New("creating vm", err)
 	}
 

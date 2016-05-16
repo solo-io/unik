@@ -95,7 +95,7 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 
 	logrus.Debugf("creating vsphere vm")
 
-	if err := c.CreateVm(VsphereUnikInstanceListener, image.RunSpec.DefaultInstanceMemory, image.RunSpec.VsphereNetworkType); err != nil {
+	if err := c.CreateVm(VsphereUnikInstanceListener, image.RunSpec.DefaultInstanceMemory, image.RunSpec.VsphereNetworkType, p.config.NetworkLabel); err != nil {
 		return errors.New("creating vm", err)
 	}
 

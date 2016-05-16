@@ -24,6 +24,7 @@ providers:
       vsphere_password: password
       vsphere_url: url
       datastore: datastore1
+      network: VM Network
   virtualbox:
     - name: vsphere-1
       adapter_name: vboxnet0
@@ -53,7 +54,7 @@ providers:
       vsphere_password: password
       vsphere_url: url
       datastore: datastore1
-      default_instance_memory: 512
+      network: VM Network
 ```
 
 ### Providers
@@ -85,7 +86,7 @@ Region and zone should be speified like so in the AWS stub:
 #### vSphere
 vSphere provider requires vSphere username, password, url (in the format `http://host_url` or `https://host_url`), as well as the name of the datastore to use for storage.
 
-Default memory is optional and can be used to set the amount of memory allocated to each instance. If it is not set, the default amount used is 512mb per instance.
+`network` is optional; use it to specify the label of the vSphere network to attach vSphere instances to. If left empty, UniK will attempt to use the default network ('VM Network').
 
 ```yaml
   vsphere:
@@ -94,7 +95,7 @@ Default memory is optional and can be used to set the amount of memory allocated
       vsphere_password: password
       vsphere_url: url
       datastore: datastore1
-      default_instance_memory: 512
+      network: VM Network
 ```
 
 ## CLI Config

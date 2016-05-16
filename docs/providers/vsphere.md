@@ -11,7 +11,7 @@ providers:
     vsphere_password: password
     vsphere_url: url
     datastore: datastore1
-    default_instance_memory: 512
+    network: VM Network #optional
 ```
 
 Running on vSphere requires the host network to support UDP broadcast (see [instance listerner](../instance_listener.md)). Instances that launch on vSphere without access to UDP broadcast will fail to bootstrap.
