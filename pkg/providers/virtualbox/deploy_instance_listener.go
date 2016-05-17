@@ -16,6 +16,7 @@ import (
 )
 
 var timeout = time.Second * 10
+var instanceListenerData = "InstanceListenerData"
 
 func (p *VirtualboxProvider) DeployInstanceListener(config config.Virtualbox) error {
 	logrus.Infof("checking if instance listener is alive...")
@@ -64,31 +65,43 @@ func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error)
 		"image-id": image.Id,
 	}).Infof("running instance of instance listener")
 
-	imagePath, err := unikos.BuildEmptyDataVolume(10)
+	newVolume := false
+	instanceListenerVol, err := p.GetVolume(instanceListenerData)
 	if err != nil {
-		return errors.New("failed creating raw data volume", err)
-	}
-	defer os.Remove(imagePath)
+		newVolume = true
+		imagePath, err := unikos.BuildEmptyDataVolume(10)
+		if err != nil {
+			return errors.New("failed creating raw data volume", err)
+		}
+		defer os.Remove(imagePath)
+		createVolumeParams := types.CreateVolumeParams{
+			Name: instanceListenerData,
+			ImagePath: imagePath,
+		}
 
-	instanceListenerData := "InstanceListenerData"
-	createVolumeParams := types.CreateVolumeParams{
-		Name: instanceListenerData,
-		ImagePath: imagePath,
+		instanceListenerVol, err = p.CreateVolume(createVolumeParams)
+		if err != nil {
+			return errors.New("creating data vol for instance listener", err)
+		}
+		defer func() {
+			if err != nil {
+				p.DeleteVolume(instanceListenerVol.Id, true)
+			}
+		}()
 	}
-	instanceListenerVol, err := p.CreateVolume(createVolumeParams)
-	if err != nil {
-		return errors.New("creating data vol for instance listener", err)
-	}
+
 
 	instanceDir := getInstanceDir(VboxUnikInstanceListener)
 	defer func() {
 		if err != nil {
 			logrus.WithError(err).Warnf("error encountered, ensuring vm and disks are destroyed")
 			virtualboxclient.PowerOffVm(VboxUnikInstanceListener)
+			p.DetachVolume(instanceListenerVol.Id)
 			virtualboxclient.DestroyVm(VboxUnikInstanceListener)
 			os.RemoveAll(instanceDir)
-			p.DeleteVolume(instanceListenerVol.Id, true)
-			os.RemoveAll(getVolumePath(instanceListenerData))
+			if newVolume {
+				os.RemoveAll(getVolumePath(instanceListenerData))
+			}
 		}
 	}()
 
