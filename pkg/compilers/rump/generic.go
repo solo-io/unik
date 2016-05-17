@@ -18,6 +18,7 @@ import (
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"golang.org/x/net/context"
 	"os/exec"
+	"strings"
 )
 
 func BuildBootableImage(kernel, cmdline string) (string, error) {
@@ -142,5 +143,13 @@ func execContainer(imageName string, cmds, binds []string, privileged bool, env 
 
 func (r *RumpCompiler) runContainer(localFolder string, envPairs []string) error {
 	//return RunContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, envPairs)
-	return execContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, envPairs)
+	env := make(map[string]string)
+	for _, pair := range envPairs {
+		split := strings.Split(pair, "=")
+		if len(split) != 2 {
+			return errors.New(pair+" is invaid string for env pair", nil)
+		}
+		env[split[0]] = split[1]
+	}
+	return execContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, env)
 }
