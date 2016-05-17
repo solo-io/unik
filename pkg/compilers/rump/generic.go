@@ -141,5 +141,6 @@ func execContainer(imageName string, cmds, binds []string, privileged bool, env 
 }
 
 func (r *RumpCompiler) runContainer(localFolder string, envPairs []string) error {
-	return RunContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, envPairs)
+	//return RunContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, envPairs)
+	return execContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, envPairs)
 }
