@@ -118,7 +118,7 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 
 	var instanceIp string
 
-	if err := unikutil.Retry(30, time.Duration(2000*time.Millisecond), func() error {
+	if err := unikutil.Retry(5, time.Duration(2000*time.Millisecond), func() error {
 		logrus.Debugf("getting instance ip")
 		instanceIp, err = common.GetInstanceIp(instanceListenerIp, 3000, macAddr)
 		if err != nil {
@@ -126,7 +126,7 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 		}
 		return nil
 	}); err != nil {
-		return nil, errors.New("failed to retrieve instance ip", err)
+		logrus.Warnf("failed to retrieve ip for instance %s. instance may be running but has not responded to udp broadcast", instanceId)
 	}
 
 	instance := &types.Instance{

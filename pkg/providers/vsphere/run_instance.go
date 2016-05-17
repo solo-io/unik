@@ -130,8 +130,9 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 	}
 
 	var instanceIp string
+	instanceId := vm.Config.UUID
 
-	if err := unikutil.Retry(30, time.Duration(2000*time.Millisecond), func() error {
+	if err := unikutil.Retry(5, time.Duration(2000*time.Millisecond), func() error {
 		logrus.Debugf("getting instance ip")
 		instanceIp, err = common.GetInstanceIp(instanceListenerIp, 3000, macAddr)
 		if err != nil {
@@ -139,10 +140,9 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 		}
 		return nil
 	}); err != nil {
-		return nil, errors.New("failed to retrieve instance ip", err)
+		logrus.Warnf("failed to retrieve ip for instance %s. instance may be running but has not responded to udp broadcast", instanceId)
 	}
 
-	instanceId := vm.Config.UUID
 	instance := &types.Instance{
 		Id:             instanceId,
 		Name:           params.Name,
