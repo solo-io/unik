@@ -7,10 +7,13 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-func CreateImageVmware(kernel string, args string, mntPoints []string) (*types.RawImage, error) {
+func CreateImageVmware(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
 
 	// create rump config
 	var c rumpConfig
+	if bakedEnv != nil {
+		c.Env = bakedEnv
+	}
 
 	if args == "" {
 		c.Cmdline = "program.bin"

@@ -18,7 +18,7 @@ import (
 
 type RumpGoCompiler struct {
 	DockerImage string
-	CreateImage func(kernel, args string, mntPoints []string) (*types.RawImage, error)
+	CreateImage func(kernel, args string, mntPoints, bakedEnv []string) (*types.RawImage, error)
 }
 
 func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
@@ -48,7 +48,7 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 	// now we should program.bin
 	resultFile := path.Join(sourcesDir, "program.bin")
 	logrus.Debugf("finished kernel binary at %s", resultFile)
-	img, err := r.CreateImage(resultFile, params.Args, params.MntPoints)
+	img, err := r.CreateImage(resultFile, params.Args, params.MntPoints, nil)
 	if err != nil {
 		return nil, errors.New("creating boot volume from kernel binary", err)
 	}

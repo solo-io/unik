@@ -127,6 +127,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		CreateImage: rump.CreateImageVirtualBox,
 		BootstrapType: rump.BootstrapTypeUDP,
 		RunScriptArgs: "/code/python-wrapper.py",
+		ScriptEnv: []string{"PYTHONHOME=/python"},
 	}
 
 	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{}

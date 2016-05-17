@@ -25,8 +25,9 @@ const (
 type RumpScriptCompiler struct {
 	DockerImage string
 	BootstrapType string //ec2 vs udp
-	CreateImage func(kernel, args string, mntPoints []string) (*types.RawImage, error)
+	CreateImage func(kernel, args string, mntPoints, bakedEnv []string) (*types.RawImage, error)
 	RunScriptArgs string
+	ScriptEnv []string
 }
 
 type scriptProjectConfig struct {
@@ -63,5 +64,5 @@ func (r *RumpScriptCompiler) CompileRawImage(params types.CompileImageParams) (*
 	// now we should program.bin
 	resultFile := path.Join(sourcesDir, "program.bin")
 
-	return r.CreateImage(resultFile, args, params.MntPoints)
+	return r.CreateImage(resultFile, args, params.MntPoints, r.ScriptEnv)
 }

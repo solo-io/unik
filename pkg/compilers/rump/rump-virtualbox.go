@@ -8,10 +8,13 @@ import (
 	"regexp"
 )
 
-func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*types.RawImage, error) {
+func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
 
 	// create rump config
 	var c multinetRumpConfig
+	if bakedEnv != nil {
+		c.Env = bakedEnv
+	}
 
 	if args == "" {
 		c.Cmdline = "program.bin"
