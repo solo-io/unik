@@ -102,20 +102,31 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		CreateImage: rump.CreateImageVirtualBox,
 	}
 
-	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpNodeCompiler{
+	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
 		DockerImage: "projectunik/compilers-rump-nodejs-xen",
 		CreateImage: rump.CreateImageAws,
 		BootstrapType: rump.BootstrapTypeEC2,
+		RunScriptArgs: "/code/node-wrapper.js",
 	}
-	_compilers[compilers.RUMP_NODEJS_VIRTUALBOX] = &rump.RumpNodeCompiler{
+	_compilers[compilers.RUMP_NODEJS_VIRTUALBOX] = &rump.RumpScriptCompiler{
 		DockerImage: "projectunik/compilers-rump-nodejs-hw",
 		CreateImage: rump.CreateImageVirtualBox,
 		BootstrapType: rump.BootstrapTypeUDP,
+		RunScriptArgs: "/code/node-wrapper.js",
 	}
-	_compilers[compilers.RUMP_NODEJS_VMWARE] = &rump.RumpNodeCompiler{
+	_compilers[compilers.RUMP_NODEJS_VMWARE] = &rump.RumpScriptCompiler{
 		DockerImage: "projectunik/compilers-rump-nodejs-hw",
 		CreateImage: rump.CreateImageVmware,
 		BootstrapType: rump.BootstrapTypeUDP,
+		RunScriptArgs: "/code/node-wrapper.js",
+	}
+
+
+	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = &rump.RumpScriptCompiler{
+		DockerImage: "projectunik/compilers-rump-python3-hw",
+		CreateImage: rump.CreateImageVirtualBox,
+		BootstrapType: rump.BootstrapTypeUDP,
+		RunScriptArgs: "/code/python-wrapper.py",
 	}
 
 	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{}

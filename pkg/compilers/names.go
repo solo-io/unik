@@ -10,6 +10,8 @@ const (
 	RUMP_NODEJS_VIRTUALBOX = "rump-nodejs-virtualbox"
 	RUMP_NODEJS_VMWARE = "rump-nodejs-vmware"
 
+	RUMP_PYTHON_VIRTUALBOX = "rump-python-virtualbox"
+
 	OSV_JAVA_AWS = "osv-java-aws"
 	OSV_JAVA_VIRTUALBOX = "osv-java-virtualbox"
 	OSV_JAVA_VMAWRE = "osv-java-vmware"

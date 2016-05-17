@@ -34,6 +34,8 @@ pull:
 	docker pull projectunik/compilers-rump-go-xen
 	docker pull projectunik/compilers-rump-nodejs-hw
 	docker pull projectunik/compilers-rump-nodejs-xen
+	docker pull projectunik/compilers-rump-python3-hw
+	docker pull projectunik/compilers-rump-python3-xen
 	docker pull projectunik/compilers-rump-base-xen
 	docker pull projectunik/compilers-rump-base-hw
 	docker pull projectunik/compilers-rump-base-common
@@ -44,7 +46,7 @@ containers: compilers utils
 	echo "Built containers from source"
 
 #compilers
-compilers: compilers-rump-go-hw compilers-rump-go-hw-no-wrapper compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java
+compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers-rump-go-hw-no-wrapper compilers-rump-python3-hw compilers-rump-python3-xen
 
 compilers-rump-base-common:
 	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.common .
@@ -69,6 +71,12 @@ compilers-rump-nodejs-hw: compilers-rump-base-hw
 
 compilers-rump-nodejs-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/nodejs && docker build -t projectunik/$@ -f Dockerfile.xen .
+
+compilers-rump-python3-hw: compilers-rump-base-hw
+	cd containers/compilers/rump/python3 && docker build -t projectunik/$@ -f Dockerfile.hw .
+
+compilers-rump-python3-xen: compilers-rump-base-xen
+	cd containers/compilers/rump/python3 && docker build -t projectunik/$@ -f Dockerfile.xen .
 
 compilers-osv-java:
 	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@ .  && rm java-compiler
@@ -135,6 +143,8 @@ remove-containers:
 	-docker rmi -f projectunik/compilers-rump-go-hw-no-wrapper
 	-docker rmi -f projectunik/compilers-rump-nodejs-hw
 	-docker rmi -f projectunik/compilers-rump-nodejs-xen
+	-docker rmi -f projectunik/compilers-rump-python3-hw
+	-docker rmi -f projectunik/compilers-rump-python3-xen
 	-docker rmi -f projectunik/compilers-rump-base-xen
 	-docker rmi -f projectunik/compilers-rump-base-hw
 	-docker rmi -f projectunik/compilers-rump-base-common

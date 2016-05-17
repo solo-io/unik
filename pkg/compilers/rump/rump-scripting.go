@@ -21,21 +21,22 @@ const (
 	BootstrapTypeUDP = "udp"
 )
 
-
-type RumpNodeCompiler struct {
+//compiler for building images from interpreted/scripting languages (python, javascript)
+type RumpScriptCompiler struct {
 	DockerImage string
 	BootstrapType string //ec2 vs udp
 	CreateImage func(kernel, args string, mntPoints []string) (*types.RawImage, error)
+	RunScriptArgs string
 }
 
-type nodeProjectConfig struct {
+type scriptProjectConfig struct {
 	MainFile string `yaml:"main_file"`
 }
 
-func (r *RumpNodeCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
-	params.Args = "/code/node-wrapper.js" + params.Args
+func (r *RumpScriptCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
+	args := r.RunScriptArgs + params.Args
 	sourcesDir := params.SourcesDir
-	var config nodeProjectConfig
+	var config scriptProjectConfig
 	data, err := ioutil.ReadFile(filepath.Join(sourcesDir, "manifest.yaml"))
 	if err != nil {
 		return nil, errors.New("failed to read manifest.yaml file", err)
@@ -62,5 +63,5 @@ func (r *RumpNodeCompiler) CompileRawImage(params types.CompileImageParams) (*ty
 	// now we should program.bin
 	resultFile := path.Join(sourcesDir, "program.bin")
 
-	return r.CreateImage(resultFile, params.Args, params.MntPoints)
+	return r.CreateImage(resultFile, args, params.MntPoints)
 }

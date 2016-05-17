@@ -120,7 +120,9 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, comma
 	}
 	defer Umount(mntPoint)
 
-	PrepareGrub(mntPoint, rootDevice.Name(), progPath, commandline)
+	if err := PrepareGrub(mntPoint, rootDevice.Name(), progPath, commandline); err != nil {
+		return err
+	}
 
 	err = RunLogCommand("grub-install", "--no-floppy", "--root-directory="+mntPoint, rootDevice.Name())
 	if err != nil {
