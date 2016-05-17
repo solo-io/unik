@@ -24,6 +24,7 @@ providers:
       vsphere_password: password
       vsphere_url: url
       datastore: datastore1
+      datacenter: ha-datacenter
       network: VM Network
   virtualbox:
     - name: vsphere-1
@@ -54,6 +55,7 @@ providers:
       vsphere_password: password
       vsphere_url: url
       datastore: datastore1
+      datacenter: ha-datacenter
       network: VM Network
 ```
 
@@ -84,7 +86,7 @@ Region and zone should be speified like so in the AWS stub:
 ```
 
 #### vSphere
-vSphere provider requires vSphere username, password, url (in the format `http://host_url` or `https://host_url`), as well as the name of the datastore to use for storage.
+vSphere provider requires vSphere username, password, url (in the format `http://host_url` or `https://host_url`), as well as the name of the datacenter and datastore to use for vmdk storage.
 
 `network` is optional; use it to specify the label of the vSphere network to attach vSphere instances to. If left empty, UniK will attempt to use the default network ('VM Network').
 
@@ -95,6 +97,7 @@ vSphere provider requires vSphere username, password, url (in the format `http:/
       vsphere_password: password
       vsphere_url: url
       datastore: datastore1
+      datacenter: ha-datacenter
       network: VM Network
 ```
 

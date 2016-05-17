@@ -11,6 +11,7 @@ providers:
     vsphere_password: password
     vsphere_url: url
     datastore: datastore1
+    datacenter: ha-datacenter
     network: VM Network #optional
 ```
 

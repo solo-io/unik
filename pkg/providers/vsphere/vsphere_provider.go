@@ -55,7 +55,7 @@ func (p *VsphereProvider) WithState(state state.State) *VsphereProvider {
 }
 
 func (p *VsphereProvider) getClient() *vsphereclient.VsphereClient {
-	return vsphereclient.NewVsphereClient(p.u, p.config.Datastore)
+	return vsphereclient.NewVsphereClient(p.u, p.config.Datastore, p.config.Datacenter)
 }
 
 //just for consistency

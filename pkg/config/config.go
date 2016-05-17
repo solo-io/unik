@@ -22,6 +22,7 @@ type Vsphere struct {
 	VspherePassword string `yaml:"vsphere_password"`
 	VsphereURL      string `yaml:"vsphere_url"`
 	Datastore       string `yaml:"datastore"`
+	Datacenter      string `yaml:"datacenter"`
 	NetworkLabel    string `yaml:"network"`
 }
 
