@@ -19,12 +19,14 @@ import (
 type VsphereClient struct {
 	u  *url.URL
 	ds string
+	dc string
 }
 
-func NewVsphereClient(u *url.URL, datastore string) *VsphereClient {
+func NewVsphereClient(u *url.URL, datastore, datacenter string) *VsphereClient {
 	return &VsphereClient{
 		u:  u,
 		ds: datastore,
+		dc: datacenter,
 	}
 }
 
@@ -258,6 +260,7 @@ func (vc *VsphereClient) CopyVmdk(src, dest string) error {
 		vc.u.String(),
 		vc.u.User.Username(),
 		password,
+		vc.dc,
 		"["+vc.ds+"] "+src,
 		"["+vc.ds+"] "+dest,
 	)

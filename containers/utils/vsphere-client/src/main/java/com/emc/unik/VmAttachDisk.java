@@ -121,19 +121,20 @@ public class VmAttachDisk {
             System.exit(-1);
         }
         if (args[0].equals("CopyFile")) {
-            if (args.length != 6) {
+            if (args.length != 7) {
                 System.err.println("Usage: java CopyFile <url> " +
-                        "<username> <password> <sourcePath> <destinationPath>");
+                        "<username> <password> <datacenter> <sourcePath> <destinationPath>");
                 System.exit(-1);
             }
 
             ServiceInstance si = new ServiceInstance(
                     new URL(args[1]), args[2], args[3], true);
+            String datacenterName = args[4];
 
-            Datacenter datacenter = (Datacenter) new InventoryNavigator(si.getRootFolder()).searchManagedEntity("Datacenter", "ha-datacenter");
+            Datacenter datacenter = (Datacenter) new InventoryNavigator(si.getRootFolder()).searchManagedEntity("Datacenter", datacenterName);
 
-            String sourcePath = args[4];
-            String destinationPath = args[5];
+            String sourcePath = args[5];
+            String destinationPath = args[6];
 
             FileManager fileManager = si.getFileManager();
             if (fileManager == null) {
@@ -152,18 +153,20 @@ public class VmAttachDisk {
             System.exit(-1);
         }
         if (args[0].equals("CopyVirtualDisk")) {
-            if (args.length != 6) {
+            if (args.length != 7) {
                 System.out.println("Usage: java CopyVirtualDisk "
-                        + "<url> <username> <password> <src> <dest>");
+                        + "<url> <username> <password> <datacenter> <src> <dest>");
                 System.exit(-1);
             }
 
             ServiceInstance si = new ServiceInstance(
                     new URL(args[1]), args[2], args[3], true);
 
+            String datacenterName = args[4];
+
             Datacenter dc = (Datacenter) new InventoryNavigator(
                     si.getRootFolder()).searchManagedEntity(
-                    "Datacenter", "ha-datacenter");
+                    "Datacenter", datacenterName);
 
             VirtualDiskManager diskManager = si.getVirtualDiskManager();
             if (diskManager == null) {
@@ -172,8 +175,8 @@ public class VmAttachDisk {
                 System.exit(-1);
             }
 
-            String srcPath = args[4];
-            String dstPath = args[5];
+            String srcPath = args[5];
+            String dstPath = args[6];
             VirtualDiskSpec copyDiskSpec = new VirtualDiskSpec();
             copyDiskSpec.setDiskType(VirtualDiskType.thin.name());
             copyDiskSpec.setAdapterType(VirtualDiskAdapterType.ide.name());
@@ -190,7 +193,8 @@ public class VmAttachDisk {
                 System.out.println("Disk copied successfully!");
             } else {
                 System.out.println("Disk copy failed!");
-                return;
+                System.out.println(cTask.getTaskInfo().getError().getLocalizedMessage());
+                System.exit(-1);
             }
             si.getServerConnection().logout();
         }
