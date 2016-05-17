@@ -13,7 +13,10 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []str
 	// create rump config
 	var c multinetRumpConfig
 	if bakedEnv != nil {
-		c.Env = bakedEnv
+		c.Env = make(map[string]string)
+		for i, env := range bakedEnv {
+			c.Env[fmt.Sprintf("env%v", i)] = env
+		}
 	}
 
 	if args == "" {
@@ -59,11 +62,23 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []str
 		return nil, err
 	}
 
-	r, err := regexp.Compile("net[1-9]")
+	r, err := regexp.Compile("net[0-9]")
 	if err != nil {
 		return nil, err
 	}
-	cmdline = string(r.ReplaceAll([]byte(cmdline), []byte("net")))
+	cmdline = string(r.ReplaceAllString(cmdline, "net"))
+
+	r, err = regexp.Compile("\"env\":\\{(.*?)\\}")
+	if err != nil {
+		return nil, err
+	}
+	cmdline = string(r.ReplaceAllString(cmdline, "$1"))
+
+	r, err = regexp.Compile("env[0-9]")
+	if err != nil {
+		return nil, err
+	}
+	cmdline = string(r.ReplaceAllString(cmdline, "env"))
 
 	logrus.Debugf("writing rump json config: %s", cmdline)
 
