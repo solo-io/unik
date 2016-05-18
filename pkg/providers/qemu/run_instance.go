@@ -3,7 +3,6 @@ package qemu
 import (
 	"archive/zip"
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -79,12 +78,9 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 		return nil, errors.New("Can't start qemu - make sure it's in your path.", nil)
 	}
 
-	instanceId := fmt.Sprintf("%d", cmd.Process.Pid)
-
 	var instanceIp string
 
 	instance := &types.Instance{
-		Id:             instanceId,
 		Name:           params.Name,
 		State:          types.InstanceState_Pending,
 		IpAddress:      instanceIp,
