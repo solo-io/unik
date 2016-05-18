@@ -122,7 +122,7 @@ endif
 	docker build -t projectunik/$@ -f Dockerfile .
 	mkdir -p ./_build
 	docker run --rm -v $(PWD)/_build:/opt/build -e TARGET_OS=$(TARGET_OS) projectunik/$@
-	docker rmi -f projectunik/$@
+	#docker rmi -f projectunik/$@
 	echo "Install finished! UniK binary can be found at $(PWD)/_build/unik"
 
 #----
@@ -134,6 +134,7 @@ uninstall:
 	rm $(which ${BINARY})
 
 remove-containers:
+	-docker rmi -f projectunik/binary
 	-docker rmi -f projectunik/vsphere-client
 	-docker rmi -f projectunik/image-creator
 	-docker rmi -f projectunik/boot-creator
