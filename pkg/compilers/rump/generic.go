@@ -1,13 +1,19 @@
 package rump
 
 import (
-	"github.com/emc-advanced-dev/pkg/errors"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
+
+	"github.com/emc-advanced-dev/pkg/errors"
 
 	log "github.com/Sirupsen/logrus"
+
+	"os/exec"
+	"strings"
 
 	"github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
@@ -17,8 +23,6 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"golang.org/x/net/context"
-	"os/exec"
-	"strings"
 )
 
 func BuildBootableImage(kernel, cmdline string) (string, error) {
@@ -63,7 +67,7 @@ func RunContainer(imageName string, cmds, binds []string, privileged bool, envPa
 	config := &container.Config{
 		Image: imageName,
 		Cmd:   strslice.StrSlice(cmds),
-		Env: envPairs,
+		Env:   envPairs,
 	}
 	hostConfig := &container.HostConfig{
 		Binds:      binds,
@@ -152,4 +156,78 @@ func (r *RumpGoCompiler) runContainer(localFolder string, envPairs []string) err
 		env[split[0]] = split[1]
 	}
 	return execContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, env)
+}
+
+func (r *RumpGoCompiler) runAndBake(localFolder string, envPairs []string) error {
+	if err := r.runContainer(localFolder, envPairs); err != nil {
+		return err
+	}
+	// now we should program compiled in local folder. next step is to bake
+	progFile := path.Join(localFolder, "program")
+
+	if !unikos.IsExists(progFile) {
+		return errors.New("No program found - compilation failed", nil)
+	}
+
+	return execContainer(r.BakeImageName, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, nil)
+}
+
+func setRumpCmdLine(c rumpConfig, prog string, argv []string) rumpConfig {
+
+	if argv == nil {
+		argv = []string{}
+	}
+
+	pipe := "|"
+
+	stub := commandLine{Bin: "stub",
+		Argv: []string{},
+	}
+	progrc := commandLine{Bin: "program",
+		Argv:    argv,
+		Runmode: &pipe,
+	}
+	logger := commandLine{Bin: "logger",
+		Argv: []string{},
+	}
+
+	c.Rc = append(c.Rc, stub, progrc, logger)
+	return c
+}
+
+var netRegEx = regexp.MustCompile("net[1-9]")
+
+// rump special json
+func toRumpJson(c rumpConfig) (string, error) {
+
+	blk := c.Blk
+	c.Blk = nil
+
+	jsonConfig, err := json.Marshal(c)
+	if err != nil {
+		return "", err
+	}
+
+	blks := ""
+	for _, b := range blk {
+
+		blkjson, err := json.Marshal(b)
+		if err != nil {
+			return "", err
+		}
+		blks += fmt.Sprintf("\"blk\": %s,", string(blkjson))
+	}
+	var jsonString string
+	if len(blks) > 0 {
+
+		jsonString = string(jsonConfig[:len(jsonConfig)-1]) + "," + blks[:len(blks)-1] + "}"
+
+	} else {
+		jsonString = string(jsonConfig)
+	}
+
+	jsonString = netRegEx.ReplaceAllString(jsonString, "net")
+
+	return jsonString, nil
+
 }

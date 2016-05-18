@@ -2,9 +2,10 @@ package rump
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 func CreateImageVmware(kernel string, args string, mntPoints []string) (*types.RawImage, error) {
@@ -13,9 +14,9 @@ func CreateImageVmware(kernel string, args string, mntPoints []string) (*types.R
 	var c rumpConfig
 
 	if args == "" {
-		c.Cmdline = "program.bin"
+		c = setRumpCmdLine(c, "program.bin", nil)
 	} else {
-		c.Cmdline = "program.bin" + " " + args
+		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "))
 	}
 
 	res := &types.RawImage{}
@@ -42,7 +43,7 @@ func CreateImageVmware(kernel string, args string, mntPoints []string) (*types.R
 		Method: DHCP,
 	}
 
-	cmdline, err := ToRumpJson(c)
+	cmdline, err := toRumpJson(c)
 	if err != nil {
 		return nil, err
 	}

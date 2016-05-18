@@ -2,14 +2,15 @@ package rump
 
 import (
 	"encoding/json"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path"
+	"path/filepath"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"os"
-	"path/filepath"
-	"io/ioutil"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 // uses rump docker conter container
@@ -17,8 +18,9 @@ import (
 // we need to take the program bin and combine with json config produce an image
 
 type RumpGoCompiler struct {
-	DockerImage string
-	CreateImage func(kernel, args string, mntPoints []string) (*types.RawImage, error)
+	DockerImage   string
+	BakeImageName string
+	CreateImage   func(kernel, args string, mntPoints []string) (*types.RawImage, error)
 }
 
 func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
@@ -41,8 +43,17 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 		fmt.Sprintf("ROOT_PATH=%s", g.ImportPath),
 	}
 
-	if err := r.runContainer(sourcesDir, containerEnv); err != nil {
-		return nil, err
+	// should we use the baker stubs?
+	if r.BakeImageName != "" {
+
+		if err := r.runAndBake(sourcesDir, containerEnv); err != nil {
+			return nil, err
+		}
+	} else {
+
+		if err := r.runContainer(sourcesDir, containerEnv); err != nil {
+			return nil, err
+		}
 	}
 
 	// now we should program.bin
@@ -55,79 +66,14 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 	return img, nil
 }
 
-// rump special json
-func ToRumpJson(c rumpConfig) (string, error) {
-
-	blk := c.Blk
-	c.Blk = nil
-
-	jsonConfig, err := json.Marshal(c)
-	if err != nil {
-		return "", err
-	}
-
-	blks := ""
-	for _, b := range blk {
-
-		blkjson, err := json.Marshal(b)
-		if err != nil {
-			return "", err
-		}
-		blks += fmt.Sprintf("\"blk\": %s,", string(blkjson))
-	}
-	var jsonString string
-	if len(blks) > 0 {
-
-		jsonString = string(jsonConfig[:len(jsonConfig)-1]) + "," + blks[:len(blks)-1] + "}"
-
-	} else {
-		jsonString = string(jsonConfig)
-	}
-
-	return jsonString, nil
-
-}
-
-// rump special json
-func ToRumpJsonMultiNet(c multinetRumpConfig) (string, error) {
-
-	blk := c.Blk
-	c.Blk = nil
-
-	jsonConfig, err := json.Marshal(c)
-	if err != nil {
-		return "", err
-	}
-
-	blks := ""
-	for _, b := range blk {
-
-		blkjson, err := json.Marshal(b)
-		if err != nil {
-			return "", err
-		}
-		blks += fmt.Sprintf("\"blk\": %s,", string(blkjson))
-	}
-	var jsonString string
-	if len(blks) > 0 {
-
-		jsonString = string(jsonConfig[:len(jsonConfig)-1]) + "," + blks[:len(blks)-1] + "}"
-
-	} else {
-		jsonString = string(jsonConfig)
-	}
-	return jsonString, nil
-
-}
-
 type godeps struct {
-	ImportPath string `json:"ImportPath"`
-	GoVersion string `json:"GoVersion"`
-	GodepVersion string `json:"GodepVersion"`
-	Packages []string `json:"Packages"`
-	Deps []struct {
+	ImportPath   string   `json:"ImportPath"`
+	GoVersion    string   `json:"GoVersion"`
+	GodepVersion string   `json:"GodepVersion"`
+	Packages     []string `json:"Packages"`
+	Deps         []struct {
 		ImportPath string `json:"ImportPath"`
-		Rev string `json:"Rev"`
-		Comment string `json:"Comment,omitempty"`
+		Rev        string `json:"Rev"`
+		Comment    string `json:"Comment,omitempty"`
 	} `json:"Deps"`
 }

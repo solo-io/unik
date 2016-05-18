@@ -2,6 +2,7 @@ package rump
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
@@ -12,9 +13,9 @@ func CreateImageAws(kernel string, args string, mntPoints []string) (*types.RawI
 	var c rumpConfig
 
 	if args == "" {
-		c.Cmdline = "program.bin"
+		c = setRumpCmdLine(c, "program.bin", nil)
 	} else {
-		c.Cmdline = "program.bin" + " " + args
+		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "))
 	}
 
 	res := &types.RawImage{}
@@ -45,7 +46,7 @@ func CreateImageAws(kernel string, args string, mntPoints []string) (*types.RawI
 		Method: DHCP,
 	}
 
-	cmdline, err := ToRumpJson(c)
+	cmdline, err := toRumpJson(c)
 	if err != nil {
 		return nil, err
 	}
@@ -57,11 +58,11 @@ func CreateImageAws(kernel string, args string, mntPoints []string) (*types.RawI
 
 	res.LocalImagePath = imgFile
 	res.StageSpec = types.StageSpec{
-		ImageFormat: types.ImageFormat_RAW,
+		ImageFormat:           types.ImageFormat_RAW,
 		XenVirtualizationType: types.XenVirtualizationType_Paravirtual,
 	}
 	res.RunSpec.DefaultInstanceMemory = 1024
-	
+
 	return res, nil
 
 }

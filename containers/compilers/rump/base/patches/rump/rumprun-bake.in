@@ -1,0 +1,404 @@
+#!/bin/sh
+#
+# Copyright (c) 2015 Antti Kantee.  All Rights Reserved.
+# Copyright (c) 2015 Martin Lucina.  All Rights Reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+# OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+
+_RUMPBAKE_VERSION=20160209
+
+#
+# rumprun-bake: script for final stage linking ("baking") of a unikernel image
+#
+
+unset runcmd
+unset CONF
+unset CFGFILE
+
+if [ "$(basename $0)" = "rumpbake" ]; then
+	echo '>>'
+	echo '>> name "rumpbake" is deprecated.  use rumprun-bake instead'
+	echo '>> (waiting 5s for you to see this)'
+	echo '>>'
+	sleep 5
+fi
+
+if [ "${RUMPRUN_WARNING_STFU}" != 'please' ]; then
+	exec 3>&1 1>&2
+	echo
+	echo !!!
+	echo !!! NOTE: rumprun-bake is experimental. syntax may change in the future
+	echo !!!
+	echo
+	exec 1>&3 3>&-
+fi
+
+_die()
+{
+
+	echo ">> ERROR: $*"
+	exit 1
+}
+
+#
+# configuration management
+#
+
+_filter ()
+{
+	local filtee vname tmplist
+
+	filtee=$1
+	vname=$2
+	for x in $(eval echo \${${vname}}); do
+		[ "${filtee}" = "${x}" ] || tmplist="${tmplist} ${x}"
+	done
+
+	eval ${vname}="\${tmplist}"
+}
+
+_haveconf ()
+{
+
+	for x in ${ALLCONFIGS}; do
+		[ "${x}" != "${1}" ] || return
+	done
+	_die "config \"${1}\" not found (${CFGFILE})"
+}
+
+_nothaveconf ()
+{
+
+	for x in ${ALLCONFIGS}; do
+		[ "${x}" != "${1}" ] \
+		    || _die "config ${1} already exists (${CFGFILE})"
+	done
+}
+
+# Implement "sort | uniq" ourselves so that we don't completely
+# screw up the order of the arguments.  not 100% sure it matters, but it's
+# easy enough.  Also, notably, doing it locally is ~50% faster (which
+# starts to matter when you have enough configs).
+_uniq ()
+{
+	local listname newlist
+
+	listname=$1
+	shift || _die need listname for _uniq
+
+	eval _UNIQREMAINING=\${$listname}
+	set -- ${_UNIQREMAINING}
+	while [ $# -gt 0 ]; do
+		newlist="${newlist} $1"
+		_filter $1 _UNIQREMAINING
+		set -- ${_UNIQREMAINING}
+	done
+	eval ${listname}=\${newlist}
+}
+
+ALLCONFIGS=
+version ()
+{
+
+	[ "${1}" = "${_RUMPBAKE_VERSION}" ] \
+	    || _die ${CFGFILE} mismatch: expect ${_RUMPBAKE_VERSION}, got \"$1\"
+	_VERSOK=true
+}
+
+conf ()
+{
+
+	if ! echo ${1} | egrep -q '^(xen|hw)?_'; then
+		_die "conf: invalid \"$1\" (${CFGFILE})"
+	fi
+	CONF=$1
+}
+
+fnoc ()
+{
+
+	unset CONF
+}
+
+create ()
+{
+
+	[ -n "$*" ] || _die "create: need description (${CFGFILE})"
+
+	_nothaveconf ${CONF}
+
+	ALLCONFIGS="${ALLCONFIGS} ${CONF}"
+	eval CONFDESCR_${CONF}=\"${*}\"
+}
+
+assimilate ()
+{
+	local from
+
+	_haveconf ${CONF}
+
+	for from; do
+		_haveconf ${from}
+		eval CONFIG_${CONF}=\"\${CONFIG_${CONF}} \${CONFIG_${from}}\"
+	done
+}
+
+nuke ()
+{
+
+	[ $# -eq 0 ] || _die "nuke: wrong number of args (${CFGFILE})"
+	_haveconf ${CONF}
+	_filter ${CONF} ALLCONFIGS
+}
+
+add ()
+{
+
+	_haveconf ${CONF}
+	eval CONFIG_${CONF}=\"\${CONFIG_${CONF}} $@\"
+}
+
+remove ()
+{
+	local compvar
+
+	_haveconf ${CONF}
+
+	compvar=CONFIG_${CONF}
+	for x; do
+		_filter ${x} ${compvar}
+	done
+}
+
+# debug routine
+debugdump ()
+{
+
+	_haveconf ${CONF}
+
+	_uniq CONFIG_${CONF}
+	eval echo \${CONFIG_${CONF}}
+}
+
+_usage ()
+{
+	cat <<EOM
+rumprun-bake version: ${_RUMPBAKE_VERSION}
+usage:	rumprun-bake [-c conffile ...] list
+	rumprun-bake [-c conffile ...] [-m cmd ...] describe config
+	rumprun-bake [-c conffile ...] [-m cmd ...] config out in [in ...]
+"list" outputs available configs.
+"describe" outputs details for the given config.
+Final usage creates a unikernel image:
+	config	: rumprun board configuration to use.
+	output	: output file name for the unikernel image.
+	input	: executable(s) to bake.
+EOM
+	exit 1
+}
+
+_nuketmpdir ()
+{
+
+	nukeme="${TMPDIR}"
+	TMPDIR=''
+	rm -rf ${nukeme}
+}
+
+_readconfig ()
+{
+	local x
+
+	CFGFILE="$1"
+	if [ ! -f "${CFGFILE}" ]; then
+		echo "rumprun-bake: error: Configuration file ${CFGFILE} not found"
+		exit 1
+	fi
+
+	_VERSOK=false
+
+	# ". foo" doesn't work everywhere/always, so do a dance here.
+	# Note: CFGFILE needs to remain as what the user gave.
+	case "$1" in
+	/*)
+		. "${CFGFILE}"
+		;;
+	*)
+		. "$(pwd)/${CFGFILE}"
+		;;
+	esac
+	${_VERSOK} || _die "config version not specified (${CFGFILE})"
+
+	unset CFGFILE
+
+	# Publish configs which are not private
+	for x in ${ALLCONFIGS}; do
+		[ "${x#_}" = "${x}" ] || _filter ${x} ALLCONFIGS
+	done
+}
+
+_getoneinfo ()
+{
+
+	bin="$1"
+	var="$2"
+	unset tmp
+
+	notesect=.note.rumprun.bakerecipe
+	tmp="$(!LIBEXEC_READELF! -p ${notesect} ${bin} 2>/dev/null \
+	    | sed -n '/.*rumprun_'"${var}"': /p')"
+	[ -n "${tmp}" ] \
+	    || _die "Could not extract \"${var}\" from ${bin}. Not rumprun bin?"
+
+	# now that we've verified the entry is present, reduce to
+	# contents (which may be empty)
+	tmp="${tmp#*rumprun_${var}: }"
+
+	cvar=$(echo ${var} | tr '[a-z]' '[A-Z]')
+
+	eval [ \"\${RUMPBAKE_${cvar}:=${tmp}}\" = \"${tmp}\" ] || \
+	    _die ${var} mismatch in binaries
+}
+
+_getbininfo ()
+{
+
+	# extract bake recipe
+	for x in tuple tooldir backingcc cflags; do
+		_getoneinfo "${1}" ${x}
+	done
+}
+
+# does not respect runcmd.  let's not mope and whine over it
+TMPDIR=$(mktemp -d /tmp/rumprun-bake.XXXXXX)
+trap _nuketmpdir 0 INT TERM
+
+_readconfig "!DESTDIR!/etc/rumprun-bake.conf"
+
+while getopts "c:m:n" opt; do
+	case "${opt}" in
+	c)
+		_readconfig "${OPTARG}"
+		;;
+	m)
+		# save.  we have to process them after configs are processed
+		echo "${OPTARG}" >> ${TMPDIR}/manualcmds
+		;;
+	n)
+		runcmd=echo
+		;;
+	*)
+		_usage
+		;;
+	esac
+done
+
+shift $((${OPTIND}-1))
+TARGET="${1}"
+
+if [ "${TARGET}" = "list" ]; then
+	for x in ${ALLCONFIGS}; do
+		eval mydesc="\${CONFDESCR_${x}}"
+		printf '%-16s' "${x}"
+		printf ': %s' "${mydesc}"
+		printf '\n'
+	done
+	exit 0
+fi
+
+if [ "${TARGET}" = "describe" ]; then
+	CONFIG=$2
+else
+	CONFIG=$1
+fi
+
+# process potential manual commands
+if [ -f ${TMPDIR}/manualcmds ]; then
+	printf "version %s\n" ${_RUMPBAKE_VERSION} > ${TMPDIR}/cmdconfig
+	printf "conf %s\n" ${CONFIG} >> ${TMPDIR}/cmdconfig
+	cat ${TMPDIR}/manualcmds >> ${TMPDIR}/cmdconfig
+	printf 'fnoc\n' >> ${TMPDIR}/cmdconfig
+	_readconfig ${TMPDIR}/cmdconfig
+fi
+
+if [ "${TARGET}" = "describe" ]; then
+	[ $# -eq 2 ] || _die \"describe\" needs exactly one config.
+	CONF=$2
+	debugdump
+	exit 0
+fi
+
+OUTPUT="${2}"
+[ $# -gt 2 ] || _usage
+shift 2
+
+unset RUMPBAKE_BACKINGCC
+unset RUMPBAKE_TUPLE
+unset RUMPBAKE_CFLAGS
+
+# XXX: TOOLDIR is just dirname $0, so can simplify that bit
+unset RUMPBAKE_TOOLDIR
+
+[ $# -le 8 ] || { echo '>> max 8 binaries supported currently' ; exit 1; }
+
+# Santize the config argument passed in to remove shell
+# metacharacters
+config="$(echo ${TARGET} | sed -e 's/-/_/g' -e 's/[^A-Za-z0-9_]//g')"
+for c in ${ALLCONFIGS}; do
+	[ "$c" = "$config" ] && break
+done
+if [ "$c" != "$config" ]; then
+	echo "rumprun-bake: error: unsupported config \"$config\""
+	exit 1
+fi
+
+_uniq CONFIG_${config}
+
+PLATFORM=${config%%_*}
+eval LIBS="\${CONFIG_${config}}"
+
+# Check if the file is a relocatable object produced by a rumprun toolchain.
+# Create a temporary object with a unique "main"
+objnum=1
+allobjs=
+for f in "$@"; do
+	_getbininfo ${f}
+
+	${runcmd} ${RUMPBAKE_TOOLDIR}/bin/${RUMPBAKE_TUPLE}-objcopy	\
+	    --redefine-sym main=rumprun_main${objnum}			\
+	    --rename-section .init_array=.y${objnum}init_array			\
+	    ${f} ${TMPDIR}/tmp${objnum}.obj
+	allobjs="${allobjs} ${TMPDIR}/tmp${objnum}.obj"
+	objnum=$((${objnum}+1))
+done
+
+MACHINE_GNU_ARCH=${RUMPBAKE_TUPLE%%-*}
+
+# Final link using cc to produce the unikernel image.
+${runcmd} ${RUMPBAKE_BACKINGCC} ${RUMPBAKE_CFLAGS}			\
+    --sysroot ${RUMPBAKE_TOOLDIR}/rumprun-${MACHINE_GNU_ARCH}		\
+    -specs=${RUMPBAKE_TOOLDIR}/rumprun-${MACHINE_GNU_ARCH}/lib/rumprun-${PLATFORM}/specs-bake \
+    -o ${OUTPUT} ${allobjs}						\
+    -Wl,--whole-archive ${LIBS} || exit 1
+
+exit 0
