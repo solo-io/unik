@@ -23,7 +23,7 @@ func CompileInstanceListener(sourceDir, instanceListenerPrefix, dockerImage stri
 		Args: "-prefix "+instanceListenerPrefix,
 		MntPoints: []string{"/data"},
 	}
-	rumpGoCompiler := &rump.RumpCompiler{
+	rumpGoCompiler := &rump.RumpGoCompiler{
 		DockerImage: dockerImage,
 		CreateImage: createImageFunc,
 	}

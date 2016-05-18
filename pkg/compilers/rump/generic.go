@@ -141,7 +141,7 @@ func execContainer(imageName string, cmds, binds []string, privileged bool, env 
 	return nil
 }
 
-func (r *RumpCompiler) runContainer(localFolder string, envPairs []string) error {
+func (r *RumpGoCompiler) runContainer(localFolder string, envPairs []string) error {
 	//return RunContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, envPairs)
 	env := make(map[string]string)
 	for _, pair := range envPairs {
