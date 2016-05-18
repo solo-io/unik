@@ -75,7 +75,27 @@ Ensure that each of the following are installed
   }
   ```
 2. Try running this code with `go run http.go`. Visit [http://localhost:8080/](http://localhost:8080/) to see that the server is running.
-3. Great! Now we're ready to compile this code to a unikernel.
+3. We need to create a dummy `Godeps` file. This is necessary to tell the Go compiler how Go projects and their dependencies are structured. Fortunately, with this example, our project has no dependencies, and we can just fill out a simple `Godeps` file without installing [`godep`](https://github.com/tools/godep). Note: for Go projects with imported dependencies, and nested packages, you will need to install Godeps and run `GO15VENDOREXPERIMENT=1 godep save ./...` in your project. see [Compiling Go Apps with UniK](compilers/rump.md#golang) for more information.
+  * To create the dummy Godeps file, create a folder named `Godeps` in the same directory as `httpd.go`. Inside, create a file named `Godeps.json` and paste the following inside:
+  ```json
+  {
+  	"ImportPath": "my_httpd",
+  	"GoVersion": "go1.6",
+  	"GodepVersion": "v63",
+  	"Packages": [
+  		"./.."
+  	],
+  	"Deps": [
+  		{
+  			"ImportPath": "github.com/emc-advanced-dev/unik/docs/examples",
+  			"Rev": "f8cc0dd435de36377eac060c93481cc9f3ae9688"
+  		}
+  	]
+  }
+  ```
+  * For the purposes of this example, that matters here is `my_httpd`. It instructs the go compiler that the project should be installed from `$GOPATH/src/my_httpd`.
+
+4. Great! Now we're ready to compile this code to a unikernel.
 
 ---
 
