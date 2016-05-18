@@ -29,9 +29,10 @@ ENV RUMP_BAKE=xen_pv
 CMD set -x && \
     cp /tmp/build/gomaincaller.go . && \
     genstub -o ./mainstub.c -args "${APP_ARGS}" && \
-        mkdir -p ${GOPATH}/src/${ROOT_PATH} && \
+    mkdir -p ${GOPATH}/src/${ROOT_PATH} && \
     cp -r ./* ${GOPATH}/src/${ROOT_PATH} && \
     cd ${GOPATH}/src/${ROOT_PATH} && \
+    (if [ -d Godeps ]; then GO15VENDOREXPERIMENT=1 godep restore; fi) && \
     CC=x86_64-rumprun-netbsd-gcc CGO_ENABLED=1 GOOS=rumprun /usr/local/go/bin/go build -buildmode=c-archive -v -a -x  *.go && \
     RUMPRUN_STUBLINK=succeed x86_64-rumprun-netbsd-gcc -g -o program mainstub.c $(find . -name "*.a") && \
     rm -f /opt/code/mainstub.c /opt/code/gomaincaller.go && \
