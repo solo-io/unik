@@ -14,9 +14,11 @@ func main() {
 	outFile := flag.String("o", "", "output file to write to")
 	flag.Parse()
 	args := []string{"\"program.bin\""}
-	for _, arg := range strings.Split(*argString, " ") {
-		args = append(args,
-		fmt.Sprintf("\"%s\"", arg))
+	if *argString != "" {
+		for _, arg := range strings.Split(*argString, " ") {
+			args = append(args,
+				fmt.Sprintf("\"%s\"", arg))
+		}
 	}
 	cmainstub := fmt.Sprintf(`
 int kludge_argc = %v;
