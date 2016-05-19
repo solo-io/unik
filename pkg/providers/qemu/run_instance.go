@@ -13,6 +13,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
@@ -72,6 +73,15 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	}
 	kernel := getKernelFileName(instanceDir)
 
+	if len(params.Env) > 0 {
+		if image.RunSpec.Compiler != compilers.Rump {
+			return nil, errors.New("no support for env vars in qemu is only in rump", nil)
+		} else {
+			cmdline = injectEnv(cmdline, params.Env)
+		}
+
+	}
+
 	// qemu double comma escape
 	cmdline = strings.Replace(cmdline, ",", ",,", -1)
 
@@ -82,6 +92,7 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 
 	volArgs := volPathToQemuArgs(volImpagesInOrder)
 
+	// should we add:  "-nographic", "-vga", "none", ?
 	qemuArgs := []string{"-s", "-m", "128", "-net",
 		"nic,model=virtio,netdev=mynet0", "-netdev", "user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9",
 		"-kernel", kernel, "-append", cmdline}
@@ -150,6 +161,17 @@ func getKernelFileName(instanceDir string) string {
 	return path.Join(instanceDir, kernelFileName)
 }
 
+func injectEnv(cmdline string, env map[string]string) string {
+	// rump json is not really json so we can't parse it
+	var envRumpJson []string
+	for key, value := range env {
+		envRumpJson = append(envRumpJson, fmt.Sprintf("\"env\": \"%s=%s\"", key, value))
+	}
+
+	cmdline = cmdline[:len(cmdline)-2] + "," + strings.Join(envRumpJson, ",") + "}"
+	return cmdline
+}
+
 func unzipImage(imagezip, instanceDir string) (string, error) {
 
 	r, err := zip.OpenReader(imagezip)
@@ -159,6 +181,9 @@ func unzipImage(imagezip, instanceDir string) (string, error) {
 
 	kernelFile, err := os.Create(getKernelFileName(instanceDir))
 	if err != nil {
+		if os.IsNotExist(err) {
+			return "", nil
+		}
 		return "", err
 	}
 
