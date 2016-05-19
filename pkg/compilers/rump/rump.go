@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"io/ioutil"
+	"regexp"
 )
 
 // uses rump docker conter container
@@ -83,6 +84,21 @@ func ToRumpJson(c rumpConfig) (string, error) {
 	} else {
 		jsonString = string(jsonConfig)
 	}
+
+	r, err := regexp.Compile("\"env\":\\{(.*?)\\}")
+	if err != nil {
+		return "", err
+	}
+	jsonString = string(r.ReplaceAllString(jsonString, "$1"))
+
+	r, err = regexp.Compile("env[0-9]")
+	if err != nil {
+		return "", err
+	}
+	jsonString = string(r.ReplaceAllString(jsonString, "env"))
+
+	logrus.Debugf("writing rump json config: %s", jsonString)
+
 
 	return jsonString, nil
 

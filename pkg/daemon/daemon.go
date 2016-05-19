@@ -121,13 +121,14 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		RunScriptArgs: "/code/node-wrapper.js",
 	}
 
-
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = &rump.RumpScriptCompiler{
 		DockerImage: "projectunik/compilers-rump-python3-hw",
 		CreateImage: rump.CreateImageVirtualBox,
 		BootstrapType: rump.BootstrapTypeUDP,
 		RunScriptArgs: "/code/python-wrapper.py",
-		ScriptEnv: []string{"PYTHONHOME=/python"},
+		ScriptEnv: []string{
+			"PYTHONHOME=/python",
+		},
 	}
 
 	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{}
