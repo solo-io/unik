@@ -26,7 +26,7 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	}).Infof("running instance %s", params.Name)
 
 	if _, err := p.GetInstance(params.Name); err == nil {
-		return nil, errors.New("instance with name "+params.Name+" already exists. virtualbox provider requires unique names for instances", nil)
+		return nil, errors.New("instance with name "+params.Name+" already exists. qemu provider requires unique names for instances", nil)
 	}
 
 	image, err := p.GetImage(params.ImageId)
@@ -138,7 +138,7 @@ func volPathToQemuArgs(volPaths []string) []string {
 
 	for _, v := range volPaths {
 
-		res = append(res, fmt.Sprintf("-drive if=virtio,file=%s,format=qcow2", v))
+		res = append(res, "-drive", fmt.Sprintf("if=virtio,file=%s,format=qcow2", v))
 	}
 
 	return res
