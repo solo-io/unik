@@ -30,7 +30,7 @@ func main() {
 		log.Fatal(err)
 	}
 	s1 := float64(kernelFileInfo.Size()) * 1.1
-	size := (int64(s1) >> 20) + 1
+	size := (int64(s1) >> 20) + 10
 
 	if err := unikos.CreateBootImageWithSize(imgFile, unikos.MegaBytes(size), kernelFile, *args); err != nil {
 		log.Fatal(err)
