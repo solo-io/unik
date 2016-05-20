@@ -1,0 +1,19 @@
+sudo: required
+language: go
+go:
+  - 1.6
+  - tip
+
+services:
+  - docker
+
+install:
+  - make
+  - go install
+
+install:
+  - go get -v github.com/onsi/ginkgo/ginkgo
+  - go get -v github.com/onsi/gomega
+  - export PATH=$PATH:$HOME/gopath/bin
+
+script: ginkgo -r --cover --trace --race --compilers=2
