@@ -8,12 +8,10 @@ services:
   - docker
 
 install:
-  - make
-  - go install
-
-install:
   - go get -v github.com/onsi/ginkgo/ginkgo
   - go get -v github.com/onsi/gomega
   - export PATH=$PATH:$HOME/gopath/bin
+  - make containers
+  - go install
 
 script: ginkgo -r --cover --trace --race --compilers=2
