@@ -15,7 +15,8 @@ func ConvertRawImage(sourceFormat, targetFormat types.ImageFormat, inputFile, ou
 		targetFormatName = "vpc" //for some reason qemu calls VHD disks vpc
 	}
 	dir := filepath.Dir(inputFile)
-	cmd := exec.Command("docker", "run", "--rm", "-v", dir+":"+dir,
+	outDir := filepath.Dir(outputFile)
+	cmd := exec.Command("docker", "run", "--rm", "-v", dir+":"+dir, "-v", outDir+":"+outDir,
 		"projectunik/qemu-util",
 		"qemu-img", "convert", "-f", string(sourceFormat), "-O", targetFormatName, inputFile, outputFile)
 	logrus.WithField("command", cmd.Args).Debugf("running command")
