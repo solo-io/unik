@@ -2,7 +2,6 @@ sudo: required
 language: go
 go:
   - 1.6
-  - tip
 
 services:
   - docker
@@ -11,7 +10,7 @@ install:
   - go get -v github.com/onsi/ginkgo/ginkgo
   - go get -v github.com/onsi/gomega
   - export PATH=$PATH:$HOME/gopath/bin
-  - make containers
+  - travis_wait 120 make containers
   - go install
 
 script: ginkgo -r --cover --trace --race --compilers=2
