@@ -10,7 +10,7 @@ install:
   - go get -v github.com/onsi/ginkgo/ginkgo
   - go get -v github.com/onsi/gomega
   - export PATH=$PATH:$HOME/gopath/bin
-  - travis_wait 120 make containers
+  - test/scripts/travis_make_containers.sh
   - go install
 
 script: ginkgo -r --cover --trace --race --compilers=2
