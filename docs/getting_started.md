@@ -38,7 +38,7 @@ Ensure that each of the following are installed
   ```yaml
   providers:
     virtualbox:
-      - name: vsphere-1
+      - name: my-vbox
         adapter_type: host_only
         adapter_name: NEW_HOST_ONLY_ADAPTER
   ```

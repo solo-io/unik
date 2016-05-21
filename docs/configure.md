@@ -27,7 +27,7 @@ providers:
       datacenter: ha-datacenter
       network: VM Network
   virtualbox:
-    - name: vsphere-1
+    - name: my-vbox
       adapter_name: vboxnet0
       adapter_type: host_only
 version: 0.0.0
