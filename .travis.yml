@@ -3,6 +3,18 @@ language: go
 go:
   - 1.6
 
+env:
+  - CONTAINER=compilers-rump-go-hw
+  - CONTAINER=compilers-rump-go-xen
+  - CONTAINER=compilers-rump-go-hw-no-wrapper
+  - CONTAINER=compilers-rump-nodejs-hw
+  - CONTAINER=compilers-rump-nodejs-xen
+  - CONTAINER=compilers-osv-java
+  - CONTAINER=boot-creator
+  - CONTAINER=image-creator
+  - CONTAINER=vsphere-client
+  - CONTAINER=qemu-util
+
 services:
   - docker
 
