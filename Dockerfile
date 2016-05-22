@@ -10,9 +10,9 @@ ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
 RUN mkdir -p $GOPATH/src/github.com/emc-advanced-dev/
 
-COPY ./ $GOPATH/src/github.com/emc-advanced-dev/unik
+COPY ./ $GOPATH/src/github.com/emc-advanced-dev/unik/
 
-WORKDIR $GOPATH/src/github.com/emc-advanced-dev/unik
+WORKDIR $GOPATH/src/github.com/emc-advanced-dev/unik/
 
 VOLUME /opt/build
 

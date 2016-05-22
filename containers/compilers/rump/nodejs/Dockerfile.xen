@@ -9,7 +9,7 @@ RUN cd /opt/nodejs/rumprun-packages/nodejs && \
     perl -pi -e 's/RUMPRUN_TOOLCHAIN_TUPLE=/RUMPRUN_TOOLCHAIN_TUPLE=x86_64-rumprun-netbsd/g' ../config.mk && \
     make
 
-COPY node-wrapper /opt/node-wrapper
+COPY node-wrapper /opt/node-wrapper/
 
 VOLUME /opt/code
 WORKDIR /opt/nodejs/rumprun-packages/nodejs
