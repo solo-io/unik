@@ -29,7 +29,7 @@ bash -c "while true; do echo \$(date) - building ...; echo Tailing the last 10 l
 PING_LOOP_PID=$!
 
 # do the actual build, pipe to BUILD_OUTPUT
-make containers >> $BUILD_OUTPUT 2>&1
+make $CONTAINER >> $BUILD_OUTPUT 2>&1
 
 # The build finished without returning an error so dump a tail of the output
 dump_output()
