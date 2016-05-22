@@ -16,8 +16,8 @@ VOLUME /project_directory
 #Pre-pull osv base image
 RUN capstan pull cloudius/osv-openjdk
 
-COPY java-main-caller-udp-bootstrap/ /java-main-caller-udp-bootstrap
-COPY java-main-caller-ec2-bootstrap/ /java-main-caller-ec2-bootstrap
+COPY java-main-caller-udp-bootstrap/ /java-main-caller-udp-bootstrap/
+COPY java-main-caller-ec2-bootstrap/ /java-main-caller-ec2-bootstrap/
 COPY java-compiler /
 
 ENTRYPOINT ["/java-compiler"]
