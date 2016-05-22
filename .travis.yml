@@ -22,7 +22,8 @@ install:
   - go get -v github.com/onsi/ginkgo/ginkgo
   - go get -v github.com/onsi/gomega
   - export PATH=$PATH:$HOME/gopath/bin
+  - make
   - bash test/scripts/travis_make_containers.sh
-  - go install
+  - export PATH=$PATH:$PWD/_build/
 
 script: ginkgo -r --cover --trace --race --compilers=2
