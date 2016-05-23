@@ -45,20 +45,6 @@ Example usage:
 			if err := readDaemonConfig(); err != nil {
 				return err
 			}
-			if debugMode {
-				logrus.SetLevel(logrus.DebugLevel)
-			}
-			if trace {
-				logrus.AddHook(&unikutil.AddTraceHook{true})
-			}
-			if logFile != "" {
-				f, err := os.Open(logFile)
-				if err != nil {
-					return errors.New(fmt.Sprintf("failed to open log file %s for writing", logFile), err)
-				}
-				logrus.AddHook(&unikutil.TeeHook{f})
-			}
-
 			//don't print vsphere password
 			redactions := []string{}
 			for _, vsphereConfig := range daemonConfig.Providers.Vsphere {
@@ -67,6 +53,21 @@ Example usage:
 			logrus.SetFormatter(&unikutil.RedactedTextFormatter{
 				Redactions: redactions,
 			})
+
+			if debugMode {
+				logrus.SetLevel(logrus.DebugLevel)
+			}
+			if trace {
+				logrus.AddHook(&unikutil.AddTraceHook{true})
+			}
+			if logFile != "" {
+				os.Create(logFile)
+				f, err := os.OpenFile(logFile, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0777)
+				if err != nil {
+					return errors.New(fmt.Sprintf("failed to open log file %s for writing", logFile), err)
+				}
+				logrus.AddHook(&unikutil.TeeHook{f})
+			}
 
 			logrus.WithField("config", daemonConfig).Info("daemon started")
 			d, err := daemon.NewUnikDaemon(daemonConfig)

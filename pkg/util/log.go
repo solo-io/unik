@@ -125,7 +125,7 @@ func (h *TeeHook) Fire(entry *logrus.Entry) error {
 		logger.WithFields(entry.Data).Info(entry.Message)
 		break
 	case logrus.DebugLevel:
-		logger.WithFields(entry.Data).Debug(entry.Message)
+		logger.WithFields(entry.Data).Info(entry.Message)
 		break
 	}
 	return nil
