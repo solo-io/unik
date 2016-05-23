@@ -21,9 +21,6 @@ error_handler() {
 # If an error occurs, run our error handler to output a tail of the build
 trap 'error_handler' ERR
 
-# debug only
-find .
-
 # Set up a repeating loop to send some output to Travis.
 bash -c "while true; do echo \$(date) - building ...; echo Tailing the last 10 lines of output:; tail -10 $BUILD_OUTPUT; sleep $PING_SLEEP; done" &
 PING_LOOP_PID=$!
