@@ -22,6 +22,9 @@ services:
   - docker
 install:
   - sudo sh -c "echo 'deb http://download.virtualbox.org/virtualbox/debian '$(lsb_release -cs)' contrib non-free' > /etc/apt/sources.list.d/virtualbox.list" && wget -q http://download.virtualbox.org/virtualbox/debian/oracle_vbox.asc -O- | sudo apt-key add - && sudo apt-get update && sudo apt-get install virtualbox-5.0 -y -q --fix-missing
+  - VBoxManage hostonlyif create
+  - VBoxManage hostonlyif ipconfig vboxnet0 -ip 192.168.100.1
+  - VBoxManage dhcpserver modify --ifname vboxnet0 --enable --ip 192.168.100.6 --netmask 255.255.255.0 --lowerip 192.168.100.100 --upperip 192.168.100.254
   - go get -v github.com/onsi/ginkgo/ginkgo
   - go get -v github.com/onsi/gomega
   - export PATH=$PATH:$HOME/gopath/bin
