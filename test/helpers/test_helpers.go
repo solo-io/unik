@@ -6,6 +6,7 @@ import (
 	"os"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"path/filepath"
 )
 
 func DaemonFromEnv() (*daemon.UnikDaemon, error) {
@@ -19,4 +20,8 @@ func DaemonFromEnv() (*daemon.UnikDaemon, error) {
 		return nil, errors.New("daemon failed to initialize", err)
 	}
 	return d, nil
+}
+
+func KillUnikstate() error {
+	return os.RemoveAll(filepath.Join(os.Getenv("HOME"), ".unik"))
 }

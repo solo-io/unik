@@ -6,8 +6,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/emc-advanced-dev/unik/test/helpers"
-	"github.com/kubernetes/kubernetes/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
+	"github.com/Sirupsen/logrus"
 )
 
 var _ = Describe("Client", func() {
@@ -18,9 +18,13 @@ var _ = Describe("Client", func() {
 		if err != nil {
 			logrus.Fatalf(err)
 		}
+		go d.Run(3000)
 	})
 	AfterEach(func(){
 		d.Stop()
+		if err := helpers.KillUnikstate(); err != nil {
+			logrus.Fatalf(err)
+		}
 	})
 	Describe("images", func(){
 		Describe("All()", func(){
