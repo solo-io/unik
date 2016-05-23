@@ -18,16 +18,15 @@ env:
   - CONTAINER=image-creator
   - CONTAINER=vsphere-client
   - CONTAINER=qemu-util
-
 services:
   - docker
-
 install:
+  - sudo sh -c "echo 'deb http://download.virtualbox.org/virtualbox/debian '$(lsb_release -cs)' contrib non-free' > /etc/apt/sources.list.d/virtualbox.list" && wget -q http://download.virtualbox.org/virtualbox/debian/oracle_vbox.asc -O- | sudo apt-key add - && sudo apt-get update && sudo apt-get install virtualbox-5.0 -y -q --fix-missing
   - go get -v github.com/onsi/ginkgo/ginkgo
   - go get -v github.com/onsi/gomega
   - export PATH=$PATH:$HOME/gopath/bin
   - make
   - bash test/scripts/travis_make_containers.sh
   - export PATH=$PATH:$PWD/_build/
-
-script: ginkgo -r --cover --trace --race --compilers=2
+script:
+  - ginkgo -r -v --cover --trace --race --compilers=2
