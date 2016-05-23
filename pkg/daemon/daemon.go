@@ -137,6 +137,10 @@ func (d *UnikDaemon) Run(port int) {
 	d.server.RunOnAddr(fmt.Sprintf(":%v", port))
 }
 
+func (d *UnikDaemon) Stop() error {
+	return d.server.Close()
+}
+
 func (d *UnikDaemon) addEndpoints() {
 	handle := func(res http.ResponseWriter, req *http.Request, action func() (interface{}, int, error)) {
 		jsonObject, statusCode, err := action()
