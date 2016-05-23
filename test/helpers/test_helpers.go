@@ -7,6 +7,8 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"path/filepath"
+	"os/exec"
+	"github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func DaemonFromEnv() (*daemon.UnikDaemon, error) {
@@ -24,4 +26,16 @@ func DaemonFromEnv() (*daemon.UnikDaemon, error) {
 
 func KillUnikstate() error {
 	return os.RemoveAll(filepath.Join(os.Getenv("HOME"), ".unik"))
+}
+
+func MakeContainers(projectRoot string) error {
+	cmd := exec.Command("make", "-C", projectRoot, "containers")
+	util.LogCommand(cmd, false)
+	return cmd.Run()
+}
+
+func RemoveContainers(projectRoot string) error {
+	cmd := exec.Command("make", "-C", projectRoot, "remove-containers")
+	util.LogCommand(cmd, false)
+	return cmd.Run()
 }
