@@ -34,7 +34,7 @@ func (p *VirtualboxProvider) DeployInstanceListener(config config.Virtualbox) er
 		return errors.New("creating temp dir for instance listener source", err)
 	}
 	defer os.RemoveAll(sourceDir)
-	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "projectunik/compilers-rump-go-hw-no-wrapper", rump.CreateImageVirtualBox)
+	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "compilers-rump-go-hw-no-wrapper", rump.CreateImageVirtualBox)
 	if err != nil {
 		return errors.New("compiling instance listener source to unikernel", err)
 	}

@@ -1,39 +1,38 @@
 package osv
 
 import (
-	"path/filepath"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+
 	"github.com/Sirupsen/logrus"
-	"os/exec"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func compileRawImage(params types.CompileImageParams, useEc2Bootstrap bool) (string, error) {
 	sourcesDir := params.SourcesDir
-	cmd := exec.Command("docker", "run", "--rm", "--privileged",
-		"-v", "/dev/:/dev/",
-		"-v", sourcesDir +"/:/project_directory/",
-		"projectunik/compilers-osv-java",
-	)
+
+	container := unikutil.NewContainer("compilers-osv-java").WithVolume("/dev", "/dev").WithVolume(sourcesDir+"/", "/project_directory")
+	var args []string
 	if useEc2Bootstrap {
-		cmd.Args = append(cmd.Args, "-ec2", "true")
+		args = append(args, "-ec2", "true")
 	}
+
 	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
+		"args": args,
 	}).Debugf("running compilers-osv-java container")
-	unikutil.LogCommand(cmd, true)
-	if err := cmd.Run(); err != nil {
-		return "", errors.New("failed running compilers-osv-java on "+ sourcesDir, err)
+
+	if err := container.Run(args...); err != nil {
+		return "", errors.New("failed running compilers-osv-java on "+sourcesDir, err)
 	}
 
 	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "osv-vmdk")
 	if err != nil {
 		return "", errors.New("failed to create tmpfile for result", err)
 	}
-	defer func(){
+	defer func() {
 		if err != nil {
 			os.Remove(resultFile.Name())
 		}

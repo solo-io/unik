@@ -2,6 +2,7 @@ package qemu
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"syscall"
 
@@ -33,11 +34,18 @@ func getOurQemu(instance *types.Instance) (ps.Process, error) {
 		return nil, err
 	}
 
+	instanceArg := fmt.Sprintf("/instances/%s/kernel", instance.Name)
 	for _, proc := range procs {
 		if !strings.Contains(proc.Executable(), "qemu") {
 			continue
 		}
-		instanceArg := fmt.Sprintf("/instances/%s/kernel", instance.Name)
+
+		// qemu must belong either to us or to init ( will be under init if unik was restarted - we try
+		// make sure it's not started by someone else..)
+		if proc.PPid() != os.Getpid() && proc.PPid() != 1 {
+			continue
+		}
+
 		if strings.Contains(proc.Args(), instanceArg) {
 			return proc, nil
 		}

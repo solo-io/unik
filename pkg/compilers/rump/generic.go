@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
 	"regexp"
 	"strings"
@@ -31,9 +30,9 @@ func BuildBootableImage(kernel, cmdline string) (string, error) {
 
 	const contextDir = "/opt/vol/"
 	cmds := []string{"-d", contextDir, "-p", kernelBaseName, "-a", cmdline}
-	binds := []string{directory + ":" + contextDir, "/dev/:/dev/"}
+	binds := map[string]string{directory: contextDir, "/dev/": "/dev/"}
 
-	if err := execContainer("projectunik/boot-creator", cmds, binds, true, nil); err != nil {
+	if err := execContainer("boot-creator", cmds, binds, true, nil); err != nil {
 		return "", err
 	}
 
@@ -50,22 +49,9 @@ func BuildBootableImage(kernel, cmdline string) (string, error) {
 	return resultFile.Name(), nil
 }
 
-func execContainer(imageName string, cmds, binds []string, privileged bool, env map[string]string) error {
-	dockerArgs := []string{"run", "--rm"}
-	if privileged {
-		dockerArgs = append(dockerArgs, "--privileged")
-	}
-	for _, bind := range binds {
-		dockerArgs = append(dockerArgs, "-v", bind)
-	}
-	for key, val := range env {
-		dockerArgs = append(dockerArgs, "-e", fmt.Sprintf("%s=%s", key, val))
-	}
-	dockerArgs = append(dockerArgs, imageName)
-	dockerArgs = append(dockerArgs, cmds...)
-	cmd := exec.Command("docker", dockerArgs...)
-	unikutil.LogCommand(cmd, true)
-	if err := cmd.Run(); err != nil {
+func execContainer(imageName string, cmds []string, binds map[string]string, privileged bool, env map[string]string) error {
+	container := unikutil.NewContainer(imageName).Privileged(privileged).WithVolumes(binds).WithEnvs(env)
+	if err := container.Run(cmds...); err != nil {
 		return errors.New("running container "+imageName, err)
 	}
 	return nil
@@ -86,7 +72,9 @@ func (r *RumCompilerBase) runContainer(localFolder string, envPairs []string) er
 		}
 		env[split[0]] = split[1]
 	}
-	return execContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, env)
+
+	return unikutil.NewContainer(r.DockerImage).WithVolume(localFolder, "/opt/code").WithEnvs(env).Run()
+
 }
 
 func (r *RumCompilerBase) runAndBake(localFolder string, envPairs []string) error {
@@ -100,7 +88,7 @@ func (r *RumCompilerBase) runAndBake(localFolder string, envPairs []string) erro
 		return errors.New("No program found - compilation failed", nil)
 	}
 
-	return execContainer(r.BakeImageName, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, nil)
+	return unikutil.NewContainer(r.BakeImageName).WithVolume(localFolder, "/opt/code").Run()
 }
 
 func setRumpCmdLine(c rumpConfig, prog string, argv []string) rumpConfig {

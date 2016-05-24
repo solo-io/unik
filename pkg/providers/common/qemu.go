@@ -1,12 +1,13 @@
 package common
 
 import (
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/pkg/errors"
-	"os/exec"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"encoding/json"
 	"path/filepath"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func ConvertRawImage(sourceFormat, targetFormat types.ImageFormat, inputFile, outputFile string) error {
@@ -16,11 +17,14 @@ func ConvertRawImage(sourceFormat, targetFormat types.ImageFormat, inputFile, ou
 	}
 	dir := filepath.Dir(inputFile)
 	outDir := filepath.Dir(outputFile)
-	cmd := exec.Command("docker", "run", "--rm", "-v", dir+":"+dir, "-v", outDir+":"+outDir,
-		"projectunik/qemu-util",
-		"qemu-img", "convert", "-f", string(sourceFormat), "-O", targetFormatName, inputFile, outputFile)
-	logrus.WithField("command", cmd.Args).Debugf("running command")
-	if out, err := cmd.CombinedOutput(); err != nil {
+
+	container := unikutil.NewContainer("qemu-util").WithVolume(dir, dir).
+		WithVolume(outDir, outDir)
+
+	args := []string{"qemu-img", "convert", "-f", string(sourceFormat), "-O", targetFormatName, inputFile, outputFile}
+
+	logrus.WithField("command", args).Debugf("running command")
+	if out, err := container.CombinedOutput(args...); err != nil {
 		return errors.New("failed converting raw image to "+string(targetFormat)+": "+string(out), err)
 	}
 	return nil
@@ -32,11 +36,12 @@ func GetVirtualImageSize(imageFile string, imageFormat types.ImageFormat) (int64
 		formatName = "vpc" //for some reason qemu calls VHD disks vpc
 	}
 	dir := filepath.Dir(imageFile)
-	cmd := exec.Command("docker", "run", "--rm", "-v", dir+":"+dir,
-		"projectunik/qemu-util",
-		"qemu-img", "info", "--output", "json", "-f", formatName, imageFile)
-	logrus.WithField("command", cmd.Args).Debugf("running command")
-	out, err := cmd.CombinedOutput()
+
+	container := unikutil.NewContainer("qemu-util").WithVolume(dir, dir)
+	args := []string{"qemu-img", "info", "--output", "json", "-f", formatName, imageFile}
+
+	logrus.WithField("command", args).Debugf("running command")
+	out, err := container.CombinedOutput(args...)
 	if err != nil {
 		return -1, errors.New("failed getting image info", err)
 	}
@@ -48,10 +53,10 @@ func GetVirtualImageSize(imageFile string, imageFormat types.ImageFormat) (int64
 }
 
 type imageInfo struct {
-	VirtualSize int64 `json:"virtual-size"`
-	Filename string `json:"filename"`
-	ClusterSize int `json:"cluster-size"`
-	Format string `json:"format"`
-	ActualSize int `json:"actual-size"`
-	DirtyFlag bool `json:"dirty-flag"`
+	VirtualSize int64  `json:"virtual-size"`
+	Filename    string `json:"filename"`
+	ClusterSize int    `json:"cluster-size"`
+	Format      string `json:"format"`
+	ActualSize  int    `json:"actual-size"`
+	DirtyFlag   bool   `json:"dirty-flag"`
 }

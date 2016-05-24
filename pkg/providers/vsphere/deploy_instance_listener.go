@@ -1,21 +1,21 @@
 package vsphere
 
 import (
+	"io/ioutil"
+	"os"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"os"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"io/ioutil"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"time"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 var timeout = time.Second * 10
 var instanceListenerData = "InstanceListenerData"
-
 
 func (p *VsphereProvider) deployInstanceListener() (err error) {
 	logrus.Infof("checking if instance listener is alive...")
@@ -33,22 +33,22 @@ func (p *VsphereProvider) deployInstanceListener() (err error) {
 		return errors.New("creating temp dir for instance listener source", err)
 	}
 	defer os.RemoveAll(sourceDir)
-	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "projectunik/compilers-rump-go-hw-no-wrapper", rump.CreateImageVmware)
+	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "compilers-rump-go-hw-no-wrapper", rump.CreateImageVmware)
 	if err != nil {
 		return errors.New("compiling instance listener source to unikernel", err)
 	}
 	logrus.Infof("staging new instance listener image")
 	c.Rmdir(getImageDatastoreDir(VsphereUnikInstanceListener))
 	params := types.StageImageParams{
-		Name: VsphereUnikInstanceListener,
+		Name:     VsphereUnikInstanceListener,
 		RawImage: rawImage,
-		Force: true,
+		Force:    true,
 	}
 	image, err := p.Stage(params)
 	if err != nil {
 		return errors.New("building bootable vsphere image for instsance listener", err)
 	}
-	defer func(){
+	defer func() {
 		if err != nil {
 			p.DeleteImage(image.Id, true)
 		}
@@ -76,7 +76,7 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		defer os.Remove(imagePath)
 
 		params := types.CreateVolumeParams{
-			Name: instanceListenerData,
+			Name:      instanceListenerData,
 			ImagePath: imagePath,
 		}
 		instanceListenerVol, err = p.CreateVolume(params)
@@ -144,7 +144,7 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		return errors.New("powering on vm", err)
 	}
 
-	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, time.Second * 30)
+	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, time.Second*30)
 	if err != nil {
 		return errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 	}
