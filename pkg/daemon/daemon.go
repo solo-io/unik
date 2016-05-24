@@ -21,8 +21,6 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers"
 	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
-	"github.com/emc-advanced-dev/unik/pkg/providers/qemu"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"github.com/emc-advanced-dev/unik/pkg/types"
@@ -110,18 +108,22 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 
 	_compilers[compilers.RUMP_GO_AWS] = &rump.RumpGoCompiler{
 		DockerImage: "projectunik/compilers-rump-go-xen",
+		BakeImageName: "projectunik/compilers-rump-baker-xen",
 		CreateImage: rump.CreateImageAws,
 	}
 	_compilers[compilers.RUMP_GO_VMWARE] = &rump.RumpGoCompiler{
 		DockerImage: "projectunik/compilers-rump-go-hw",
+		BakeImageName: "projectunik/compilers-rump-baker-hw",
 		CreateImage: rump.CreateImageVmware,
 	}
 	_compilers[compilers.RUMP_GO_VIRTUALBOX] = &rump.RumpGoCompiler{
 		DockerImage: "projectunik/compilers-rump-go-hw",
+		BakeImageName: "projectunik/compilers-rump-baker-hw",
 		CreateImage: rump.CreateImageVirtualBox,
 	}
 	_compilers[compilers.RUMP_GO_QEMU] = &rump.RumpGoCompiler{
 		DockerImage: "projectunik/compilers-rump-go-hw",
+		BakeImageName: "projectunik/compilers-rump-baker-hw",
 		CreateImage: rump.CreateImageQemu,
 	}
 

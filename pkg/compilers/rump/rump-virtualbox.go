@@ -2,16 +2,18 @@ package rump
 
 import (
 	"fmt"
+	"strings"
+
+	"regexp"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"regexp"
 )
 
 func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
 
 	// create rump config
-	var c multinetRumpConfig
+	var c rumpConfig
 	if bakedEnv != nil {
 		c.Env = make(map[string]string)
 		for i, env := range bakedEnv {
@@ -20,9 +22,9 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []str
 	}
 
 	if args == "" {
-		c.Cmdline = "program.bin"
+		c = setRumpCmdLine(c, "program.bin", nil)
 	} else {
-		c.Cmdline = "program.bin" + " " + args
+		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "))
 	}
 
 	res := &types.RawImage{}
@@ -46,39 +48,21 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []str
 	}
 
 	// virtualbox network
-	c.Net1 = &net{
+	c.Net = &net{
 		If:     "vioif0",
 		Type:   "inet",
 		Method: DHCP,
 	}
-	c.Net2 = &net{
+	c.Net1 = &net{
 		If:     "vioif1",
 		Type:   "inet",
 		Method: DHCP,
 	}
 
-	cmdline, err := ToRumpJsonMultiNet(c)
+	cmdline, err := toRumpJson(c)
 	if err != nil {
 		return nil, err
 	}
-
-	r, err := regexp.Compile("net[0-9]")
-	if err != nil {
-		return nil, err
-	}
-	cmdline = string(r.ReplaceAllString(cmdline, "net"))
-
-	r, err = regexp.Compile("\"env\":\\{(.*?)\\}")
-	if err != nil {
-		return nil, err
-	}
-	cmdline = string(r.ReplaceAllString(cmdline, "$1"))
-
-	r, err = regexp.Compile("env[0-9]")
-	if err != nil {
-		return nil, err
-	}
-	cmdline = string(r.ReplaceAllString(cmdline, "env"))
 
 	logrus.Debugf("writing rump json config: %s", cmdline)
 

@@ -13,6 +13,8 @@ all: pull ${SOURCES} binary
 .PHONY: compilers-rump-go-xen
 .PHONY: compilers-rump-nodejs-hw
 .PHONY: compilers-rump-nodejs-xen
+.PHONY: compilers-rump-baker-xen
+.PHONY: compilers-rump-baker-hw
 .PHONY: compilers-osv-java
 .PHONY: compilers
 .PHONY: boot-creator
@@ -39,6 +41,8 @@ pull:
 	docker pull projectunik/compilers-rump-base-xen
 	docker pull projectunik/compilers-rump-base-hw
 	docker pull projectunik/compilers-rump-base-common
+	docker pull projectunik/compilers-rump-baker-xen
+	docker pull projectunik/compilers-rump-baker-hw
 #------
 
 #build containers from source
@@ -46,7 +50,7 @@ containers: compilers utils
 	echo "Built containers from source"
 
 #compilers
-compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers-rump-go-hw-no-wrapper compilers-rump-python3-hw compilers-rump-python3-xen
+compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers-rump-go-hw-no-wrapper compilers-rump-python3-hw compilers-rump-python3-xen compilers-rump-baker-hw compilers-rump-baker-xen
 
 compilers-rump-base-common:
 	cd containers/compilers/rump/base && docker build -t projectunik/$@ -f Dockerfile.common .
@@ -81,7 +85,13 @@ compilers-rump-python3-xen: compilers-rump-base-xen
 compilers-osv-java:
 	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@ .  && rm java-compiler
 
-debuggers-rump-base-hw: compilers-rump-base-hw
+compilers-rump-baker-hw: compilers-rump-go-hw
+	cd containers/compilers/rump/baker && docker build -t projectunik/$@ -f Dockerfile.hw .
+
+compilers-rump-baker-xen: compilers-rump-go-xen
+	cd containers/compilers/rump/baker && docker build -t projectunik/$@ -f Dockerfile.xen .
+
+debuggers-rump-base-hw: compilers-rump-baker-hw
 	cd containers/debuggers/rump/base && docker build -t projectunik/$@ -f Dockerfile.hw .
 
 #utils
@@ -149,6 +159,9 @@ remove-containers:
 	-docker rmi -f projectunik/compilers-rump-base-xen
 	-docker rmi -f projectunik/compilers-rump-base-hw
 	-docker rmi -f projectunik/compilers-rump-base-common
+	-docker rmi -f projectunik/compilers-rump-baker-hw
+	-docker rmi -f projectunik/compilers-rump-baker-xen
+	-docker rmi -f debuggers-rump-base-hw
 
 clean:
 	rm -rf ./_build

@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"strings"
-	"path/filepath"
-	"log"
 	"io/ioutil"
+	"log"
+	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -15,17 +15,16 @@ func main() {
 	flag.Parse()
 	args := []string{"\"program.bin\""}
 	if *argString != "" {
-		for _, arg := range strings.Split(*argString, " ") {
-			args = append(args,
-				fmt.Sprintf("\"%s\"", arg))
-		}
+	for _, arg := range strings.Split(*argString, " ") {
+		args = append(args,
+		fmt.Sprintf("\"%s\"", arg))
+	}
 	}
 	cmainstub := fmt.Sprintf(`
 int kludge_argc = %v;
 char *kludge_argv[] = { %s, 0 };
 
 int main() {
- 	rump_pub_lwproc_releaselwp(); /* XXX */
 	gomaincaller();
 }
 
