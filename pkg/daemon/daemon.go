@@ -21,6 +21,8 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers"
 	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
+	"github.com/emc-advanced-dev/unik/pkg/providers/qemu"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"github.com/emc-advanced-dev/unik/pkg/types"
@@ -31,14 +33,14 @@ import (
 
 type UnikDaemon struct {
 	server    *martini.ClassicMartini
-	providers providers.Providers	`json:"providers"`
+	providers providers.Providers `json:"providers"`
 	compilers map[string]compilers.Compiler
 }
 
 const (
 	//available providers
-	aws_provider = "aws"
-	vsphere_provider = "vsphere"
+	aws_provider        = "aws"
+	vsphere_provider    = "vsphere"
 	virtualbox_provider = "virtualbox"
 	qemu_provider       = "qemu"
 )
@@ -107,48 +109,48 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	}
 
 	_compilers[compilers.RUMP_GO_AWS] = &rump.RumpGoCompiler{
-		DockerImage: "projectunik/compilers-rump-go-xen",
+		DockerImage:   "projectunik/compilers-rump-go-xen",
 		BakeImageName: "projectunik/compilers-rump-baker-xen",
-		CreateImage: rump.CreateImageAws,
+		CreateImage:   rump.CreateImageAws,
 	}
 	_compilers[compilers.RUMP_GO_VMWARE] = &rump.RumpGoCompiler{
-		DockerImage: "projectunik/compilers-rump-go-hw",
+		DockerImage:   "projectunik/compilers-rump-go-hw",
 		BakeImageName: "projectunik/compilers-rump-baker-hw",
-		CreateImage: rump.CreateImageVmware,
+		CreateImage:   rump.CreateImageVmware,
 	}
 	_compilers[compilers.RUMP_GO_VIRTUALBOX] = &rump.RumpGoCompiler{
-		DockerImage: "projectunik/compilers-rump-go-hw",
+		DockerImage:   "projectunik/compilers-rump-go-hw",
 		BakeImageName: "projectunik/compilers-rump-baker-hw",
-		CreateImage: rump.CreateImageVirtualBox,
+		CreateImage:   rump.CreateImageVirtualBox,
 	}
 	_compilers[compilers.RUMP_GO_QEMU] = &rump.RumpGoCompiler{
-		DockerImage: "projectunik/compilers-rump-go-hw",
+		DockerImage:   "projectunik/compilers-rump-go-hw",
 		BakeImageName: "projectunik/compilers-rump-baker-hw",
-		CreateImage: rump.CreateImageQemu,
+		CreateImage:   rump.CreateImageQemu,
 	}
 
 	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
-		DockerImage: "projectunik/compilers-rump-nodejs-xen",
-		CreateImage: rump.CreateImageAws,
+		DockerImage:   "projectunik/compilers-rump-nodejs-xen",
+		CreateImage:   rump.CreateImageAws,
 		BootstrapType: rump.BootstrapTypeEC2,
 		RunScriptArgs: "/code/node-wrapper.js",
 	}
 	_compilers[compilers.RUMP_NODEJS_VIRTUALBOX] = &rump.RumpScriptCompiler{
-		DockerImage: "projectunik/compilers-rump-nodejs-hw",
-		CreateImage: rump.CreateImageVirtualBox,
+		DockerImage:   "projectunik/compilers-rump-nodejs-hw",
+		CreateImage:   rump.CreateImageVirtualBox,
 		BootstrapType: rump.BootstrapTypeUDP,
 		RunScriptArgs: "/code/node-wrapper.js",
 	}
 	_compilers[compilers.RUMP_NODEJS_VMWARE] = &rump.RumpScriptCompiler{
-		DockerImage: "projectunik/compilers-rump-nodejs-hw",
-		CreateImage: rump.CreateImageVmware,
+		DockerImage:   "projectunik/compilers-rump-nodejs-hw",
+		CreateImage:   rump.CreateImageVmware,
 		BootstrapType: rump.BootstrapTypeUDP,
 		RunScriptArgs: "/code/node-wrapper.js",
 	}
 
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = &rump.RumpScriptCompiler{
-		DockerImage: "projectunik/compilers-rump-python3-hw",
-		CreateImage: rump.CreateImageVirtualBox,
+		DockerImage:   "projectunik/compilers-rump-python3-hw",
+		CreateImage:   rump.CreateImageVirtualBox,
 		BootstrapType: rump.BootstrapTypeUDP,
 		RunScriptArgs: "/code/python-wrapper.py",
 		ScriptEnv: []string{
@@ -295,13 +297,13 @@ func (d *UnikDaemon) addEndpoints() {
 				"name":         name,
 				"args":         args,
 				"compiler":     compilerType,
-				"provider":	providerType,
+				"provider":     providerType,
 			}).Debugf("compiling raw image")
 
 			compileParams := types.CompileImageParams{
 				SourcesDir: sourcesDir,
-				Args: args,
-				MntPoints: mountPoints,
+				Args:       args,
+				MntPoints:  mountPoints,
 			}
 
 			rawImage, err := compiler.CompileRawImage(compileParams)
@@ -318,8 +320,8 @@ func (d *UnikDaemon) addEndpoints() {
 
 			stageParams := types.StageImageParams{
 				Name:      name,
-				RawImage: rawImage,
-				Force: force,
+				RawImage:  rawImage,
+				Force:     force,
 				NoCleanup: noCleanup,
 			}
 
@@ -477,12 +479,12 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 
 			params := types.RunInstanceParams{
-				Name: runInstanceRequest.InstanceName,
-				ImageId: runInstanceRequest.ImageName,
+				Name:                 runInstanceRequest.InstanceName,
+				ImageId:              runInstanceRequest.ImageName,
 				MntPointsToVolumeIds: runInstanceRequest.Mounts,
-				Env: runInstanceRequest.Env,
-				InstanceMemory: runInstanceRequest.MemoryMb,
-				NoCleanup: runInstanceRequest.NoCleanup,
+				Env:                  runInstanceRequest.Env,
+				InstanceMemory:       runInstanceRequest.MemoryMb,
+				NoCleanup:            runInstanceRequest.NoCleanup,
 			}
 
 			instance, err := provider.RunInstance(params)
@@ -649,7 +651,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 
 			params := types.CreateVolumeParams{
-				Name: volumeName,
+				Name:      volumeName,
 				ImagePath: imagePath,
 				NoCleanup: noCleanup,
 			}

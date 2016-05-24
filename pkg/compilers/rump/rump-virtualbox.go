@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"regexp"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
@@ -15,10 +13,7 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []str
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {
-		c.Env = make(map[string]string)
-		for i, env := range bakedEnv {
-			c.Env[fmt.Sprintf("env%v", i)] = env
-		}
+		c.Env = bakedEnv
 	}
 
 	if args == "" {

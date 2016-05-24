@@ -6,26 +6,31 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	uniktypes "github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
-func CreateImageQemu(kernel string, args string, mntPoints []string) (*uniktypes.RawImage, error) {
+func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
 
 	// create rump config
 	var c rumpConfig
 
-	if args == "" {
-		c.Cmdline = "program.bin"
-	} else {
-		c.Cmdline = "program.bin" + " " + args
+	if bakedEnv != nil {
+		c.Env = bakedEnv
 	}
 
-	res := &uniktypes.RawImage{}
+	if args == "" {
+		c = setRumpCmdLine(c, "program.bin", nil)
+	} else {
+		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "))
+	}
+
+	res := &types.RawImage{}
 	// add root -> sd0 mapping
 	for i, mntPoint := range mntPoints {
 		deviceMapped := fmt.Sprintf("ld%ca", '0'+i)
@@ -39,7 +44,7 @@ func CreateImageQemu(kernel string, args string, mntPoints []string) (*uniktypes
 		c.Blk = append(c.Blk, blk)
 		logrus.Debugf("adding mount point to image: %s:%s", mntPoint, deviceMapped)
 		res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings,
-			uniktypes.DeviceMapping{MountPoint: mntPoint, DeviceName: deviceMapped})
+			types.DeviceMapping{MountPoint: mntPoint, DeviceName: deviceMapped})
 		res.RunSpec.Compiler = compilers.Rump
 	}
 

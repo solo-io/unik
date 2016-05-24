@@ -5,15 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
+	"regexp"
+	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 
-	"github.com/docker/engine-api/client"
-	"github.com/docker/engine-api/types"
-	"github.com/docker/engine-api/types/container"
-	"github.com/docker/engine-api/types/network"
-	"github.com/docker/engine-api/types/strslice"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
@@ -122,6 +120,8 @@ func setRumpCmdLine(c rumpConfig, prog string, argv []string) rumpConfig {
 }
 
 var netRegEx = regexp.MustCompile("net[1-9]")
+var envRegEx = regexp.MustCompile("\"env\":\\{(.*?)\\}")
+var envRegEx2 = regexp.MustCompile("env[0-9]")
 
 // rump special json
 func toRumpJson(c rumpConfig) (string, error) {
@@ -153,6 +153,10 @@ func toRumpJson(c rumpConfig) (string, error) {
 	}
 
 	jsonString = netRegEx.ReplaceAllString(jsonString, "net")
+
+	jsonString = string(envRegEx.ReplaceAllString(jsonString, "$1"))
+
+	jsonString = string(envRegEx2.ReplaceAllString(jsonString, "env"))
 
 	return jsonString, nil
 

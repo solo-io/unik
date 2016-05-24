@@ -35,4 +35,5 @@ type rumpConfig struct {
 	Net  *net          `json:"net,omitempty"`
 	Net1 *net          `json:"net1,omitempty"`
 	Blk  []blk         `json:"blk,omitempty"`
+	Env  []string      `json:"env,omitempty"`
 }
