@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"io/ioutil"
+	"regexp"
 )
 
 // uses rump docker conter container
@@ -18,7 +19,7 @@ import (
 
 type RumpGoCompiler struct {
 	DockerImage string
-	CreateImage func(kernel, args string, mntPoints []string) (*types.RawImage, error)
+	CreateImage func(kernel, args string, mntPoints, bakedEnv []string) (*types.RawImage, error)
 }
 
 func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
@@ -48,7 +49,7 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 	// now we should program.bin
 	resultFile := path.Join(sourcesDir, "program.bin")
 	logrus.Debugf("finished kernel binary at %s", resultFile)
-	img, err := r.CreateImage(resultFile, params.Args, params.MntPoints)
+	img, err := r.CreateImage(resultFile, params.Args, params.MntPoints, nil)
 	if err != nil {
 		return nil, errors.New("creating boot volume from kernel binary", err)
 	}
@@ -83,6 +84,21 @@ func ToRumpJson(c rumpConfig) (string, error) {
 	} else {
 		jsonString = string(jsonConfig)
 	}
+
+	r, err := regexp.Compile("\"env\":\\{(.*?)\\}")
+	if err != nil {
+		return "", err
+	}
+	jsonString = string(r.ReplaceAllString(jsonString, "$1"))
+
+	r, err = regexp.Compile("env[0-9]")
+	if err != nil {
+		return "", err
+	}
+	jsonString = string(r.ReplaceAllString(jsonString, "env"))
+
+	logrus.Debugf("writing rump json config: %s", jsonString)
+
 
 	return jsonString, nil
 

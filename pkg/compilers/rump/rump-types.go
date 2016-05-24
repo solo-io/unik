@@ -28,6 +28,7 @@ type rumpConfig struct {
 	Cmdline string `json:"cmdline"`
 	Net     *net   `json:"net,omitempty"`
 	Blk     []blk  `json:"blk,omitempty"`
+	Env	[]string `json:"env,omitempty"`
 }
 
 type multinetRumpConfig struct {
@@ -35,4 +36,5 @@ type multinetRumpConfig struct {
 	Net1    *net   `json:"net1,omitempty"`
 	Net2    *net   `json:"net2,omitempty"`
 	Blk     []blk  `json:"blk,omitempty"`
+	Env	map[string]string `json:"env,omitempty"`
 }

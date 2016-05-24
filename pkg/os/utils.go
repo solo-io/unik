@@ -84,8 +84,12 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, comma
 	log.Debug("partitioning")
 
 	p := &MsDosPartioner{rootDevice.Name()}
-	p.MakeTable()
-	p.MakePartTillEnd("primary", MegaBytes(2))
+	if err := p.MakeTable(); err != nil {
+		return err
+	}
+	if err := p.MakePartTillEnd("primary", MegaBytes(2)); err != nil {
+		return err
+	}
 	parts, err := ListParts(rootDevice)
 	if err != nil {
 		return err
@@ -120,7 +124,9 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, comma
 	}
 	defer Umount(mntPoint)
 
-	PrepareGrub(mntPoint, rootDevice.Name(), progPath, commandline)
+	if err := PrepareGrub(mntPoint, rootDevice.Name(), progPath, commandline); err != nil {
+		return err
+	}
 
 	err = RunLogCommand("grub-install", "--no-floppy", "--root-directory="+mntPoint, rootDevice.Name())
 	if err != nil {

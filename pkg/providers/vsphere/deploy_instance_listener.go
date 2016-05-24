@@ -14,6 +14,8 @@ import (
 )
 
 var timeout = time.Second * 10
+var instanceListenerData = "InstanceListenerData"
+
 
 func (p *VsphereProvider) deployInstanceListener() (err error) {
 	logrus.Infof("checking if instance listener is alive...")
@@ -63,20 +65,24 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		"image-id": image.Id,
 	}).Infof("running instance of instance listener")
 
-	imagePath, err := unikos.BuildEmptyDataVolume(10)
+	newVolume := false
+	instanceListenerVol, err := p.GetVolume(instanceListenerData)
 	if err != nil {
-		return errors.New("failed creating raw data volume", err)
-	}
-	defer os.Remove(imagePath)
+		newVolume = true
+		imagePath, err := unikos.BuildEmptyDataVolume(10)
+		if err != nil {
+			return errors.New("failed creating raw data volume", err)
+		}
+		defer os.Remove(imagePath)
 
-	instanceListenerData := "InstanceListenerData"
-	params := types.CreateVolumeParams{
-		Name: instanceListenerData,
-		ImagePath: imagePath,
-	}
-	instanceListenerVol, err := p.CreateVolume(params)
-	if err != nil {
-		return errors.New("creating data vol for instance listener", err)
+		params := types.CreateVolumeParams{
+			Name: instanceListenerData,
+			ImagePath: imagePath,
+		}
+		instanceListenerVol, err = p.CreateVolume(params)
+		if err != nil {
+			return errors.New("creating data vol for instance listener", err)
+		}
 	}
 
 	c := p.getClient()
@@ -85,10 +91,13 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 	defer func() {
 		if err != nil {
 			logrus.WithError(err).Warnf("error encountered, ensuring vm and disks are destroyed")
+			p.DetachVolume(instanceListenerVol.Id)
 			c.PowerOffVm(VsphereUnikInstanceListener)
 			c.DestroyVm(VsphereUnikInstanceListener)
 			c.Rmdir(instanceDir)
-			p.DeleteVolume(instanceListenerVol.Id, true)
+			if newVolume {
+				p.DeleteVolume(instanceListenerVol.Id, true)
+			}
 			c.Rmdir(getVolumeDatastorePath(instanceListenerData))
 		}
 	}()

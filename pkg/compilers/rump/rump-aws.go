@@ -6,10 +6,13 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func CreateImageAws(kernel string, args string, mntPoints []string) (*types.RawImage, error) {
+func CreateImageAws(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
 
 	// create rump config
 	var c rumpConfig
+	if bakedEnv != nil {
+		c.Env = bakedEnv
+	}
 
 	if args == "" {
 		c.Cmdline = "program.bin"

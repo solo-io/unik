@@ -33,7 +33,7 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 			return nil, errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 		}
 
-		if err := unikutil.Retry(5, time.Duration(2000*time.Millisecond), func() error {
+		if err := unikutil.Retry(5, time.Duration(1000*time.Millisecond), func() error {
 			logrus.Debugf("getting instance ip")
 			if instance.Name == VboxUnikInstanceListener {
 				instance.IpAddress = instanceListenerIp
@@ -45,7 +45,7 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 			}
 			return nil
 		}); err != nil {
-			return nil, errors.New("failed to retrieve instance ip", err)
+			logrus.Warnf("failed to retrieve ip for instance %s. instance may be running but has not responded to udp broadcast", instance.Id)
 		}
 
 		switch vm.Running {
