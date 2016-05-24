@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"github.com/emc-advanced-dev/unik/pkg/util"
 	"io/ioutil"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 )
 
 func DaemonFromEnv() (*daemon.UnikDaemon, error) {
@@ -47,4 +48,21 @@ func RemoveContainers(projectRoot string) error {
 	cmd := exec.Command("make", "-C", projectRoot, "remove-containers")
 	util.LogCommand(cmd, false)
 	return cmd.Run()
+}
+
+func TarExampleApp(projectRoot string, appDir string) (*os.File, error) {
+	absRoot, err := filepath.Abs(projectRoot)
+	if err != nil {
+		return nil, errors.New("getting abs of "+projectRoot, err)
+	}
+	path := filepath.Join(absRoot, "docs", "examples", appDir)
+	sourceTar, err := ioutil.TempFile(util.UnikTmpDir(), "")
+	if err != nil {
+		return nil, errors.New("failed to create tmp tar file", err)
+	}
+	defer os.Remove(sourceTar.Name())
+	if err := unikos.Compress(path, sourceTar.Name()); err != nil {
+		return nil, errors.New("failed to tar sources", err)
+	}
+	return sourceTar, nil
 }
