@@ -138,27 +138,27 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 
 	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage:   "projectunik/compilers-rump-nodejs-xen",
-			BakeImageName: "projectunik/compilers-rump-baker-xen",
-			CreateImage:   rump.CreateImageAws,
+			DockerImage: "projectunik/compilers-rump-nodejs-xen",
+			CreateImage: rump.CreateImageAws,
+			//		BakeImageName: "projectunik/compilers-rump-baker-xen",
 		},
 		BootstrapType: rump.BootstrapTypeEC2,
 		RunScriptArgs: "/code/node-wrapper.js",
 	}
 	_compilers[compilers.RUMP_NODEJS_VIRTUALBOX] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage:   "projectunik/compilers-rump-nodejs-hw",
-			CreateImage:   rump.CreateImageVirtualBox,
-			BakeImageName: "projectunik/compilers-rump-baker-hw",
+			DockerImage: "projectunik/compilers-rump-nodejs-hw",
+			CreateImage: rump.CreateImageVirtualBox,
+			//		BakeImageName: "projectunik/compilers-rump-baker-hw",
 		},
 		BootstrapType: rump.BootstrapTypeUDP,
 		RunScriptArgs: "/code/node-wrapper.js",
 	}
 	_compilers[compilers.RUMP_NODEJS_VMWARE] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage:   "projectunik/compilers-rump-nodejs-hw",
-			CreateImage:   rump.CreateImageVmware,
-			BakeImageName: "projectunik/compilers-rump-baker-hw",
+			DockerImage: "projectunik/compilers-rump-nodejs-hw",
+			CreateImage: rump.CreateImageVmware,
+			//		BakeImageName: "projectunik/compilers-rump-baker-hw",
 		},
 		BootstrapType: rump.BootstrapTypeUDP,
 		RunScriptArgs: "/code/node-wrapper.js",
@@ -166,9 +166,9 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage:   "projectunik/compilers-rump-python3-hw",
-			CreateImage:   rump.CreateImageVirtualBox,
-			BakeImageName: "projectunik/compilers-rump-baker-hw",
+			DockerImage: "projectunik/compilers-rump-python3-hw",
+			CreateImage: rump.CreateImageVirtualBox,
+			//		BakeImageName: "projectunik/compilers-rump-baker-hw",
 		},
 		BootstrapType: rump.BootstrapTypeUDP,
 		RunScriptArgs: "/code/python-wrapper.py",
