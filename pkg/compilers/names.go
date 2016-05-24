@@ -1,10 +1,12 @@
 package compilers
 
 const (
+	Rump = "rump"
 	//available compilers
 	RUMP_GO_AWS = "rump-go-aws"
 	RUMP_GO_VIRTUALBOX = "rump-go-virtualbox"
 	RUMP_GO_VMWARE = "rump-go-vmware"
+	RUMP_GO_QEMU       = "rump-go-qemu"
 
 	RUMP_NODEJS_AWS = "rump-nodejs-aws"
 	RUMP_NODEJS_VIRTUALBOX = "rump-nodejs-virtualbox"

@@ -3,30 +3,32 @@ package daemon
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	"github.com/docker/docker/pkg/ioutils"
-	"github.com/emc-advanced-dev/unik/pkg/compilers"
-	"github.com/emc-advanced-dev/unik/pkg/config"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	"github.com/emc-advanced-dev/unik/pkg/providers"
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/go-martini/martini"
-	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/layer-x/layerx-commons/lxmartini"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
-	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
-	"github.com/emc-advanced-dev/unik/pkg/state"
-	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/docker/docker/pkg/ioutils"
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/osv"
-	"io/ioutil"
+	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
+	"github.com/emc-advanced-dev/unik/pkg/config"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/providers"
+	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
+	"github.com/emc-advanced-dev/unik/pkg/providers/qemu"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
+	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
+	"github.com/emc-advanced-dev/unik/pkg/state"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/go-martini/martini"
+	"github.com/layer-x/layerx-commons/lxmartini"
 )
 
 type UnikDaemon struct {
@@ -40,6 +42,7 @@ const (
 	aws_provider = "aws"
 	vsphere_provider = "vsphere"
 	virtualbox_provider = "virtualbox"
+	qemu_provider       = "qemu"
 )
 
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
@@ -89,6 +92,22 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		break
 	}
 
+	for _, qemuConfig := range config.Providers.Qemu {
+		logrus.Infof("Bootstrapping provider %s with config %v", qemu_provider, qemuConfig)
+		p, err := qemu.NewQemuProvider(qemuConfig)
+		if err != nil {
+			return nil, errors.New("initializing qemu provider", err)
+		}
+		s, err := state.BasicStateFromFile(qemu.QemuStateFile)
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read qemu state file at %s, creating blank qemu state", qemu.QemuStateFile)
+			s = state.NewBasicState(qemu.QemuStateFile)
+		}
+		p = p.WithState(s)
+		_providers[qemu_provider] = p
+		break
+	}
+
 	_compilers[compilers.RUMP_GO_AWS] = &rump.RumpGoCompiler{
 		DockerImage: "projectunik/compilers-rump-go-xen",
 		CreateImage: rump.CreateImageAws,
@@ -100,6 +119,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_GO_VIRTUALBOX] = &rump.RumpGoCompiler{
 		DockerImage: "projectunik/compilers-rump-go-hw",
 		CreateImage: rump.CreateImageVirtualBox,
+	}
+	_compilers[compilers.RUMP_GO_QEMU] = &rump.RumpGoCompiler{
+		DockerImage: "projectunik/compilers-rump-go-hw",
+		CreateImage: rump.CreateImageQemu,
 	}
 
 	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
@@ -226,7 +249,7 @@ func (d *UnikDaemon) addEndpoints() {
 				return nil, http.StatusInternalServerError, errors.New("creating tmp dir for src files", err)
 			}
 			defer os.RemoveAll(sourcesDir)
-			logrus.Debugf("extracting uploaded files to "+ sourcesDir)
+			logrus.Debugf("extracting uploaded files to " + sourcesDir)
 			if err := unikos.ExtractTar(sourceTar, sourcesDir); err != nil {
 				return nil, http.StatusInternalServerError, errors.New("extracting sources", err)
 			}
@@ -255,7 +278,7 @@ func (d *UnikDaemon) addEndpoints() {
 
 			compiler, ok := d.compilers[compilerType]
 			if !ok {
-				return nil, http.StatusBadRequest, errors.New("unikernel type "+ compilerType +" not available for "+providerType+"infrastructure", nil)
+				return nil, http.StatusBadRequest, errors.New("unikernel type "+compilerType+" not available for "+providerType+"infrastructure", nil)
 			}
 			mntStr := req.FormValue("mounts")
 
@@ -283,7 +306,7 @@ func (d *UnikDaemon) addEndpoints() {
 			if err != nil {
 				return nil, http.StatusInternalServerError, errors.New("failed to compile raw image", err)
 			}
-			logrus.Debugf("raw image compiled and saved to "+rawImage.LocalImagePath)
+			logrus.Debugf("raw image compiled and saved to " + rawImage.LocalImagePath)
 
 			noCleanupStr := req.FormValue("no_cleanup")
 			var noCleanup bool
@@ -292,7 +315,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 
 			stageParams := types.StageImageParams{
-				Name:name,
+				Name:      name,
 				RawImage: rawImage,
 				Force: force,
 				NoCleanup: noCleanup,
@@ -467,7 +490,7 @@ func (d *UnikDaemon) addEndpoints() {
 			return instance, http.StatusCreated, nil
 		})
 	})
-	d.server. Post("/instances/:instance_id/start", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+	d.server.Post("/instances/:instance_id/start", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		handle(res, req, func() (interface{}, int, error) {
 			instanceId := params["instance_id"]
 			logrus.WithFields(logrus.Fields{
