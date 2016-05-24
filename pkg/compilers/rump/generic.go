@@ -13,6 +13,7 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
@@ -70,7 +71,13 @@ func execContainer(imageName string, cmds, binds []string, privileged bool, env 
 	return nil
 }
 
-func (r *RumpGoCompiler) runContainer(localFolder string, envPairs []string) error {
+type RumCompilerBase struct {
+	DockerImage   string
+	BakeImageName string
+	CreateImage   func(kernel, args string, mntPoints, bakedEnv []string) (*types.RawImage, error)
+}
+
+func (r *RumCompilerBase) runContainer(localFolder string, envPairs []string) error {
 	env := make(map[string]string)
 	for _, pair := range envPairs {
 		split := strings.Split(pair, "=")
@@ -82,7 +89,7 @@ func (r *RumpGoCompiler) runContainer(localFolder string, envPairs []string) err
 	return execContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, env)
 }
 
-func (r *RumpGoCompiler) runAndBake(localFolder string, envPairs []string) error {
+func (r *RumCompilerBase) runAndBake(localFolder string, envPairs []string) error {
 	if err := r.runContainer(localFolder, envPairs); err != nil {
 		return err
 	}

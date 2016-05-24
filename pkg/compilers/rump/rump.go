@@ -18,9 +18,7 @@ import (
 // we need to take the program bin and combine with json config produce an image
 
 type RumpGoCompiler struct {
-	DockerImage   string
-	BakeImageName string
-	CreateImage   func(kernel, args string, mntPoints, bakedEnv []string) (*types.RawImage, error)
+	RumCompilerBase
 }
 
 func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {

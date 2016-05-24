@@ -5,11 +5,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"github.com/Sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 	"path/filepath"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"gopkg.in/yaml.v2"
 )
 
 // uses rump docker conter container
@@ -23,11 +24,11 @@ const (
 
 //compiler for building images from interpreted/scripting languages (python, javascript)
 type RumpScriptCompiler struct {
-	DockerImage string
+	RumCompilerBase
+
 	BootstrapType string //ec2 vs udp
-	CreateImage func(kernel, args string, mntPoints, bakedEnv []string) (*types.RawImage, error)
 	RunScriptArgs string
-	ScriptEnv []string
+	ScriptEnv     []string
 }
 
 type scriptProjectConfig struct {
@@ -52,13 +53,22 @@ func (r *RumpScriptCompiler) CompileRawImage(params types.CompileImageParams) (*
 
 	logrus.Debugf("using main file %s", config.MainFile)
 
-	env := map[string]string{
-		"MAIN_FILE": config.MainFile,
-		"BOOTSTRAP_TYPE": r.BootstrapType,
+	containerEnv := []string{
+		fmt.Sprintf("MAIN_FILE=%s", config.MainFile),
+		fmt.Sprintf("BOOTSTRAP_TYPE=%s", r.BootstrapType),
 	}
 
-	if err := execContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", sourcesDir, "/opt/code")}, false, env); err != nil {
-		return nil, err
+	// should we use the baker stubs?
+	if r.BakeImageName != "" {
+
+		if err := r.runAndBake(sourcesDir, containerEnv); err != nil {
+			return nil, err
+		}
+	} else {
+
+		if err := r.runContainer(sourcesDir, containerEnv); err != nil {
+			return nil, err
+		}
 	}
 
 	// now we should program.bin
