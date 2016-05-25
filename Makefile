@@ -2,10 +2,10 @@ SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 # When containers change, change this 
-CONTAINERTAG:=1
+CONTAINERVER:=1
 
-ifneq ($(CONTAINERTAG),)
-CONTAINERTAG:=:$(CONTAINERTAG)
+ifneq ($(CONTAINERVER),)
+CONTAINERTAG:=:$(CONTAINERVER)
 endif
 
 all: pull ${SOURCES} binary
@@ -138,14 +138,14 @@ endif
 	echo Building for platform $(UNAME)
 	docker build -t projectunik/$@ -f Dockerfile .
 	mkdir -p ./_build
-	docker run --rm -v $(PWD)/_build:/opt/build -e TARGET_OS=$(TARGET_OS) -e CONTAINERTAG=$(CONTAINERTAG) projectunik/$@
+	docker run --rm -v $(PWD)/_build:/opt/build -e TARGET_OS=$(TARGET_OS) -e CONTAINERVER=$(CONTAINERVER) projectunik/$@
 	#docker rmi -f projectunik/$@
 	echo "Install finished! UniK binary can be found at $(PWD)/_build/unik"
 #----
 
 # local build - useful if you have development env setup. if not - use binary!
 localbuild:
-	 go build -ldflags "-X github.com/emc-advanced-dev/unik/util.containerTag=$(CONTAINERTAG)" .
+	 go build -ldflags "-X github.com/emc-advanced-dev/unik/pkg/util.containerVer=$(CONTAINERVER)" .
 
 #clean up
 .PHONY: uninstall remove-containers clean
