@@ -1,5 +1,31 @@
 # changelog
 
+### 0.6.1 (2016-04-30)
+
+* Fix mo.Entity interface
+
+### 0.6.0 (2016-04-29)
+
+* Add Common.Rename method
+
+* Add mo.Entity interface
+
+* Add OptionManager
+
+* Add Finder.FolderList method
+
+* Add VirtualMachine.WaitForNetIP method
+
+* Add VirtualMachine.RevertToSnapshot method
+
+* Add Datastore.Download method
+
+### 0.5.0 (2016-03-30)
+
+Generated fields using xsd type 'int' change to Go type 'int32'
+
+VirtualDevice.UnitNumber field changed to pointer type
+
 ### 0.4.0 (2016-02-26)
 
 * Add method to convert virtual device list to array with virtual device

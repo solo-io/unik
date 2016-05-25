@@ -88,12 +88,6 @@ key, err := cfg.Section("").GetKey("key name")
 key := cfg.Section("").Key("key name")
 ```
 
-判断某个键是否存在：
-
-```go
-yes := cfg.Section("").HasKey("key name")
-```
-
 创建一个新的键：
 
 ```go
@@ -130,18 +124,6 @@ val := cfg.Section("").Key("key name").Validate(func(in string) string {
 	}
 	return in
 })
-```
-
-如果您不需要任何对值的自动转变功能（例如递归读取），可以直接获取原值（这种方式性能最佳）：
-
-```go
-val := cfg.Section("").Key("key name").Value()
-```
-
-判断某个原值是否存在：
-
-```go
-yes := cfg.Section("").HasValue("test value")
 ```
 
 获取其它类型的值：
