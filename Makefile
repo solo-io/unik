@@ -121,12 +121,15 @@ qemu-util:
 #binary
 
 BINARY=unik
-UNAME=$(shell uname)
-TARGET_OS=
-ifeq ($(UNAME),Linux)
-	TARGET_OS=linux
-else ifeq ($(UNAME),Darwin)
-	TARGET_OS=darwin
+
+# don't override if provided already
+ifeq (,$(TARGET_OS))
+    UNAME:=$(shell uname)
+	ifeq ($(UNAME),Linux)
+		TARGET_OS:=linux
+	else ifeq ($(UNAME),Darwin)
+		TARGET_OS:=darwin
+	endif
 endif
 
 binary: ${SOURCES}
@@ -143,10 +146,14 @@ endif
 	echo "Install finished! UniK binary can be found at $(PWD)/_build/unik"
 #----
 
-# local build - useful if you have development env setup. if not - use binary!
-localbuild:
-	 go build -ldflags "-X github.com/emc-advanced-dev/unik/pkg/util.containerVer=$(CONTAINERVER)" .
+# local build - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
+localbuild: instance-listener/bindata/instance_listener_data.go  ${SOURCES}
+	 GOOS=${TARGET_OS} go build -ldflags "-X github.com/emc-advanced-dev/unik/pkg/util.containerVer=$(CONTAINERVER)" .
 
+instance-listener/bindata/instance_listener_data.go:
+	go-bindata -o instance-listener/bindata/instance_listener_data.go --ignore=instance-listener/bindata/ instance-listener/... && \
+	perl -pi -e 's/package main/package bindata/g' instance-listener/bindata/instance_listener_data.go
+    
 #clean up
 .PHONY: uninstall remove-containers clean
 

@@ -6,7 +6,7 @@ import (
 )
 
 // filled in build time by make
-var containerTag string
+var containerVer string
 
 type Container struct {
 	env        map[string]string
@@ -53,19 +53,23 @@ func (c *Container) Privileged(p bool) *Container {
 }
 
 func (c *Container) Run(arguments ...string) error {
-	return c.internalRun(arguments...).Run()
+	cmd := c.buildCmd(arguments...)
+
+	LogCommand(cmd, true)
+
+	return cmd.Run()
 }
 
 func (c *Container) Output(arguments ...string) ([]byte, error) {
-	return c.internalRun(arguments...).Output()
+	return c.buildCmd(arguments...).Output()
 }
 
 func (c *Container) CombinedOutput(arguments ...string) ([]byte, error) {
 
-	return c.internalRun(arguments...).CombinedOutput()
+	return c.buildCmd(arguments...).CombinedOutput()
 }
 
-func (c *Container) internalRun(arguments ...string) *exec.Cmd {
+func (c *Container) buildCmd(arguments ...string) *exec.Cmd {
 
 	args := []string{"run", "--rm"}
 	if c.privileged {
@@ -78,11 +82,10 @@ func (c *Container) internalRun(arguments ...string) *exec.Cmd {
 		args = append(args, "-v", fmt.Sprintf("%s:%s", key, val))
 	}
 
-	args = append(args, "projectunik/"+c.name+":"+containerTag)
+	args = append(args, "projectunik/"+c.name+":"+containerVer)
 	args = append(args, arguments...)
 
 	cmd := exec.Command("docker", args...)
 
-	LogCommand(cmd, true)
 	return cmd
 }
