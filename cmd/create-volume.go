@@ -91,7 +91,7 @@ Another example (empty volume):
 				if false {
 					defer os.Remove(dataTar.Name())
 				}
-				if err := unikos.Compress(path, dataTar.Name()); err != nil {
+				if err := unikos.Compress(data, dataTar.Name()); err != nil {
 					return errors.New("failed to tar data", err)
 				}
 				data = dataTar.Name()

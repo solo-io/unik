@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
+	"net/url"
+
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"net/url"
 )
 
-var daemonConfigFile, logFile string
+var daemonRuntimeFolder, daemonConfigFile, logFile string
 var debugMode, trace bool
 
 var daemonCmd = &cobra.Command{
@@ -42,9 +44,18 @@ Example usage:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
+
+			// set unik home
+			config.Internal.UnikHome = daemonRuntimeFolder
+
+			if daemonConfigFile == "" {
+				daemonConfigFile = filepath.Join(config.Internal.UnikHome, "daemon-config.yaml")
+			}
+
 			if err := readDaemonConfig(); err != nil {
 				return err
 			}
+
 			//don't print vsphere password
 			redactions := []string{}
 			for _, vsphereConfig := range daemonConfig.Providers.Vsphere {
@@ -62,7 +73,7 @@ Example usage:
 			}
 			if logFile != "" {
 				os.Create(logFile)
-				f, err := os.OpenFile(logFile, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0777)
+				f, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777)
 				if err != nil {
 					return errors.New(fmt.Sprintf("failed to open log file %s for writing", logFile), err)
 				}
@@ -85,7 +96,8 @@ Example usage:
 
 func init() {
 	RootCmd.AddCommand(daemonCmd)
-	daemonCmd.Flags().StringVar(&daemonConfigFile, "f", os.Getenv("HOME")+"/.unik/daemon-config.yaml", "daemon config file (default is $HOME/.unik/daemon-config.yaml)")
+	daemonCmd.Flags().StringVar(&daemonRuntimeFolder, "d", os.Getenv("HOME")+"/.unik/", "daemon runtime folder - where state is stored. (default is $HOME/.unik/)")
+	daemonCmd.Flags().StringVar(&daemonConfigFile, "f", "", "daemon config file (default is {RuntimeFolder}/daemon-config.yaml)")
 	daemonCmd.Flags().IntVar(&port, "port", 3000, "<int, optional> listening port for daemon")
 	daemonCmd.Flags().BoolVar(&debugMode, "debug", false, "<bool, optional> more verbose logging for the daemon")
 	daemonCmd.Flags().BoolVar(&trace, "trace", false, "<bool, optional> add stack trace to daemon logs")

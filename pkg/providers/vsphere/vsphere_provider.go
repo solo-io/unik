@@ -1,17 +1,17 @@
 package vsphere
 
 import (
+	"net/url"
+	"path/filepath"
+	"strings"
+
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere/vsphereclient"
 	"github.com/emc-advanced-dev/unik/pkg/state"
-	"github.com/emc-advanced-dev/pkg/errors"
-	"net/url"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
-var VsphereStateFile = os.Getenv("HOME") + "/.unik/vsphere/state.json"
+var VsphereStateFile = filepath.Join(config.Internal.UnikHome, "vsphere/state.json")
 var VsphereImagesDirectory = "unik/vsphere/images/"
 var VsphereVolumesDirectory = "unik/vsphere/volumes/"
 
@@ -64,7 +64,7 @@ func getInstanceDatastoreDir(instanceName string) string {
 }
 
 func getImageDatastoreDir(imageName string) string {
-	return filepath.Join(VsphereImagesDirectory, imageName + "/")
+	return filepath.Join(VsphereImagesDirectory, imageName+"/")
 }
 
 func getImageDatastorePath(imageName string) string {
@@ -72,7 +72,7 @@ func getImageDatastorePath(imageName string) string {
 }
 
 func getVolumeDatastoreDir(volumeName string) string {
-	return filepath.Join(VsphereVolumesDirectory, volumeName + "/")
+	return filepath.Join(VsphereVolumesDirectory, volumeName+"/")
 }
 
 func getVolumeDatastorePath(volumeName string) string {

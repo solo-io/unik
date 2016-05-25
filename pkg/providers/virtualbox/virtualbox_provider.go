@@ -1,18 +1,19 @@
 package virtualbox
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/config"
-	"github.com/emc-advanced-dev/unik/pkg/state"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/config"
+	"github.com/emc-advanced-dev/unik/pkg/state"
 )
 
-var VirtualboxStateFile = os.Getenv("HOME") + "/.unik/virtualbox/state.json"
-var virtualboxImagesDirectory = os.Getenv("HOME") + "/.unik/virtualbox/images/"
-var virtualboxInstancesDirectory = os.Getenv("HOME") + "/.unik/virtualbox/instances/"
-var virtualboxVolumesDirectory = os.Getenv("HOME") + "/.unik/virtualbox/volumes/"
+var VirtualboxStateFile = filepath.Join(config.Internal.UnikHome, "virtualbox/state.json")
+var virtualboxImagesDirectory = filepath.Join(config.Internal.UnikHome, "virtualbox/images/")
+var virtualboxInstancesDirectory = filepath.Join(config.Internal.UnikHome, "virtualbox/instances/")
+var virtualboxVolumesDirectory = filepath.Join(config.Internal.UnikHome, "virtualbox/volumes/")
 
 const VboxUnikInstanceListener = "VboxUnikInstanceListener"
 const instanceListenerPrefix = "unik_virtualbox"

@@ -13,7 +13,7 @@ import (
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
-var name, path, compiler, provider, runArgs string
+var name, sourcePath, compiler, provider, runArgs string
 var mountPoints []string
 var force, noCleanup bool
 
@@ -56,7 +56,7 @@ Another example (using only the required parameters):
 			if name == "" {
 				return errors.New("--name must be set", nil)
 			}
-			if path == "" {
+			if sourcePath == "" {
 				return errors.New("--path must be set", nil)
 			}
 			if compiler == "" {
@@ -73,7 +73,7 @@ Another example (using only the required parameters):
 			}
 			logrus.WithFields(logrus.Fields{
 				"name":        name,
-				"path":        path,
+				"path":        sourcePath,
 				"compiler":    compiler,
 				"provider":    provider,
 				"args":        runArgs,
@@ -86,7 +86,7 @@ Another example (using only the required parameters):
 				logrus.WithError(err).Error("failed to create tmp tar file")
 			}
 			defer os.Remove(sourceTar.Name())
-			if err := unikos.Compress(path, sourceTar.Name()); err != nil {
+			if err := unikos.Compress(sourcePath, sourceTar.Name()); err != nil {
 				return errors.New("failed to tar sources", err)
 			}
 			logrus.Infof("App packaged as tarball: %s\n", sourceTar.Name())
@@ -106,7 +106,7 @@ Another example (using only the required parameters):
 func init() {
 	RootCmd.AddCommand(buildCmd)
 	buildCmd.Flags().StringVar(&name, "name", "", "<string,required> name to give the unikernel. must be unique")
-	buildCmd.Flags().StringVar(&path, "path", "", "<string,required> path to root application sources folder")
+	buildCmd.Flags().StringVar(&sourcePath, "path", "", "<string,required> path to root application sources folder")
 	buildCmd.Flags().StringVar(&compiler, "compiler", "", "<string,required> name of the unikernel compiler to use")
 	buildCmd.Flags().StringVar(&provider, "provider", "", "<string,required> name of the target infrastructure to compile for")
 	buildCmd.Flags().StringVar(&runArgs, "args", "", "<string,optional> to be passed to the unikernel at runtime")

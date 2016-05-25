@@ -1,6 +1,8 @@
 package aws
 
 import (
+	"path/filepath"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -9,10 +11,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/state"
-	"os"
 )
 
-var AwsStateFile = os.Getenv("HOME") + "/.unik/aws/state.json"
+var AwsStateFile = filepath.Join(config.Internal.UnikHome, "aws/state.json")
 
 type AwsProvider struct {
 	config config.Aws
@@ -34,7 +35,7 @@ func (p *AwsProvider) WithState(state state.State) *AwsProvider {
 
 func (p *AwsProvider) newEC2() *ec2.EC2 {
 	sess := session.New(&aws.Config{
-		Region:      aws.String(p.config.Region),
+		Region: aws.String(p.config.Region),
 	})
 	sess.Handlers.Send.PushFront(func(r *request.Request) {
 		if r != nil {
@@ -46,7 +47,7 @@ func (p *AwsProvider) newEC2() *ec2.EC2 {
 
 func (p *AwsProvider) newS3() *s3.S3 {
 	sess := session.New(&aws.Config{
-		Region:      aws.String(p.config.Region),
+		Region: aws.String(p.config.Region),
 	})
 	sess.Handlers.Send.PushFront(func(r *request.Request) {
 		if r != nil {

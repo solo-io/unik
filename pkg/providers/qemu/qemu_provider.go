@@ -8,10 +8,10 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/state"
 )
 
-var QemuStateFile = os.Getenv("HOME") + "/.unik/qemu/state.json"
-var qemuImagesDirectory = os.Getenv("HOME") + "/.unik/qemu/images/"
-var qemuInstancesDirectory = os.Getenv("HOME") + "/.unik/qemu/instances/"
-var qemuVolumesDirectory = os.Getenv("HOME") + "/.unik/qemu/volumes/"
+var QemuStateFile = filepath.Join(config.Internal.UnikHome, "qemu/state.json")
+var qemuImagesDirectory = filepath.Join(config.Internal.UnikHome, "qemu/images/")
+var qemuInstancesDirectory = filepath.Join(config.Internal.UnikHome, "qemu/instances/")
+var qemuVolumesDirectory = filepath.Join(config.Internal.UnikHome, "qemu/volumes/")
 
 type QemuProvider struct {
 	config config.Qemu
