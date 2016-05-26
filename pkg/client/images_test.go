@@ -10,6 +10,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"os"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/emc-advanced-dev/unik/pkg/config"
 )
 
 const (
@@ -25,11 +26,17 @@ var _ = Describe("Images", func() {
 	var daemonUrl = "127.0.0.1:3000"
 	var c = UnikClient(daemonUrl)
 	var projectRoot = os.Getenv("PROJECT_ROOT")
+	var tmpUnik helpers.TempUnikHome
 
 	BeforeEach(func(){
 		Describe("start the daeemon", func(){
-			var err error
-			d, err = helpers.DaemonFromEnv()
+			tmpUnik.SetupUnik()
+			vboxConfig, err := helpers.NewVirtualboxConfig()
+			if err != nil {
+				logrus.Fatal(err)
+			}
+			cfg := helpers.ConfigWithVirtualbox(config.DaemonConfig{}, vboxConfig)
+			d, err = daemon.NewUnikDaemon(cfg)
 			if err != nil {
 				logrus.Fatal(err)
 			}
@@ -37,11 +44,9 @@ var _ = Describe("Images", func() {
 		})
 	})
 	AfterEach(func() {
+		defer tmpUnik.TearDownUnik()
 		err := d.Stop()
 		if err != nil {
-			logrus.Fatal(err)
-		}
-		if err := helpers.KillUnikstate(); err != nil {
 			logrus.Fatal(err)
 		}
 	})

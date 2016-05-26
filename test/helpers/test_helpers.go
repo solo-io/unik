@@ -1,8 +1,6 @@
 package helpers
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/daemon"
-	"gopkg.in/yaml.v2"
 	"os"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/pkg/errors"
@@ -15,31 +13,118 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	"github.com/Sirupsen/logrus"
 	"runtime"
+	"fmt"
 )
 
-func DaemonFromEnv() (*daemon.UnikDaemon, error) {
-	var daemonConfig config.DaemonConfig
-	var data []byte
-	daemonConfigFile := os.Getenv("DAEMON_CONFIG_FILE")
-	if daemonConfigFile == "" {
-		daemonConfigFile = os.Getenv("HOME")+"/.unik/daemon-config.yaml"
-	}
-	data, err := ioutil.ReadFile(daemonConfigFile)
-	if err != nil {
-		return nil, errors.New("failed to read "+daemonConfigFile, err)
-	}
-	if err := yaml.Unmarshal(data, &daemonConfig); err != nil {
-		return nil, errors.New("not valid yaml: "+ daemonConfigFile, err)
-	}
-	d, err := daemon.NewUnikDaemon(daemonConfig)
-	if err != nil {
-		return nil, errors.New("daemon failed to initialize", err)
-	}
-	return d, nil
+type TempUnikHome struct {
+	Dir string
 }
 
-func KillUnikstate() error {
-	return os.RemoveAll(filepath.Join(os.Getenv("HOME"), ".unik"))
+func (t *TempUnikHome) SetupUnik() {
+	n, err := ioutil.TempDir("", "")
+	if err != nil {
+		panic(err)
+	}
+	config.Internal.UnikHome = n
+
+	t.Dir = n
+}
+
+func (t *TempUnikHome) TearDownUnik() {
+	os.RemoveAll(t.Dir)
+}
+
+func requireEnvVar(key string) (string, error) {
+	val := os.Getenv(key)
+	if val == "" {
+		return "", errors.New(fmt.Sprintf("%s must be set", key), nil)
+	}
+	return val, nil
+}
+
+func NewAwsConfig() (_ config.Aws, err error) {
+	region, err := requireEnvVar("AWS_REGION")
+	if err != nil {
+		return
+	}
+	zone, err := requireEnvVar("AWS_AVAILABILITY_ZONE")
+	if err != nil {
+		return
+	}
+	return config.Aws{
+		Name: "TEST-AWS-CONFIG",
+		Region: region,
+		Zone: zone,
+	}, nil
+}
+
+func NewVirtualboxConfig() (_ config.Virtualbox, err error) {
+	adapterName, err := requireEnvVar("VBOX_ADAPTER_NAME")
+	if err != nil {
+		return
+	}
+	adapterType, err := requireEnvVar("VBOX_ADAPTER_TYPE")
+	if err != nil {
+		return
+	}
+
+	return config.Virtualbox{
+		Name: "TEST-VBOX-CONFIG",
+		AdapterName: adapterName,
+		VirtualboxAdapterType: config.VirtualboxAdapterType(adapterType),
+	}, nil
+}
+
+func NewVsphereConfig() (_ config.Vsphere, err error) {
+	vsphereUser, err := requireEnvVar("VSPHERE_USERNAME")
+	if err != nil {
+		return
+	}
+	vspherePassword, err := requireEnvVar("VSPHERE_PASSWORD")
+	if err != nil {
+		return
+	}
+	vsphereUrl, err := requireEnvVar("VSPHERE_URL")
+	if err != nil {
+		return
+	}
+	vsphereDatastore, err := requireEnvVar("VSPHERE_DATASTORE")
+	if err != nil {
+		return
+	}
+	vsphereDatacenter, err := requireEnvVar("VSPHERE_DATACENTER")
+	if err != nil {
+		return
+	}
+	vsphereNetworkLabel, err := requireEnvVar("VSPHERE_NETWORK_LABEL")
+	if err != nil {
+		return
+	}
+
+	return config.Vsphere{
+		Name: "TEST-VBOX-CONFIG",
+		VsphereUser: vsphereUser,
+		VspherePassword: vspherePassword,
+		VsphereURL: vsphereUrl,
+		Datastore: vsphereDatastore,
+		Datacenter: vsphereDatacenter,
+		NetworkLabel: vsphereNetworkLabel,
+	}, nil
+}
+
+func ConfigWithAws(config config.DaemonConfig, aws config.Aws) (config.DaemonConfig) {
+	config.Providers.Aws = append(config.Providers.Aws, aws)
+	return config
+}
+
+func ConfigWithVirtualbox(config config.DaemonConfig, virtualbox config.Virtualbox) (config.DaemonConfig) {
+	config.Providers.Virtualbox = append(config.Providers.Virtualbox, virtualbox)
+	return config
+}
+
+func ConfigWithVsphere(config config.DaemonConfig, vsphere config.Vsphere) (config.DaemonConfig) {
+	config.Providers.Vsphere = append(config.Providers.Vsphere, vsphere)
+	return config
 }
 
 func MakeContainers(projectRoot string) error {

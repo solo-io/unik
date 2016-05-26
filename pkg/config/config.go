@@ -4,6 +4,7 @@ type DaemonConfig struct {
 	Providers Providers `yaml:"providers"`
 	Version   string    `yaml:"version"`
 }
+
 type Providers struct {
 	Aws        []Aws        `yaml:"aws"`
 	Vsphere    []Vsphere    `yaml:"vsphere"`

@@ -13,38 +13,18 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type TempUnikHome struct {
-	Dir string
-}
-
-func (t *TempUnikHome) setupUnik() {
-	n, err := ioutil.TempDir("", "")
-	if err != nil {
-		panic(err)
-	}
-	config.Internal.UnikHome = n
-
-	t.Dir = n
-}
-
-func (t *TempUnikHome) tearDownUnik() {
-	os.RemoveAll(t.Dir)
-}
-
 var _ = Describe("QemuProvider", func() {
-
-	var tmpUnik TempUnikHome
+	var tmpUnik helpers.TempUnikHome
 
 	BeforeEach(func() {
-		tmpUnik.setupUnik()
+		tmpUnik.SetupUnik()
 	})
 
 	AfterEach(func() {
-		tmpUnik.tearDownUnik()
+		tmpUnik.TearDownUnik()
 	})
 
 	It("should create a volume", func() {
-
 		config := config.Qemu{Name: "test"}
 		q, err := NewQemuProvider(config)
 		Expect(err).NotTo(HaveOccurred())

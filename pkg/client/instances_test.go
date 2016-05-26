@@ -6,9 +6,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
-	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/test/helpers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/config"
 )
 
 var _ = Describe("Instances", func() {
@@ -16,25 +17,29 @@ var _ = Describe("Instances", func() {
 	daemonUrl := "127.0.0.1:3000"
 	var c = UnikClient(daemonUrl)
 	var projectRoot = helpers.GetProjectRoot()
+	var tmpUnik helpers.TempUnikHome
+
 	BeforeEach(func(){
 		Describe("start the daeemon", func(){
-			It("deploys the instance listener and starts listening on port 3000", func(){
-				var err error
-				d, err = helpers.DaemonFromEnv()
-				Expect(err).ToNot(HaveOccurred())
-				go d.Run(3000)
-			})
-
+			tmpUnik.SetupUnik()
+			vboxConfig, err := helpers.NewVirtualboxConfig()
+			if err != nil {
+				logrus.Fatal(err)
+			}
+			cfg := helpers.ConfigWithVirtualbox(config.DaemonConfig{}, vboxConfig)
+			d, err = daemon.NewUnikDaemon(cfg)
+			if err != nil {
+				logrus.Fatal(err)
+			}
+			go d.Run(3000)
 		})
 	})
-	AfterEach(func(){
-		It("tears down the unik daemon and cleans up the state", func(){
-			err := d.Stop()
-			Expect(err).ToNot(HaveOccurred())
-			if err := helpers.KillUnikstate(); err != nil {
-				logrus.Panic(err)
-			}
-		})
+	AfterEach(func() {
+		defer tmpUnik.TearDownUnik()
+		err := d.Stop()
+		if err != nil {
+			logrus.Fatal(err)
+		}
 	})
 	Describe("instances", func() {
 		Describe("All()", func() {
