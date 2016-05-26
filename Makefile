@@ -29,6 +29,7 @@ all: pull ${SOURCES} binary
 .PHONY: vsphere-client
 .PHONY: qemu-util
 .PHONY: utils
+.PHONY: set-container-versions
 
 #pull containers
 pull:
@@ -59,7 +60,10 @@ containers: compilers utils
 #compilers
 compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers-rump-go-hw-no-wrapper compilers-rump-python3-hw compilers-rump-python3-xen compilers-rump-baker-hw compilers-rump-baker-xen
 
-compilers-rump-base-common:
+set-container-versions:
+	find ./containers -type f -print0 | xargs -0 perl -pi -e 's/FROM projectunik\/(.*):[0-9]\.[0-9]+/FROM projectunik\/$${1}$(CONTAINERTAG)/g'
+
+compilers-rump-base-common: set-container-versions
 	cd containers/compilers/rump/base && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.common .
 
 compilers-rump-base-hw: compilers-rump-base-common
@@ -89,7 +93,7 @@ compilers-rump-python3-hw: compilers-rump-base-hw
 compilers-rump-python3-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/python3 && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen .
 
-compilers-osv-java:
+compilers-osv-java: set-container-versions
 	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@$(CONTAINERTAG) .  && rm java-compiler
 
 compilers-rump-baker-hw: compilers-rump-go-hw
@@ -104,16 +108,16 @@ debuggers-rump-base-hw: compilers-rump-baker-hw
 #utils
 utils: boot-creator image-creator vsphere-client qemu-util
 
-boot-creator:
+boot-creator: set-container-versions
 	cd containers/utils/boot-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile . && rm boot-creator
 
-image-creator:
+image-creator: set-container-versions
 	cd containers/utils/image-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile . && rm image-creator
 
-vsphere-client:
+vsphere-client: set-container-versions
 	cd containers/utils/vsphere-client && mvn package && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile . && rm -rf target
 
-qemu-util:
+qemu-util: set-container-versions
 	cd containers/utils/qemu-util && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile .
 
 #------
