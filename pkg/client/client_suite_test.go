@@ -19,9 +19,9 @@ func TestClient(t *testing.T) {
 		}
 	})
 	AfterSuite(func(){
-		if err := helpers.RemoveContainers(projectRoot); err != nil {
-			logrus.Panic(err)
-		}
+		//if err := helpers.RemoveContainers(projectRoot); err != nil {
+		//	logrus.Panic(err)
+		//}
 	})
 	RunSpecs(t, "Client Suite")
 }
