@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:14.04
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -y && \
     apt-get install -y --force-yes qemu && \
