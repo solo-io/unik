@@ -2,7 +2,7 @@ SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 # When containers change, change this 
-CONTAINERVER:=1
+CONTAINERVER:=1.0
 
 ifneq ($(CONTAINERVER),)
 CONTAINERTAG:=:$(CONTAINERVER)
