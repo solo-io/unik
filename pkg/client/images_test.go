@@ -22,7 +22,8 @@ const (
 
 var _ = Describe("Images", func() {
 	var d *daemon.UnikDaemon
-	var c = UnikClient("127.0.0.1:3000")
+	var daemonUrl = "127.0.0.1:3000"
+	var c = UnikClient(daemonUrl)
 	var projectRoot = os.Getenv("PROJECT_ROOT")
 	if projectRoot == "" {
 		var err error
@@ -77,7 +78,7 @@ var _ = Describe("Images", func() {
 					Expect(images).To(BeEmpty())
 				})
 			})
-			Context("images exists", func(){
+			Context("images exist", func(){
 				var simpleGoImage, dependencyGoImage, nontrivialGoImage, nodejsImage, javaImage *types.Image
 				Describe("Build", func(){
 					provider := "virtualbox"
@@ -85,41 +86,26 @@ var _ = Describe("Images", func() {
 						Context("go apps", func(){
 							compiler := "rump-go-virtualbox"
 							Context("a simple go httpd with no dependencies", func(){
-								args := ""
-								mounts := ""
+								mounts := []string{}
 								It("compiles the app", func(){
-									force := false
-									noCleanup := false
-									testSourceTar, err := helpers.TarExampleApp(projectRoot, example_go_httpd)
-									Expect(err).ToNot(HaveOccurred())
-									name := example_go_httpd
-									simpleGoImage, err = c.Images().Build(name, testSourceTar, compiler, provider, args , mounts , force, noCleanup)
+									var err error
+									simpleGoImage, err = helpers.BuildExampleImage(daemonUrl, projectRoot, example_go_httpd, compiler, provider, mounts)
 									Expect(err).ToNot(HaveOccurred())
 								})
 							})
 							Context("a go app with dependencies", func(){
-								args := ""
-								mounts := ""
+								mounts := []string{}
 								It("compiles the app", func(){
-									force := false
-									noCleanup := false
-									testSourceTar, err := helpers.TarExampleApp(projectRoot, example_godeps_go_app)
-									Expect(err).ToNot(HaveOccurred())
-									name := example_godeps_go_app
-									dependencyGoImage, err = c.Images().Build(name, testSourceTar, compiler, provider, args , mounts , force, noCleanup)
+									var err error
+									dependencyGoImage, err = helpers.BuildExampleImage(daemonUrl, projectRoot, example_godeps_go_app, compiler, provider, mounts)
 									Expect(err).ToNot(HaveOccurred())
 								})
 							})
 							Context("a go app with nested packages", func(){
-								args := ""
-								mounts := ""
+								mounts := []string{}
 								It("compiles the app", func(){
-									force := false
-									noCleanup := false
-									testSourceTar, err := helpers.TarExampleApp(projectRoot, example_go_nontrivial)
-									Expect(err).ToNot(HaveOccurred())
-									name := example_go_nontrivial
-									nontrivialGoImage, err = c.Images().Build(name, testSourceTar, compiler, provider, args , mounts , force, noCleanup)
+									var err error
+									nontrivialGoImage, err = helpers.BuildExampleImage(daemonUrl, projectRoot, example_go_nontrivial, compiler, provider, mounts)
 									Expect(err).ToNot(HaveOccurred())
 								})
 							})
@@ -127,15 +113,10 @@ var _ = Describe("Images", func() {
 						Context("node apps", func(){
 							compiler := "rump-nodejs-virtualbox"
 							Context("a node app with dependencies", func(){
-								args := ""
-								mounts := ""
+								mounts := []string{}
 								It("compiles the app", func(){
-									force := false
-									noCleanup := false
-									testSourceTar, err := helpers.TarExampleApp(projectRoot, example_nodejs_app)
-									Expect(err).ToNot(HaveOccurred())
-									name := example_nodejs_app
-									nodejsImage, err = c.Images().Build(name, testSourceTar, compiler, provider, args , mounts , force, noCleanup)
+									var err error
+									nodejsImage, err = helpers.BuildExampleImage(daemonUrl, projectRoot, example_nodejs_app, compiler, provider, mounts)
 									Expect(err).ToNot(HaveOccurred())
 								})
 							})
@@ -143,15 +124,10 @@ var _ = Describe("Images", func() {
 						Context("java apps", func(){
 							compiler := "osv-java-virtualbox"
 							Context("a java app with dependencies", func(){
-								args := ""
-								mounts := ""
+								mounts := []string{}
 								It("compiles the app", func(){
-									force := false
-									noCleanup := false
-									testSourceTar, err := helpers.TarExampleApp(projectRoot, example_java_project)
-									Expect(err).ToNot(HaveOccurred())
-									name := example_java_project
-									javaImage, err = c.Images().Build(name, testSourceTar, compiler, provider, args , mounts , force, noCleanup)
+									var err error
+									javaImage, err = helpers.BuildExampleImage(daemonUrl, projectRoot, example_java_project, compiler, provider, mounts)
 									Expect(err).ToNot(HaveOccurred())
 								})
 							})
