@@ -13,14 +13,14 @@ COPY fixgo.sh /tmp/
 RUN cd /tmp/gorump/go/src && \
     bash /tmp/fixgo.sh && \
     GOROOT_BOOTSTRAP=/usr/local/go GOOS=rumprun GOARCH=amd64 ./make.bash && \
-    cd /tmp && sudo mv gorump/go /usr/local/go1.5-patched && \
+    cd /tmp && mv gorump/go /usr/local/go1.5-patched && \
     rm /usr/local/go  && \
     ln -s /usr/local/go1.5-patched /usr/local/go
 
 RUN mkdir /tmp/build/
 RUN go get github.com/tools/godep
 
-COPY gomaincaller-no-wrapper.go /tmp/build/gomaincaller.go
+COPY mainstub.c gomaincaller.go /tmp/build/
 
 ENV RUMP_BAKE=hw_generic
 
