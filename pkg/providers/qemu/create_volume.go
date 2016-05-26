@@ -21,12 +21,12 @@ func (p *QemuProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.V
 		return nil, errors.New("creating directory for volume file", err)
 	}
 	defer func() {
-		if params.NoCleanup {
-			logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed volume %s at %s", params.Name, volumePath)
-			return
-		}
 		if err != nil {
-			os.RemoveAll(filepath.Dir(volumePath))
+			if params.NoCleanup {
+				logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed volume %s at %s", params.Name, volumePath)
+			} else {
+				os.RemoveAll(filepath.Dir(volumePath))
+			}
 		}
 	}()
 	logrus.WithField("raw-image", params.ImagePath).Infof("creating volume from raw image")
