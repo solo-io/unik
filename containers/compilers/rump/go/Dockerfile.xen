@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-base-xen
+FROM projectunik/compilers-rump-base-xen:1.0
 
 ENV GOROOT=/usr/local/go
 ENV GOPATH=$HOME/go

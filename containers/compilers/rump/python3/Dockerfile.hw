@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-base-hw
+FROM projectunik/compilers-rump-base-hw:1.0
 
 RUN apt-get update
 RUN apt-get install -y libsqlite3-dev libssl-dev

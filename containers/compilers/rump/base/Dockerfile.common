@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 RUN apt-get update -y  &&  apt-get install libxen-dev curl git build-essential -y &&  apt-get clean -y &&  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

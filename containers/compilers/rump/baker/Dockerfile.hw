@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-go-hw
+FROM projectunik/compilers-rump-go-hw:1.0
 
 COPY stub/ /opt/stub/
 COPY mainstub.c /opt/stub/

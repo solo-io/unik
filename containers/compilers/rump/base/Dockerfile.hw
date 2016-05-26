@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-base-common
+FROM projectunik/compilers-rump-base-common:1.0
 
 ENV PLATFORM=hw
 ENV BUILDRUMP_EXTRA=
