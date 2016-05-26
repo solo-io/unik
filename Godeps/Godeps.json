@@ -260,8 +260,8 @@
 		},
 		{
 			"ImportPath": "github.com/go-martini/martini",
-			"Comment": "v1.0-183-gb174c4f",
-			"Rev": "b174c4f35f9f3805e960be6286d888bc79534755"
+			"Comment": "v1.0-186-g2dee962",
+			"Rev": "2dee96229221acce12ca070e72595f113296744a"
 		},
 		{
 			"ImportPath": "github.com/gogo/protobuf/proto",

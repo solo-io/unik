@@ -16,12 +16,11 @@ VOLUME /project_directory
 #Pre-pull osv base image
 RUN capstan pull cloudius/osv-openjdk
 
-COPY java-main-caller-udp-bootstrap/ /java-main-caller-udp-bootstrap
-COPY java-main-caller-ec2-bootstrap/ /java-main-caller-ec2-bootstrap
+COPY java-main-caller-udp-bootstrap/ /java-main-caller-udp-bootstrap/
+COPY java-main-caller-ec2-bootstrap/ /java-main-caller-ec2-bootstrap/
 COPY java-compiler /
 
 ENTRYPOINT ["/java-compiler"]
 
 #run this container with
 #docker run --rm --privileged -v SOURCE_ROOT:/project_directory projectunik/osv-java-compiler
-#(TODO: not sure if we need privileged) projectunik/java-compiler
