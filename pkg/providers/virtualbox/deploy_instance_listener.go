@@ -107,7 +107,7 @@ func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error)
 
 	logrus.Debugf("creating virtualbox vm")
 
-	if err := virtualboxclient.CreateVm(VboxUnikInstanceListener, virtualboxInstancesDirectory, image.RunSpec.DefaultInstanceMemory, p.config.AdapterName, p.config.VirtualboxAdapterType, image.RunSpec.StorageDriver); err != nil {
+	if err := virtualboxclient.CreateVm(VboxUnikInstanceListener, virtualboxInstancesDirectory(), image.RunSpec.DefaultInstanceMemory, p.config.AdapterName, p.config.VirtualboxAdapterType, image.RunSpec.StorageDriver); err != nil {
 		return errors.New("creating vm", err)
 	}
 

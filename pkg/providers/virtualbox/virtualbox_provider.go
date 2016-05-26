@@ -10,10 +10,18 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/state"
 )
 
-var VirtualboxStateFile = filepath.Join(config.Internal.UnikHome, "virtualbox/state.json")
-var virtualboxImagesDirectory = filepath.Join(config.Internal.UnikHome, "virtualbox/images/")
-var virtualboxInstancesDirectory = filepath.Join(config.Internal.UnikHome, "virtualbox/instances/")
-var virtualboxVolumesDirectory = filepath.Join(config.Internal.UnikHome, "virtualbox/volumes/")
+func VirtualboxStateFile() string {
+	return filepath.Join(config.Internal.UnikHome, "virtualbox/state.json")
+}
+func virtualboxImagesDirectory() string {
+	return filepath.Join(config.Internal.UnikHome, "virtualbox/images/")
+}
+func virtualboxInstancesDirectory() string {
+	return filepath.Join(config.Internal.UnikHome, "virtualbox/instances/")
+}
+func virtualboxVolumesDirectory() string {
+	return filepath.Join(config.Internal.UnikHome, "virtualbox/volumes/")
+}
 
 const VboxUnikInstanceListener = "VboxUnikInstanceListener"
 const instanceListenerPrefix = "unik_virtualbox"
@@ -24,13 +32,13 @@ type VirtualboxProvider struct {
 }
 
 func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error) {
-	os.MkdirAll(virtualboxImagesDirectory, 0755)
-	os.MkdirAll(virtualboxInstancesDirectory, 0755)
-	os.MkdirAll(virtualboxVolumesDirectory, 0755)
+	os.MkdirAll(virtualboxImagesDirectory(), 0755)
+	os.MkdirAll(virtualboxInstancesDirectory(), 0755)
+	os.MkdirAll(virtualboxVolumesDirectory(), 0755)
 
 	p := &VirtualboxProvider{
 		config: config,
-		state:  state.NewBasicState(VirtualboxStateFile),
+		state:  state.NewBasicState(VirtualboxStateFile()),
 	}
 
 	if err := p.DeployInstanceListener(config); err != nil && !strings.Contains(err.Error(), "already exists") {
@@ -46,13 +54,13 @@ func (p *VirtualboxProvider) WithState(state state.State) *VirtualboxProvider {
 }
 
 func getImagePath(imageName string) string {
-	return filepath.Join(virtualboxImagesDirectory, imageName, "boot.vmdk")
+	return filepath.Join(virtualboxImagesDirectory(), imageName, "boot.vmdk")
 }
 
 func getInstanceDir(instanceName string) string {
-	return filepath.Join(virtualboxInstancesDirectory, instanceName)
+	return filepath.Join(virtualboxInstancesDirectory(), instanceName)
 }
 
 func getVolumePath(volumeName string) string {
-	return filepath.Join(virtualboxVolumesDirectory, volumeName, "data.vmdk")
+	return filepath.Join(virtualboxVolumesDirectory(), volumeName, "data.vmdk")
 }

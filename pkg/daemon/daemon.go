@@ -52,10 +52,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	for _, awsConfig := range config.Providers.Aws {
 		logrus.Infof("Bootstrapping provider %s with config %v", aws_provider, awsConfig)
 		p := aws.NewAwsProvier(awsConfig)
-		s, err := state.BasicStateFromFile(aws.AwsStateFile)
+		s, err := state.BasicStateFromFile(aws.AwsStateFile())
 		if err != nil {
 			logrus.WithError(err).Warnf("failed to read aws state file at %s, creating blank aws state", aws.AwsStateFile)
-			s = state.NewBasicState(aws.AwsStateFile)
+			s = state.NewBasicState(aws.AwsStateFile())
 		}
 		p = p.WithState(s)
 		_providers[aws_provider] = p
@@ -67,10 +67,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		if err != nil {
 			return nil, errors.New("initializing vsphere provider", err)
 		}
-		s, err := state.BasicStateFromFile(vsphere.VsphereStateFile)
+		s, err := state.BasicStateFromFile(vsphere.VsphereStateFile())
 		if err != nil {
 			logrus.WithError(err).Warnf("failed to read vsphere state file at %s, creating blank vsphere state", vsphere.VsphereStateFile)
-			s = state.NewBasicState(vsphere.VsphereStateFile)
+			s = state.NewBasicState(vsphere.VsphereStateFile())
 		}
 		p = p.WithState(s)
 		_providers[vsphere_provider] = p
@@ -82,10 +82,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		if err != nil {
 			return nil, errors.New("initializing virtualbox provider", err)
 		}
-		s, err := state.BasicStateFromFile(virtualbox.VirtualboxStateFile)
+		s, err := state.BasicStateFromFile(virtualbox.VirtualboxStateFile())
 		if err != nil {
 			logrus.WithError(err).Warnf("failed to read virtualbox state file at %s, creating blank virtualbox state", virtualbox.VirtualboxStateFile)
-			s = state.NewBasicState(virtualbox.VirtualboxStateFile)
+			s = state.NewBasicState(virtualbox.VirtualboxStateFile())
 		}
 		p = p.WithState(s)
 		_providers[virtualbox_provider] = p
@@ -98,10 +98,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		if err != nil {
 			return nil, errors.New("initializing qemu provider", err)
 		}
-		s, err := state.BasicStateFromFile(qemu.QemuStateFile)
+		s, err := state.BasicStateFromFile(qemu.QemuStateFile())
 		if err != nil {
 			logrus.WithError(err).Warnf("failed to read qemu state file at %s, creating blank qemu state", qemu.QemuStateFile)
-			s = state.NewBasicState(qemu.QemuStateFile)
+			s = state.NewBasicState(qemu.QemuStateFile())
 		}
 		p = p.WithState(s)
 		_providers[qemu_provider] = p

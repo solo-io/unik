@@ -1,16 +1,17 @@
 package virtualbox
 
 import (
+	"os"
+	"time"
+
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
-	"os"
-	"time"
 )
 
 func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
@@ -21,7 +22,7 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 	}).Infof("running instance %s", params.Name)
 
 	if _, err := p.GetInstance(params.Name); err == nil {
-		return nil, errors.New("instance with name "+ params.Name +" already exists. virtualbox provider requires unique names for instances", nil)
+		return nil, errors.New("instance with name "+params.Name+" already exists. virtualbox provider requires unique names for instances", nil)
 	}
 
 	image, err := p.GetImage(params.ImageId)
@@ -41,14 +42,14 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 
 	defer func() {
 		if err != nil {
-			if  params.NoCleanup {
+			if params.NoCleanup {
 				logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed instance %s.2", params.Name)
 				return
 			}
 			logrus.WithError(err).Errorf("error encountered, ensuring vm and disks are destroyed")
 			virtualboxclient.PowerOffVm(params.Name)
 			for _, portUsed := range portsUsed {
-					virtualboxclient.DetachDisk(params.Name, portUsed, image.RunSpec.StorageDriver)
+				virtualboxclient.DetachDisk(params.Name, portUsed, image.RunSpec.StorageDriver)
 			}
 			virtualboxclient.DestroyVm(params.Name)
 			os.RemoveAll(instanceDir)
@@ -62,7 +63,7 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 
 	logrus.Debugf("creating virtualbox vm")
 
-	if err := virtualboxclient.CreateVm(params.Name, virtualboxInstancesDirectory, params.InstanceMemory, p.config.AdapterName, p.config.VirtualboxAdapterType, image.RunSpec.StorageDriver); err != nil {
+	if err := virtualboxclient.CreateVm(params.Name, virtualboxInstancesDirectory(), params.InstanceMemory, p.config.AdapterName, p.config.VirtualboxAdapterType, image.RunSpec.StorageDriver); err != nil {
 		return nil, errors.New("creating vm", err)
 	}
 

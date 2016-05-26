@@ -8,24 +8,40 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/state"
 )
 
-var QemuStateFile = filepath.Join(config.Internal.UnikHome, "qemu/state.json")
-var qemuImagesDirectory = filepath.Join(config.Internal.UnikHome, "qemu/images/")
-var qemuInstancesDirectory = filepath.Join(config.Internal.UnikHome, "qemu/instances/")
-var qemuVolumesDirectory = filepath.Join(config.Internal.UnikHome, "qemu/volumes/")
-
 type QemuProvider struct {
-	config config.Qemu
-	state  state.State
+	config    config.Qemu
+	state     state.State
+	noGraphic bool
+}
+
+func QemuStateFile() string {
+	return filepath.Join(config.Internal.UnikHome, "qemu/state.json")
+
+}
+func qemuImagesDirectory() string {
+	return filepath.Join(config.Internal.UnikHome, "qemu/images/")
+}
+
+func qemuInstancesDirectory() string {
+	return filepath.Join(config.Internal.UnikHome, "qemu/instances/")
+}
+
+func QemuStateFilePath() string {
+	return filepath.Join(config.Internal.UnikHome, "qemu/state.json")
+}
+func qemuVolumesDirectory() string {
+	return filepath.Join(config.Internal.UnikHome, "qemu/volumes/")
 }
 
 func NewQemuProvider(config config.Qemu) (*QemuProvider, error) {
-	os.MkdirAll(qemuImagesDirectory, 0777)
-	os.MkdirAll(qemuInstancesDirectory, 0777)
-	os.MkdirAll(qemuVolumesDirectory, 0777)
+
+	os.MkdirAll(qemuImagesDirectory(), 0777)
+	os.MkdirAll(qemuInstancesDirectory(), 0777)
+	os.MkdirAll(qemuVolumesDirectory(), 0777)
 
 	p := &QemuProvider{
 		config: config,
-		state:  state.NewBasicState(QemuStateFile),
+		state:  state.NewBasicState(QemuStateFile()),
 	}
 
 	return p, nil
@@ -37,13 +53,13 @@ func (p *QemuProvider) WithState(state state.State) *QemuProvider {
 }
 
 func getImagePath(imageName string) string {
-	return filepath.Join(qemuImagesDirectory, imageName, "boot.img")
+	return filepath.Join(qemuImagesDirectory(), imageName, "boot.img")
 }
 
 func getInstanceDir(instanceName string) string {
-	return filepath.Join(qemuInstancesDirectory, instanceName)
+	return filepath.Join(qemuInstancesDirectory(), instanceName)
 }
 
 func getVolumePath(volumeName string) string {
-	return filepath.Join(qemuVolumesDirectory, volumeName, "data.img")
+	return filepath.Join(qemuVolumesDirectory(), volumeName, "data.img")
 }

@@ -92,10 +92,14 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 
 	volArgs := volPathToQemuArgs(volImpagesInOrder)
 
-	// should we add:  "-nographic", "-vga", "none", ?
 	qemuArgs := []string{"-s", "-m", "128", "-net",
 		"nic,model=virtio,netdev=mynet0", "-netdev", "user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9",
 		"-kernel", kernel, "-append", cmdline}
+
+	if p.noGraphic {
+		qemuArgs = append(qemuArgs, "-nographic", "-vga", "none")
+	}
+
 	qemuArgs = append(qemuArgs, volArgs...)
 	cmd := exec.Command("qemu-system-x86_64", qemuArgs...)
 

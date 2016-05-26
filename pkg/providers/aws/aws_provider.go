@@ -13,7 +13,9 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/state"
 )
 
-var AwsStateFile = filepath.Join(config.Internal.UnikHome, "aws/state.json")
+func AwsStateFile() string {
+	return filepath.Join(config.Internal.UnikHome, "aws/state.json")
+}
 
 type AwsProvider struct {
 	config config.Aws
@@ -21,10 +23,10 @@ type AwsProvider struct {
 }
 
 func NewAwsProvier(config config.Aws) *AwsProvider {
-	logrus.Infof("state file: %s", AwsStateFile)
+	logrus.Infof("state file: %s", AwsStateFile())
 	return &AwsProvider{
 		config: config,
-		state:  state.NewBasicState(AwsStateFile),
+		state:  state.NewBasicState(AwsStateFile()),
 	}
 }
 

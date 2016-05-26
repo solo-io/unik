@@ -11,7 +11,10 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/state"
 )
 
-var VsphereStateFile = filepath.Join(config.Internal.UnikHome, "vsphere/state.json")
+func VsphereStateFile() string {
+	return filepath.Join(config.Internal.UnikHome, "vsphere/state.json")
+}
+
 var VsphereImagesDirectory = "unik/vsphere/images/"
 var VsphereVolumesDirectory = "unik/vsphere/volumes/"
 
@@ -33,7 +36,7 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 
 	p := &VsphereProvider{
 		config: config,
-		state:  state.NewBasicState(VsphereStateFile),
+		state:  state.NewBasicState(VsphereStateFile()),
 		u:      u,
 	}
 
