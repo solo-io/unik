@@ -11,7 +11,6 @@ import (
 type QemuProvider struct {
 	config    config.Qemu
 	state     state.State
-	noGraphic bool
 }
 
 func QemuStateFile() string {
@@ -26,9 +25,6 @@ func qemuInstancesDirectory() string {
 	return filepath.Join(config.Internal.UnikHome, "qemu/instances/")
 }
 
-func QemuStateFilePath() string {
-	return filepath.Join(config.Internal.UnikHome, "qemu/state.json")
-}
 func qemuVolumesDirectory() string {
 	return filepath.Join(config.Internal.UnikHome, "qemu/volumes/")
 }

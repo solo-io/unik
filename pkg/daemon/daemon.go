@@ -100,7 +100,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		}
 		s, err := state.BasicStateFromFile(qemu.QemuStateFile())
 		if err != nil {
-			logrus.WithError(err).Warnf("failed to read qemu state file at %s, creating blank qemu state", qemu.QemuStateFile)
+			logrus.WithError(err).Warnf("failed to read qemu state file at %s, creating blank qemu state", qemu.QemuStateFile())
 			s = state.NewBasicState(qemu.QemuStateFile())
 		}
 		p = p.WithState(s)

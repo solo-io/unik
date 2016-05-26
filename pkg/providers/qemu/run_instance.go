@@ -96,7 +96,7 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 		"nic,model=virtio,netdev=mynet0", "-netdev", "user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9",
 		"-kernel", kernel, "-append", cmdline}
 
-	if p.noGraphic {
+	if p.config.NoGraphic {
 		qemuArgs = append(qemuArgs, "-nographic", "-vga", "none")
 	}
 
@@ -113,7 +113,7 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 
 	instance := &types.Instance{
 		Name:           params.Name,
-		State:          types.InstanceState_Pending,
+		State:          types.InstanceState_Running,
 		IpAddress:      instanceIp,
 		Infrastructure: types.Infrastructure_QEMU,
 		ImageId:        image.Id,
