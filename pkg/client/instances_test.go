@@ -9,7 +9,6 @@ import (
 	"github.com/emc-advanced-dev/unik/test/helpers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/config"
 )
 
 var _ = Describe("Instances", func() {
@@ -18,15 +17,11 @@ var _ = Describe("Instances", func() {
 	var c = UnikClient(daemonUrl)
 	var projectRoot = helpers.GetProjectRoot()
 	var tmpUnik helpers.TempUnikHome
-
+	var cfg = helpers.NewTestConfig()
 	BeforeEach(func(){
 		Describe("start the daeemon", func(){
 			tmpUnik.SetupUnik()
-			vboxConfig, err := helpers.NewVirtualboxConfig()
-			if err != nil {
-				logrus.Fatal(err)
-			}
-			cfg := helpers.ConfigWithVirtualbox(config.DaemonConfig{}, vboxConfig)
+			var err error
 			d, err = daemon.NewUnikDaemon(cfg)
 			if err != nil {
 				logrus.Fatal(err)

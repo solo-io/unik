@@ -127,6 +127,38 @@ func ConfigWithVsphere(config config.DaemonConfig, vsphere config.Vsphere) (conf
 	return config
 }
 
+func NewTestConfig() (cfg config.DaemonConfig) {
+	noConfig := true
+	if os.Getenv("TEST_AWS") != "" {
+		awsConfig, err := NewAwsConfig()
+		if err != nil {
+			logrus.Fatal(err)
+		}
+		cfg = ConfigWithAws(cfg, awsConfig)
+		noConfig = false
+	}
+	if os.Getenv("TEST_VIRTUALBOX") != "" {
+		vboxConfig, err := NewVirtualboxConfig()
+		if err != nil {
+			logrus.Fatal(err)
+		}
+		cfg = ConfigWithVirtualbox(cfg, vboxConfig)
+		noConfig = false
+	}
+	if os.Getenv("TEST_VSPHERE") != "" {
+		vsphereConfig, err := NewVsphereConfig()
+		if err != nil {
+			logrus.Fatal(err)
+		}
+		cfg = ConfigWithVsphere(cfg, vsphereConfig)
+		noConfig = false
+	}
+	if noConfig {
+		logrus.Fatal("at least one config must be specified with TEST_<Provider>")
+	}
+	return
+}
+
 func MakeContainers(projectRoot string) error {
 	cmd := exec.Command("make", "-C", projectRoot, "containers")
 	util.LogCommand(cmd, true)
