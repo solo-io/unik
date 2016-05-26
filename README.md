@@ -1,4 +1,4 @@
-<img src="http://i.imgur.com/npkzp8l.png" alt="Build and run unikernels" width="141" height="50">
+# <img src="http://i.imgur.com/npkzp8l.png" alt="Build and run unikernels" width="141" height="50"> [![Build Status](https://travis-ci.org/emc-advanced-dev/unik.svg?branch=testing)](https://travis-ci.org/emc-advanced-dev/unik)
 
 UniK (pronounced you-neek) is a tool for compiling application sources into unikernels (lightweight bootable disk images) rather than binaries. UniK runs and manages instances of compiled images across a variety of cloud providers as well as locally on Virtualbox. UniK utilizes a simple docker-like command line interface, making building unikernels as easy as building containers.
 
