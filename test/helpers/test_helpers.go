@@ -13,6 +13,8 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/client"
+	"github.com/Sirupsen/logrus"
+	"runtime"
 )
 
 func DaemonFromEnv() (*daemon.UnikDaemon, error) {
@@ -42,7 +44,7 @@ func KillUnikstate() error {
 
 func MakeContainers(projectRoot string) error {
 	cmd := exec.Command("make", "-C", projectRoot, "containers")
-	util.LogCommand(cmd, false)
+	util.LogCommand(cmd, true)
 	return cmd.Run()
 }
 
@@ -77,10 +79,10 @@ func BuildExampleImage(daemonUrl, projectRoot, exampleName, compiler, provider s
 		return nil, err
 	}
 	defer os.RemoveAll(testSourceTar.Name())
-	return client.UnikClient(daemonUrl).Images().Build(exampleName, testSourceTar, compiler, provider, "", mounts, force, noCleanup)
+	return client.UnikClient(daemonUrl).Images().Build(exampleName, testSourceTar.Name(), compiler, provider, "", mounts, force, noCleanup)
 }
 
-func RunExampleInstance(daemonUrl, instanceName, imageName string, volsToMounts map[string]string) (*types.Image, error) {
+func RunExampleInstance(daemonUrl, instanceName, imageName string, volsToMounts map[string]string) (*types.Instance, error) {
 	noCleanup := false
 	env := map[string]string{"FOO": "BAR"}
 	memoryMb := 128
@@ -89,4 +91,16 @@ func RunExampleInstance(daemonUrl, instanceName, imageName string, volsToMounts 
 
 func CreateExampleVolume(daemonUrl, volumeName, provider string, size int) (*types.Volume, error) {
 	return client.UnikClient(daemonUrl).Volumes().Create(volumeName, "", provider, size, false)
+}
+
+func GetProjectRoot() string {
+	projectRoot := os.Getenv("PROJECT_ROOT")
+	if projectRoot == "" {
+		_, filename, _, ok := runtime.Caller(1)
+		if !ok {
+			logrus.Panic("could not get current file")
+		}
+		projectRoot = filepath.Join(filepath.Dir(filename), "..", "..")
+	}
+	return projectRoot
 }

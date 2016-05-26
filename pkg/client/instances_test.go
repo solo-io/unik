@@ -6,7 +6,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
-	"os"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/test/helpers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
@@ -16,31 +15,7 @@ var _ = Describe("Instances", func() {
 	var d *daemon.UnikDaemon
 	daemonUrl := "127.0.0.1:3000"
 	var c = UnikClient(daemonUrl)
-	var projectRoot = os.Getenv("PROJECT_ROOT")
-	if projectRoot == "" {
-		var err error
-		projectRoot, err = os.Getwd() //requires running ginkgo from project root already
-		if err != nil {
-			logrus.Fatalf(err)
-		}
-	}
-	BeforeSuite(func(){
-		Describe("building containers", func(){
-			It("builds all compilers and utils in containers", func(){
-				err := helpers.MakeContainers(projectRoot)
-				Expect(err).NotTo(HaveOccurred())
-			})
-		})
-	})
-	AfterSuite(func(){
-		Describe("removing containers", func(){
-			It("removes all compiler and util containers", func(){
-				err := helpers.RemoveContainers(projectRoot)
-				Expect(err).NotTo(HaveOccurred())
-			})
-
-		})
-	})
+	var projectRoot = helpers.GetProjectRoot()
 	BeforeEach(func(){
 		Describe("start the daeemon", func(){
 			It("deploys the instance listener and starts listening on port 3000", func(){
@@ -57,7 +32,7 @@ var _ = Describe("Instances", func() {
 			err := d.Stop()
 			Expect(err).ToNot(HaveOccurred())
 			if err := helpers.KillUnikstate(); err != nil {
-				logrus.Fatalf(err)
+				logrus.Panic(err)
 			}
 		})
 	})
