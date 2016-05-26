@@ -69,13 +69,13 @@ compilers-rump-base-xen: compilers-rump-base-common
 	cd containers/compilers/rump/base && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen .
 
 compilers-rump-go-hw: compilers-rump-base-hw
-	cd containers/compilers/rump/go && GOOS=linux go build -o genstub genstub.go &&  docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw . && rm genstub
+	cd containers/compilers/rump/go &&  docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .
 
 compilers-rump-go-hw-no-wrapper: compilers-rump-base-hw
-	cd containers/compilers/rump/go && GOOS=linux go build -o genstub genstub.go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-wrapper . && rm genstub
+	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-wrapper .
 
 compilers-rump-go-xen: compilers-rump-base-xen
-	cd containers/compilers/rump/go && GOOS=linux go build -o genstub genstub.go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen . && rm genstub
+	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen .
 
 compilers-rump-nodejs-hw: compilers-rump-base-hw
 	cd containers/compilers/rump/nodejs && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .

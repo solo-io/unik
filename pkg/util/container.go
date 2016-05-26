@@ -65,12 +65,10 @@ func (c *Container) Output(arguments ...string) ([]byte, error) {
 }
 
 func (c *Container) CombinedOutput(arguments ...string) ([]byte, error) {
-
 	return c.buildCmd(arguments...).CombinedOutput()
 }
 
 func (c *Container) buildCmd(arguments ...string) *exec.Cmd {
-
 	args := []string{"run", "--rm"}
 	if c.privileged {
 		args = append(args, "--privileged")

@@ -15,5 +15,4 @@ WORKDIR $GOPATH/src/github.com/emc-advanced-dev/unik
 
 COPY ./ $GOPATH/src/github.com/emc-advanced-dev/unik
 
-
 CMD make -e TARGET_OS=${TARGET_OS} localbuild && mv ./unik /opt/build/unik

@@ -37,7 +37,6 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 		return nil, errors.New("invalid json in godeps file", err)
 	}
 	containerEnv := []string{
-		fmt.Sprintf("APP_ARGS=%s", params.Args),
 		fmt.Sprintf("ROOT_PATH=%s", g.ImportPath),
 	}
 

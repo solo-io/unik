@@ -60,12 +60,10 @@ func (r *RumpScriptCompiler) CompileRawImage(params types.CompileImageParams) (*
 
 	// should we use the baker stubs?
 	if r.BakeImageName != "" {
-
 		if err := r.runAndBake(sourcesDir, containerEnv); err != nil {
 			return nil, err
 		}
 	} else {
-
 		if err := r.runContainer(sourcesDir, containerEnv); err != nil {
 			return nil, err
 		}

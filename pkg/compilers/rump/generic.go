@@ -92,7 +92,6 @@ func (r *RumCompilerBase) runAndBake(localFolder string, envPairs []string) erro
 }
 
 func setRumpCmdLine(c rumpConfig, prog string, argv []string) rumpConfig {
-
 	if argv == nil {
 		argv = []string{}
 	}
