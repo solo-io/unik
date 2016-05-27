@@ -48,5 +48,11 @@ var _ = Describe("QemuProvider", func() {
 
 		Expect(v.Id).ToNot(Equal(""))
 
+		vols, err := q.ListVolumes()
+
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(len(vols)).To(Equal(1))
+
 	})
 })
