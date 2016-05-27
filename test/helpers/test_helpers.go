@@ -177,7 +177,7 @@ func TarExampleApp(projectRoot string, appDir string) (*os.File, error) {
 		return nil, errors.New("getting abs of "+projectRoot, err)
 	}
 	path := filepath.Join(absRoot, "docs", "examples", appDir)
-	sourceTar, err := ioutil.TempFile(util.UnikTmpDir(), "")
+	sourceTar, err := ioutil.TempFile("", "example.app.tar.gz.")
 	if err != nil {
 		return nil, errors.New("failed to create tmp tar file", err)
 	}

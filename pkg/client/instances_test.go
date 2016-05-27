@@ -39,27 +39,31 @@ var _ = Describe("Instances", func() {
 	Describe("instances", func() {
 		Describe("All()", func() {
 			AfterEach(func(){
-				It("cleans up all images", func(){
-					images, err := c.Images().All()
-					Expect(err).NotTo(HaveOccurred())
-					for _, image := range images {
-						err = c.Images().Delete(image.Id, true)
+				Describe("Images.Delete()", func() {
+					It("cleans up all images", func() {
+						images, err := c.Images().All()
 						Expect(err).NotTo(HaveOccurred())
-					}
+						for _, image := range images {
+							err = c.Images().Delete(image.Id, true)
+							Expect(err).NotTo(HaveOccurred())
+						}
+					})
 				})
-				It("cleans up all volumes", func(){
-					instances, err := c.Instances().All()
-					Expect(err).NotTo(HaveOccurred())
-					for _, instance := range instances {
-						err = c.Instances().Stop(instance.Id)
+				Describe("Volumes.Delete()", func(){
+					It("cleans up all volumes", func(){
+						instances, err := c.Instances().All()
 						Expect(err).NotTo(HaveOccurred())
-					}
-					volumes, err := c.Volumes().All()
-					Expect(err).NotTo(HaveOccurred())
-					for _, volume := range volumes {
-						err = c.Volumes().Delete(volume.Id, true)
+						for _, instance := range instances {
+							err = c.Instances().Stop(instance.Id)
+							Expect(err).NotTo(HaveOccurred())
+						}
+						volumes, err := c.Volumes().All()
 						Expect(err).NotTo(HaveOccurred())
-					}
+						for _, volume := range volumes {
+							err = c.Volumes().Delete(volume.Id, true)
+							Expect(err).NotTo(HaveOccurred())
+						}
+					})
 				})
 			})
 			var instanceGoNoVolume, instanceGoWithVolume *types.Instance

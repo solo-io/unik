@@ -11,7 +11,6 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 var timeout = time.Second * 10
@@ -28,7 +27,7 @@ func (p *VsphereProvider) deployInstanceListener() (err error) {
 	c.PowerOffVm(VsphereUnikInstanceListener)
 	c.DestroyVm(VsphereUnikInstanceListener)
 	logrus.Infof("compiling new instance listener")
-	sourceDir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
+	sourceDir, err := ioutil.TempDir("", "TMPvsphereinstancelistener.")
 	if err != nil {
 		return errors.New("creating temp dir for instance listener source", err)
 	}

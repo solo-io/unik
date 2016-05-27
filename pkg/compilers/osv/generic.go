@@ -28,7 +28,7 @@ func compileRawImage(params types.CompileImageParams, useEc2Bootstrap bool) (str
 		return "", errors.New("failed running compilers-osv-java on "+sourcesDir, err)
 	}
 
-	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "osv-vmdk")
+	resultFile, err := ioutil.TempFile("", "TMPosv-boot.vmdk.")
 	if err != nil {
 		return "", errors.New("failed to create tmpfile for result", err)
 	}

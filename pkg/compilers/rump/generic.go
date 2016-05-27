@@ -17,7 +17,7 @@ import (
 )
 
 func BuildBootableImage(kernel, cmdline string) (string, error) {
-	directory, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
+	directory, err := ioutil.TempDir("", "bootable-image-directory.")
 	if err != nil {
 		return "", err
 	}
@@ -36,7 +36,7 @@ func BuildBootableImage(kernel, cmdline string) (string, error) {
 		return "", err
 	}
 
-	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
+	resultFile, err := ioutil.TempFile("", "TMPboot-creator-result.img.")
 	if err != nil {
 		return "", err
 	}

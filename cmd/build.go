@@ -10,7 +10,6 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 var name, sourcePath, compiler, provider, runArgs string
@@ -81,7 +80,7 @@ Another example (using only the required parameters):
 				"force":       force,
 				"host":        host,
 			}).Infof("running unik build")
-			sourceTar, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
+			sourceTar, err := ioutil.TempFile("", "TMPsources.tar.gz.")
 			if err != nil {
 				logrus.WithError(err).Error("failed to create tmp tar file")
 			}

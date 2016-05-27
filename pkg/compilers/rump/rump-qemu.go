@@ -12,7 +12,6 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
@@ -73,7 +72,7 @@ func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string) (
 }
 
 func zipFiles(kernelFile string, cmdline string) (string, error) {
-	destZip, err := ioutil.TempFile(unikutil.UnikTmpDir(), "qemu_zip_")
+	destZip, err := ioutil.TempFile("", "TMPqemu_zip_")
 	if err != nil {
 		return "", err
 	}

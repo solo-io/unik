@@ -10,7 +10,6 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/client"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 var data string
@@ -84,7 +83,7 @@ Another example (empty volume):
 				"host":     host,
 			}).Infof("creating volume")
 			if data != "" {
-				dataTar, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
+				dataTar, err := ioutil.TempFile("", "TMPdata.tar.gz.")
 				if err != nil {
 					logrus.WithError(err).Error("failed to create tmp tar file")
 				}

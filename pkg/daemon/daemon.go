@@ -26,9 +26,10 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/go-martini/martini"
 	"github.com/layer-x/layerx-commons/lxmartini"
+	"path/filepath"
+	"runtime"
 )
 
 type UnikDaemon struct {
@@ -46,6 +47,11 @@ const (
 )
 
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
+	if runtime.GOOS == "darwin" {
+		tmpDir := filepath.Join(os.Getenv("HOME"), ".unik", "tmp")
+		os.Setenv("TMPDIR", tmpDir)
+		os.MkdirAll(tmpDir, 0755)
+	}
 	_providers := make(providers.Providers)
 	_compilers := make(map[string]compilers.Compiler)
 
@@ -271,7 +277,7 @@ func (d *UnikDaemon) addEndpoints() {
 				return nil, http.StatusBadRequest, errors.New("parsing form file marked 'tarfile", err)
 			}
 			defer sourceTar.Close()
-			sourcesDir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
+			sourcesDir, err := ioutil.TempDir("", "TMPunpacked.sources.dir.")
 			if err != nil {
 				return nil, http.StatusInternalServerError, errors.New("creating tmp dir for src files", err)
 			}

@@ -13,7 +13,6 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 var timeout = time.Second * 10
@@ -29,7 +28,7 @@ func (p *VirtualboxProvider) DeployInstanceListener(config config.Virtualbox) er
 	virtualboxclient.PowerOffVm(VboxUnikInstanceListener)
 	virtualboxclient.DestroyVm(VboxUnikInstanceListener)
 	logrus.Infof("compiling new instance listener")
-	sourceDir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
+	sourceDir, err := ioutil.TempDir("", "TMPvbox.instancelistener.")
 	if err != nil {
 		return errors.New("creating temp dir for instance listener source", err)
 	}
