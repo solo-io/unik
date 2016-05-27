@@ -20,7 +20,8 @@ RUN cd /tmp/gorump/go/src && \
 RUN mkdir /tmp/build/
 RUN go get github.com/tools/godep
 
-COPY mainstub.c gomaincaller.go /tmp/build/
+COPY gomaincaller.go /tmp/build/
+COPY mainstub-with-kludge.c /tmp/build/mainstub.c
 
 ENV RUMP_BAKE=hw_generic
 

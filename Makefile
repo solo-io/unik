@@ -16,7 +16,7 @@ all: pull ${SOURCES} binary
 .PHONY: compilers-rump-base-hw
 .PHONY: compilers-rump-base-xen
 .PHONY: compilers-rump-go-hw
-.PHONY: compilers-rump-go-hw-no-wrapper
+.PHONY: compilers-rump-go-hw-no-stub
 .PHONY: compilers-rump-go-xen
 .PHONY: compilers-rump-nodejs-hw
 .PHONY: compilers-rump-nodejs-xen
@@ -40,7 +40,7 @@ pull:
 	docker pull projectunik/qemu-util$(CONTAINERTAG)
 	docker pull projectunik/compilers-osv-java$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-go-hw$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-go-hw-no-wrapper$(CONTAINERTAG)
+	docker pull projectunik/compilers-rump-go-hw-no-stub(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-go-xen$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-nodejs-hw$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-nodejs-xen$(CONTAINERTAG)
@@ -58,7 +58,7 @@ containers: compilers utils
 	echo "Built containers from source"
 
 #compilers
-compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers-rump-go-hw-no-wrapper compilers-rump-python3-hw compilers-rump-python3-xen compilers-rump-baker-hw compilers-rump-baker-xen
+compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-xen compilers-osv-java compilers-rump-go-hw-no-stub compilers-rump-python3-hw compilers-rump-python3-xen compilers-rump-baker-hw compilers-rump-baker-xen
 
 set-container-versions:
 	find ./containers -type f -print0 | xargs -0 perl -pi -e 's/FROM projectunik\/(.*):[0-9]\.[0-9]+/FROM projectunik\/$${1}$(CONTAINERTAG)/g'
@@ -75,8 +75,8 @@ compilers-rump-base-xen: compilers-rump-base-common
 compilers-rump-go-hw: compilers-rump-base-hw
 	cd containers/compilers/rump/go &&  docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .
 
-compilers-rump-go-hw-no-wrapper: compilers-rump-base-hw
-	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-wrapper .
+compilers-rump-go-hw-no-stub: compilers-rump-base-hw
+	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-stub .
 
 compilers-rump-go-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen .
@@ -172,7 +172,7 @@ remove-containers:
 	-docker rmi -f projectunik/compilers-osv-java$(CONTAINERTAG)
 	-docker rmi -f projectunik/compilers-rump-go-xen$(CONTAINERTAG)
 	-docker rmi -f projectunik/compilers-rump-go-hw$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-go-hw-no-wrapper$(CONTAINERTAG)
+	-docker rmi -f projectunik/compilers-rump-go-hw-no-stub(CONTAINERTAG)
 	-docker rmi -f projectunik/compilers-rump-nodejs-hw$(CONTAINERTAG)
 	-docker rmi -f projectunik/compilers-rump-nodejs-xen$(CONTAINERTAG)
 	-docker rmi -f projectunik/compilers-rump-python3-hw$(CONTAINERTAG)
