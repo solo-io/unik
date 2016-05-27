@@ -25,9 +25,9 @@ func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string) (
 	}
 
 	if args == "" {
-		c = setRumpCmdLine(c, "program.bin", nil)
+		c = setRumpCmdLine(c, "program.bin", nil, false)
 	} else {
-		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "))
+		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "), false)
 	}
 
 	res := &types.RawImage{}

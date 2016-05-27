@@ -91,25 +91,32 @@ func (r *RumCompilerBase) runAndBake(localFolder string, envPairs []string) erro
 	return unikutil.NewContainer(r.BakeImageName).WithVolume(localFolder, "/opt/code").Run()
 }
 
-func setRumpCmdLine(c rumpConfig, prog string, argv []string) rumpConfig {
+func setRumpCmdLine(c rumpConfig, prog string, argv []string, noStub bool) rumpConfig {
 	if argv == nil {
 		argv = []string{}
 	}
 
-	pipe := "|"
+	if !noStub {
+		pipe := "|"
 
-	stub := commandLine{Bin: "stub",
-		Argv: []string{},
-	}
-	progrc := commandLine{Bin: "program",
-		Argv:    argv,
-		Runmode: &pipe,
-	}
-	logger := commandLine{Bin: "logger",
-		Argv: []string{},
-	}
+		stub := commandLine{Bin: "stub",
+			Argv: []string{},
+		}
+		progrc := commandLine{Bin: "program",
+			Argv:    argv,
+			Runmode: &pipe,
+		}
+		logger := commandLine{Bin: "logger",
+			Argv: []string{},
+		}
 
-	c.Rc = append(c.Rc, stub, progrc, logger)
+		c.Rc = append(c.Rc, stub, progrc, logger)
+	} else {
+		progrc := commandLine{Bin: "program",
+			Argv:    argv,
+		}
+		c.Rc = append(c.Rc, progrc)
+	}
 	return c
 }
 
