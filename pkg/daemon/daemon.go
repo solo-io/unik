@@ -54,7 +54,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		p := aws.NewAwsProvier(awsConfig)
 		s, err := state.BasicStateFromFile(aws.AwsStateFile())
 		if err != nil {
-			logrus.WithError(err).Warnf("failed to read aws state file at %s, creating blank aws state", aws.AwsStateFile)
+			logrus.WithError(err).Warnf("failed to read aws state file at %s, creating blank aws state", aws.AwsStateFile())
 			s = state.NewBasicState(aws.AwsStateFile())
 		}
 		p = p.WithState(s)
@@ -69,7 +69,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		}
 		s, err := state.BasicStateFromFile(vsphere.VsphereStateFile())
 		if err != nil {
-			logrus.WithError(err).Warnf("failed to read vsphere state file at %s, creating blank vsphere state", vsphere.VsphereStateFile)
+			logrus.WithError(err).Warnf("failed to read vsphere state file at %s, creating blank vsphere state", vsphere.VsphereStateFile())
 			s = state.NewBasicState(vsphere.VsphereStateFile())
 		}
 		p = p.WithState(s)
@@ -84,7 +84,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		}
 		s, err := state.BasicStateFromFile(virtualbox.VirtualboxStateFile())
 		if err != nil {
-			logrus.WithError(err).Warnf("failed to read virtualbox state file at %s, creating blank virtualbox state", virtualbox.VirtualboxStateFile)
+			logrus.WithError(err).Warnf("failed to read virtualbox state file at %s, creating blank virtualbox state", virtualbox.VirtualboxStateFile())
 			s = state.NewBasicState(virtualbox.VirtualboxStateFile())
 		}
 		p = p.WithState(s)

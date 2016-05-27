@@ -47,7 +47,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		p := aws.NewAwsProvier(awsConfig)
 		s, err := state.BasicStateFromFile(aws.AwsStateFile)
 		if err != nil {
-			logrus.WithError(err).Warnf("failed to read aws state file at %s, creating blank aws state", aws.AwsStateFile)
+			logrus.WithError(err).Warnf("failed to read aws state file at %s, creating blank aws state", aws.AwsStateFile())
 			s = state.NewBasicState(aws.AwsStateFile)
 		}
 		p = p.WithState(s)

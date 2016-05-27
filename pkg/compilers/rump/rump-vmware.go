@@ -63,5 +63,4 @@ func CreateImageVmware(kernel string, args string, mntPoints, bakedEnv []string)
 	res.RunSpec.DefaultInstanceMemory = 512
 	logrus.WithField("runspec", res.RunSpec).Infof("created raw vmware image")
 	return res, nil
-
 }

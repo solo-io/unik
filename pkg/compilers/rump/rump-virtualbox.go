@@ -82,5 +82,4 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []str
 	res.RunSpec.StorageDriver = types.StorageDriver_SCSI
 	res.RunSpec.DefaultInstanceMemory = 512
 	return res, nil
-
 }
