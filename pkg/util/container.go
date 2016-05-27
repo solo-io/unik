@@ -5,6 +5,10 @@ import (
 	"os/exec"
 )
 
+func SetContainerVer(ver string) {
+	containerVer = ver
+}
+
 // filled in build time by make
 var containerVer string
 
