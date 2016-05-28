@@ -37,6 +37,7 @@ func (p *VirtualboxProvider) DeployInstanceListener(config config.Virtualbox) er
 	if err != nil {
 		return errors.New("compiling instance listener source to unikernel", err)
 	}
+	defer os.Remove(rawImage.LocalImagePath)
 	logrus.Infof("staging new instance listener image")
 	os.RemoveAll(getImagePath(VboxUnikInstanceListener))
 	params := types.StageImageParams{

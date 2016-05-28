@@ -21,7 +21,13 @@ type TempUnikHome struct {
 }
 
 func (t *TempUnikHome) SetupUnik() {
-	n, err := ioutil.TempDir("", "")
+	if runtime.GOOS == "darwin" {
+		tmpDir := filepath.Join(os.Getenv("HOME"), ".unik", "tmp")
+		os.Setenv("TMPDIR", tmpDir)
+		os.MkdirAll(tmpDir, 0755)
+	}
+
+	n, err := ioutil.TempDir("", "TMPunikhome.")
 	if err != nil {
 		panic(err)
 	}
@@ -132,7 +138,7 @@ func NewTestConfig() (cfg config.DaemonConfig) {
 	if os.Getenv("TEST_AWS") != "" {
 		awsConfig, err := NewAwsConfig()
 		if err != nil {
-			logrus.Fatal(err)
+			logrus.Panic(err)
 		}
 		cfg = ConfigWithAws(cfg, awsConfig)
 		noConfig = false
@@ -140,7 +146,7 @@ func NewTestConfig() (cfg config.DaemonConfig) {
 	if os.Getenv("TEST_VIRTUALBOX") != "" {
 		vboxConfig, err := NewVirtualboxConfig()
 		if err != nil {
-			logrus.Fatal(err)
+			logrus.Panic(err)
 		}
 		cfg = ConfigWithVirtualbox(cfg, vboxConfig)
 		noConfig = false
@@ -148,13 +154,13 @@ func NewTestConfig() (cfg config.DaemonConfig) {
 	if os.Getenv("TEST_VSPHERE") != "" {
 		vsphereConfig, err := NewVsphereConfig()
 		if err != nil {
-			logrus.Fatal(err)
+			logrus.Panic(err)
 		}
 		cfg = ConfigWithVsphere(cfg, vsphereConfig)
 		noConfig = false
 	}
 	if noConfig {
-		logrus.Fatal("at least one config must be specified with TEST_<Provider>")
+		logrus.Panic("at least one config must be specified with TEST_<Provider>")
 	}
 	return
 }
@@ -181,7 +187,6 @@ func TarExampleApp(projectRoot string, appDir string) (*os.File, error) {
 	if err != nil {
 		return nil, errors.New("failed to create tmp tar file", err)
 	}
-	defer os.Remove(sourceTar.Name())
 	if err := unikos.Compress(path, sourceTar.Name()); err != nil {
 		return nil, errors.New("failed to tar sources", err)
 	}
@@ -193,7 +198,7 @@ func BuildExampleImage(daemonUrl, projectRoot, exampleName, compiler, provider s
 	noCleanup := false
 	testSourceTar, err := TarExampleApp(projectRoot, exampleName)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("tarring example app", err)
 	}
 	defer os.RemoveAll(testSourceTar.Name())
 	return client.UnikClient(daemonUrl).Images().Build(exampleName, testSourceTar.Name(), compiler, provider, "", mounts, force, noCleanup)
