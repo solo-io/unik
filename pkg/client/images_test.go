@@ -33,7 +33,7 @@ var _ = Describe("Images", func() {
 				})
 			})
 		})
-		FDescribe("Build()", func() {
+		Describe("Build()", func() {
 			var simpleGoImage, dependencyGoImage, nontrivialGoImage, nodejsImage, javaImage *types.Image
 			provider := "virtualbox"
 			Context("using virtualbox provider", func() {
