@@ -36,7 +36,7 @@ func BuildBootableImage(kernel, cmdline string) (string, error) {
 		return "", err
 	}
 
-	resultFile, err := ioutil.TempFile("", "TMPboot-creator-result.img.")
+	resultFile, err := ioutil.TempFile("", "boot-creator-result.img.")
 	if err != nil {
 		return "", err
 	}

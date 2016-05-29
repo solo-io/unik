@@ -14,7 +14,7 @@ import (
 )
 
 func BuildRawDataImage(dataTar io.ReadCloser, size MegaBytes, usePartitionTables bool) (string, error) {
-	dataFolder, err := ioutil.TempDir("", "TMP.raw_data_image_folder.")
+	dataFolder, err := ioutil.TempDir("", ".raw_data_image_folder.")
 	if err != nil {
 		return "", errors.New("creating tmp build folder", err)
 	}
@@ -47,7 +47,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size MegaBytes, usePartitionTables
 		return "", errors.New("failed running image-creator on "+dataFolder, err)
 	}
 
-	resultFile, err := ioutil.TempFile("", "TMPrawdata.img")
+	resultFile, err := ioutil.TempFile("", "rawdata.img")
 	if err != nil {
 		return "", err
 	}
@@ -84,7 +84,7 @@ func BuildEmptyDataVolume(size MegaBytes) (string, error) {
 		return "", errors.New("failed running image-creator on "+dataFolder, err)
 	}
 
-	resultFile, err := ioutil.TempFile("", "TMPdata.image.result.img.")
+	resultFile, err := ioutil.TempFile("", "data.image.result.img.")
 	if err != nil {
 		return "", err
 	}

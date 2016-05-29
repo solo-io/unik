@@ -277,7 +277,7 @@ func (d *UnikDaemon) addEndpoints() {
 				return nil, http.StatusBadRequest, errors.New("parsing form file marked 'tarfile", err)
 			}
 			defer sourceTar.Close()
-			sourcesDir, err := ioutil.TempDir("", "TMPunpacked.sources.dir.")
+			sourcesDir, err := ioutil.TempDir("", "unpacked.sources.dir.")
 			if err != nil {
 				return nil, http.StatusInternalServerError, errors.New("creating tmp dir for src files", err)
 			}

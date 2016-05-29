@@ -83,7 +83,7 @@ Another example (empty volume):
 				"host":     host,
 			}).Infof("creating volume")
 			if data != "" {
-				dataTar, err := ioutil.TempFile("", "TMPdata.tar.gz.")
+				dataTar, err := ioutil.TempFile("", "data.tar.gz.")
 				if err != nil {
 					logrus.WithError(err).Error("failed to create tmp tar file")
 				}

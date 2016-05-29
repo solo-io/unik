@@ -27,7 +27,7 @@ func (p *VsphereProvider) deployInstanceListener() (err error) {
 	c.PowerOffVm(VsphereUnikInstanceListener)
 	c.DestroyVm(VsphereUnikInstanceListener)
 	logrus.Infof("compiling new instance listener")
-	sourceDir, err := ioutil.TempDir("", "TMPvsphereinstancelistener.")
+	sourceDir, err := ioutil.TempDir("", "vsphereinstancelistener.")
 	if err != nil {
 		return errors.New("creating temp dir for instance listener source", err)
 	}

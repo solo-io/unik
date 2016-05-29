@@ -80,7 +80,7 @@ Another example (using only the required parameters):
 				"force":       force,
 				"host":        host,
 			}).Infof("running unik build")
-			sourceTar, err := ioutil.TempFile("", "TMPsources.tar.gz.")
+			sourceTar, err := ioutil.TempFile("", "sources.tar.gz.")
 			if err != nil {
 				logrus.WithError(err).Error("failed to create tmp tar file")
 			}

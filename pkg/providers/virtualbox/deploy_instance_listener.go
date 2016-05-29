@@ -28,7 +28,7 @@ func (p *VirtualboxProvider) DeployInstanceListener(config config.Virtualbox) er
 	virtualboxclient.PowerOffVm(VboxUnikInstanceListener)
 	virtualboxclient.DestroyVm(VboxUnikInstanceListener)
 	logrus.Infof("compiling new instance listener")
-	sourceDir, err := ioutil.TempDir("", "TMPvbox.instancelistener.")
+	sourceDir, err := ioutil.TempDir("", "vbox.instancelistener.")
 	if err != nil {
 		return errors.New("creating temp dir for instance listener source", err)
 	}

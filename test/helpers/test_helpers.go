@@ -27,7 +27,7 @@ func (t *TempUnikHome) SetupUnik() {
 		os.MkdirAll(tmpDir, 0755)
 	}
 
-	n, err := ioutil.TempDir("", "TMPunikhome.")
+	n, err := ioutil.TempDir("", "unikhome.")
 	if err != nil {
 		panic(err)
 	}

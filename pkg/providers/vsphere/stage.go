@@ -42,7 +42,7 @@ func (p *VsphereProvider) Stage(params types.StageImageParams) (_ *types.Image, 
 		}
 	}()
 
-	localVmdkDir, err := ioutil.TempDir("", "TMPvmdkdir.")
+	localVmdkDir, err := ioutil.TempDir("", "vmdkdir.")
 	if err != nil {
 		return nil, errors.New("creating tmp file", err)
 	}

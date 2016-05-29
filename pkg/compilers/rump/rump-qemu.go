@@ -72,7 +72,7 @@ func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string) (
 }
 
 func zipFiles(kernelFile string, cmdline string) (string, error) {
-	destZip, err := ioutil.TempFile("", "TMPqemu_zip_")
+	destZip, err := ioutil.TempFile("", "qemu_zip_")
 	if err != nil {
 		return "", err
 	}

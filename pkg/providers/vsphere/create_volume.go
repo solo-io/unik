@@ -17,7 +17,7 @@ func (p *VsphereProvider) CreateVolume(params types.CreateVolumeParams) (_ *type
 	}
 	c := p.getClient()
 
-	localVmdkDir, err := ioutil.TempDir("", "TMPlocalvmdkdir.")
+	localVmdkDir, err := ioutil.TempDir("", "localvmdkdir.")
 	if err != nil {
 		return nil, errors.New("creating tmp file", err)
 	}
