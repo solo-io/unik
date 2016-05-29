@@ -11,7 +11,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func CompileInstanceListener(sourceDir, instanceListenerPrefix, dockerImage string, createImageFunc func(kernel, args string, mntPoints, bakedEnv []string) (*types.RawImage, error)) (*types.RawImage, error) {
+func CompileInstanceListener(sourceDir, instanceListenerPrefix, dockerImage string, createImageFunc func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error)) (*types.RawImage, error) {
 	mainData, err := bindata.Asset("instance-listener/main.go")
 	if err != nil {
 		return nil, errors.New("reading binary data of instance listener main", err)

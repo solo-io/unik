@@ -7,7 +7,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func CreateImageAws(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
+func CreateImageAws(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
 
 	// create rump config
 	var c rumpConfig
@@ -53,7 +53,7 @@ func CreateImageAws(kernel string, args string, mntPoints, bakedEnv []string) (*
 	if err != nil {
 		return nil, err
 	}
-	imgFile, err := BuildBootableImage(kernel, cmdline)
+	imgFile, err := BuildBootableImage(kernel, cmdline, noCleanup)
 
 	if err != nil {
 		return nil, err

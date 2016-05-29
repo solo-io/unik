@@ -55,7 +55,7 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 	// now we should program.bin
 	resultFile := path.Join(sourcesDir, "program.bin")
 	logrus.Debugf("finished kernel binary at %s", resultFile)
-	img, err := r.CreateImage(resultFile, params.Args, params.MntPoints, nil)
+	img, err := r.CreateImage(resultFile, params.Args, params.MntPoints, nil, params.NoCleanup)
 	if err != nil {
 		return nil, errors.New("creating boot volume from kernel binary", err)
 	}

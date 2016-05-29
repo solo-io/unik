@@ -8,15 +8,15 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
-	return createImageVirtualBox(kernel, args, mntPoints, bakedEnv, false)
+func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVirtualBox(kernel, args, mntPoints, bakedEnv, false, noCleanup)
 }
 
-func CreateImageNoStubVirtualBox(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
-	return createImageVirtualBox(kernel, args, mntPoints, bakedEnv, true)
+func CreateImageNoStubVirtualBox(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVirtualBox(kernel, args, mntPoints, bakedEnv, true, noCleanup)
 }
 
-func createImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string, noStub bool) (*types.RawImage, error) {
+func createImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string, noStub, noCleanup bool) (*types.RawImage, error) {
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {
@@ -79,7 +79,7 @@ func createImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []str
 
 	logrus.Debugf("writing rump json config: %s", cmdline)
 
-	imgFile, err := BuildBootableImage(kernel, cmdline)
+	imgFile, err := BuildBootableImage(kernel, cmdline, noCleanup)
 	if err != nil {
 		return nil, err
 	}

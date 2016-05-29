@@ -12,6 +12,7 @@ type CompileImageParams struct {
 	SourcesDir string //path to directory containing application source code
 	Args string //arguments to pass to the kernel at runtime
 	MntPoints []string //mount points to expect at runtime
+	NoCleanup bool //indicates to the compiler not to clean up compilation artifacts after exiting
 }
 ```
 

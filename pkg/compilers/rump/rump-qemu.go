@@ -14,7 +14,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
+func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
 
 	// create rump config
 	var c rumpConfig

@@ -8,15 +8,15 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func CreateImageVmware(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
-	return createImageVmware(kernel, args, mntPoints, bakedEnv, false)
+func CreateImageVmware(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVmware(kernel, args, mntPoints, bakedEnv, false, noCleanup)
 }
 
-func CreateImageNoStubVmware(kernel string, args string, mntPoints, bakedEnv []string) (*types.RawImage, error) {
-	return createImageVmware(kernel, args, mntPoints, bakedEnv, false)
+func CreateImageNoStubVmware(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVmware(kernel, args, mntPoints, bakedEnv, false, noCleanup)
 }
 
-func createImageVmware(kernel string, args string, mntPoints, bakedEnv []string, noStub bool) (*types.RawImage, error) {
+func createImageVmware(kernel string, args string, mntPoints, bakedEnv []string, noStub, noCleanup bool) (*types.RawImage, error) {
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {
@@ -58,7 +58,7 @@ func createImageVmware(kernel string, args string, mntPoints, bakedEnv []string,
 		return nil, err
 	}
 
-	imgFile, err := BuildBootableImage(kernel, cmdline)
+	imgFile, err := BuildBootableImage(kernel, cmdline, noCleanup)
 	if err != nil {
 		return nil, err
 	}

@@ -16,12 +16,14 @@ import (
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
-func BuildBootableImage(kernel, cmdline string) (string, error) {
+func BuildBootableImage(kernel, cmdline string, noCleanup bool) (string, error) {
 	directory, err := ioutil.TempDir("", "bootable-image-directory.")
 	if err != nil {
 		return "", err
 	}
-	defer os.RemoveAll(directory)
+	if !noCleanup {
+		defer os.RemoveAll(directory)
+	}
 	kernelBaseName := "program.bin"
 
 	if err := unikos.CopyFile(kernel, path.Join(directory, kernelBaseName)); err != nil {
@@ -60,7 +62,7 @@ func execContainer(imageName string, cmds []string, binds map[string]string, pri
 type RumCompilerBase struct {
 	DockerImage   string
 	BakeImageName string
-	CreateImage   func(kernel, args string, mntPoints, bakedEnv []string) (*types.RawImage, error)
+	CreateImage   func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error)
 }
 
 func (r *RumCompilerBase) runContainer(localFolder string, envPairs []string) error {

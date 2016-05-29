@@ -320,6 +320,12 @@ func (d *UnikDaemon) addEndpoints() {
 				mountPoints = strings.Split(mntStr, ",")
 			}
 
+			noCleanupStr := req.FormValue("no_cleanup")
+			var noCleanup bool
+			if strings.ToLower(noCleanupStr) == "true" {
+				noCleanup = true
+			}
+
 			logrus.WithFields(logrus.Fields{
 				"force":        force,
 				"mount-points": mountPoints,
@@ -327,12 +333,14 @@ func (d *UnikDaemon) addEndpoints() {
 				"args":         args,
 				"compiler":     compilerType,
 				"provider":     providerType,
+				"noCleanup":     noCleanup,
 			}).Debugf("compiling raw image")
 
 			compileParams := types.CompileImageParams{
 				SourcesDir: sourcesDir,
 				Args:       args,
 				MntPoints:  mountPoints,
+				NoCleanup:  noCleanup,
 			}
 
 			rawImage, err := compiler.CompileRawImage(compileParams)
@@ -341,10 +349,9 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 			logrus.Debugf("raw image compiled and saved to " + rawImage.LocalImagePath)
 
-			noCleanupStr := req.FormValue("no_cleanup")
-			var noCleanup bool
-			if strings.ToLower(noCleanupStr) == "true" {
-				noCleanup = true
+
+			if !noCleanup {
+				defer os.Remove(rawImage.LocalImagePath)
 			}
 
 			stageParams := types.StageImageParams{
