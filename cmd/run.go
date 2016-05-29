@@ -61,7 +61,7 @@ Example usage:
 				host = clientConfig.Host
 			}
 
-			mounts := make(map[string]string)
+			mountPointsToVols := make(map[string]string)
 			for _, vol := range volumes {
 				pair := strings.Split(vol, ":")
 				if len(pair) != 2 {
@@ -69,7 +69,7 @@ Example usage:
 				}
 				volId := pair[0]
 				mnt := pair[1]
-				mounts[mnt] = volId
+				mountPointsToVols[mnt] = volId
 			}
 
 			env := make(map[string]string)
@@ -87,10 +87,10 @@ Example usage:
 				"instanceName": instanceName,
 				"imageName":    imageName,
 				"env":          env,
-				"mounts":       mounts,
+				"mounts":       mountPointsToVols,
 				"host":         host,
 			}).Infof("running unik run")
-			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mounts, env, instanceMemory, noCleanup)
+			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mountPointsToVols, env, instanceMemory, noCleanup)
 			if err != nil {
 				return errors.New(fmt.Sprintf("running image failed: %v", err), nil)
 			}

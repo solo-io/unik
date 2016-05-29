@@ -80,11 +80,11 @@ func (i *instances) AttachLogs(id string, deleteOnDisconnect bool) (io.ReadClose
 	return resp.Body, nil
 }
 
-func (i *instances) Run(instanceName, imageName string, mounts, env map[string]string, memoryMb int, noCleanup bool) (*types.Instance, error) {
+func (i *instances) Run(instanceName, imageName string, mountPointsToVols, env map[string]string, memoryMb int, noCleanup bool) (*types.Instance, error) {
 	runInstanceRequest := daemon.RunInstanceRequest{
 		InstanceName: instanceName,
 		ImageName: imageName,
-		Mounts: mounts,
+		Mounts: mountPointsToVols,
 		Env: env,
 		MemoryMb: memoryMb,
 		NoCleanup: noCleanup,

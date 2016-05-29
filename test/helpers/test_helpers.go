@@ -204,11 +204,11 @@ func BuildExampleImage(daemonUrl, projectRoot, exampleName, compiler, provider s
 	return client.UnikClient(daemonUrl).Images().Build(exampleName, testSourceTar.Name(), compiler, provider, "", mounts, force, noCleanup)
 }
 
-func RunExampleInstance(daemonUrl, instanceName, imageName string, volsToMounts map[string]string) (*types.Instance, error) {
+func RunExampleInstance(daemonUrl, instanceName, imageName string, mountPointsToVols map[string]string) (*types.Instance, error) {
 	noCleanup := false
 	env := map[string]string{"FOO": "BAR"}
 	memoryMb := 128
-	return client.UnikClient(daemonUrl).Instances().Run(instanceName, imageName, volsToMounts, env, memoryMb, noCleanup)
+	return client.UnikClient(daemonUrl).Instances().Run(instanceName, imageName, mountPointsToVols, env, memoryMb, noCleanup)
 }
 
 func CreateExampleVolume(daemonUrl, volumeName, provider string, size int) (*types.Volume, error) {
