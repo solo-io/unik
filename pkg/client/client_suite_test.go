@@ -9,14 +9,17 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
+	"github.com/emc-advanced-dev/unik/pkg/config"
 )
+
+var cfg config.DaemonConfig
 
 func TestClient(t *testing.T) {
 	RegisterFailHandler(Fail)
 	var projectRoot = helpers.GetProjectRoot()
 	var d *daemon.UnikDaemon
 	var tmpUnik helpers.TempUnikHome
-	var cfg = helpers.NewTestConfig()
+	cfg = helpers.NewTestConfig()
 	BeforeSuite(func(){
 		logrus.SetLevel(logrus.DebugLevel)
 		if err := helpers.MakeContainers(projectRoot); err != nil {
