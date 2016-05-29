@@ -14,7 +14,7 @@ var _ = Describe("Instances", func() {
 	daemonUrl := "127.0.0.1:3000"
 	var c = UnikClient(daemonUrl)
 	var projectRoot = helpers.GetProjectRoot()
-	FDescribe("instances", func() {
+	Describe("instances", func() {
 		Describe("All()", func() {
 			var image *types.Image
 			var volume *types.Volume
@@ -81,6 +81,12 @@ var _ = Describe("Instances", func() {
 									Expect(err).NotTo(HaveOccurred())
 									//instance state shoule be Running
 									instance.State = types.InstanceState_Running
+									//ip may not have been set at Run() call, ignore it on assert
+									if instance.IpAddress == "" {
+										for _, instance := range instances {
+											instance.IpAddress = ""
+										}
+									}
 									Expect(instances).To(ContainElement(instance))
 								})
 							})
@@ -103,6 +109,12 @@ var _ = Describe("Instances", func() {
 									Expect(err).NotTo(HaveOccurred())
 									//instance state shoule be Running
 									instance.State = types.InstanceState_Running
+									//ip may not have been set at Run() call, ignore it on assert
+									if instance.IpAddress == "" {
+										for _, instance := range instances {
+											instance.IpAddress = ""
+										}
+									}
 									Expect(instances).To(ContainElement(instance))
 								})
 							})
