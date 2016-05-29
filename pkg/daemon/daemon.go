@@ -485,10 +485,6 @@ func (d *UnikDaemon) addEndpoints() {
 	})
 	d.server.Post("/instances/run", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		handle(res, req, func() (interface{}, int, error) {
-			logrus.WithFields(logrus.Fields{
-				"request": req, "query": req.URL.Query(),
-			}).Debugf("recieved run request")
-
 			body, err := ioutil.ReadAll(req.Body)
 			if err != nil {
 				return nil, http.StatusBadRequest, errors.New("could not read request body", err)
@@ -497,6 +493,10 @@ func (d *UnikDaemon) addEndpoints() {
 			if err := json.Unmarshal(body, &runInstanceRequest); err != nil {
 				return nil, http.StatusBadRequest, errors.New("failed to parse request json", err)
 			}
+
+			logrus.WithFields(logrus.Fields{
+				"request": runInstanceRequest,
+			}).Debugf("recieved run request")
 
 			if runInstanceRequest.ImageName == "" {
 				return nil, http.StatusBadRequest, errors.New("image must be named", nil)
