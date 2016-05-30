@@ -13,7 +13,7 @@ func CreateImageVmware(kernel string, args string, mntPoints, bakedEnv []string,
 }
 
 func CreateImageNoStubVmware(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
-	return createImageVmware(kernel, args, mntPoints, bakedEnv, false, noCleanup)
+	return createImageVmware(kernel, args, mntPoints, bakedEnv, true, noCleanup)
 }
 
 func createImageVmware(kernel string, args string, mntPoints, bakedEnv []string, noStub, noCleanup bool) (*types.RawImage, error) {
