@@ -13,10 +13,17 @@ import (
 	"fmt"
 )
 
+const (
+	example_go_httpd = "example_go_httpd"
+	example_godeps_go_app = "example_godeps_go_app"
+	example_go_nontrivial = "example-go-nontrivial"
+	example_nodejs_app = "example-nodejs-app"
+	example_java_project = "example_java_project"
+)
+
 var _ = Describe("Instances", func() {
 	daemonUrl := "127.0.0.1:3000"
 	var c = UnikClient(daemonUrl)
-	var projectRoot = helpers.GetProjectRoot()
 	Describe("instances", func() {
 		Describe("All()", func() {
 			var image *types.Image
