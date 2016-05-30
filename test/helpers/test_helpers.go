@@ -183,6 +183,7 @@ func TarExampleApp(projectRoot string, appDir string) (*os.File, error) {
 		return nil, errors.New("getting abs of "+projectRoot, err)
 	}
 	path := filepath.Join(absRoot, "docs", "examples", appDir)
+	logrus.Debugf("tarring sources at %s", path)
 	sourceTar, err := ioutil.TempFile("", "example.app.tar.gz.")
 	if err != nil {
 		return nil, errors.New("failed to create tmp tar file", err)
@@ -194,7 +195,7 @@ func TarExampleApp(projectRoot string, appDir string) (*os.File, error) {
 }
 
 func BuildExampleImage(daemonUrl, projectRoot, exampleName, compiler, provider string, mounts []string) (*types.Image, error) {
-	force := false
+	force := true
 	noCleanup := false
 	testSourceTar, err := TarExampleApp(projectRoot, exampleName)
 	if err != nil {

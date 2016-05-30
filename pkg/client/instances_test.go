@@ -8,6 +8,9 @@ import (
 	"github.com/emc-advanced-dev/unik/test/helpers"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"strings"
+	"github.com/onsi/ginkgo/extensions/table"
+	"fmt"
 )
 
 var _ = Describe("Instances", func() {
@@ -20,20 +23,16 @@ var _ = Describe("Instances", func() {
 			var volume *types.Volume
 			AfterEach(func() {
 				if image != nil {
-					if err := c.Images().Delete(image.Id, true); err != nil {
-						logrus.Panic(err)
-					}
+					c.Images().Delete(image.Id, true)
 				}
 				if volume != nil {
-					if err := c.Volumes().Delete(volume.Id, true); err != nil {
-						logrus.Panic(err)
-					}
+					c.Volumes().Delete(volume.Id, true)
 				}
 			})
 			Context("no instances exist", func() {
 				if len(cfg.Providers.Virtualbox) > 0 && len(cfg.Providers.Vsphere) < 1 ||
-				   len(cfg.Providers.Virtualbox) < 1 && len(cfg.Providers.Vsphere) > 0 {
-					Context("on virtualbox or vsphere provider", func(){
+				len(cfg.Providers.Virtualbox) < 1 && len(cfg.Providers.Vsphere) > 0 {
+					Context("on virtualbox or vsphere provider", func() {
 						It("returns a list with only the Instance Listener VM", func() {
 							instances, err := c.Instances().All()
 							Expect(err).NotTo(HaveOccurred())
@@ -43,7 +42,7 @@ var _ = Describe("Instances", func() {
 
 					})
 				} else if len(cfg.Providers.Virtualbox) > 0 && len(cfg.Providers.Vsphere) > 0 {
-					Context("on virtualbox and vsphere providers", func(){
+					Context("on virtualbox and vsphere providers", func() {
 						It("returns a list with only the Instance Listener VMs", func() {
 							instances, err := c.Instances().All()
 							Expect(err).NotTo(HaveOccurred())
@@ -61,19 +60,60 @@ var _ = Describe("Instances", func() {
 					})
 				}
 			})
-			Context("instances exist", func(){
-				Describe("Run()", func(){
-					Context("with virtualbox as provider", func(){
-						provider := "virtualbox"
-						Context("with go app", func(){
-							compiler := "rump-go-virtualbox"
-							Context("with no volume", func(){
-								It("runs successfully", func(){
+			Context("instances exist", func() {
+				FDescribe("Run()", func() {
+					Context("with virtualbox as provider", func() {
+						imageNames := []string{
+							example_nodejs_app,
+							example_go_httpd,
+							example_godeps_go_app,
+							example_java_project,
+							example_go_nontrivial,
+						}
+						providers := []string{}
+						if len(cfg.Providers.Virtualbox) > 0 {
+							providers = append(providers, "virtualbox")
+						}
+						if len(cfg.Providers.Aws) > 0 {
+							providers = append(providers, "aws")
+						}
+						if len(cfg.Providers.Vsphere) > 0 {
+							providers = append(providers, "vsphere")
+						}
+						entries := []table.TableEntry{}
+						for _, imageName := range imageNames {
+							for _, provider := range providers {
+								entries = append(entries, table.Entry(imageName, imageName, false, provider))
+								entries = append(entries, table.Entry(imageName, imageName, true, provider))
+							}
+						}
+						table.DescribeTable("running images", func(imageName string, withVolume bool, provider string) {
+							compiler := ""
+							switch {
+							case strings.Contains(imageName, "go"):
+								logrus.Infof("found image type GO: %s", imageName)
+								compiler = fmt.Sprintf("rump-go-%s", provider)
+								break
+							case strings.Contains(imageName, "nodejs"):
+								logrus.Infof("found image type NODE: %s", imageName)
+								compiler = fmt.Sprintf("rump-nodejs-%s", provider)
+								break
+							case strings.Contains(imageName, "java"):
+								logrus.Infof("found image type JAVA: %s", imageName)
+								compiler = fmt.Sprintf("osv-java-%s", provider)
+								break
+							default:
+								logrus.Panic("unknown image name " + imageName)
+							}
+							//vsphere -> vmware for compilers
+							compiler = strings.Replace(compiler, "vsphere", "vmware", -1)
+							if !withVolume {
+								Context("with no volume", func() {
 									mounts := []string{}
 									var err error
-									image, err = helpers.BuildExampleImage(daemonUrl, projectRoot, example_go_httpd, compiler, provider, mounts)
+									image, err = helpers.BuildExampleImage(daemonUrl, projectRoot, imageName, compiler, provider, mounts)
 									Expect(err).ToNot(HaveOccurred())
-									instanceName := example_go_httpd
+									instanceName := imageName
 									volsToMounts := map[string]string{}
 									instance, err := helpers.RunExampleInstance(daemonUrl, instanceName, image.Name, volsToMounts)
 									Expect(err).ToNot(HaveOccurred())
@@ -89,20 +129,19 @@ var _ = Describe("Instances", func() {
 									}
 									Expect(instances).To(ContainElement(instance))
 								})
-							})
-							Context("with volume", func(){
-								It("runs successfully and mounts the volume", func(){
+							} else {
+								Context("with volume", func() {
 									mounts := []string{"/volume"}
 									var err error
-									image, err = helpers.BuildExampleImage(daemonUrl, projectRoot, example_go_httpd, compiler, provider, mounts)
+									image, err = helpers.BuildExampleImage(daemonUrl, projectRoot, imageName, compiler, provider, mounts)
 									Expect(err).ToNot(HaveOccurred())
-									volume, err = helpers.CreateExampleVolume(daemonUrl, "test_volume", provider, 15)
+									volume, err = helpers.CreateExampleVolume(daemonUrl, "test_volume_"+imageName, provider, 15)
 									Expect(err).ToNot(HaveOccurred())
-									instanceName := example_go_httpd
+									instanceName := imageName
 									noCleanup := false
 									env := map[string]string{"FOO": "BAR"}
 									memoryMb := 128
-									mountPointsToVols := map[string]string{ "/volume": volume.Id}
+									mountPointsToVols := map[string]string{"/volume": volume.Id}
 									instance, err := c.Instances().Run(instanceName, image.Name, mountPointsToVols, env, memoryMb, noCleanup)
 									Expect(err).ToNot(HaveOccurred())
 									instances, err := c.Instances().All()
@@ -117,8 +156,8 @@ var _ = Describe("Instances", func() {
 									}
 									Expect(instances).To(ContainElement(instance))
 								})
-							})
-						})
+							}
+						}, entries...)
 					})
 				})
 			})
