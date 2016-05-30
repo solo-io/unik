@@ -9,17 +9,15 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
-	"github.com/emc-advanced-dev/unik/pkg/config"
 )
 
-var cfg config.DaemonConfig
+var cfg = helpers.NewTestConfig()
 
 func TestClient(t *testing.T) {
 	RegisterFailHandler(Fail)
 	var projectRoot = helpers.GetProjectRoot()
 	var d *daemon.UnikDaemon
 	var tmpUnik helpers.TempUnikHome
-	cfg = helpers.NewTestConfig()
 	BeforeSuite(func(){
 		logrus.SetLevel(logrus.DebugLevel)
 		if err := helpers.MakeContainers(projectRoot); err != nil {
@@ -31,7 +29,7 @@ func TestClient(t *testing.T) {
 		var err error
 		d, err = daemon.NewUnikDaemon(cfg)
 		if err != nil {
-			logrus.Fatal(err)
+			logrus.Panic(err)
 		}
 		go d.Run(3000)
 
@@ -43,7 +41,7 @@ func TestClient(t *testing.T) {
 		defer tmpUnik.TearDownUnik()
 		err := d.Stop()
 		if err != nil {
-			logrus.Fatal(err)
+			logrus.Panic(err)
 		}
 	})
 	RunSpecs(t, "Client Suite")
