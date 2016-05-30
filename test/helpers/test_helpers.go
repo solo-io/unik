@@ -135,7 +135,7 @@ func ConfigWithVsphere(config config.DaemonConfig, vsphere config.Vsphere) (conf
 
 func NewTestConfig() (cfg config.DaemonConfig) {
 	noConfig := true
-	if os.Getenv("TEST_AWS") != "" {
+	if os.Getenv("TEST_AWS") != "" && os.Getenv("TEST_AWS") != "0" {
 		awsConfig, err := NewAwsConfig()
 		if err != nil {
 			logrus.Panic(err)
@@ -143,7 +143,7 @@ func NewTestConfig() (cfg config.DaemonConfig) {
 		cfg = ConfigWithAws(cfg, awsConfig)
 		noConfig = false
 	}
-	if os.Getenv("TEST_VIRTUALBOX") != "" {
+	if os.Getenv("TEST_VIRTUALBOX") != "" && os.Getenv("TEST_VIRTUALBOX") != "0" {
 		vboxConfig, err := NewVirtualboxConfig()
 		if err != nil {
 			logrus.Panic(err)
@@ -151,7 +151,7 @@ func NewTestConfig() (cfg config.DaemonConfig) {
 		cfg = ConfigWithVirtualbox(cfg, vboxConfig)
 		noConfig = false
 	}
-	if os.Getenv("TEST_VSPHERE") != "" {
+	if os.Getenv("TEST_VSPHERE") != "" && os.Getenv("TEST_VSPHERE") != "0" {
 		vsphereConfig, err := NewVsphereConfig()
 		if err != nil {
 			logrus.Panic(err)
