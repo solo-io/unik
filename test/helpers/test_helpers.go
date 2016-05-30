@@ -14,6 +14,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"runtime"
 	"fmt"
+	"time"
 )
 
 type TempUnikHome struct {
@@ -177,7 +178,8 @@ func RemoveContainers(projectRoot string) error {
 	return cmd.Run()
 }
 
-func TarExampleApp(projectRoot string, appDir string) (*os.File, error) {
+func TarExampleApp(appDir string) (*os.File, error) {
+	projectRoot := GetProjectRoot()
 	absRoot, err := filepath.Abs(projectRoot)
 	if err != nil {
 		return nil, errors.New("getting abs of "+projectRoot, err)
@@ -194,10 +196,10 @@ func TarExampleApp(projectRoot string, appDir string) (*os.File, error) {
 	return sourceTar, nil
 }
 
-func BuildExampleImage(daemonUrl, projectRoot, exampleName, compiler, provider string, mounts []string) (*types.Image, error) {
+func BuildExampleImage(daemonUrl, exampleName, compiler, provider string, mounts []string) (*types.Image, error) {
 	force := true
 	noCleanup := false
-	testSourceTar, err := TarExampleApp(projectRoot, exampleName)
+	testSourceTar, err := TarExampleApp(exampleName)
 	if err != nil {
 		return nil, errors.New("tarring example app", err)
 	}
@@ -225,5 +227,37 @@ func GetProjectRoot() string {
 		}
 		projectRoot = filepath.Join(filepath.Dir(filename), "..", "..")
 	}
+	logrus.Infof("using %s as project root", projectRoot)
 	return projectRoot
+}
+
+func WaitForIp(daemonUrl, instanceId string, timeout time.Duration) (string, error) {
+	errc := make(chan error)
+	go func(){
+		<-time.After(timeout)
+		errc <- errors.New("getting instance ip timed out after "+timeout.String(), nil)
+	}()
+
+	resultc := make(chan string)
+	go func(){
+		logrus.Infof("retrieving ip for instance %s", instanceId)
+		for {
+			instance, err := client.UnikClient(daemonUrl).Instances().Get(instanceId)
+			if err != nil {
+				errc <- errors.New("getting instance from UniK daemon", err)
+				return
+			}
+			if instance.IpAddress != "" {
+				resultc <- instance.IpAddress
+				return
+			}
+ 			time.Sleep(time.Second)
+		}
+	}()
+	select {
+	case result := <- resultc:
+		return result, nil
+	case err := <- errc:
+		return "", err
+	}
 }
