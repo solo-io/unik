@@ -1,11 +1,7 @@
-import http.server
-import socketserver
+from bottle import *
 
-PORT = 8000
+@get('/ping_test')
+def ping_test():
+    return {"message": "pong"}
 
-Handler = http.server.SimpleHTTPRequestHandler
-
-httpd = socketserver.TCPServer(("", PORT), Handler)
-
-print("serving at port", PORT)
-httpd.serve_forever()
+run(host='localhost', port=8080)
