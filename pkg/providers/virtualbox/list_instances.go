@@ -14,19 +14,13 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 	if len(p.state.GetInstances()) < 1 {
 		return []*types.Instance{}, nil
 	}
-	vms, err := virtualboxclient.Vms()
-	if err != nil {
-		return nil, errors.New("getting vms from virtualbox", err)
-	}
-	instances := []*types.Instance{}
-	for _, vm := range vms {
-		macAddr := vm.MACAddr
-		instanceId := vm.UUID
-		instance, ok := p.state.GetInstances()[instanceId]
-		if !ok {
-			logrus.WithFields(logrus.Fields{"vm": vm, "instance-id": macAddr}).Warnf("vm found that does not belong to unik, ignoring")
-			continue
+	var instances []*types.Instance
+	for _, instance := range p.state.GetInstances() {
+		vm, err := virtualboxclient.GetVm(instance.Name)
+		if err != nil {
+			return nil, errors.New("retrieving vm for instance id " + instance.Name, err)
 		}
+		macAddr := vm.MACAddr
 
 		instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout)
 		if err != nil {
