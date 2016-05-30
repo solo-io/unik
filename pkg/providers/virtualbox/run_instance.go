@@ -88,6 +88,9 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 		if err != nil {
 			return nil, errors.New("getting controller port for mnt point", err)
 		}
+		if err := virtualboxclient.RefreshDiskUUID(getVolumePath(volume.Name)); err != nil {
+			return nil, errors.New("refreshing disk uuid", err)
+		}
 		if err := virtualboxclient.AttachDisk(params.Name, getVolumePath(volume.Name), controllerPort, image.RunSpec.StorageDriver); err != nil {
 			return nil, errors.New("attaching to vm", err)
 		}
