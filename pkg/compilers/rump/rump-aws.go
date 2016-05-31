@@ -7,18 +7,28 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func CreateImageAws(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+func CreateImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageAws(kernel, args, mntPoints, bakedEnv, noCleanup, false)
+}
 
+func CreateImageNoStubAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageAws(kernel, args, mntPoints, bakedEnv, noCleanup, true)
+}
+
+func createImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup, noStub bool) (*types.RawImage, error) {
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {
-		c.Env = bakedEnv
+		c.Env = make(map[string]string)
+		for i, pair := range bakedEnv {
+			c.Env[fmt.Sprintf("env%d", i)] = pair
+		}
 	}
 
 	if args == "" {
-		c = setRumpCmdLine(c, "program.bin", nil, false)
+		c = setRumpCmdLine(c, "program.bin", nil, noStub)
 	} else {
-		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "), false)
+		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "), noStub)
 	}
 
 	res := &types.RawImage{}
