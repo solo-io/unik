@@ -63,7 +63,7 @@ func testInstanceMount(instanceIp string) {
 }
 
 func testInstanceEndpoint(instanceIp, path, expectedResponse string) {
-	resp, body, err := lxhttpclient.Get(instanceIp, path, nil)
+	resp, body, err := lxhttpclient.Get(instanceIp+":8080", path, nil)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(resp.StatusCode).To(Equal(http.StatusOK))
 	var testResponse struct{
