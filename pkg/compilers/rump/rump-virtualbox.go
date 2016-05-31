@@ -20,7 +20,10 @@ func createImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []str
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {
-		c.Env = bakedEnv
+		c.Env = make(map[string]string)
+		for i, pair := range bakedEnv {
+			c.Env[fmt.Sprintf("env%d", i)] = pair
+		}
 	}
 
 	if args == "" {
