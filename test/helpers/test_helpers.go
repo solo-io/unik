@@ -191,6 +191,7 @@ func TarExampleApp(appDir string) (*os.File, error) {
 		return nil, errors.New("failed to create tmp tar file", err)
 	}
 	if err := unikos.Compress(path, sourceTar.Name()); err != nil {
+		os.RemoveAll(path)
 		return nil, errors.New("failed to tar sources", err)
 	}
 	return sourceTar, nil
@@ -243,6 +244,17 @@ func BuildExampleImage(daemonUrl, exampleName, compiler, provider string, mounts
 	return client.UnikClient(daemonUrl).Images().Build(exampleName, testSourceTar.Name(), compiler, provider, "", mounts, force, noCleanup)
 }
 
+func BuildTestImage(daemonUrl, appDir, compiler, provider string, mounts []string) (*types.Image, error) {
+	force := true
+	noCleanup := false
+	testSourceTar, err := TarTestApp(appDir)
+	if err != nil {
+		return nil, errors.New("tarring test app", err)
+	}
+	defer os.RemoveAll(testSourceTar.Name())
+	return client.UnikClient(daemonUrl).Images().Build(appDir, testSourceTar.Name(), compiler, provider, "", mounts, force, noCleanup)
+}
+
 func RunExampleInstance(daemonUrl, instanceName, imageName string, mountPointsToVols map[string]string) (*types.Instance, error) {
 	noCleanup := false
 	env := map[string]string{"FOO": "BAR"}
@@ -286,6 +298,8 @@ func WaitForIp(daemonUrl, instanceId string, timeout time.Duration) (string, err
 	resultc := make(chan string)
 	go func(){
 		logrus.Infof("retrieving ip for instance %s", instanceId)
+		started := time.Now()
+		end := started.Add(timeout)
 		for {
 			instance, err := client.UnikClient(daemonUrl).Instances().Get(instanceId)
 			if err != nil {
@@ -296,8 +310,7 @@ func WaitForIp(daemonUrl, instanceId string, timeout time.Duration) (string, err
 				resultc <- instance.IpAddress
 				return
 			}
-			timeout = timeout - time.Second
-			logrus.Debugf("sleeping %v left...", timeout)
+			logrus.Debugf("sleeping %v left...", end.Sub(time.Now()))
  			time.Sleep(time.Second)
 		}
 	}()
