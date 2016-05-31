@@ -58,15 +58,8 @@ func (r *RumpScriptCompiler) CompileRawImage(params types.CompileImageParams) (*
 		fmt.Sprintf("BOOTSTRAP_TYPE=%s", r.BootstrapType),
 	}
 
-	// should we use the baker stubs?
-	if r.BakeImageName != "" {
-		if err := r.runAndBake(sourcesDir, containerEnv); err != nil {
-			return nil, err
-		}
-	} else {
-		if err := r.runContainer(sourcesDir, containerEnv); err != nil {
-			return nil, err
-		}
+	if err := r.runContainer(sourcesDir, containerEnv); err != nil {
+		return nil, err
 	}
 
 	// now we should program.bin

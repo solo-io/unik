@@ -40,18 +40,11 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 		fmt.Sprintf("ROOT_PATH=%s", g.ImportPath),
 	}
 
-	// should we use the baker stubs?
-	if r.BakeImageName != "" {
 
-		if err := r.runAndBake(sourcesDir, containerEnv); err != nil {
-			return nil, err
-		}
-	} else {
-
-		if err := r.runContainer(sourcesDir, containerEnv); err != nil {
-			return nil, err
-		}
+	if err := r.runContainer(sourcesDir, containerEnv); err != nil {
+		return nil, err
 	}
+
 	// now we should program.bin
 	resultFile := path.Join(sourcesDir, "program.bin")
 	logrus.Debugf("finished kernel binary at %s", resultFile)
