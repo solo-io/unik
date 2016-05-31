@@ -606,7 +606,8 @@ func (d *UnikDaemon) addEndpoints() {
 			var imagePath string
 			var provider providers.Provider
 			var noCleanup bool
-			if req.Header.Get("Content-type") == "multipart/form-data" {
+			logrus.WithField("req", req).Info("received request to create volume")
+			if strings.Contains(req.Header.Get("Content-type"), "multipart/form-data") {
 				logrus.Info("received request with form-data")
 				err := req.ParseMultipartForm(0)
 				if err != nil {
