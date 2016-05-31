@@ -44,18 +44,17 @@ func createSparseFile(filename string, size DiskSize) error {
 	return nil
 }
 
-func CreateBootImageWithSize(rootFile string, size DiskSize, progPath, commandline string) error {
+func CreateBootImageWithSize(rootFile string, size DiskSize, progPath, staticFilesDir, commandline string) error {
 	err := createSparseFile(rootFile, size)
 	if err != nil {
 		return err
 	}
-	log.WithFields(log.Fields{"imgFile": rootFile}).Debug("created sparse file")
+	log.WithFields(log.Fields{"imgFile": rootFile, "size": size.ToPartedFormat()}).Debug("created sparse file")
 
-	return CreateBootImageOnFile(rootFile, size, progPath, commandline)
+	return CreateBootImageOnFile(rootFile, size, progPath, staticFilesDir, commandline)
 }
 
-func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, commandline string) error {
-
+func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, staticFilesDir, commandline string) error {
 	sizeInSectors, err := ToSectors(sizeOfFile)
 	if err != nil {
 		return err
@@ -112,10 +111,6 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, comma
 	}
 	defer part.Release()
 	
-	
-	
-	
-	
 	bootLabel := "boot"
 	// format the device and mount and copy
 	err = RunLogCommand("mkfs", "-L", bootLabel, "-I", "128", "-t", "ext2", bootDevice.Name())
@@ -129,7 +124,7 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, comma
 	}
 	defer Umount(mntPoint)
 
-	if err := PrepareGrub(mntPoint, rootDevice.Name(), progPath, commandline); err != nil {
+	if err := PrepareGrub(mntPoint, rootDevice.Name(), progPath, staticFilesDir, commandline); err != nil {
 		return err
 	}
 
@@ -140,15 +135,19 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, comma
 	return nil
 }
 
-func PrepareGrub(folder, rootDeviceName, kernel, commandline string) error {
+func PrepareGrub(folder, rootDeviceName, kernel, staticFilesDir, commandline string) error {
 	grubPath := path.Join(folder, "boot", "grub")
 	kernelDst := path.Join(folder, "boot", ProgramName)
 
 	os.MkdirAll(grubPath, 0755)
 
+	log.WithFields(log.Fields{"src": staticFilesDir, "dst": folder}).Debug("copying all files")
+	if err := CopyDir(staticFilesDir, folder); err != nil {
+		return err
+	}
+
 	// copy program.bin.. skip that for now
 	log.WithFields(log.Fields{"src": kernel, "dst": kernelDst}).Debug("copying file")
-
 	if err := CopyFile(kernel, kernelDst); err != nil {
 		return err
 	}
@@ -177,14 +176,15 @@ func writeDeviceMap(fname, rootDevice string) error {
 	t := template.Must(template.New("devicemap").Parse(DeviceMapFile))
 
 	log.WithFields(log.Fields{"device": rootDevice, "file": fname}).Debug("Writing device map")
-	t.Execute(f, struct {
+	if err := t.Execute(f, struct {
 		GrubDevice string
-	}{rootDevice})
+	}{rootDevice}); err != nil {
+		return err
+	}
 
 	return nil
 }
 func writeBootTemplate(fname, rootDrive, commandline string) error {
-
 	log.WithFields(log.Fields{"fname": fname, "rootDrive": rootDrive, "commandline": commandline}).Debug("writing boot template")
 
 	f, err := os.Create(fname)
@@ -195,10 +195,12 @@ func writeBootTemplate(fname, rootDrive, commandline string) error {
 
 	t := template.Must(template.New("grub").Parse(GrubTemplate))
 
-	t.Execute(f, struct {
+	if err := t.Execute(f, struct {
 		RootDrive   string
 		CommandLine string
-	}{rootDrive, commandline})
+	}{rootDrive, commandline}); err != nil {
+		return err
+	}
 
 	return nil
 
@@ -216,7 +218,9 @@ func formatDeviceAndCopyContents(folder string, dev BlockDevice) error {
 	}
 	defer Umount(mntPoint)
 
-	CopyDir(folder, mntPoint)
+	if err := CopyDir(folder, mntPoint); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -251,7 +255,6 @@ func CreateSingleVolume(rootFile string, folder unikutil.RawVolume) error {
 }
 
 func CopyToImgFile(folder, imgfile string) error {
-
 	imgLo := NewLoDevice(imgfile)
 	imgLodName, err := imgLo.Acquire()
 	if err != nil {
@@ -264,18 +267,15 @@ func CopyToImgFile(folder, imgfile string) error {
 }
 
 func copyToPart(folder string, part Resource) error {
-
 	imgLodName, err := part.Acquire()
 	if err != nil {
 		return err
 	}
 	defer part.Release()
 	return formatDeviceAndCopyContents(folder, imgLodName)
-
 }
 
 func CreateVolumes(imgFile string, volumes []unikutil.RawVolume, newPartitioner func(device string) Partitioner) error {
-
 	if len(volumes) == 0 {
 		return nil
 	}

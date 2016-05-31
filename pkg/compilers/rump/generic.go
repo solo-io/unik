@@ -14,6 +14,7 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"path/filepath"
 )
 
 func BuildBootableImage(kernel, cmdline string, noCleanup bool) (string, error) {
@@ -25,6 +26,10 @@ func BuildBootableImage(kernel, cmdline string, noCleanup bool) (string, error) 
 		defer os.RemoveAll(directory)
 	}
 	kernelBaseName := "program.bin"
+
+	if err := unikos.CopyDir(filepath.Dir(kernel), directory); err != nil {
+		return "", err
+	}
 
 	if err := unikos.CopyFile(kernel, path.Join(directory, kernelBaseName)); err != nil {
 		return "", err

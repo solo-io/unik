@@ -8,6 +8,7 @@ import (
 	"path"
 
 	log "github.com/Sirupsen/logrus"
+	"path/filepath"
 )
 
 func RunLogCommand(name string, args ...string) error {
@@ -166,4 +167,17 @@ func copyFileContents(src, dst string) (err error) {
 	}
 	err = out.Sync()
 	return
+}
+
+// http://stackoverflow.com/questions/32482673/golang-how-to-get-directory-total-size
+func DirSize(path string) (int64, error) {
+	var size int64
+	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			size += info.Size()
+		}
+		log.Debugf("total size %v after adding file %s", (int64(size) >> 20) + 10, info.Name())
+		return err
+	})
+	return size, err
 }

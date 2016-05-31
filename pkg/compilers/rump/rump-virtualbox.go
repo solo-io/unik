@@ -37,16 +37,16 @@ func createImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []str
 	res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings,
 		types.DeviceMapping{MountPoint: "/", DeviceName: "sd0"})
 
-	if false {
-		blk := blk{
+	//if false {
+		bootBlk := blk{
 			Source:     "dev",
 			Path:       "/dev/sd0e", // no disk label on the boot partition; so partition e is used.
 			FSType:     "blk",
 			MountPoint: "/bootpart",
 		}
 
-		c.Blk = append(c.Blk, blk)
-	}
+		c.Blk = append(c.Blk, bootBlk)
+	//}
 
 	for i, mntPoint := range mntPoints {
 		deviceMapped := fmt.Sprintf("sd%ca", '1'+i)

@@ -10,6 +10,8 @@ import (
 	"os"
 )
 
+const staticFileDir = "/tmp/staticfiles"
+
 func main() {
 	log.SetLevel(log.DebugLevel)
 	buildcontextdir := flag.String("d", "/opt/vol", "build context. relative volume names are relative to that")
@@ -23,14 +25,27 @@ func main() {
 
 	log.WithFields(log.Fields{"kernelFile": kernelFile, "args": *args, "imgFile": imgFile}).Debug("calling CreateBootImageWithSize")
 
-	kernelFileInfo, err := os.Stat(kernelFile)
+	//kernelFileInfo, err := os.Stat(kernelFile)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//s1 := float64(kernelFileInfo.Size()) * 1.1
+
+	s1, err := unikos.DirSize(*buildcontextdir)
 	if err != nil {
 		log.Fatal(err)
 	}
-	s1 := float64(kernelFileInfo.Size()) * 1.1
-	size := (int64(s1) >> 20) + 10
+	s2 := float64(s1) * 1.1
+	size := ((int64(s2) >> 20) + 10)
 
-	if err := unikos.CreateBootImageWithSize(imgFile, unikos.MegaBytes(size), kernelFile, *args); err != nil {
+	if err := unikos.CopyDir(*buildcontextdir, staticFileDir); err != nil {
+		log.Fatal(err)
+	}
+
+	//no need to copy twice
+	os.Remove(path.Join(staticFileDir, *kernelInContext))
+
+	if err := unikos.CreateBootImageWithSize(imgFile, unikos.MegaBytes(size), kernelFile, staticFileDir, *args); err != nil {
 		log.Fatal(err)
 	}
 }
