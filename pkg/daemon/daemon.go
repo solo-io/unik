@@ -145,7 +145,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-nodejs-xen",
-			CreateImage: rump.CreateImageAws,
+			CreateImage: rump.CreateImageNoStubAws,
 			//		BakeImageName: "compilers-rump-baker-xen",
 		},
 		BootstrapType: rump.BootstrapTypeEC2,
@@ -154,7 +154,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_NODEJS_VIRTUALBOX] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-nodejs-hw",
-			CreateImage: rump.CreateImageVirtualBox,
+			CreateImage: rump.CreateImageNoStubVirtualBox,
 			//		BakeImageName: "compilers-rump-baker-hw",
 		},
 		BootstrapType: rump.BootstrapTypeUDP,
@@ -163,7 +163,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_NODEJS_VMWARE] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-nodejs-hw",
-			CreateImage: rump.CreateImageVmware,
+			CreateImage: rump.CreateImageNoStubVmware,
 			//		BakeImageName: "compilers-rump-baker-hw",
 		},
 		BootstrapType: rump.BootstrapTypeUDP,
@@ -173,7 +173,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-python3-hw",
-			CreateImage: rump.CreateImageVirtualBox,
+			CreateImage: rump.CreateImageNoStubVirtualBox,
 			//		BakeImageName: "compilers-rump-baker-hw",
 		},
 		BootstrapType: rump.BootstrapTypeUDP,
