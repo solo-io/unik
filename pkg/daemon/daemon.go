@@ -144,7 +144,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			CreateImage: rump.CreateImageAws,
 		},
 		BootstrapType: rump.BootstrapTypeEC2,
-		RunScriptArgs: "/code/node-wrapper.js",
+		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
 	_compilers[compilers.RUMP_NODEJS_VIRTUALBOX] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
@@ -152,7 +152,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			CreateImage: rump.CreateImageVirtualBox,
 		},
 		BootstrapType: rump.BootstrapTypeUDP,
-		RunScriptArgs: "/code/node-wrapper.js",
+		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
 	_compilers[compilers.RUMP_NODEJS_VMWARE] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
@@ -160,7 +160,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			CreateImage: rump.CreateImageVmware,
 		},
 		BootstrapType: rump.BootstrapTypeUDP,
-		RunScriptArgs: "/code/node-wrapper.js",
+		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
 
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = &rump.RumpScriptCompiler{
