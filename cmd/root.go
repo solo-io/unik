@@ -82,7 +82,7 @@ func printImage(image *types.Image) {
 }
 
 func printInstances(instance ...*types.Instance) {
-	fmt.Printf("%-15s %-20s %-14s %-30s %-20s %-14s %-12s\n",
+	fmt.Printf("%-15s %-20s %-14s %-30s %-20s %-15s %-12s\n",
 		"NAME", "ID", "INFRASTRUCTURE", "CREATED", "IMAGE", "IPADDRESS", "STATE")
 	for _, instance := range instance {
 		printInstance(instance)
@@ -90,7 +90,7 @@ func printInstances(instance ...*types.Instance) {
 }
 
 func printInstance(instance *types.Instance) {
-	fmt.Printf("%-15.15s %-20.20s %-14.14s %-30.30s %-20.20v %-14.14s %-12.12s\n",
+	fmt.Printf("%-15.15s %-20.20s %-14.14s %-30.30s %-20.20v %-15.15s %-12.12s\n",
 		instance.Name, instance.Id, instance.Infrastructure, instance.Created.String(), instance.ImageId, instance.IpAddress, instance.State)
 }
 

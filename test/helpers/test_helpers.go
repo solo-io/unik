@@ -161,7 +161,7 @@ func NewTestConfig() (cfg config.DaemonConfig) {
 		noConfig = false
 	}
 	if noConfig {
-		logrus.Panic("at least one config must be specified with TEST_<Provider>")
+		logrus.WithField("cfg", cfg).Panic("at least one config must be specified with TEST_<Provider>")
 	}
 	return
 }
@@ -196,6 +196,42 @@ func TarExampleApp(appDir string) (*os.File, error) {
 	return sourceTar, nil
 }
 
+func TarTestApp(appDir string) (*os.File, error) {
+	projectRoot := GetProjectRoot()
+	absRoot, err := filepath.Abs(projectRoot)
+	if err != nil {
+		return nil, errors.New("getting abs of "+projectRoot, err)
+	}
+	path := filepath.Join(absRoot, "test", "test_apps", appDir)
+	logrus.Debugf("tarring sources at %s", path)
+	sourceTar, err := ioutil.TempFile("", "test.app.tar.gz.")
+	if err != nil {
+		return nil, errors.New("failed to create tmp tar file", err)
+	}
+	if err := unikos.Compress(path, sourceTar.Name()); err != nil {
+		return nil, errors.New("failed to tar sources", err)
+	}
+	return sourceTar, nil
+}
+
+func TarTestVolume() (*os.File, error) {
+	projectRoot := GetProjectRoot()
+	absRoot, err := filepath.Abs(projectRoot)
+	if err != nil {
+		return nil, errors.New("getting abs of "+projectRoot, err)
+	}
+	path := filepath.Join(absRoot, "test", "test_apps", "test_volume")
+	logrus.Debugf("tarring data at %s", path)
+	dataTar, err := ioutil.TempFile("", "test.data.tar.gz.")
+	if err != nil {
+		return nil, errors.New("failed to create tmp tar file", err)
+	}
+	if err := unikos.Compress(path, dataTar.Name()); err != nil {
+		return nil, errors.New("failed to tar data", err)
+	}
+	return dataTar, nil
+}
+
 func BuildExampleImage(daemonUrl, exampleName, compiler, provider string, mounts []string) (*types.Image, error) {
 	force := true
 	noCleanup := false
@@ -216,6 +252,15 @@ func RunExampleInstance(daemonUrl, instanceName, imageName string, mountPointsTo
 
 func CreateExampleVolume(daemonUrl, volumeName, provider string, size int) (*types.Volume, error) {
 	return client.UnikClient(daemonUrl).Volumes().Create(volumeName, "", provider, size, false)
+}
+
+func CreateTestDataVolume(daemonUrl, volumeName, provider string) (*types.Volume, error) {
+	dataTar, err := TarTestVolume()
+	if err != nil {
+		return nil, errors.New("tarring test data volume", err)
+	}
+	defer os.RemoveAll(dataTar.Name())
+	return client.UnikClient(daemonUrl).Volumes().Create(volumeName, dataTar.Name(), provider, 0, false)
 }
 
 func GetProjectRoot() string {
@@ -251,6 +296,8 @@ func WaitForIp(daemonUrl, instanceId string, timeout time.Duration) (string, err
 				resultc <- instance.IpAddress
 				return
 			}
+			timeout = timeout - time.Second
+			logrus.Debugf("sleeping %v left...", timeout)
  			time.Sleep(time.Second)
 		}
 	}()

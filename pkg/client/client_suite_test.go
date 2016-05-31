@@ -9,6 +9,9 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
+	"github.com/layer-x/layerx-commons/lxhttpclient"
+	"net/http"
+	"encoding/json"
 )
 
 var cfg = helpers.NewTestConfig()
@@ -45,4 +48,28 @@ func TestClient(t *testing.T) {
 		}
 	})
 	RunSpecs(t, "Client Suite")
+}
+
+func testInstancePing(instanceIp string) {
+	testInstanceEndpoint(instanceIp, "/ping_test", "pong")
+}
+
+func testInstanceEnv(instanceIp string) {
+	testInstanceEndpoint(instanceIp, "/env_test", "VAL")
+}
+
+func testInstanceMount(instanceIp string) {
+	testInstanceEndpoint(instanceIp, "/mount_test", "test_data")
+}
+
+func testInstanceEndpoint(instanceIp, path, expectedResponse string) {
+	resp, body, err := lxhttpclient.Get(instanceIp, path, nil)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(resp.StatusCode).To(Equal(http.StatusOK))
+	var testResponse struct{
+		Message string `json:"message"`
+	}
+	err = json.Unmarshal(body, &testResponse)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(testResponse.Message).To(ContainSubstring(expectedResponse))
 }
