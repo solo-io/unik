@@ -4,17 +4,6 @@ import (
 	"C"
 	"os"
 	"unsafe"
-	"bytes"
-	"encoding/json"
-	"errors"
-	"io/ioutil"
-	"log"
-	"net"
-	"net/http"
-	"strings"
-	"time"
-	"fmt"
-	"io"
 )
 
 //export gomaincaller
