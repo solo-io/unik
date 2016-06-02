@@ -35,6 +35,14 @@ func createImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup
 	// add root -> sda1 mapping
 	res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings, types.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"})
 
+	bootBlk := blk{
+		Source:     "dev",
+		Path:       "/dev/xvda0",
+		FSType:     "blk",
+		MountPoint: "/bootpart",
+	}
+	c.Blk = append(c.Blk, bootBlk)
+
 	for _, mntPoint := range mntPoints {
 		// start from sdb; sda is for root.
 		volIndex++

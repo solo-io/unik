@@ -11,6 +11,7 @@ func (p *AwsProvider) GetConfig() providers.ProviderConfig {
 		SupportedCompilers: []string{
 			compilers.RUMP_GO_AWS,
 			compilers.RUMP_NODEJS_AWS,
+			compilers.RUMP_PYTHON_AWS,
 			compilers.OSV_JAVA_AWS,
 		},
 	}

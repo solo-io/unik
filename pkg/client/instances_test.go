@@ -19,6 +19,7 @@ const (
 	example_go_nontrivial = "example-go-nontrivial"
 	example_nodejs_app = "example-nodejs-app"
 	example_java_project = "example_java_project"
+	example_python_project = "example-python3-httpd"
 )
 
 var _ = Describe("Instances", func() {
@@ -74,6 +75,7 @@ var _ = Describe("Instances", func() {
 						example_go_httpd,
 						example_godeps_go_app,
 						example_java_project,
+						example_python_project,
 						example_go_nontrivial,
 					}
 					providers := []string{}

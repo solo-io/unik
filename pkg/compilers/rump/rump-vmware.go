@@ -36,6 +36,14 @@ func createImageVmware(kernel string, args string, mntPoints, bakedEnv []string,
 	// add root -> sd0 mapping
 	res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings, types.DeviceMapping{MountPoint: "/", DeviceName: "sd0"})
 
+	bootBlk := blk{
+		Source:     "dev",
+		Path:       "/dev/sd0e", // no disk label on the boot partition; so partition e is used.
+		FSType:     "blk",
+		MountPoint: "/bootpart",
+	}
+	c.Blk = append(c.Blk, bootBlk)
+
 	for i, mntPoint := range mntPoints {
 		deviceMapped := fmt.Sprintf("sd1%c", 'a'+i)
 		blk := blk{
