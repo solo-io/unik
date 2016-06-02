@@ -1,11 +1,7 @@
-import http.client
-import json
 from io import StringIO
 import sys
 import threading
-import socket
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from uuid import getnode as get_mac
 
 ###From https://github.com/bmc/grizzled-python/blob/bf9998bd0f6497d1e368610f439f9085d019bf76/grizzled/io/__init__.py
 # ---------------------------------------------------------------------------
@@ -95,41 +91,15 @@ class LogServer(BaseHTTPRequestHandler):
 
 def run():
   print('starting server on port', CONST_PORT)
-  server_address = ('127.0.0.1', CONST_PORT)
+  server_address = ('0.0.0.0', CONST_PORT)
   httpd = HTTPServer(server_address, LogServer)
   print('running server...')
   httpd.serve_forever()
 
-def registerWithListener(listenerip):
-    connection = http.client.HTTPConnection(listenerip, 3000)
-    mac = get_mac()
-    mac = ':'.join(("%012X" % mac)[i:i+2] for i in range(0, 12, 2)).lower()
-    connection.request('POST', '/register?mac_address='+mac)
-    print("sending POST",listenerip,':3000','/register?mac_address='+mac)
-    response = connection.getresponse()
-    env = json.loads(response.read().decode())
-    print("received", env)
-    for key in env:
-        os.environ[key] = env[key]
-
 with Capturing():
+    os.chdir("/bootpart")
     t = threading.Thread(target = run)
     t.daemon = True
     t.start()
-
-    UDP_IP = "0.0.0.0"
-    UDP_PORT = 9876
-
-    sock = socket.socket(socket.AF_INET, # Internet
-                         socket.SOCK_DGRAM) # UDP
-    sock.bind((UDP_IP, UDP_PORT))
-
-    while True:
-        data, addr = sock.recvfrom(1024)
-        print ("received message:", data)
-        if "unik" in data.decode("utf-8"):
-            listenerip = data.decode("utf-8").split(':')[1]
-            registerWithListener(listenerip)
-            break
 
     import main.py ##NAME OF SCRIPT GOES HERE

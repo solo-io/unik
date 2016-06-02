@@ -83,11 +83,16 @@ func (r *RumCompilerBase) runContainer(localFolder string, envPairs []string) er
 
 }
 
-func setRumpCmdLine(c rumpConfig, prog string, argv []string,) rumpConfig {
-	if argv == nil {
-		argv = []string{}
+func setRumpCmdLine(c rumpConfig, prog string, argv []string, addStub bool) rumpConfig {
+	if addStub {
+		stub := commandLine{
+			Bin: "stub",
+			Argv: []string{},
+		}
+		c.Rc = append(c.Rc, stub)
 	}
-	progrc := commandLine{Bin: "program",
+	progrc := commandLine{
+		Bin: "program",
 		Argv:    argv,
 	}
 	c.Rc = append(c.Rc, progrc)

@@ -166,12 +166,13 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-python3-hw",
-			CreateImage: rump.CreateImageVirtualBox,
+			CreateImage: rump.CreateImageVirtualBoxAddStub,
 		},
 		BootstrapType: rump.BootstrapTypeUDP,
-		RunScriptArgs: "/code/python-wrapper.py",
+		RunScriptArgs: "/bootpart/python-wrapper.py",
 		ScriptEnv: []string{
-			"PYTHONHOME=/python",
+			"PYTHONHOME=/bootpart/python",
+			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/",
 		},
 	}
 

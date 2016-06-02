@@ -8,6 +8,13 @@ import (
 )
 
 func CreateImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageAws(kernel, args, mntPoints, bakedEnv, noCleanup, false)
+}
+
+func CreateImageAwsAddStub(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageAws(kernel, args, mntPoints, bakedEnv, noCleanup, true)
+}
+func createImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup, addStub bool) (*types.RawImage, error) {
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {
@@ -17,11 +24,11 @@ func CreateImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup
 		}
 	}
 
-	if args == "" {
-		c = setRumpCmdLine(c, "program.bin", nil)
-	} else {
-		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "))
+	argv := []string{}
+	if args != "" {
+		argv = strings.Split(args, " ")
 	}
+	c = setRumpCmdLine(c, "program.bin", argv, addStub)
 
 	res := &types.RawImage{}
 	volIndex := 0
@@ -69,5 +76,4 @@ func CreateImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup
 	res.RunSpec.DefaultInstanceMemory = 1024
 
 	return res, nil
-
 }

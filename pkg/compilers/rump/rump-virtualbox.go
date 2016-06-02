@@ -9,6 +9,14 @@ import (
 )
 
 func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVirtualBox(kernel, args, mntPoints, bakedEnv, noCleanup, false)
+}
+
+func CreateImageVirtualBoxAddStub(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVirtualBox(kernel, args, mntPoints, bakedEnv, noCleanup, true)
+}
+
+func createImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string, noCleanup, addStub bool) (*types.RawImage, error) {
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {
@@ -18,11 +26,11 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []str
 		}
 	}
 
-	if args == "" {
-		c = setRumpCmdLine(c, "program.bin", nil)
-	} else {
-		c = setRumpCmdLine(c, "program.bin", strings.Split(args, " "))
+	argv := []string{}
+	if args != "" {
+		argv = strings.Split(args, " ")
 	}
+	c = setRumpCmdLine(c, "program.bin", argv, addStub)
 
 	res := &types.RawImage{}
 	// add root -> sd0 mapping

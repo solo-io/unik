@@ -99,6 +99,7 @@ def run():
   httpd.serve_forever()
 
 with Capturing():
+    os.chdir("/bootpart")
     t = threading.Thread(target = run)
     t.daemon = True
     t.start()
