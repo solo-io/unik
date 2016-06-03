@@ -80,7 +80,7 @@ func createImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []str
 
 	logrus.Debugf("writing rump json config: %s", cmdline)
 
-	imgFile, err := BuildBootableImage(kernel, cmdline, noCleanup)
+	imgFile, err := BuildBootableImage(kernel, cmdline, true, noCleanup)
 	if err != nil {
 		return nil, err
 	}

@@ -75,6 +75,8 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		return nil, errors.New("could not find instance type for specified memory", err)
 	}
 
+	logrus.Debugf("determined intstance type %s for memory requirement %v", instanceType, params.InstanceMemory)
+
 	runInstanceInput := &ec2.RunInstancesInput{
 		ImageId:  aws.String(image.Id),
 		MinCount: aws.Int64(1),

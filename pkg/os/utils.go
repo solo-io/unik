@@ -44,14 +44,17 @@ func createSparseFile(filename string, size DiskSize) error {
 	return nil
 }
 
-func CreateBootImageWithSize(rootFile string, size DiskSize, progPath, staticFilesDir, commandline string) error {
+func CreateBootImageWithSize(rootFile string, size DiskSize, progPath, staticFilesDir, commandline string, usePartitionTables bool) error {
 	err := createSparseFile(rootFile, size)
 	if err != nil {
 		return err
 	}
 	log.WithFields(log.Fields{"imgFile": rootFile, "size": size.ToPartedFormat()}).Debug("created sparse file")
 
-	return CreateBootImageOnFile(rootFile, size, progPath, staticFilesDir, commandline)
+	if usePartitionTables {
+		return CreateBootImageOnFile(rootFile, size, progPath, staticFilesDir, commandline)
+	}
+	return CreateBootImageOnFilePvGrub(rootFile, size, progPath, staticFilesDir, commandline)
 }
 
 func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, staticFilesDir, commandline string) error {
@@ -110,7 +113,7 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, stati
 		return err
 	}
 	defer part.Release()
-	
+
 	bootLabel := "boot"
 	// format the device and mount and copy
 	err = RunLogCommand("mkfs", "-L", bootLabel, "-I", "128", "-t", "ext2", bootDevice.Name())
@@ -157,6 +160,67 @@ func PrepareGrub(folder, rootDeviceName, kernel, staticFilesDir, commandline str
 	}
 
 	if err := writeBootTemplate(path.Join(grubPath, "grub.conf"), "(hd0,0)", commandline); err != nil {
+		return err
+	}
+
+	if err := writeDeviceMap(path.Join(grubPath, "device.map"), rootDeviceName); err != nil {
+		return err
+	}
+	return nil
+}
+
+func CreateBootImageOnFilePvGrub(rootFile string, sizeOfFile DiskSize, progPath, staticFilesDir, commandline string) error {
+	log.WithFields(log.Fields{"imgFile": rootFile}).Debug("attaching sparse file")
+	rootLo := NewLoDevice(rootFile)
+	bootDevice, err := rootLo.Acquire()
+	if err != nil {
+		return err
+	}
+	defer rootLo.Release()
+
+
+	bootLabel := "boot"
+	// format the device and mount and copy
+	err = RunLogCommand("mkfs", "-L", bootLabel, "-I", "128", "-t", "ext2", bootDevice.Name())
+	if err != nil {
+		return err
+	}
+
+	mntPoint, err := Mount(bootDevice)
+	if err != nil {
+		return err
+	}
+	defer Umount(mntPoint)
+
+	if err := PreparePVGrub(mntPoint, "sda1", progPath, staticFilesDir, commandline); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func PreparePVGrub(folder, rootDeviceName, kernel, staticFilesDir, commandline string) error {
+	grubPath := path.Join(folder, "boot", "grub")
+	kernelDst := path.Join(folder, "boot", ProgramName)
+
+	os.MkdirAll(grubPath, 0755)
+
+	log.WithFields(log.Fields{"src": staticFilesDir, "dst": folder}).Debug("copying all files")
+	if err := CopyDir(staticFilesDir, folder); err != nil {
+		return err
+	}
+
+	// copy program.bin.. skip that for now
+	log.WithFields(log.Fields{"src": kernel, "dst": kernelDst}).Debug("copying file")
+	if err := CopyFile(kernel, kernelDst); err != nil {
+		return err
+	}
+
+	if err := writeBootTemplate(path.Join(grubPath, "menu.lst"), "(hd0)", commandline); err != nil {
+		return err
+	}
+
+	if err := writeBootTemplate(path.Join(grubPath, "grub.conf"), "(hd0)", commandline); err != nil {
 		return err
 	}
 

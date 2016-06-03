@@ -14,6 +14,7 @@ func CreateImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup
 func CreateImageAwsAddStub(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
 	return createImageAws(kernel, args, mntPoints, bakedEnv, noCleanup, true)
 }
+
 func createImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup, addStub bool) (*types.RawImage, error) {
 	// create rump config
 	var c rumpConfig
@@ -36,8 +37,8 @@ func createImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup
 	res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings, types.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"})
 
 	bootBlk := blk{
-		Source:     "dev",
-		Path:       "/dev/xvda0",
+		Source:     "etfs",
+		Path:       "sda1",
 		FSType:     "blk",
 		MountPoint: "/bootpart",
 	}
@@ -70,7 +71,7 @@ func createImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup
 	if err != nil {
 		return nil, err
 	}
-	imgFile, err := BuildBootableImage(kernel, cmdline, noCleanup)
+	imgFile, err := BuildBootableImage(kernel, cmdline, false, noCleanup)
 
 	if err != nil {
 		return nil, err

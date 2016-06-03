@@ -62,20 +62,27 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 			return nil, errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 		}
 
-		if err := unikutil.Retry(5, time.Duration(1000*time.Millisecond), func() error {
-			logrus.Debugf("getting instance ip")
-			if instance.Name == VsphereUnikInstanceListener {
-				instance.IpAddress = instanceListenerIp
-			} else {
-				instance.IpAddress, err = common.GetInstanceIp(instanceListenerIp, 3000, macAddr)
-				if err != nil {
-					return err
+		go func(){
+			if err := unikutil.Retry(5, time.Duration(1000*time.Millisecond), func() error {
+				logrus.Debugf("getting instance ip")
+				if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
+					if instance.Name == VsphereUnikInstanceListener {
+						instances[instance.Id].IpAddress = instanceListenerIp
+					} else {
+						instances[instance.Id].IpAddress, err = common.GetInstanceIp(instanceListenerIp, 3000, macAddr)
+						if err != nil {
+							return err
+						}
+					}
+					return nil
+				}); err != nil {
+					logrus.WithError(err).Warnf("failed to get instance "+instance.Name+" ip")
 				}
+				return nil
+			}); err != nil {
+				logrus.Warnf("failed to retrieve ip for instance %s. instance may be running but has not responded to udp broadcast", instance.Id)
 			}
-			return nil
-		}); err != nil {
-			logrus.Warnf("failed to retrieve ip for instance %s. instance may be running but has not responded to udp broadcast", instance.Id)
-		}
+		}()
 
 		err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 			instances[instance.Id] = instance

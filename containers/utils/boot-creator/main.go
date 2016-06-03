@@ -16,6 +16,7 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 	buildcontextdir := flag.String("d", "/opt/vol", "build context. relative volume names are relative to that")
 	kernelInContext := flag.String("p", "program.bin", "kernel binary name.")
+	usePartitionTables := flag.Bool("part", true, "indicates whether or not to use partition tables and install grub")
 	args := flag.String("a", "", "arguments to kernel")
 
 	flag.Parse()
@@ -23,13 +24,7 @@ func main() {
 	kernelFile := path.Join(*buildcontextdir, *kernelInContext)
 	imgFile := path.Join(*buildcontextdir, "vol.img")
 
-	log.WithFields(log.Fields{"kernelFile": kernelFile, "args": *args, "imgFile": imgFile}).Debug("calling CreateBootImageWithSize")
-
-	//kernelFileInfo, err := os.Stat(kernelFile)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//s1 := float64(kernelFileInfo.Size()) * 1.1
+	log.WithFields(log.Fields{"kernelFile": kernelFile, "args": *args, "imgFile": imgFile, "usePartitionTables": *usePartitionTables}).Debug("calling CreateBootImageWithSize")
 
 	s1, err := unikos.DirSize(*buildcontextdir)
 	if err != nil {
@@ -45,7 +40,7 @@ func main() {
 	//no need to copy twice
 	os.Remove(path.Join(staticFileDir, *kernelInContext))
 
-	if err := unikos.CreateBootImageWithSize(imgFile, unikos.MegaBytes(size), kernelFile, staticFileDir, *args); err != nil {
+	if err := unikos.CreateBootImageWithSize(imgFile, unikos.MegaBytes(size), kernelFile, staticFileDir, *args, *usePartitionTables); err != nil {
 		log.Fatal(err)
 	}
 }

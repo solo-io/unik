@@ -17,7 +17,7 @@ import (
 	"path/filepath"
 )
 
-func BuildBootableImage(kernel, cmdline string, noCleanup bool) (string, error) {
+func BuildBootableImage(kernel, cmdline string, usePartitionTables, noCleanup bool) (string, error) {
 	directory, err := ioutil.TempDir("", "bootable-image-directory.")
 	if err != nil {
 		return "", err
@@ -36,7 +36,12 @@ func BuildBootableImage(kernel, cmdline string, noCleanup bool) (string, error) 
 	}
 
 	const contextDir = "/opt/vol/"
-	cmds := []string{"-d", contextDir, "-p", kernelBaseName, "-a", cmdline}
+	cmds := []string{
+		"-d", contextDir,
+		"-p", kernelBaseName,
+		"-a", cmdline,
+		fmt.Sprintf("-part=%v", usePartitionTables),
+	}
 	binds := map[string]string{directory: contextDir, "/dev/": "/dev/"}
 
 	if err := execContainer("boot-creator", cmds, binds, true, nil); err != nil {
