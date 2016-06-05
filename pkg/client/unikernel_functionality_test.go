@@ -40,11 +40,13 @@ var _ = Describe("Unikernel Functionality", func() {
 			})
 			Context("instances exist", func() {
 				Describe("Run()", func() {
-					imageNames := []string{
+					imagesWithVolumes := []string{
 						test_go_app,
-						test_java_app,
 						test_python3_app,
 						test_nodejs_app,
+					}
+					imagesWithoutVolumes := []string{
+						test_java_app,
 					}
 					providers := []string{}
 					if len(cfg.Providers.Virtualbox) > 0 {
@@ -107,7 +109,7 @@ var _ = Describe("Unikernel Functionality", func() {
 							instanceName := imageName
 							noCleanup := false
 							env := map[string]string{"KEY": "VAL"}
-							memoryMb := 128
+							memoryMb := 256
 							instance, err := c.Instances().Run(instanceName, image.Name, mountPointsToVols, env, memoryMb, noCleanup)
 							Expect(err).ToNot(HaveOccurred())
 							instanceIp, err := helpers.WaitForIp(daemonUrl, instance.Id, ipTimeout)
