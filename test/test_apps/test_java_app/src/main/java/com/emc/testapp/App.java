@@ -13,12 +13,12 @@ import com.sun.net.httpserver.HttpServer;
 public class App 
 {
   public static void main(String[] args) throws Exception {
-      System.out.println("started!");
       HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
       server.createContext("/ping_test", new PingHandler());
       server.createContext("/env_test", new EnvHandler());
       server.createContext("/mount_test", new MountHandler());
       server.setExecutor(null); // creates a default executor
+      System.out.println("listening on port 8080");
       server.start();
   }
 
