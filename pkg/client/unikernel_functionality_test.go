@@ -57,12 +57,17 @@ var _ = Describe("Unikernel Functionality", func() {
 						providers = append(providers, "vsphere")
 					}
 					entries := []table.TableEntry{}
-					for _, imageName := range imageNames {
+					for _, imageName := range imagesWithVolumes {
 						for _, provider := range providers {
-							entries = append(entries, table.Entry(imageName, imageName, true, provider))
+							entries = append(entries, table.Entry(imageName+" on "+provider, imageName, true, provider))
 						}
 					}
-					logrus.WithField("entries", entries).WithField("imageNames", imageNames).WithField("providers", providers).Infof("ENTRIES TO TEST")
+					for _, imageName := range imagesWithoutVolumes {
+						for _, provider := range providers {
+							entries = append(entries, table.Entry(imageName+" on "+provider, imageName, false, provider))
+						}
+					}
+					logrus.WithField("entries", entries).WithField("imageNames", append(imagesWithVolumes, imagesWithoutVolumes...)).WithField("providers", providers).Infof("ENTRIES TO TEST")
 					Context("Build() then Run()", func() {
 						table.DescribeTable("running images", func(imageName string, withVolume bool, provider string) {
 							compiler := ""

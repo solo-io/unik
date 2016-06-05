@@ -12,18 +12,18 @@ import (
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"net/http"
 	"encoding/json"
+	"time"
 )
 
 var cfg = helpers.NewTestConfig()
 
 func TestClient(t *testing.T) {
 	RegisterFailHandler(Fail)
-	var projectRoot = helpers.GetProjectRoot()
 	var d *daemon.UnikDaemon
 	var tmpUnik helpers.TempUnikHome
 	BeforeSuite(func(){
 		logrus.SetLevel(logrus.DebugLevel)
-		if err := helpers.MakeContainers(projectRoot); err != nil {
+		if err := helpers.MakeContainers(helpers.GetProjectRoot()); err != nil {
 			logrus.Panic(err)
 		}
 		util.SetContainerVer("1.0")
@@ -63,7 +63,18 @@ func testInstanceMount(instanceIp string) {
 }
 
 func testInstanceEndpoint(instanceIp, path, expectedResponse string) {
-	resp, body, err := lxhttpclient.Get(instanceIp+":8080", path, nil)
+	var resp *http.Response
+	var body []byte
+	var err error
+	err = util.Retry(10, 2 * time.Second, func() error{
+		resp, body, err = lxhttpclient.Get(instanceIp+":8080", path, nil)
+		return err
+	})
+	logrus.WithFields(logrus.Fields{
+		"resp": resp,
+		"body": string(body),
+		"err": err,
+	}).Debugf("got resp")
 	Expect(err).ToNot(HaveOccurred())
 	Expect(resp.StatusCode).To(Equal(http.StatusOK))
 	var testResponse struct{
