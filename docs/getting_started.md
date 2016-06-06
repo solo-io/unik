@@ -31,6 +31,13 @@ Ensure that each of the following are installed
   * Open Virtualbox
   * Open **Preferences** > **Network** > **Host-only Networks**
   * Click the green add button on the right side of the UI
+  * Enable DHCP for the interface:
+    * Click the edit button (screwdriver image)
+    * In the **Adapter** tab, note the IP and netmask settings 
+    * In the **DHCP Server** tab, check the **Enable Server** box
+    * Set **Server Address** to the IP you just noted (or any other address on the same network)
+    * Set **Server Mask** to the netmask you just noted
+    * Set **Upper / Lower Address Bound** to a range of IPs on the same network as the server address (for example, if the server address and IP are `192.168.66.0` and `255.255.255.0`, you could set the address bounds to `192.168.66.100` and `192.168.66.110`)
   * Record the name of the new Host-Only adapter. You will need this in your UniK configuration
 
 3. Configure UniK daemon
