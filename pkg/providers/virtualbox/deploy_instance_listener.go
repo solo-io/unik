@@ -150,7 +150,7 @@ func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error)
 		return errors.New("powering on vm", err)
 	}
 
-	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, time.Second*30)
+	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, time.Second*60)
 	if err != nil {
 		return errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 	}
