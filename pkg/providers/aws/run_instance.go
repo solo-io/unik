@@ -189,28 +189,21 @@ var pvInstanceTypes = []instanceType{
 }
 
 func getInstanceType(virtualizationType types.XenVirtualizationType, memoryRequirement int) (string, error) {
-	instanceTypeName := ""
 	switch virtualizationType {
 	case types.XenVirtualizationType_HVM:
 		for _, instanceType := range hvmInstanceTypes {
-			if instanceType.memory > memoryRequirement {
-				instanceTypeName = instanceType.name
+			if instanceType.memory >= memoryRequirement {
+				return instanceType.name, nil
 			}
 		}
-		if instanceTypeName == "" {
-			return "", errors.New("memory requirement too large", nil)
-		}
-		return instanceTypeName, nil
+		return "", errors.New("memory requirement too large", nil)
 	case types.XenVirtualizationType_Paravirtual:
 		for _, instanceType := range pvInstanceTypes {
-			if instanceType.memory > memoryRequirement {
-				instanceTypeName = instanceType.name
+			if instanceType.memory >= memoryRequirement {
+				return instanceType.name, nil
 			}
 		}
-		if instanceTypeName == "" {
-			return "", errors.New("memory requirement too large", nil)
-		}
-		return instanceTypeName, nil
+		return "", errors.New("memory requirement too large", nil)
 	}
 	return "", errors.New("unknown virtualization type "+string(virtualizationType), nil)
 }
