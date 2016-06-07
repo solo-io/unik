@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"time"
+	"os"
 )
 
 var cfg = helpers.NewTestConfig()
@@ -22,7 +23,9 @@ func TestClient(t *testing.T) {
 	var d *daemon.UnikDaemon
 	var tmpUnik helpers.TempUnikHome
 	BeforeSuite(func(){
-		logrus.SetLevel(logrus.DebugLevel)
+		if os.Getenv("DEBUG_OFF") != "1" {
+			logrus.SetLevel(logrus.DebugLevel)
+		}
 		if err := helpers.MakeContainers(helpers.GetProjectRoot()); err != nil {
 			logrus.Panic(err)
 		}
