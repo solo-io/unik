@@ -26,7 +26,7 @@ func TestClient(t *testing.T) {
 		if err := helpers.MakeContainers(helpers.GetProjectRoot()); err != nil {
 			logrus.Panic(err)
 		}
-		util.SetContainerVer("1.0")
+		util.SetContainerVer("0.1")
 
 		tmpUnik.SetupUnik()
 		var err error
