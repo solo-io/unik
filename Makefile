@@ -38,7 +38,7 @@ pull:
 	docker pull projectunik/qemu-util$(CONTAINERTAG)
 	docker pull projectunik/compilers-osv-java$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-go-hw$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-go-hw-no-stub(CONTAINERTAG)
+	docker pull projectunik/compilers-rump-go-hw-no-stub$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-go-xen$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-nodejs-hw$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-nodejs-xen$(CONTAINERTAG)

@@ -48,28 +48,36 @@ var _ = FDescribe("Unikernel Functionality", func() {
 					imagesWithoutVolumes := []string{
 						test_java_app,
 					}
-					providers := []string{}
+					providersWithVolumes := []string{}
+					//TODO: aws should support mounts
+					providersWithoutVolumes := []string{}
 					if len(cfg.Providers.Virtualbox) > 0 {
-						providers = append(providers, "virtualbox")
-					}
-					if len(cfg.Providers.Aws) > 0 {
-						providers = append(providers, "aws")
+						providersWithVolumes = append(providersWithVolumes, "virtualbox")
 					}
 					if len(cfg.Providers.Vsphere) > 0 {
-						providers = append(providers, "vsphere")
+						providersWithVolumes = append(providersWithVolumes, "vsphere")
+					}
+					if len(cfg.Providers.Aws) > 0 {
+						providersWithoutVolumes = append(providersWithoutVolumes, "aws")
 					}
 					entries := []table.TableEntry{}
 					for _, imageName := range imagesWithVolumes {
-						for _, provider := range providers {
+						for _, provider := range providersWithVolumes {
 							entries = append(entries, table.Entry(imageName+" on "+provider, imageName, true, provider))
 						}
-					}
-					for _, imageName := range imagesWithoutVolumes {
-						for _, provider := range providers {
+						for _, provider := range providersWithoutVolumes {
 							entries = append(entries, table.Entry(imageName+" on "+provider, imageName, false, provider))
 						}
 					}
-					logrus.WithField("entries", entries).WithField("imageNames", append(imagesWithVolumes, imagesWithoutVolumes...)).WithField("providers", providers).Infof("ENTRIES TO TEST")
+					for _, imageName := range imagesWithoutVolumes {
+						for _, provider := range providersWithVolumes {
+							entries = append(entries, table.Entry(imageName+" on "+provider, imageName, false, provider))
+						}
+						for _, provider := range providersWithoutVolumes {
+							entries = append(entries, table.Entry(imageName+" on "+provider, imageName, false, provider))
+						}
+					}
+					logrus.WithField("entries", entries).WithField("imageNames", append(imagesWithVolumes, imagesWithoutVolumes...)).WithField("providers", providersWithVolumes).Infof("ENTRIES TO TEST")
 					Context("Build() then Run()", func() {
 						table.DescribeTable("running images", func(imageName string, withVolume bool, provider string) {
 							compiler := ""
