@@ -23,7 +23,7 @@ const (
 
 var ipTimeout = time.Second * 180
 
-var _ = Describe("Unikernel Functionality", func() {
+var _ = FDescribe("Unikernel Functionality", func() {
 	daemonUrl := "127.0.0.1:3000"
 	var c = UnikClient(daemonUrl)
 	Describe("instances", func() {
