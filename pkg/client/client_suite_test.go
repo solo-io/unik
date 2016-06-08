@@ -26,8 +26,10 @@ func TestClient(t *testing.T) {
 		if os.Getenv("DEBUG_OFF") != "1" {
 			logrus.SetLevel(logrus.DebugLevel)
 		}
-		if err := helpers.MakeContainers(helpers.GetProjectRoot()); err != nil {
-			logrus.Panic(err)
+		if os.Getenv("MAKE_CONTAINERS") == "1" {
+			if err := helpers.MakeContainers(helpers.GetProjectRoot()); err != nil {
+				logrus.Panic(err)
+			}
 		}
 		util.SetContainerVer("0.1")
 
