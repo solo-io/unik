@@ -3,7 +3,7 @@
 ---
 
 ### Tue, Jun 7 2016
-*This update includes a merge of *`develop`* into *`master`* which includes a large number of changes, all pushed as a single bundle of features and fixes. Future merges will be more granular.*
+*This update features a merge of* `develop` *into* `master`*, which includes a large number of changes, all pushed as a single bundle of features and fixes. Future merges will be more granular.*
 
 **Major Changes:**
 * Added support for building Python unikernels on rumprun using Python 3.5

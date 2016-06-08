@@ -15,7 +15,7 @@ To stay up-to-date on UniK, follow us [@ProjectUnik](https://twitter.com/Project
 
 ### *Changelog*:
 
-Due to the frequency with which features and patches are applied to UniK, we have decided to list these changes by date an [unversioned changelog](docs.changelog.md).
+Due to the frequency with which features and patches are applied to UniK, we have decided to list these changes by date an [unversioned changelog](docs/changelog.md).
 
 ---
 
