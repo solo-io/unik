@@ -1,6 +1,10 @@
-# <img src="http://i.imgur.com/npkzp8l.png" alt="Build and run unikernels" width="141" height="50"> [![Build Status](https://travis-ci.org/emc-advanced-dev/unik.svg?branch=testing)](https://travis-ci.org/emc-advanced-dev/unik)
+# <img src="http://i.imgur.com/npkzp8l.png" alt="Build and run unikernels" width="141" height="50">
 
-UniK (pronounced you-neek) is a tool for compiling application sources into unikernels (lightweight bootable disk images) rather than binaries. UniK runs and manages instances of compiled images across a variety of cloud providers as well as locally on Virtualbox. UniK utilizes a simple docker-like command line interface, making building unikernels as easy as building containers.
+UniK (pronounced you-neek) is a tool for compiling application sources into unikernels (lightweight bootable disk images) rather than binaries.
+
+UniK runs and manages instances of compiled images across a variety of cloud providers as well as locally on Virtualbox.
+
+UniK utilizes a simple docker-like command line interface, making building unikernels as easy as building containers.
 
 UniK is built to be easily extensible, allowing (and encouraging) adding support for unikernel [compilers](docs/compilers/README.md) and cloud [providers](docs/providers/README.md). See [architecture](docs/architecture.md) for a better understanding of UniK's pluggable code design.
 
@@ -9,10 +13,9 @@ To stay up-to-date on UniK, follow us [@ProjectUnik](https://twitter.com/Project
 
 ---
 
-### *Update*:
-The UniK Instance Listener, which is required for bootstrapping instances on Virtualbox and vSphere providers is now deployed as a unikernel! No more downloads from AWS. UniK now will automatically compile and deploy the Instance Listener as a unikernel when the **daemon** is launched. Read the updated [instance listener documentation](docs/instance_listener.md).
+### *Changelog*:
 
-UniK no longer requires `go` or `qemu` as dependencies! All dependencies for UniK are now bundled into docker, including compilation of UniK itself. `make install` will no longer install UniK to your path. Instead, run `make` to pull containers and compile unik in an isolated (containerized) context with no need for dependencies. The UniK executable will be placed in `unik/_build/`. We recommend placing this binary in a path directory (such as `/usr/local/bin`) to make it easily accessible from anywhere on your system.
+Due to the frequency with which features and patches are applied to UniK, we have decided to list these changes by date an [unversioned changelog](docs.changelog.md).
 
 ---
 
@@ -23,6 +26,7 @@ UniK no longer requires `go` or `qemu` as dependencies! All dependencies for Uni
   - [Launching the InstanceListener](docs/instance_listener.md)
 - **Getting Started**
   - [Run your first Go unikernel](docs/getting_started.md) on Virtualbox with UniK
+  - [Run your first Node.js unikernel](docs/getting_started_node.md) on Virtualbox with UniK
   - [Run your first Java unikernel](docs/getting_started_java.md) on AWS with UniK
 - **User Documenation**
   - Using the [command line interface](docs/cli.md)
@@ -51,13 +55,12 @@ UniK no longer requires `go` or `qemu` as dependencies! All dependencies for Uni
 ### Roadmap:
 * additional provider support including [OpenStack](https://www.openstack.org/)
 * dynamic volume and application arguments configuration at instance runtime (rather than at compile time)
-* adding a test suite
+* expanding test coverage
 * better code documentation
 * `unik pull` & `unik push` && unikhub for sharing unikernel images
 * multi-account support per provider (i.e. multiple AWS accounts/regions, etc.)
 * migrate from [martini](https://github.com/go-martini/martini) to [echo](https://github.com/labstack/echo)
 * self-healing state (i.e. unik can identify when instances/imgaes/volumes no longer exist and self-correct rather than throwing errors)
-* mount boot volume and stop cookfs-ing filesystem (especiall for scripting languages) to reduce memory footprint, allow persistence writing to boot vol
 * ocaml support using [MirageOs](https://mirage.io/)
 
 UniK is still experimental! APIs and compatibility is subject to change. We are looking for community support to help identify potential bugs and compatibility issues. Please open a Github issue for any problems you may experience, and join us on our [slack channel](http://project-unik.io)
@@ -68,4 +71,4 @@ UniK is still experimental! APIs and compatibility is subject to change. We are 
 
 **UniK** would not be possible without the valuable open-source work of projects in the unikernel community. We would like to extend a special thank-you to [rumpkernel](https://github.com/rumpkernel/), [deferpanic](https://github.com/deferpanic), and [cloudius systems](https://github.com/cloudius-systems).
 
-<!--(for contributors): push images: for i in $(docker images | grep projectunik/ | awk '{print $1}'); do docker push $i; done-->
+<!--(for contributors): push images: CONTAINERVER=0.1 for i in $(docker images | grep projectunik/ | awk '{print $1}'); do docker push $i:$CONTAINERVER; done-->
