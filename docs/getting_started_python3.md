@@ -2,7 +2,7 @@
 
 In this tutorial we'll be:
   1. [installing UniK](getting_started.md#installing-unik)
-  2. [writing a simple HTTP Daemon in Nodejs](getting_started.md#write-a-nodejs-http-server)
+  2. [writing a simple HTTP Daemon in Python](getting_started.md#write-a-python-http-server)
   3. [compiling to a unikernel and launching an instance on Virtualbox](getting_started.md#compile-an-image-and-run-on-virtualbox)
 
 ### Installing UniK
@@ -60,41 +60,42 @@ Ensure that each of the following are installed
 
 ---
 
-#### Write a Node.js HTTP server
+#### Write a Python HTTP server
 1. Open a new terminal window, but leave the window with the daemon running. This window will be used for running UniK CLI commands.
 
-2. Make sure `Node` and `npm` are installed:
-  * http://blog.teamtreehouse.com/install-node-js-npm-mac (on OS X)
-  * https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-an-ubuntu-14-04-server (on Ubuntu/Debian)
+2. Make sure `python3.5` and `pip` are installed:
+  * Python 3.5: https://www.python.org/downloads/release/python-351/
+  * Pip (for OS X): http://softwaretester.info/install-and-upgrade-pip-on-mac-os-x/
+  * Pip (Ubuntu): http://www.saltycrane.com/blog/2010/02/how-install-pip-ubuntu/ (on Ubuntu/Debian)
 
-3. Create a file `server.js` using a text editor. Copy and paste the following code in that file:
+3. Create a file `server.py` using a text editor. Copy and paste the following code in that file:
 
-  ```javascript
-  var express    = require('express');
-  var app = express();
-  var directory = require('serve-index');
+  ```python
+  import http.server
+  import socketserver
 
-  app.use(express.static('./'));
-  app.use(directory('./'));
-  app.listen("8080");
+  PORT = 8080
+
+  Handler = http.server.SimpleHTTPRequestHandler
+
+  httpd = socketserver.TCPServer(("", PORT), Handler)
+
+  print("serving at port", PORT)
+  httpd.serve_forever()
+
   ```
 
-  This will be our simple Nodejs server.
+  This will be our simple Python server.
 
-4. Use `npm` to install the dependency for our app, `express.js`:
-  ```bash
-  npm install express
-  ```
+  *Note*: dependencies in Python applications must be installed with `pip` to the project directory (rather than the global `site-packages` for the current user). See [rump-python3](compilers/rump.md#python-3) for more information.
 
-  Try running this code with `node server.js`. Visit [http://localhost:8080/](http://localhost:8080/) to see that the server is running.
+4. Try running this code with `python3 server.py`. Visit [http://localhost:8080/](http://localhost:8080/) to see that the server is running.
 
-    *Note:* for Node.js projects with imported dependencies, you will need to install npm and run `npm install <package_name>` for each package yuor application requires.See [Compiling Node.js Apps with UniK](compilers/rump.md#nodejs) for more information.
-
-5. We need to create a manifest file to tell UniK the name of the file which contains the entrypoint to our application. In this case, it's just `server.js`.
+5. We need to create a manifest file to tell UniK the name of the file which contains the entrypoint to our application. In this case, it's just `server.py`.
 
   * Create a file named `manifest.yaml` and paste the following inside:
   ```yaml
-  main_file: server.js
+  main_file: server.py
   ```
 
 6. Great! Now we're ready to compile this code to a unikernel.
@@ -103,11 +104,11 @@ Ensure that each of the following are installed
 
 #### Compile an image and run on Virtualbox
 
-1. run the following command from the directory where your `server.js` is located:
+1. run the following command from the directory where your `server.py` is located:
   ```
-  unik build --name myImage --path ./ --compiler rump-nodejs-virtualbox --provider virtualbox
+  unik build --name myImage --path ./ --compiler rump-python-virtualbox --provider virtualbox
   ```
-  this command will instruct UniK to compile the sources found in the working directory (`./`) using the `rump-nodejs-virtualbox` compiler, and stage the image for running the `virtualbox` provider.
+  this command will instruct UniK to compile the sources found in the working directory (`./`) using the `rump-python-virtualbox` compiler, and stage the image for running the `virtualbox` provider.
 
 2. You can watch the output of the `build` command in the terminal window running the daemon.
 
