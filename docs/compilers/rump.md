@@ -61,7 +61,7 @@ Compiling Nodejs applications on rumprun requires the following parameters be me
 
 ---
 
-### Python 3
+### Python3
 
 
 Compiling Python applications on rumprun requires the following parameters be met:
