@@ -135,9 +135,9 @@ endif
 	echo Building for platform $(UNAME)
 	docker build -t projectunik/$@ -f Dockerfile .
 	mkdir -p ./_build
-	docker run --rm -v $(PWD)/_build:/opt/build -e TARGET_OS=$(TARGET_OS) -e CONTAINERVER=$(CONTAINERVER) projectunik/$@
+	docker run --rm -v $(shell pwd)/_build:/opt/build -e TARGET_OS=$(TARGET_OS) -e CONTAINERVER=$(CONTAINERVER) projectunik/$@
 	#docker rmi -f projectunik/$@
-	echo "Install finished! UniK binary can be found at $(PWD)/_build/unik"
+	echo "Install finished! UniK binary can be found at $(shell pwd)/_build/unik"
 #----
 
 # local build - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
