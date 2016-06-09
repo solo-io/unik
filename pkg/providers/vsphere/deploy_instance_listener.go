@@ -8,6 +8,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
+	"strings"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
@@ -107,10 +108,13 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		return errors.New("creating vm", err)
 	}
 
-	logrus.Debugf("copying base boot vmdk to instance dir")
+	logrus.Debugf("copying base boot image to instance dir")
 	instanceBootImagePath := instanceDir + "/boot.vmdk"
-	if err := c.CopyVmdk(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
-		return errors.New("copying base boot image", err)
+	if err := c.CopyFile(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
+		return errors.New("copying boot.vmdk", err)
+	}
+	if err := c.CopyFile(strings.TrimSuffix(getImageDatastorePath(image.Name), ".vmdk") + "-flat.vmdk", strings.TrimSuffix(instanceBootImagePath, ".vmdk") + "-flat.vmdk"); err != nil {
+		return errors.New("copying boot-flat.vmdk", err)
 	}
 	if err := c.AttachDisk(VsphereUnikInstanceListener, instanceBootImagePath, 0, image.RunSpec.StorageDriver); err != nil {
 		return errors.New("attaching boot vol to instance", err)
