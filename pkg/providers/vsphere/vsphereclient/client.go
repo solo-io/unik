@@ -275,8 +275,8 @@ func (vc *VsphereClient) CopyVmdk(src, dest string) error {
 
 func (vc *VsphereClient) CopyFile(src, dest string) error {
 	password, _ := vc.u.User.Password()
-	cmd := exec.Command("docker", "run", "--rm",
-		"projectunik/vsphere-client",
+	container := unikutil.NewContainer("vsphere-client")
+	args := []string{
 		"java",
 		"-jar",
 		"/vsphere-client.jar",
@@ -285,11 +285,10 @@ func (vc *VsphereClient) CopyFile(src, dest string) error {
 		vc.u.User.Username(),
 		password,
 		vc.dc,
-		"["+vc.ds+"] "+src,
-		"["+vc.ds+"] "+dest,
-	)
-	unikutil.LogCommand(cmd, true)
-	if err := cmd.Run(); err != nil {
+		"[" + vc.ds + "] " + src,
+		"[" + vc.ds + "] " + dest,
+	}
+	if err := container.Run(args...); err != nil {
                 lastSlash := strings.LastIndex(dest, "/")
 	        directory := "/"
 	        file := dest[lastSlash + 1:]
