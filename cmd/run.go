@@ -34,7 +34,7 @@ If no mount points are required for the image, volumes cannot be attached.
 environment variables can be set at runtime through the use of the -env flag.
 
 Example usage:
-	unik run --instanceName newInstance --imageName myImage --vol myVol:/mount1 --vol yourVol:/mount2 --env foo=bar --env another=one --memory 1234
+	unik run --instanceName newInstance --imageName myImage --vol myVol:/mount1 --vol yourVol:/mount2 --env foo=bar --env another=one --instanceMemory 1234
 
 	# will create and run an instance of myImage on the provider environment myImage is compiled for
 	# instance will be named newInstance
