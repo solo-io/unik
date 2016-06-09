@@ -271,6 +271,41 @@ func (vc *VsphereClient) CopyVmdk(src, dest string) error {
 	return nil
 }
 
+func (vc *VsphereClient) CopyFile(src, dest string) error {
+	password, _ := vc.u.User.Password()
+	cmd := exec.Command("docker", "run", "--rm",
+		"projectunik/vsphere-client",
+		"java",
+		"-jar",
+		"/vsphere-client.jar",
+		"CopyFile",
+		vc.u.String(),
+		vc.u.User.Username(),
+		password,
+		vc.dc,
+		"["+vc.ds+"] "+src,
+		"["+vc.ds+"] "+dest,
+	)
+	unikutil.LogCommand(cmd, true)
+	if err := cmd.Run(); err != nil {
+                lastSlash := strings.LastIndex(dest, "/")
+	        directory := "/"
+	        file := dest[lastSlash + 1:]
+	        if(lastSlash != -1) {
+		        directory += dest[0:lastSlash]
+		        file = dest[lastSlash + 1:]
+	        }
+                files, err := vc.Ls(directory)
+                if err != nil {
+		        return errors.New("failed running vsphere-client.jar CopyFile "+src+" "+dest, err)
+                }
+                if !unikutil.StringInSlice(file, files) {
+		        return errors.New("failed running vsphere-client.jar CopyFile "+src+" "+dest, err)
+                }
+	}
+	return nil
+}
+
 func (vc *VsphereClient) Ls(dir string) ([]string, error) {
 	cmd := exec.Command("docker", "run", "--rm",
 		"projectunik/vsphere-client",
