@@ -30,9 +30,10 @@ func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, er
 		}
 	}
 	resultc := make(chan string)
+	var stopLoop bool
 	go func(){
 		logrus.Infof("UDP Server listening on %s:%v", "0.0.0.0", 9876)
-		for {
+		for !stopLoop {
 			data := make([]byte, 4096)
 			_, remoteAddr, err := socket.ReadFromUDP(data)
 			if err != nil {
@@ -51,6 +52,7 @@ func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, er
 	case result := <- resultc:
 		return result, nil
 	case err := <- errc:
+		stopLoop = true
 		return "", err
 	}
 }
