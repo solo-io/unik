@@ -27,6 +27,10 @@ func (p *VirtualboxProvider) AttachVolume(id, instanceId, mntPoint string) error
 	}
 	logrus.Debugf("using storage controller %s", image.RunSpec.StorageDriver)
 
+	if err := virtualboxclient.RefreshDiskUUID(getVolumePath(volume.Name)); err != nil {
+		return errors.New("refreshing disk uuid", err)
+	}
+
 	if err := virtualboxclient.AttachDisk(instance.Id, getVolumePath(volume.Name), controllerPort, image.RunSpec.StorageDriver); err != nil {
 		return errors.New("attaching disk to vm", err)
 	}

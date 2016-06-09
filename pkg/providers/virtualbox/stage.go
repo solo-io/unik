@@ -21,9 +21,8 @@ func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Imag
 				return nil, errors.New("an image already exists with name '"+ params.Name +"', try again with --force", nil)
 			} else {
 				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + params.Name)
-				err = p.DeleteImage(image.Id, true)
-				if err != nil {
-					return nil, errors.New("removing previously existing image", err)
+				if err := p.DeleteImage(image.Id, true); err != nil {
+					logrus.Warn(errors.New("failed removing previously existing image", err))
 				}
 			}
 		}

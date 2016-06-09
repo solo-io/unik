@@ -24,6 +24,8 @@ import (
 	"reflect"
 
 	"github.com/codegangsta/inject"
+	"net"
+	"errors"
 )
 
 // Martini represents the top level web application. inject.Injector methods can be invoked to map services on a global level.
@@ -32,6 +34,7 @@ type Martini struct {
 	handlers []Handler
 	action   Handler
 	logger   *log.Logger
+	listener net.Listener
 }
 
 // New creates a bare bones Martini instance. Use this method if you want to have full control over the middleware that is used.
@@ -57,12 +60,6 @@ func (m *Martini) Action(handler Handler) {
 	m.action = handler
 }
 
-// Logger sets the logger
-func (m *Martini) Logger(logger *log.Logger) {
-	m.logger = logger
-	m.Map(m.logger)
-}
-
 // Use adds a middleware Handler to the stack. Will panic if the handler is not a callable func. Middleware Handlers are invoked in the order that they are added.
 func (m *Martini) Use(handler Handler) {
 	validateHandler(handler)
@@ -80,10 +77,21 @@ func (m *Martini) RunOnAddr(addr string) {
 	// TODO: Should probably be implemented using a new instance of http.Server in place of
 	// calling http.ListenAndServer directly, so that it could be stored in the martini struct for later use.
 	// This would also allow to improve testing when a custom host and port are passed.
-
 	logger := m.Injector.Get(reflect.TypeOf(m.logger)).Interface().(*log.Logger)
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		logger.Fatalln(err)
+	}
+	m.listener = ln
 	logger.Printf("listening on %s (%s)\n", addr, Env)
-	logger.Fatalln(http.ListenAndServe(addr, m))
+	logger.Printf("error running server: %v", http.Serve(ln, m))
+}
+
+func (m *Martini) Close() error {
+	if m.listener != nil {
+		return m.listener.Close()
+	}
+	return errors.New("server has not been started yet")
 }
 
 // Run the http server. Listening on os.GetEnv("PORT") or 3000 by default.

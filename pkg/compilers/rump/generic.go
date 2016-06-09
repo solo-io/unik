@@ -1,47 +1,54 @@
 package rump
 
 import (
-	"github.com/emc-advanced-dev/pkg/errors"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
-
-	log "github.com/Sirupsen/logrus"
-
-	"github.com/docker/engine-api/client"
-	"github.com/docker/engine-api/types"
-	"github.com/docker/engine-api/types/container"
-	"github.com/docker/engine-api/types/network"
-	"github.com/docker/engine-api/types/strslice"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"golang.org/x/net/context"
-	"os/exec"
+	"regexp"
 	"strings"
+
+	"github.com/emc-advanced-dev/pkg/errors"
+
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"path/filepath"
 )
 
-func BuildBootableImage(kernel, cmdline string) (string, error) {
-	directory, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
+func BuildBootableImage(kernel, cmdline string, usePartitionTables, noCleanup bool) (string, error) {
+	directory, err := ioutil.TempDir("", "bootable-image-directory.")
 	if err != nil {
 		return "", err
 	}
-	defer os.RemoveAll(directory)
+	if !noCleanup {
+		defer os.RemoveAll(directory)
+	}
 	kernelBaseName := "program.bin"
+
+	if err := unikos.CopyDir(filepath.Dir(kernel), directory); err != nil {
+		return "", err
+	}
 
 	if err := unikos.CopyFile(kernel, path.Join(directory, kernelBaseName)); err != nil {
 		return "", err
 	}
 
 	const contextDir = "/opt/vol/"
-	cmds := []string{"-d", contextDir, "-p", kernelBaseName, "-a", cmdline}
-	binds := []string{directory + ":" + contextDir, "/dev/:/dev/"}
+	cmds := []string{
+		"-d", contextDir,
+		"-p", kernelBaseName,
+		"-a", cmdline,
+		fmt.Sprintf("-part=%v", usePartitionTables),
+	}
+	binds := map[string]string{directory: contextDir, "/dev/": "/dev/"}
 
-	if err := execContainer("projectunik/boot-creator", cmds, binds, true, nil); err != nil {
+	if err := execContainer("boot-creator", cmds, binds, true, nil); err != nil {
 		return "", err
 	}
 
-	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
+	resultFile, err := ioutil.TempFile("", "boot-creator-result.img.")
 	if err != nil {
 		return "", err
 	}
@@ -54,95 +61,20 @@ func BuildBootableImage(kernel, cmdline string) (string, error) {
 	return resultFile.Name(), nil
 }
 
-func RunContainer(imageName string, cmds, binds []string, privileged bool, envPairs []string) error {
-	cli, err := client.NewEnvClient()
-	if err != nil {
-		return err
-	}
-
-	config := &container.Config{
-		Image: imageName,
-		Cmd:   strslice.StrSlice(cmds),
-		Env: envPairs,
-	}
-	hostConfig := &container.HostConfig{
-		Binds:      binds,
-		Privileged: privileged,
-	}
-	networkingConfig := &network.NetworkingConfig{}
-	containerName := ""
-
-	container, err := cli.ContainerCreate(context.Background(), config, hostConfig, networkingConfig, containerName)
-	if err != nil {
-		log.WithField("err", err).Error("Error creating container")
-		return err
-	}
-	defer cli.ContainerRemove(context.Background(), types.ContainerRemoveOptions{ContainerID: container.ID})
-
-	log.WithFields(log.Fields{"id": container.ID, "cmd": cmds, "binds": binds}).Info("Created container")
-
-	if err := cli.ContainerStart(context.Background(), container.ID); err != nil {
-		log.WithField("err", err).Error("ContainerStart")
-		return err
-	}
-
-	status, err := cli.ContainerWait(context.Background(), container.ID)
-	if err != nil {
-		return err
-	}
-
-	if status != 0 {
-		log.WithField("status", status).Error("Container exit status non zero")
-
-		options := types.ContainerLogsOptions{
-			ContainerID: container.ID,
-			ShowStdout:  true,
-			ShowStderr:  true,
-			Follow:      true,
-			Tail:        "all",
-		}
-		reader, err := cli.ContainerLogs(context.Background(), options)
-		if err != nil {
-			log.WithField("err", err).Error("ContainerLogs")
-			return err
-		}
-		defer reader.Close()
-
-		if res, err := ioutil.ReadAll(reader); err == nil {
-			log.Error(string(res))
-		} else {
-			log.WithField("err", err).Warn("failed to get logs")
-		}
-
-		return errors.New("Returned non zero status", nil)
-	}
-
-	return nil
-}
-
-func execContainer(imageName string, cmds, binds []string, privileged bool, env map[string]string) error {
-	dockerArgs := []string{"run", "--rm"}
-	if privileged {
-		dockerArgs = append(dockerArgs, "--privileged")
-	}
-	for _, bind := range binds {
-		dockerArgs = append(dockerArgs, "-v", bind)
-	}
-	for key, val := range env {
-		dockerArgs = append(dockerArgs, "-e", fmt.Sprintf("%s=%s", key, val))
-	}
-	dockerArgs = append(dockerArgs, imageName)
-	dockerArgs = append(dockerArgs, cmds...)
-	cmd := exec.Command("docker", dockerArgs...)
-	unikutil.LogCommand(cmd, true)
-	if err := cmd.Run(); err != nil {
+func execContainer(imageName string, cmds []string, binds map[string]string, privileged bool, env map[string]string) error {
+	container := unikutil.NewContainer(imageName).Privileged(privileged).WithVolumes(binds).WithEnvs(env)
+	if err := container.Run(cmds...); err != nil {
 		return errors.New("running container "+imageName, err)
 	}
 	return nil
 }
 
-func (r *RumpGoCompiler) runContainer(localFolder string, envPairs []string) error {
-	//return RunContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, envPairs)
+type RumCompilerBase struct {
+	DockerImage   string
+	CreateImage   func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error)
+}
+
+func (r *RumCompilerBase) runContainer(localFolder string, envPairs []string) error {
 	env := make(map[string]string)
 	for _, pair := range envPairs {
 		split := strings.Split(pair, "=")
@@ -151,5 +83,66 @@ func (r *RumpGoCompiler) runContainer(localFolder string, envPairs []string) err
 		}
 		env[split[0]] = split[1]
 	}
-	return execContainer(r.DockerImage, nil, []string{fmt.Sprintf("%s:%s", localFolder, "/opt/code")}, false, env)
+
+	return unikutil.NewContainer(r.DockerImage).WithVolume(localFolder, "/opt/code").WithEnvs(env).Run()
+
+}
+
+func setRumpCmdLine(c rumpConfig, prog string, argv []string, addStub bool) rumpConfig {
+	if addStub {
+		stub := commandLine{
+			Bin: "stub",
+			Argv: []string{},
+		}
+		c.Rc = append(c.Rc, stub)
+	}
+	progrc := commandLine{
+		Bin: "program",
+		Argv:    argv,
+	}
+	c.Rc = append(c.Rc, progrc)
+	return c
+}
+
+var netRegEx = regexp.MustCompile("net[1-9]")
+var envRegEx = regexp.MustCompile("\"env\":\\{(.*?)\\}")
+var envRegEx2 = regexp.MustCompile("env[0-9]")
+
+// rump special json
+func toRumpJson(c rumpConfig) (string, error) {
+
+	blk := c.Blk
+	c.Blk = nil
+
+	jsonConfig, err := json.Marshal(c)
+	if err != nil {
+		return "", err
+	}
+
+	blks := ""
+	for _, b := range blk {
+
+		blkjson, err := json.Marshal(b)
+		if err != nil {
+			return "", err
+		}
+		blks += fmt.Sprintf("\"blk\": %s,", string(blkjson))
+	}
+	var jsonString string
+	if len(blks) > 0 {
+
+		jsonString = string(jsonConfig[:len(jsonConfig)-1]) + "," + blks[:len(blks)-1] + "}"
+
+	} else {
+		jsonString = string(jsonConfig)
+	}
+
+	jsonString = netRegEx.ReplaceAllString(jsonString, "net")
+
+	jsonString = string(envRegEx.ReplaceAllString(jsonString, "$1"))
+
+	jsonString = string(envRegEx2.ReplaceAllString(jsonString, "env"))
+
+	return jsonString, nil
+
 }

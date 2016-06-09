@@ -1,3 +1,5 @@
+process.chdir('/tmp');
+
 var StdOutFixture = require('./fixture-stdout.js');
 var stdOutFixture = new StdOutFixture();
 

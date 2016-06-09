@@ -143,11 +143,9 @@ public class VmAttachDisk {
             }
             Task copyTask = fileManager.copyDatastoreFile_Task(sourcePath, datacenter, destinationPath, datacenter, true);
 
-            System.out.println(copyTask.waitForTask());
-            if (copyTask.getTaskInfo() != null && copyTask.getTaskInfo().getDescription() != null) {
-                System.out.println(copyTask.getTaskInfo().getDescription().getMessage());
-            }
-            if (copyTask.getTaskInfo().getDescription().getMessage().contains("success")) {
+            String res = copyTask.waitForTask();
+            System.out.println(res);
+            if (res.contains("success")) {
                 return;
             }
             System.exit(-1);

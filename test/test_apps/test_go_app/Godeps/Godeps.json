@@ -1,0 +1,46 @@
+{
+	"ImportPath": "github.com/emc-advanced-dev/unik/test/test_apps/test_go_app",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v63",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/gin-gonic/gin",
+			"Comment": "v1.0rc1-266-g542be2f",
+			"Rev": "542be2fe77724f800fcab7eb6c01a4e597fb8506"
+		},
+		{
+			"ImportPath": "github.com/gin-gonic/gin/binding",
+			"Comment": "v1.0rc1-266-g542be2f",
+			"Rev": "542be2fe77724f800fcab7eb6c01a4e597fb8506"
+		},
+		{
+			"ImportPath": "github.com/gin-gonic/gin/render",
+			"Comment": "v1.0rc1-266-g542be2f",
+			"Rev": "542be2fe77724f800fcab7eb6c01a4e597fb8506"
+		},
+		{
+			"ImportPath": "github.com/golang/protobuf/proto",
+			"Rev": "7f07925444bb51fa4cf9dfe6f7661876f8852275"
+		},
+		{
+			"ImportPath": "github.com/manucorporat/sse",
+			"Rev": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "e45385e9b226f570b1f086bf287b25d3d4117776"
+		},
+		{
+			"ImportPath": "gopkg.in/go-playground/validator.v8",
+			"Comment": "v8.17.1",
+			"Rev": "014792cf3e266caff1e916876be12282b33059e0"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "a83829b6f1293c91addabc89d0571c246397bbf4"
+		}
+	]
+}

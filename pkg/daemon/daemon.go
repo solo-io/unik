@@ -3,56 +3,65 @@ package daemon
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	"github.com/docker/docker/pkg/ioutils"
-	"github.com/emc-advanced-dev/unik/pkg/compilers"
-	"github.com/emc-advanced-dev/unik/pkg/config"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	"github.com/emc-advanced-dev/unik/pkg/providers"
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/go-martini/martini"
-	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/layer-x/layerx-commons/lxmartini"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
-	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
-	"github.com/emc-advanced-dev/unik/pkg/state"
-	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/docker/docker/pkg/ioutils"
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/osv"
-	"io/ioutil"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
+	"github.com/emc-advanced-dev/unik/pkg/config"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/providers"
+	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
+	"github.com/emc-advanced-dev/unik/pkg/providers/qemu"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
+	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
+	"github.com/emc-advanced-dev/unik/pkg/state"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/go-martini/martini"
+	"github.com/layer-x/layerx-commons/lxmartini"
+	"path/filepath"
+	"runtime"
 )
 
 type UnikDaemon struct {
 	server    *martini.ClassicMartini
-	providers providers.Providers	`json:"providers"`
+	providers providers.Providers `json:"providers"`
 	compilers map[string]compilers.Compiler
 }
 
 const (
 	//available providers
-	aws_provider = "aws"
-	vsphere_provider = "vsphere"
+	aws_provider        = "aws"
+	vsphere_provider    = "vsphere"
 	virtualbox_provider = "virtualbox"
+	qemu_provider       = "qemu"
 )
 
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
+	if runtime.GOOS == "darwin" {
+		tmpDir := filepath.Join(os.Getenv("HOME"), ".unik", "tmp")
+		os.Setenv("TMPDIR", tmpDir)
+		os.MkdirAll(tmpDir, 0755)
+	}
 	_providers := make(providers.Providers)
 	_compilers := make(map[string]compilers.Compiler)
 
 	for _, awsConfig := range config.Providers.Aws {
 		logrus.Infof("Bootstrapping provider %s with config %v", aws_provider, awsConfig)
 		p := aws.NewAwsProvier(awsConfig)
-		s, err := state.BasicStateFromFile(aws.AwsStateFile)
+		s, err := state.BasicStateFromFile(aws.AwsStateFile())
 		if err != nil {
-			logrus.WithError(err).Warnf("failed to read aws state file at %s, creating blank aws state", aws.AwsStateFile)
-			s = state.NewBasicState(aws.AwsStateFile)
+			logrus.WithError(err).Warnf("failed to read aws state file at %s, creating blank aws state", aws.AwsStateFile())
+			s = state.NewBasicState(aws.AwsStateFile())
 		}
 		p = p.WithState(s)
 		_providers[aws_provider] = p
@@ -64,10 +73,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		if err != nil {
 			return nil, errors.New("initializing vsphere provider", err)
 		}
-		s, err := state.BasicStateFromFile(vsphere.VsphereStateFile)
+		s, err := state.BasicStateFromFile(vsphere.VsphereStateFile())
 		if err != nil {
-			logrus.WithError(err).Warnf("failed to read vsphere state file at %s, creating blank vsphere state", vsphere.VsphereStateFile)
-			s = state.NewBasicState(vsphere.VsphereStateFile)
+			logrus.WithError(err).Warnf("failed to read vsphere state file at %s, creating blank vsphere state", vsphere.VsphereStateFile())
+			s = state.NewBasicState(vsphere.VsphereStateFile())
 		}
 		p = p.WithState(s)
 		_providers[vsphere_provider] = p
@@ -79,43 +88,118 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		if err != nil {
 			return nil, errors.New("initializing virtualbox provider", err)
 		}
-		s, err := state.BasicStateFromFile(virtualbox.VirtualboxStateFile)
+		s, err := state.BasicStateFromFile(virtualbox.VirtualboxStateFile())
 		if err != nil {
-			logrus.WithError(err).Warnf("failed to read virtualbox state file at %s, creating blank virtualbox state", virtualbox.VirtualboxStateFile)
-			s = state.NewBasicState(virtualbox.VirtualboxStateFile)
+			logrus.WithError(err).Warnf("failed to read virtualbox state file at %s, creating blank virtualbox state", virtualbox.VirtualboxStateFile())
+			s = state.NewBasicState(virtualbox.VirtualboxStateFile())
 		}
 		p = p.WithState(s)
 		_providers[virtualbox_provider] = p
 		break
 	}
 
-	_compilers[compilers.RUMP_GO_AWS] = &rump.RumpGoCompiler{
-		DockerImage: "projectunik/compilers-rump-go-xen",
-		CreateImage: rump.CreateImageAws,
-	}
-	_compilers[compilers.RUMP_GO_VMWARE] = &rump.RumpGoCompiler{
-		DockerImage: "projectunik/compilers-rump-go-hw",
-		CreateImage: rump.CreateImageVmware,
-	}
-	_compilers[compilers.RUMP_GO_VIRTUALBOX] = &rump.RumpGoCompiler{
-		DockerImage: "projectunik/compilers-rump-go-hw",
-		CreateImage: rump.CreateImageVirtualBox,
+	for _, qemuConfig := range config.Providers.Qemu {
+		logrus.Infof("Bootstrapping provider %s with config %v", qemu_provider, qemuConfig)
+		p, err := qemu.NewQemuProvider(qemuConfig)
+		if err != nil {
+			return nil, errors.New("initializing qemu provider", err)
+		}
+		s, err := state.BasicStateFromFile(qemu.QemuStateFile())
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read qemu state file at %s, creating blank qemu state", qemu.QemuStateFile())
+			s = state.NewBasicState(qemu.QemuStateFile())
+		}
+		p = p.WithState(s)
+		_providers[qemu_provider] = p
+		break
 	}
 
-	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpNodeCompiler{
-		DockerImage: "projectunik/compilers-rump-nodejs-xen",
-		CreateImage: rump.CreateImageAws,
+	_compilers[compilers.RUMP_GO_AWS] = &rump.RumpGoCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage:   "compilers-rump-go-xen",
+			CreateImage:   rump.CreateImageAws,
+		}}
+	_compilers[compilers.RUMP_GO_VMWARE] = &rump.RumpGoCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+
+			DockerImage:   "compilers-rump-go-hw",
+			CreateImage:   rump.CreateImageVmware,
+		}}
+	_compilers[compilers.RUMP_GO_VIRTUALBOX] = &rump.RumpGoCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+
+			DockerImage:   "compilers-rump-go-hw",
+			CreateImage:   rump.CreateImageVirtualBox,
+		},
+	}
+	_compilers[compilers.RUMP_GO_QEMU] = &rump.RumpGoCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage:   "compilers-rump-go-hw",
+			CreateImage:   rump.CreateImageQemu,
+		}}
+
+	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-nodejs-xen",
+			CreateImage: rump.CreateImageAws,
+		},
 		BootstrapType: rump.BootstrapTypeEC2,
+		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
-	_compilers[compilers.RUMP_NODEJS_VIRTUALBOX] = &rump.RumpNodeCompiler{
-		DockerImage: "projectunik/compilers-rump-nodejs-hw",
-		CreateImage: rump.CreateImageVirtualBox,
+	_compilers[compilers.RUMP_NODEJS_VIRTUALBOX] = &rump.RumpScriptCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-nodejs-hw",
+			CreateImage: rump.CreateImageVirtualBox,
+		},
 		BootstrapType: rump.BootstrapTypeUDP,
+		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
-	_compilers[compilers.RUMP_NODEJS_VMWARE] = &rump.RumpNodeCompiler{
-		DockerImage: "projectunik/compilers-rump-nodejs-hw",
-		CreateImage: rump.CreateImageVmware,
+	_compilers[compilers.RUMP_NODEJS_VMWARE] = &rump.RumpScriptCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-nodejs-hw",
+			CreateImage: rump.CreateImageVmware,
+		},
 		BootstrapType: rump.BootstrapTypeUDP,
+		RunScriptArgs: "/bootpart/node-wrapper.js",
+	}
+
+	_compilers[compilers.RUMP_PYTHON_AWS] = &rump.RumpScriptCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-python3-xen",
+			CreateImage: rump.CreateImageAwsAddStub,
+		},
+		BootstrapType: rump.BootstrapTypeEC2,
+		RunScriptArgs: "/bootpart/python-wrapper.py",
+		ScriptEnv: []string{
+			"PYTHONHOME=/bootpart/python",
+			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/",
+		},
+	}
+
+	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = &rump.RumpScriptCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-python3-hw",
+			CreateImage: rump.CreateImageVirtualBoxAddStub,
+		},
+		BootstrapType: rump.BootstrapTypeUDP,
+		RunScriptArgs: "/bootpart/python-wrapper.py",
+		ScriptEnv: []string{
+			"PYTHONHOME=/bootpart/python",
+			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/",
+		},
+	}
+
+	_compilers[compilers.RUMP_PYTHON_VMWARE] = &rump.RumpScriptCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-python3-hw",
+			CreateImage: rump.CreateImageVmwareAddStub,
+		},
+		BootstrapType: rump.BootstrapTypeUDP,
+		RunScriptArgs: "/bootpart/python-wrapper.py",
+		ScriptEnv: []string{
+			"PYTHONHOME=/bootpart/python",
+			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/",
+		},
 	}
 
 	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{}
@@ -135,6 +219,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 
 func (d *UnikDaemon) Run(port int) {
 	d.server.RunOnAddr(fmt.Sprintf(":%v", port))
+}
+
+func (d *UnikDaemon) Stop() error {
+	return d.server.Close()
 }
 
 func (d *UnikDaemon) addEndpoints() {
@@ -208,12 +296,12 @@ func (d *UnikDaemon) addEndpoints() {
 				return nil, http.StatusBadRequest, errors.New("parsing form file marked 'tarfile", err)
 			}
 			defer sourceTar.Close()
-			sourcesDir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
+			sourcesDir, err := ioutil.TempDir("", "unpacked.sources.dir.")
 			if err != nil {
 				return nil, http.StatusInternalServerError, errors.New("creating tmp dir for src files", err)
 			}
 			defer os.RemoveAll(sourcesDir)
-			logrus.Debugf("extracting uploaded files to "+ sourcesDir)
+			logrus.Debugf("extracting uploaded files to " + sourcesDir)
 			if err := unikos.ExtractTar(sourceTar, sourcesDir); err != nil {
 				return nil, http.StatusInternalServerError, errors.New("extracting sources", err)
 			}
@@ -242,7 +330,7 @@ func (d *UnikDaemon) addEndpoints() {
 
 			compiler, ok := d.compilers[compilerType]
 			if !ok {
-				return nil, http.StatusBadRequest, errors.New("unikernel type "+ compilerType +" not available for "+providerType+"infrastructure", nil)
+				return nil, http.StatusBadRequest, errors.New("unikernel type "+compilerType+" not available for "+providerType+"infrastructure", nil)
 			}
 			mntStr := req.FormValue("mounts")
 
@@ -251,37 +339,44 @@ func (d *UnikDaemon) addEndpoints() {
 				mountPoints = strings.Split(mntStr, ",")
 			}
 
-			logrus.WithFields(logrus.Fields{
-				"force":        force,
-				"mount-points": mountPoints,
-				"name":         name,
-				"args":         args,
-				"compiler":     compilerType,
-				"provider":	providerType,
-			}).Debugf("compiling raw image")
-
-			compileParams := types.CompileImageParams{
-				SourcesDir: sourcesDir,
-				Args: args,
-				MntPoints: mountPoints,
-			}
-
-			rawImage, err := compiler.CompileRawImage(compileParams)
-			if err != nil {
-				return nil, http.StatusInternalServerError, errors.New("failed to compile raw image", err)
-			}
-			logrus.Debugf("raw image compiled and saved to "+rawImage.LocalImagePath)
-
 			noCleanupStr := req.FormValue("no_cleanup")
 			var noCleanup bool
 			if strings.ToLower(noCleanupStr) == "true" {
 				noCleanup = true
 			}
 
+			logrus.WithFields(logrus.Fields{
+				"force":        force,
+				"mount-points": mountPoints,
+				"name":         name,
+				"args":         args,
+				"compiler":     compilerType,
+				"provider":     providerType,
+				"noCleanup":     noCleanup,
+			}).Debugf("compiling raw image")
+
+			compileParams := types.CompileImageParams{
+				SourcesDir: sourcesDir,
+				Args:       args,
+				MntPoints:  mountPoints,
+				NoCleanup:  noCleanup,
+			}
+
+			rawImage, err := compiler.CompileRawImage(compileParams)
+			if err != nil {
+				return nil, http.StatusInternalServerError, errors.New("failed to compile raw image", err)
+			}
+			logrus.Debugf("raw image compiled and saved to " + rawImage.LocalImagePath)
+
+
+			if !noCleanup {
+				defer os.Remove(rawImage.LocalImagePath)
+			}
+
 			stageParams := types.StageImageParams{
-				Name:name,
-				RawImage: rawImage,
-				Force: force,
+				Name:      name,
+				RawImage:  rawImage,
+				Force:     force,
 				NoCleanup: noCleanup,
 			}
 
@@ -416,10 +511,6 @@ func (d *UnikDaemon) addEndpoints() {
 	})
 	d.server.Post("/instances/run", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		handle(res, req, func() (interface{}, int, error) {
-			logrus.WithFields(logrus.Fields{
-				"request": req, "query": req.URL.Query(),
-			}).Debugf("recieved run request")
-
 			body, err := ioutil.ReadAll(req.Body)
 			if err != nil {
 				return nil, http.StatusBadRequest, errors.New("could not read request body", err)
@@ -428,6 +519,10 @@ func (d *UnikDaemon) addEndpoints() {
 			if err := json.Unmarshal(body, &runInstanceRequest); err != nil {
 				return nil, http.StatusBadRequest, errors.New("failed to parse request json", err)
 			}
+
+			logrus.WithFields(logrus.Fields{
+				"request": runInstanceRequest,
+			}).Debugf("recieved run request")
 
 			if runInstanceRequest.ImageName == "" {
 				return nil, http.StatusBadRequest, errors.New("image must be named", nil)
@@ -439,12 +534,12 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 
 			params := types.RunInstanceParams{
-				Name: runInstanceRequest.InstanceName,
-				ImageId: runInstanceRequest.ImageName,
+				Name:                 runInstanceRequest.InstanceName,
+				ImageId:              runInstanceRequest.ImageName,
 				MntPointsToVolumeIds: runInstanceRequest.Mounts,
-				Env: runInstanceRequest.Env,
-				InstanceMemory: runInstanceRequest.MemoryMb,
-				NoCleanup: runInstanceRequest.NoCleanup,
+				Env:                  runInstanceRequest.Env,
+				InstanceMemory:       runInstanceRequest.MemoryMb,
+				NoCleanup:            runInstanceRequest.NoCleanup,
 			}
 
 			instance, err := provider.RunInstance(params)
@@ -454,7 +549,7 @@ func (d *UnikDaemon) addEndpoints() {
 			return instance, http.StatusCreated, nil
 		})
 	})
-	d.server. Post("/instances/:instance_id/start", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+	d.server.Post("/instances/:instance_id/start", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		handle(res, req, func() (interface{}, int, error) {
 			instanceId := params["instance_id"]
 			logrus.WithFields(logrus.Fields{
@@ -530,7 +625,8 @@ func (d *UnikDaemon) addEndpoints() {
 			var imagePath string
 			var provider providers.Provider
 			var noCleanup bool
-			if req.Header.Get("Content-type") == "multipart/form-data" {
+			logrus.WithField("req", req).Info("received request to create volume")
+			if strings.Contains(req.Header.Get("Content-type"), "multipart/form-data") {
 				logrus.Info("received request with form-data")
 				err := req.ParseMultipartForm(0)
 				if err != nil {
@@ -611,7 +707,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 
 			params := types.CreateVolumeParams{
-				Name: volumeName,
+				Name:      volumeName,
 				ImagePath: imagePath,
 				NoCleanup: noCleanup,
 			}

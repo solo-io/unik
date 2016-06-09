@@ -10,7 +10,6 @@ import (
 	"time"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"io/ioutil"
-	"github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 var kernelIdMap = map[string]string{
@@ -74,7 +73,7 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 
 	switch params.RawImage.StageSpec.ImageFormat {
 	case types.ImageFormat_QCOW2:
-		rawImage, err := ioutil.TempFile(util.UnikTmpDir(), "")
+		rawImage, err := ioutil.TempFile("", "converted.raw.img.")
 		if err != nil {
 			return nil, errors.New("creating tmp file for qemu img convert", err)
 		}

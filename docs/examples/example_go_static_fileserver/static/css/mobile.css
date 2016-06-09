@@ -1,0 +1,350 @@
+/* Website template by freewebsitetemplates.com */
+@media only screen and (min-width : 320px) and (max-width : 568px) {
+	
+}
+@media only screen and (max-width : 568px) and (orientation : landscape) {
+	
+}
+	@media only screen and (max-width : 918px) {
+	#body {
+		margin: 0;
+		min-height: 1175px;
+		padding: 0;
+		width: 100%;
+		z-index: 3;
+	}
+	#body.home {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+	}
+	#body.home .header div, #body.home .body div, #body.home .footer div, #body.about .header div, #body .header div, #body.about .body div, #body.about .footer div, #body.about .section div {
+		margin: 0 auto;
+		max-width: none;
+		overflow: hidden;
+		padding: 10% 0;
+		position: relative;
+		width: 95%;
+	}
+	#body.home .header div img.satellite{
+		left: 2px;
+	}
+	#body.home .header div h1 {
+		float: none;
+		margin: 0;
+		padding: 30% 0 10%;
+		text-align: center;
+		width: 100%;
+	}
+	#body.home .header div h2 {
+		float: none;
+		margin: 0;
+		padding: 0 0 10% 0;
+		text-align: center;
+		width: 100%;
+	}
+	#body.home .header div a.more{
+		float: none;
+		margin: 0 auto;
+		z-index: 55;
+	}
+	#body.home .header div h3{
+		margin: 106px 0 0;
+		width: 100%;
+	}
+	#body.home .header div ul, #body.home .footer div ul, #body.home .footer div ul li ul {
+		margin: 0;
+		padding: 10% 0;
+		width: 100%;
+	}
+	#body.home .header div ul li:first-child, #body.home .header div ul li {
+		border: none;
+		float: none;
+		margin: 10% 0;
+		width: 100%;
+	}
+	#body.home .header div ul li a{
+		margin: 0 auto;
+	}
+	#body.home .header div ul li a img, #body .header div .article ul li a img {
+		margin: 0 auto;
+	}
+	#body.home .body div h1, #body.home .body div p {
+		width: 100%;
+	}
+	#body.home .footer div ul li:first-child, #body.home .footer div ul li, #body .header div .sidebar ul li ul {
+		float: none;
+		margin: 0 0 10%;
+		padding: 0;
+		width: 100%;
+	}
+	#body.home .footer div ul li h1, #body.home .footer div ul li ul li h1, #body.home .footer div ul li ul li span {
+		float: none;
+		text-align: center;
+		width: 100%;
+	}
+	#body.home .footer div ul li a{
+		height: 100%;
+		width: 100%;
+	}
+	#body.home .footer div ul li a img{
+		margin: 0 auto;
+		width: 90%;
+	}
+	#body.home .footer div ul li a span {
+		left: 46%;
+		top: 39%;
+	}
+	#body.home .footer div ul li ul li:first-child, #body.home .footer div ul li ul li {
+		width: 100%;
+	}
+	#body.home .footer div ul li ul li a.more{
+		float: none;
+		margin: 0 auto;
+	}
+	#body.home .footer div ul li ul li a {
+		display: block;
+		float: none;
+		height: 90px;
+		margin: 0 auto;
+		padding: 0;
+		width: 100px;
+	}
+	#body.about .header div h1, #body .header div h1, #body.about .header div h2, #body.about .header div p, #body.about .body div h2, #body.about .body div p, #body.about .footer div h2, #body.about .footer div p, #body.about .section div h2, #body.about .section div p, #body .header div ul li div h1, #body .header div ul li div p, #body .header div h2, #body .header div p, #body .header div .sidebar ul li h1, #body .header .contact h2 {
+		float: none;
+		text-align: center;
+		width: 100%;
+	}
+	#body.about .body div img, #body.about .footer div img, #body .header div ul li a img, #body .header div ul li div a.more, #body .header div .article ul li a.more, #body .header div .sidebar ul li ul li a img, #body .header div .sidebar ul li a img {
+		float: none;
+		margin: 0 auto;
+	}
+	#body .header div ul, #body .header div .article ul, #body .header div .sidebar ul {
+		max-width: none;
+		padding: 0;
+		width: 100%;
+	}
+	#body .header div ul li a, #body .header div .article ul li a, #body .header div .sidebar ul li a, #body .header div .sidebar ul li ul li a {
+		float: none;
+		height: auto;
+		margin: 0 auto;
+		width: auto;
+	}
+	#body .header div ul li div, #body .header div .article, #body .header div .sidebar {
+		float: none;
+		margin: 0;
+		padding: 10% 0;
+		width: 100%;
+	}
+	#body .header div .sidebar ul li ul li h2, #body .header div .sidebar ul li ul li span, #body .header div .article ul li h1, #body .header div .article ul li span, #body .header div .article ul li p, #body .header div .sidebar ul li h2, #body .header div .sidebar ul li span {
+		float: none;
+		padding: 2% 0 1%;
+		text-align: center;
+		width: 100%;
+	}
+	#body .header div form{
+		width: 100%;
+	}
+	#body .header div form input, #body .header div form textarea {
+		-webkit-appearance: none;
+		border-radius: 0;
+		margin: 0 auto 10%;
+		width: 90%;
+	}
+	#body .header div form input#submit{
+		-webkit-appearance: none;
+		border-radius: 0;
+		float: none;
+		margin: 0 auto;
+	}
+	#footer{
+		width: 100%;
+	}
+	#footer .connect{
+		width: 100%;
+	}
+	#footer .connect div, #footer .footnote div {
+		margin: 0 auto;
+		padding: 10% 0;
+		width: 95%;
+	}
+	#footer .connect div h1{
+		float: none;
+		font-size: 17px;
+		line-height: 20px;
+		margin: 0;
+		padding: 0 0 10%;
+		text-align: center;
+		width: 100%
+	}
+	#footer .connect div div{
+		float: none;
+		margin: 0 auto;
+		padding: 0;
+		width: 210px;
+	}
+	#footer .connect div div a.facebook, #footer .connect div div a.twitter, #footer .connect div div a.googleplus, #footer .connect div div a.pinterest {
+		margin: 0 10px;
+	}
+	#footer .footnote div p{
+		width: 100%;
+	}
+}
+@media only screen and (max-width : 959px) {
+	body #page {
+		margin: 0;
+		padding: 0;
+		width: auto;
+	}
+	html {
+		-webkit-text-size-adjust: none;
+	}
+	img {
+		max-width: 100%;
+	}
+	body #page {
+		margin: 0;
+		overflow: hidden;
+		padding: 0;
+		width: auto;
+	}
+	#header {
+		min-height: 73px;
+		width: 100%;
+	}
+	#header div {
+		margin: 0 auto;
+		max-width: none;
+		min-height: 105px;
+		width: 95%;
+	}
+	#header div a.logo {
+		display: block;
+		float: left;
+		height: 60px;
+		margin: 5% 0 0;
+		padding: 0;
+		width: 79%;
+	}
+	#header div span#mobile-navigation {
+		background: transparent url(../images/mobile/mobile-menu.png) no-repeat;
+		display: block;
+		height: 50px;
+		margin: 0;
+		padding: 0 0 0 0;
+		position: absolute;
+		right: 3%;
+		top: 14px;
+		width: 50px;
+		z-index: 999;
+	}
+	#header div > ul#navigation {
+		background-image: none;
+		background: rgba(98, 0, 49, 0.91);
+		border: 1px solid #f1f2f2;
+		border-radius: 0;
+		display: none;
+		float: none;
+		height: auto;
+		padding: 0;
+		position: absolute;
+		right: 3%;
+		top: 64px;
+		width: 92%;
+		z-index: 1000;
+	}
+	#header div > ul#navigation > li {
+		border-left: 0;
+		border-top: 1px solid #f1f2f2;
+		margin: 0;
+		height: auto;
+		padding: 0;
+		position: relative;
+		text-align: left;
+		width: 100%;
+	}
+	#header div > ul#navigation > li:first-child {
+		border-top: 0;
+	}
+	#header div > ul#navigation > li:hover {
+		background-color: transparent;
+	}
+	#header div ul#navigation li a {
+		border: none;
+		color: #eeeced;
+		display: block;
+		font-family: Arial;
+		font-size: 1.125em;
+		font-weight: normal;
+		height: 3em;
+		line-height: 3.125em;
+		min-height: 54px;
+		padding: 0 10px;
+		text-align: left;
+		text-decoration: none;
+		text-shadow: none;
+		width: auto;
+	}
+	#header div .mobile-submenu {
+		background: rgba(98, 0, 49, 0.91) url(../images/mobile/mobile-expand.png) no-repeat center;
+		border-left: 1px solid #f1f2f2;
+		display: inline-block;
+		height: 3.4em;
+		position: absolute;
+		right: 0;
+		top: 0;
+		width: 50px;
+		z-index: 0;
+	}
+	#header div ul#navigation li ul {
+		background: none;
+		border-top: 1px solid #f1f2f2;
+		padding: 0;
+		position: static;
+		right: 0;
+		text-align: left;
+		width: 100%;
+		z-index: 999;
+	}
+	#header div ul#navigation li ul, #header div ul#navigation li:hover ul {
+		display: none;
+	}
+	#header div ul#navigation li {
+		height: auto;
+		width: 100%;
+		z-index: 40;
+	}
+	#header div ul#navigation li ul li {
+		background: rgba(98, 0, 49, 0.91);
+		border-top: 1px solid #f1f2f2;
+		display: block;
+		height: auto;
+		margin: 0;
+		padding: 0;
+		text-align: left;
+		width: 100%;
+	}
+	#header div ul#navigation li ul li:first-child {
+		border: none;
+	}
+	#header div ul#navigation li ul li a {
+		background: rgba(98, 0, 49, 0.91);
+		color: #eeeced;
+		padding-left: 20px;
+		text-align: left;
+		text-decoration: none;
+		width: auto;
+	}
+	#header div ul#navigation li:hover a, #header div ul#navigation li.selected a, #header div ul#navigation li:hover ul li a, #header div ul#navigation li:hover ul li a:hover, #header div ul#navigation li ul li.selected a {
+		display: block;
+	}
+	#header div ul#navigation li.selected > a {
+		background: rgba(0, 0, 0, 0.91);
+		color: #eeeced;
+		text-decoration: none;
+	}
+	#header div ul li.selected a, #header div ul li.selected a:hover, #header div ul li.menu ul#selected li.selected a {
+		color: #eeeced;
+		text-decoration: none;
+	}
+}

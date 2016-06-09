@@ -1,0 +1,58 @@
+{
+  "name": "ipaddr.js",
+  "description": "A library for manipulating IPv4 and IPv6 addresses in JavaScript.",
+  "version": "1.0.5",
+  "author": {
+    "name": "whitequark",
+    "email": "whitequark@whitequark.org"
+  },
+  "directories": {
+    "lib": "./lib"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "coffee-script": "~1.6",
+    "nodeunit": ">=0.8.2 <0.8.7",
+    "uglify-js": "latest"
+  },
+  "scripts": {
+    "test": "cake build test"
+  },
+  "keywords": [
+    "ip",
+    "ipv4",
+    "ipv6"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/whitequark/ipaddr.js"
+  },
+  "main": "./lib/ipaddr",
+  "engines": {
+    "node": ">= 0.10"
+  },
+  "license": "MIT",
+  "gitHead": "46438c8bfa187505b7007a277f09a4a9e73d5686",
+  "bugs": {
+    "url": "https://github.com/whitequark/ipaddr.js/issues"
+  },
+  "_id": "ipaddr.js@1.0.5",
+  "_shasum": "5fa78cf301b825c78abc3042d812723049ea23c7",
+  "_from": "ipaddr.js@1.0.5",
+  "_npmVersion": "1.4.21",
+  "_npmUser": {
+    "name": "whitequark",
+    "email": "whitequark@whitequark.org"
+  },
+  "maintainers": [
+    {
+      "name": "whitequark",
+      "email": "whitequark@whitequark.org"
+    }
+  ],
+  "dist": {
+    "shasum": "5fa78cf301b825c78abc3042d812723049ea23c7",
+    "tarball": "https://registry.npmjs.org/ipaddr.js/-/ipaddr.js-1.0.5.tgz"
+  },
+  "_resolved": "https://registry.npmjs.org/ipaddr.js/-/ipaddr.js-1.0.5.tgz"
+}

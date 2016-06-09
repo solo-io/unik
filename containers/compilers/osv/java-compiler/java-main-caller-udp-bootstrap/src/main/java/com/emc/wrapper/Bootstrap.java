@@ -4,14 +4,15 @@ package com.emc.wrapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sun.jna.Library;
-import com.sun.jna.Native;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.net.*;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -55,6 +56,14 @@ public class Bootstrap {
                 try {
                     String listenerIp = getListenerIp(); //needs to be closed
                     Map<String, String> env = registerWithListener(listenerIp);
+                    for (String key : System.getenv().keySet()) {
+                        //overwrite existing with new when possible
+                        if (env.keySet().contains(key)) {
+                            continue;
+                        }
+                        String val = System.getenv().get(key);
+                        env.put(key, val);
+                    }
                     setEnv(env);
                     System.out.println("udp bootstrap successful.");
                 } catch (Exception ex) {
@@ -76,6 +85,12 @@ public class Bootstrap {
         }
 
         System.out.println(udpListenThread.isAlive());
+
+        for (String key : System.getenv().keySet()) {
+            String val = System.getenv().get(key);
+            System.out.println("env: "+key+"="+val);
+        }
+        System.out.println("known env vars: "+ System.getenv().toString());
 
         System.out.printf("calling main\n");
     }
@@ -172,18 +187,41 @@ public class Bootstrap {
         return result.toString();
     }
 
-    private static void setEnv(Map<String, String> env) {
-        LibC libc = (LibC) Native.loadLibrary("c", LibC.class);
-        for (String key : env.keySet()) {
-            String value = env.get(key);
-            int result = libc.setenv(key, value, 1);
-            System.out.println("set " + key + "=" + value + ": " + result);
+    private static void setEnv(Map<String, String> newenv)
+    {
+        try
+        {
+            Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
+            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
+            theEnvironmentField.setAccessible(true);
+            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
+            env.putAll(newenv);
+            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
+            theCaseInsensitiveEnvironmentField.setAccessible(true);
+            Map<String, String> cienv = (Map<String, String>)     theCaseInsensitiveEnvironmentField.get(null);
+            cienv.putAll(newenv);
         }
-    }
-
-
-    private interface LibC extends Library {
-        int setenv(String name, String value, int overwrite);
+        catch (NoSuchFieldException e)
+        {
+            try {
+                Class[] classes = Collections.class.getDeclaredClasses();
+                Map<String, String> env = System.getenv();
+                for(Class cl : classes) {
+                    if("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
+                        Field field = cl.getDeclaredField("m");
+                        field.setAccessible(true);
+                        Object obj = field.get(env);
+                        Map<String, String> map = (Map<String, String>) obj;
+                        map.clear();
+                        map.putAll(newenv);
+                    }
+                }
+            } catch (Exception e2) {
+                e2.printStackTrace();
+            }
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
     }
 
     private static class MacAddressNotFoundException extends Exception {}

@@ -2,27 +2,49 @@ package rump
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"regexp"
 )
 
-func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*types.RawImage, error) {
+func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVirtualBox(kernel, args, mntPoints, bakedEnv, noCleanup, false)
+}
 
+func CreateImageVirtualBoxAddStub(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVirtualBox(kernel, args, mntPoints, bakedEnv, noCleanup, true)
+}
+
+func createImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string, noCleanup, addStub bool) (*types.RawImage, error) {
 	// create rump config
-	var c multinetRumpConfig
-
-	if args == "" {
-		c.Cmdline = "program.bin"
-	} else {
-		c.Cmdline = "program.bin" + " " + args
+	var c rumpConfig
+	if bakedEnv != nil {
+		c.Env = make(map[string]string)
+		for i, pair := range bakedEnv {
+			c.Env[fmt.Sprintf("env%d", i)] = pair
+		}
 	}
+
+	argv := []string{}
+	if args != "" {
+		argv = strings.Split(args, " ")
+	}
+	c = setRumpCmdLine(c, "program.bin", argv, addStub)
 
 	res := &types.RawImage{}
 	// add root -> sd0 mapping
 	res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings,
 		types.DeviceMapping{MountPoint: "/", DeviceName: "sd0"})
+
+	bootBlk := blk{
+		Source:     "dev",
+		Path:       "/dev/sd0e", // no disk label on the boot partition; so partition e is used.
+		FSType:     "blk",
+		MountPoint: "/bootpart",
+	}
+
+	c.Blk = append(c.Blk, bootBlk)
 
 	for i, mntPoint := range mntPoints {
 		deviceMapped := fmt.Sprintf("sd%ca", '1'+i)
@@ -40,31 +62,25 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*typ
 	}
 
 	// virtualbox network
-	c.Net1 = &net{
+	c.Net = &net{
 		If:     "vioif0",
 		Type:   "inet",
 		Method: DHCP,
 	}
-	c.Net2 = &net{
+	c.Net1 = &net{
 		If:     "vioif1",
 		Type:   "inet",
 		Method: DHCP,
 	}
 
-	cmdline, err := ToRumpJsonMultiNet(c)
+	cmdline, err := toRumpJson(c)
 	if err != nil {
 		return nil, err
 	}
-
-	r, err := regexp.Compile("net[1-9]")
-	if err != nil {
-		return nil, err
-	}
-	cmdline = string(r.ReplaceAll([]byte(cmdline), []byte("net")))
 
 	logrus.Debugf("writing rump json config: %s", cmdline)
 
-	imgFile, err := BuildBootableImage(kernel, cmdline)
+	imgFile, err := BuildBootableImage(kernel, cmdline, true, noCleanup)
 	if err != nil {
 		return nil, err
 	}
@@ -74,5 +90,4 @@ func CreateImageVirtualBox(kernel string, args string, mntPoints []string) (*typ
 	res.RunSpec.StorageDriver = types.StorageDriver_SCSI
 	res.RunSpec.DefaultInstanceMemory = 512
 	return res, nil
-
 }

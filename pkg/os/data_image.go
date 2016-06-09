@@ -2,19 +2,19 @@ package os
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func BuildRawDataImage(dataTar io.ReadCloser, size MegaBytes, usePartitionTables bool) (string, error) {
-	dataFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
+	dataFolder, err := ioutil.TempDir("", ".raw_data_image_folder.")
 	if err != nil {
 		return "", errors.New("creating tmp build folder", err)
 	}
@@ -26,35 +26,28 @@ func BuildRawDataImage(dataTar io.ReadCloser, size MegaBytes, usePartitionTables
 
 	buildDir := filepath.Dir(dataFolder)
 
-	var cmd *exec.Cmd
+	container := unikutil.NewContainer("image-creator").Privileged(true).WithVolume("/dev/", "/dev/").
+		WithVolume(buildDir+"/", "/opt/vol")
+
+	var args []string
 	if size > 0 {
-		cmd = exec.Command("docker", "run", "--rm", "--privileged",
-			"-v", "/dev/:/dev/",
-			"-v", buildDir+"/:/opt/vol/",
-			"projectunik/image-creator",
-			"-p", fmt.Sprintf("%v", usePartitionTables),
-			"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes()),
-		)
+		args = append(args, "-p", fmt.Sprintf("%v", usePartitionTables),
+			"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes()))
 	} else {
-		cmd = exec.Command("docker", "run", "--rm", "--privileged",
-			"-v", "/dev/:/dev/",
-			"-v", buildDir+"/:/opt/vol/",
-			"projectunik/image-creator",
-			"-p", fmt.Sprintf("%v", usePartitionTables),
+		args = append(args, "-p", fmt.Sprintf("%v", usePartitionTables),
 			"-v", filepath.Base(dataFolder),
 		)
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
+		"command": args,
 	}).Debugf("running image-creator container")
-	unikutil.LogCommand(cmd, true)
-	err = cmd.Run()
-	if err != nil {
+
+	if err = container.Run(args...); err != nil {
 		return "", errors.New("failed running image-creator on "+dataFolder, err)
 	}
 
-	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
+	resultFile, err := ioutil.TempFile("", "rawdata.img")
 	if err != nil {
 		return "", err
 	}
@@ -71,7 +64,7 @@ func BuildEmptyDataVolume(size MegaBytes) (string, error) {
 	if size < 1 {
 		return "", errors.New("must specify size > 0", nil)
 	}
-	dataFolder, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
+	dataFolder, err := ioutil.TempDir("", "data.folder.")
 	if err != nil {
 		return "", errors.New("creating tmp build folder", err)
 	}
@@ -79,23 +72,19 @@ func BuildEmptyDataVolume(size MegaBytes) (string, error) {
 
 	buildDir := filepath.Dir(dataFolder)
 
-	cmd := exec.Command("docker", "run", "--rm", "--privileged",
-		"-v", "/dev/:/dev/",
-		"-v", buildDir+"/:/opt/vol/",
-		"projectunik/image-creator",
-		"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes()),
-	)
+	container := unikutil.NewContainer("image-creator").Privileged(true).WithVolume("/dev/", "/dev/").
+		WithVolume(buildDir+"/", "/opt/vol")
+
+	args := []string{"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes())}
 
 	logrus.WithFields(logrus.Fields{
-		"command": cmd.Args,
+		"command": args,
 	}).Debugf("running image-creator container")
-	unikutil.LogCommand(cmd, true)
-	err = cmd.Run()
-	if err != nil {
+	if err := container.Run(args...); err != nil {
 		return "", errors.New("failed running image-creator on "+dataFolder, err)
 	}
 
-	resultFile, err := ioutil.TempFile(unikutil.UnikTmpDir(), "")
+	resultFile, err := ioutil.TempFile("", "data.image.result.img.")
 	if err != nil {
 		return "", err
 	}

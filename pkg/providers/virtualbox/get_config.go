@@ -11,6 +11,7 @@ func (p *VirtualboxProvider) GetConfig() providers.ProviderConfig {
 		SupportedCompilers: []string{
 			compilers.RUMP_GO_VIRTUALBOX,
 			compilers.RUMP_NODEJS_VIRTUALBOX,
+			compilers.RUMP_PYTHON_VIRTUALBOX,
 			compilers.OSV_JAVA_VIRTUALBOX,
 		},
 	}

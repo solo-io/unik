@@ -32,6 +32,14 @@ Ensure that each of the following are installed
   * Open **Preferences** > **Network** > **Host-only Networks**
   * Click the green add button on the right side of the UI
   * Record the name of the new Host-Only adapter. You will need this in your UniK configuration
+  * Ensure that the Virtualbox DHCP Server is Enabled for this Host-Only Network:
+    * With the Host-Only Network selected, Click the edit button (screwdriver image)
+    * In the **Adapter** tab, note the IPv4 address and netmask of the adapter.
+    * In the **DHCP Server** tab, check the **Enable Server** box
+    * Set **Server Address** an IP on the same subnet as the Adapter IP. For example, if the adapter IP is `192.168.100.1`, make set the DHCP server IP as `192.168.100.X`, where X is a number between 2-254.
+    * Set **Server Mask** to the netmask you just noted
+    * Set **Upper / Lower Address Bound** to a range of IPs on the same subnet. We recommend using the range `X-254` where X is one higher than the IP you used for the DHCP server itself. E.g., if your DHCP server is `192.168.100.2`, you can set the lower and upper bounds to `192.168.100.3` and `192.168.100.254`, respectively.
+
 
 3. Configure UniK daemon
   * Using a text editor, create and save the following to `$HOME/.unik/daemon-config.yaml`:
@@ -44,17 +52,21 @@ Ensure that each of the following are installed
   ```
   replacing `NEW_HOST_ONLY_ADAPTER` with the name of the network adapter you created.
 
+
 4. Launch UniK and automatically deploy the *Virtualbox Instance Listener*
   * Open a new terminal window/tab. This terminal will be where we leave the UniK daemon running.
-  * `cd` to a directory where UniK can download a file.
-  * run `unik daemon`
-  * UniK will compile and deploy its own 30 MB unikernel. This unikernel is the [Unik Instance Listener](). The instance listener uses udp broadcast to detect instance ips and bootstrap instances running on Virtualbox.
+  * `cd` to the `_build` directory created by `make`
+  * run `unik daemon --debug` (the `--debug` flag is optional, if you want to see more verbose output)
+  * UniK will compile and deploy its own 30 MB unikernel. This unikernel is the [Unik Instance Listener](./instance_listener.md). The instance listener uses udp broadcast to detect instance ips and bootstrap instances running on Virtualbox.
   * After this is finished, UniK is running and ready to accept commands.
   * Open a new terminal window and type `unik target --host localhost` to set the CLI target to the your local machine.
+
 ---
 
 #### Write a Go HTTP server
+
 0. Open a new terminal window, but leave the window with the daemon running. This window will be used for running UniK CLI commands.
+
 1. Create a file `httpd.go` using a text editor. Copy and paste the following code in that file:
 
   ```go
@@ -74,6 +86,7 @@ Ensure that each of the following are installed
       fmt.Fprintf(w, "my first unikernel!")
   }
   ```
+
 2. Try running this code with `go run http.go`. Visit [http://localhost:8080/](http://localhost:8080/) to see that the server is running.
 3. We need to create a dummy `Godeps` file. This is necessary to tell the Go compiler how Go projects and their dependencies are structured. Fortunately, with this example, our project has no dependencies, and we can just fill out a simple `Godeps` file without installing [`godep`](https://github.com/tools/godep). Note: for Go projects with imported dependencies, and nested packages, you will need to install Godeps and run `GO15VENDOREXPERIMENT=1 godep save ./...` in your project. see [Compiling Go Apps with UniK](compilers/rump.md#golang) for more information.
   * To create the dummy Godeps file, create a folder named `Godeps` in the same directory as `httpd.go`. Inside, create a file named `Godeps.json` and paste the following inside:

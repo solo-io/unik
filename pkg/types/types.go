@@ -21,16 +21,17 @@ const (
 	Infrastructure_AWS        Infrastructure = "AWS"
 	Infrastructure_VSPHERE    Infrastructure = "VSPHERE"
 	Infrastructure_VIRTUALBOX Infrastructure = "VIRTUALBOX"
+	Infrastructure_QEMU       Infrastructure = "QEMU"
 )
 
 type Image struct {
-	Id             string          `json:"Id"`
-	Name           string          `json:"Name"`
-	SizeMb         int64           `json:"SizeMb"`
-	Infrastructure Infrastructure  `json:"Infrastructure"`
-	Created        time.Time       `json:"Created"`
-	StageSpec      StageSpec       `json:"StageSpec"`
-	RunSpec        RunSpec         `json:"RunSpec"`
+	Id             string         `json:"Id"`
+	Name           string         `json:"Name"`
+	SizeMb         int64          `json:"SizeMb"`
+	Infrastructure Infrastructure `json:"Infrastructure"`
+	Created        time.Time      `json:"Created"`
+	StageSpec      StageSpec      `json:"StageSpec"`
+	RunSpec        RunSpec        `json:"RunSpec"`
 }
 
 func (image *Image) Copy() *Image {
@@ -89,7 +90,7 @@ type Volume struct {
 	Created        time.Time      `json:"Created"`
 }
 
-func (volume *Volume) Copy() *Volume{
+func (volume *Volume) Copy() *Volume {
 	return &Volume{
 		Id:             volume.Id,
 		Name:           volume.Name,
@@ -108,48 +109,53 @@ func (volume *Volume) String() string {
 }
 
 type RawImage struct {
-	LocalImagePath string          `json:"LocalImagePath"`
-	StageSpec      StageSpec       `json:"StageSpec"`
-	RunSpec        RunSpec         `json:"RunSpec"`
+	LocalImagePath string    `json:"LocalImagePath"`
+	StageSpec      StageSpec `json:"StageSpec"`
+	RunSpec        RunSpec   `json:"RunSpec"`
 }
 
 type ImageFormat string
+
 const (
-	ImageFormat_RAW ImageFormat = "raw"
+	ImageFormat_RAW   ImageFormat = "raw"
 	ImageFormat_QCOW2 ImageFormat = "qcow2"
-	ImageFormat_VHD ImageFormat = "vhd"
-	ImageFormat_VMDK ImageFormat = "vmdk"
+	ImageFormat_VHD   ImageFormat = "vhd"
+	ImageFormat_VMDK  ImageFormat = "vmdk"
 )
 
 type XenVirtualizationType string
+
 const (
-	XenVirtualizationType_HVM = "hvm"
+	XenVirtualizationType_HVM         = "hvm"
 	XenVirtualizationType_Paravirtual = "paravirtual"
 )
 
 type StageSpec struct {
-	ImageFormat ImageFormat `json:"ImageFormat"` //required for all compilers
+	ImageFormat           ImageFormat           `json:"ImageFormat"` //required for all compilers
 	XenVirtualizationType XenVirtualizationType `json:"XenVirtualizationType,omitempty"`
 }
 
 type StorageDriver string
+
 const (
 	StorageDriver_SCSI = "SCSI"
 	StorageDriver_SATA = "SATA"
-	StorageDriver_IDE = "IDE"
+	StorageDriver_IDE  = "IDE"
 )
 
 type VsphereNetworkType string
+
 const (
-	VsphereNetworkType_E1000 = "e1000"
+	VsphereNetworkType_E1000   = "e1000"
 	VsphereNetworkType_VMXNET3 = "vmxnet3"
 )
 
 type RunSpec struct {
-	DeviceMappings []DeviceMapping `json:"DeviceMappings"` //required for all compilers
-	DefaultInstanceMemory int `json:"DefaultInstanceMemory"` //required for all compilers
-	StorageDriver StorageDriver `json:"StorageDriver,omitempty"`
-	VsphereNetworkType VsphereNetworkType `json:"VsphereNetworkType"`
+	DeviceMappings        []DeviceMapping    `json:"DeviceMappings"`        //required for all compilers
+	DefaultInstanceMemory int                `json:"DefaultInstanceMemory"` //required for all compilers
+	StorageDriver         StorageDriver      `json:"StorageDriver,omitempty"`
+	VsphereNetworkType    VsphereNetworkType `json:"VsphereNetworkType"`
+	Compiler              string             `json:"Compiler,omitempty"`
 }
 
 type DeviceMapping struct {

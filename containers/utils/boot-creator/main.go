@@ -7,13 +7,16 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"os"
 )
+
+const staticFileDir = "/tmp/staticfiles"
 
 func main() {
 	log.SetLevel(log.DebugLevel)
-
 	buildcontextdir := flag.String("d", "/opt/vol", "build context. relative volume names are relative to that")
 	kernelInContext := flag.String("p", "program.bin", "kernel binary name.")
+	usePartitionTables := flag.Bool("part", true, "indicates whether or not to use partition tables and install grub")
 	args := flag.String("a", "", "arguments to kernel")
 
 	flag.Parse()
@@ -21,11 +24,23 @@ func main() {
 	kernelFile := path.Join(*buildcontextdir, *kernelInContext)
 	imgFile := path.Join(*buildcontextdir, "vol.img")
 
-	log.WithFields(log.Fields{"kernelFile": kernelFile, "args": *args, "imgFile": imgFile}).Debug("calling CreateBootImageWithSize")
+	log.WithFields(log.Fields{"kernelFile": kernelFile, "args": *args, "imgFile": imgFile, "usePartitionTables": *usePartitionTables}).Debug("calling CreateBootImageWithSize")
 
-	err := unikos.CreateBootImageWithSize(imgFile, unikos.MegaBytes(100), kernelFile, *args)
-
+	s1, err := unikos.DirSize(*buildcontextdir)
 	if err != nil {
+		log.Fatal(err)
+	}
+	s2 := float64(s1) * 1.1
+	size := ((int64(s2) >> 20) + 10)
+
+	if err := unikos.CopyDir(*buildcontextdir, staticFileDir); err != nil {
+		log.Fatal(err)
+	}
+
+	//no need to copy twice
+	os.Remove(path.Join(staticFileDir, *kernelInContext))
+
+	if err := unikos.CreateBootImageWithSize(imgFile, unikos.MegaBytes(size), kernelFile, staticFileDir, *args, *usePartitionTables); err != nil {
 		log.Fatal(err)
 	}
 }

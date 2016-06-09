@@ -1,6 +1,3 @@
-#FROM alpine
-
-#RUN apk add --update device-mapper
 FROM ubuntu:14.04
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -y && \

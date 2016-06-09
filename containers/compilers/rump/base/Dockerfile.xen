@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-base-common
+FROM projectunik/compilers-rump-base-common:0.1
 
 ENV PLATFORM=xen
 ENV BUILDRUMP_EXTRA=
@@ -7,7 +7,7 @@ RUN cd /opt/rumprun && \
     ./build-rr.sh -d $RUMPDIR -o ./obj $PLATFORM build -- $BUILDRUMP_EXTRA && \
     ./build-rr.sh -d $RUMPDIR -o ./obj $PLATFORM install
 
-COPY fixrump.sh /tmp
+COPY fixrump.sh /tmp/
 RUN bash -ex /tmp/fixrump.sh
 
 VOLUME /opt/code

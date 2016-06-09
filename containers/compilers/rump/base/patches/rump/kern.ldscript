@@ -1,0 +1,136 @@
+OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64", "elf64-x86-64")
+OUTPUT_ARCH(i386:x86-64)
+ENTRY(_start)
+
+SECTIONS
+{
+	. = 0x100000;
+	_begin = . ;
+
+	.bootstrap :
+	{
+		*(.bootstrap)
+	}
+
+	. = ALIGN(0x1000);
+
+	.text :
+	AT (ADDR(.text))
+	{
+		*(.text)
+		*(.text.*)
+		*(.stub)
+		*(.note*)
+	}
+	_etext = . ;
+
+	.rodata :
+	AT (LOADADDR(.text) + (ADDR(.rodata) - ADDR(.text)))
+	{
+		*(.rodata)
+		*(.rodata.*)
+	}
+
+	.initfini :
+	AT (LOADADDR(.text) + (ADDR(.initfini) - ADDR(.text)))
+	{
+		__init_array_start = . ;
+		*(SORT_BY_INIT_PRIORITY(.init_array.*))
+		*(SORT_BY_INIT_PRIORITY(.ctors*))
+		*(.init_array)
+		__init_array_end = . ;
+		
+		__y1_init_array_start = . ;
+		*(SORT_BY_INIT_PRIORITY(.y1init_array.*))
+		*(SORT_BY_INIT_PRIORITY(.y1ctors*))
+		*(.y1init_array)
+		__y1_init_array_end = . ;
+		
+		__y2_init_array_start = . ;
+		*(SORT_BY_INIT_PRIORITY(.y2init_array.*))
+		*(SORT_BY_INIT_PRIORITY(.y2ctors*))
+		*(.y2init_array)
+		__y2_init_array_end = . ;
+		
+		__y3_init_array_start = . ;
+		*(SORT_BY_INIT_PRIORITY(.y3init_array.*))
+		*(SORT_BY_INIT_PRIORITY(.y3ctors*))
+		*(.y3init_array)
+		__y3_init_array_end = . ;
+		
+		__y4_init_array_start = . ;
+		*(SORT_BY_INIT_PRIORITY(.y4init_array.*))
+		*(SORT_BY_INIT_PRIORITY(.y4ctors*))
+		*(.y4init_array)
+		__y4_init_array_end = . ;
+		
+		__y5_init_array_start = . ;
+		*(SORT_BY_INIT_PRIORITY(.y5init_array.*))
+		*(SORT_BY_INIT_PRIORITY(.y5ctors*))
+		*(.y5init_array)
+		__y5_init_array_end = . ;
+		
+		__y6_init_array_start = . ;
+		*(SORT_BY_INIT_PRIORITY(.y6init_array.*))
+		*(SORT_BY_INIT_PRIORITY(.y6ctors*))
+		*(.y6init_array)
+		__y6_init_array_end = . ;
+		
+		__y7_init_array_start = . ;
+		*(SORT_BY_INIT_PRIORITY(.y7init_array.*))
+		*(SORT_BY_INIT_PRIORITY(.y7ctors*))
+		*(.y7init_array)
+		__y7_init_array_end = . ;
+		
+		__y8_init_array_start = . ;
+		*(SORT_BY_INIT_PRIORITY(.y8init_array.*))
+		*(SORT_BY_INIT_PRIORITY(.y8ctors*))
+		*(.y8init_array)
+		__y8_init_array_end = . ;
+		
+		__fini_array_start = . ;
+		*(SORT_BY_INIT_PRIORITY(.fini_array.*))
+		*(SORT_BY_INIT_PRIORITY(.dtors*))
+		*(.fini_array)
+		__fini_array_end = . ;
+	}
+
+	. = ALIGN(0x1000);
+
+	_data_start = .;
+	.data :
+	AT (LOADADDR(.text) + (ADDR(.data) - ADDR(.text)))
+	{
+		*(.data)
+		*(.data.*)
+	}
+	.tdata : {
+		_tdata_start = . ;
+		*(.tdata)
+		_tdata_end = . ;
+	}
+	_edata = . ;
+	.tbss : {
+		_tbss_start = . ;
+		*(.tbss)
+		_tbss_end = . ;
+	}
+
+	__bss_start = . ;
+	.bss :
+	AT (LOADADDR(.text) + (ADDR(.bss) - ADDR(.text)))
+	{
+		*(.bss)
+		*(.bss.*)
+		*(COMMON)
+	}
+	.lbss :
+	AT (LOADADDR(.text) + (ADDR(.lbss) - ADDR(.text)))
+	{
+		*(.lbss)
+		*(.lbss.*)
+		*(LARGE_COMMON)
+	}
+	_ebss = . ;
+	_end = . ;
+}

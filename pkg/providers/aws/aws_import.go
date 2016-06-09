@@ -241,9 +241,6 @@ func createBucket(s3svc *s3.S3, bucketName string) error {
 
 	params := &s3.CreateBucketInput{
 		Bucket: aws.String(bucketName), // Required
-		// CreateBucketConfiguration: &s3.CreateBucketConfiguration{
-		//     LocationConstraint : aws.String("us-east-1"),
-		// },
 	}
 	_, err := s3svc.CreateBucket(params)
 
@@ -255,19 +252,31 @@ func createBucket(s3svc *s3.S3, bucketName string) error {
 }
 
 func deleteBucket(s3svc *s3.S3, bucketName string) error {
-
 	log.WithFields(log.Fields{"name": bucketName}).Debug("Deleting Bucket ")
+	//first delete objects
+	listObjectParams := &s3.ListObjectsInput{
+		Bucket: aws.String(bucketName),
+	}
+	objects, err := s3svc.ListObjects(listObjectParams)
+	if err != nil {
+		return err
+	}
+	for _, object := range objects.Contents {
+		deleteObjectParams := &s3.DeleteObjectInput{
+			Bucket: aws.String(bucketName),
+			Key: object.Key,
+		}
+		_, err := s3svc.DeleteObject(deleteObjectParams)
+		if err != nil {
+			return err
+		}
+	}
 
 	params := &s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName), // Required
 	}
-	_, err := s3svc.DeleteBucket(params)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, err = s3svc.DeleteBucket(params)
+	return err
 }
 
 func deleteSnapshot(e2svc *ec2.EC2, snapshotId string) error {

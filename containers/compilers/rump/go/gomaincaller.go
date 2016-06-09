@@ -2,20 +2,33 @@ package main
 
 import (
 	"C"
-	"bufio"
+	"os"
+	"unsafe"
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
-	"os"
 	"strings"
 	"time"
+	"fmt"
+	"io"
+	"bufio"
 )
+
+//export gomaincaller
+func gomaincaller(argc C.int, argv unsafe.Pointer) {
+	os.Args = nil
+	argcint := int(argc)
+	argvarr := ((*[1 << 30]*C.char)(argv))
+	for i := 0; i < argcint; i += 1 {
+		os.Args = append(os.Args, C.GoString(argvarr[i]))
+	}
+	stubMain()
+	main()
+}
 
 const BROADCAST_LISTENING_PORT = 9876
 
@@ -47,20 +60,23 @@ func getEnvAmazon() (map[string]string, error) {
 	return env, nil
 }
 
-//export gomaincaller
-func gomaincaller() {
+func stubMain() {
 	//make logs available via http request
 	logs := &bytes.Buffer{}
 	if err := teeStdout(logs); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	if err := teeStderr(logs); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	log.SetOutput(os.Stderr)
 
 	log.Printf("unik v0.0 boostrapping beginning...")
 
+	if err := os.Chdir("/bootpart"); err != nil {
+		panic(err)
+	}
+	
 	envChan := make(chan map[string]string)
 
 	closeChan := make(chan struct{})
@@ -110,8 +126,7 @@ func gomaincaller() {
 		}
 	}
 
-	log.Printf("calling main\n")
-	main()
+	log.Printf("stub complete\n")
 }
 
 func setEnv(env map[string]string) error {
@@ -197,7 +212,7 @@ func teeStdout(writer io.Writer) error {
 		for {
 			_, err := io.Copy(multi, reader)
 			if err != nil {
-				log.Fatalf("copying pipe reader to multi writer: " + err.Error())
+				panic("copying pipe reader to multi writer: " + err.Error())
 			}
 		}
 	}()
@@ -217,7 +232,7 @@ func teeStderr(writer io.Writer) error {
 		for {
 			_, err := io.Copy(multi, reader)
 			if err != nil {
-				log.Fatalf("copying pipe reader to multi writer: " + err.Error())
+				panic("copying pipe reader to multi writer: " + err.Error())
 			}
 		}
 	}()

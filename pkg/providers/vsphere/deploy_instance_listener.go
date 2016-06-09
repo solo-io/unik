@@ -1,19 +1,21 @@
 package vsphere
 
 import (
+	"io/ioutil"
+	"os"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"os"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"io/ioutil"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"time"
+	"strings"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 var timeout = time.Second * 10
+var instanceListenerData = "InstanceListenerData"
 
 func (p *VsphereProvider) deployInstanceListener() (err error) {
 	logrus.Infof("checking if instance listener is alive...")
@@ -26,27 +28,27 @@ func (p *VsphereProvider) deployInstanceListener() (err error) {
 	c.PowerOffVm(VsphereUnikInstanceListener)
 	c.DestroyVm(VsphereUnikInstanceListener)
 	logrus.Infof("compiling new instance listener")
-	sourceDir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
+	sourceDir, err := ioutil.TempDir("", "vsphereinstancelistener.")
 	if err != nil {
 		return errors.New("creating temp dir for instance listener source", err)
 	}
 	defer os.RemoveAll(sourceDir)
-	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "projectunik/compilers-rump-go-hw-no-wrapper", rump.CreateImageVmware)
+	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "compilers-rump-go-hw-no-stub", rump.CreateImageVmware)
 	if err != nil {
 		return errors.New("compiling instance listener source to unikernel", err)
 	}
 	logrus.Infof("staging new instance listener image")
 	c.Rmdir(getImageDatastoreDir(VsphereUnikInstanceListener))
 	params := types.StageImageParams{
-		Name: VsphereUnikInstanceListener,
+		Name:     VsphereUnikInstanceListener,
 		RawImage: rawImage,
-		Force: true,
+		Force:    true,
 	}
 	image, err := p.Stage(params)
 	if err != nil {
 		return errors.New("building bootable vsphere image for instsance listener", err)
 	}
-	defer func(){
+	defer func() {
 		if err != nil {
 			p.DeleteImage(image.Id, true)
 		}
@@ -63,20 +65,24 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		"image-id": image.Id,
 	}).Infof("running instance of instance listener")
 
-	imagePath, err := unikos.BuildEmptyDataVolume(10)
+	newVolume := false
+	instanceListenerVol, err := p.GetVolume(instanceListenerData)
 	if err != nil {
-		return errors.New("failed creating raw data volume", err)
-	}
-	defer os.Remove(imagePath)
+		newVolume = true
+		imagePath, err := unikos.BuildEmptyDataVolume(10)
+		if err != nil {
+			return errors.New("failed creating raw data volume", err)
+		}
+		defer os.Remove(imagePath)
 
-	instanceListenerData := "InstanceListenerData"
-	params := types.CreateVolumeParams{
-		Name: instanceListenerData,
-		ImagePath: imagePath,
-	}
-	instanceListenerVol, err := p.CreateVolume(params)
-	if err != nil {
-		return errors.New("creating data vol for instance listener", err)
+		params := types.CreateVolumeParams{
+			Name:      instanceListenerData,
+			ImagePath: imagePath,
+		}
+		instanceListenerVol, err = p.CreateVolume(params)
+		if err != nil {
+			return errors.New("creating data vol for instance listener", err)
+		}
 	}
 
 	c := p.getClient()
@@ -85,10 +91,13 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 	defer func() {
 		if err != nil {
 			logrus.WithError(err).Warnf("error encountered, ensuring vm and disks are destroyed")
+			p.DetachVolume(instanceListenerVol.Id)
 			c.PowerOffVm(VsphereUnikInstanceListener)
 			c.DestroyVm(VsphereUnikInstanceListener)
 			c.Rmdir(instanceDir)
-			p.DeleteVolume(instanceListenerVol.Id, true)
+			if newVolume {
+				p.DeleteVolume(instanceListenerVol.Id, true)
+			}
 			c.Rmdir(getVolumeDatastorePath(instanceListenerData))
 		}
 	}()
@@ -99,10 +108,13 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		return errors.New("creating vm", err)
 	}
 
-	logrus.Debugf("copying base boot vmdk to instance dir")
+	logrus.Debugf("copying base boot image to instance dir")
 	instanceBootImagePath := instanceDir + "/boot.vmdk"
-	if err := c.CopyVmdk(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
-		return errors.New("copying base boot image", err)
+	if err := c.CopyFile(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
+		return errors.New("copying boot.vmdk", err)
+	}
+	if err := c.CopyFile(strings.TrimSuffix(getImageDatastorePath(image.Name), ".vmdk") + "-flat.vmdk", strings.TrimSuffix(instanceBootImagePath, ".vmdk") + "-flat.vmdk"); err != nil {
+		return errors.New("copying boot-flat.vmdk", err)
 	}
 	if err := c.AttachDisk(VsphereUnikInstanceListener, instanceBootImagePath, 0, image.RunSpec.StorageDriver); err != nil {
 		return errors.New("attaching boot vol to instance", err)
@@ -135,7 +147,7 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		return errors.New("powering on vm", err)
 	}
 
-	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, time.Second * 30)
+	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, time.Second*60)
 	if err != nil {
 		return errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 	}

@@ -10,7 +10,6 @@ import (
 	"time"
 	"strings"
 	"io/ioutil"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func (p *VsphereProvider) Stage(params types.StageImageParams) (_ *types.Image, err error) {
@@ -24,9 +23,8 @@ func (p *VsphereProvider) Stage(params types.StageImageParams) (_ *types.Image, 
 				return nil, errors.New("an image already exists with name '"+ params.Name +"', try again with --force", nil)
 			} else {
 				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + params.Name)
-				err = p.DeleteImage(image.Id, true)
-				if err != nil {
-					return nil, errors.New("removing previously existing image", err)
+				if err := p.DeleteImage(image.Id, true); err != nil {
+					logrus.Warn(errors.New("failed removing previously existing image", err))
 				}
 			}
 		}
@@ -43,7 +41,7 @@ func (p *VsphereProvider) Stage(params types.StageImageParams) (_ *types.Image, 
 		}
 	}()
 
-	localVmdkDir, err := ioutil.TempDir(unikutil.UnikTmpDir(), "")
+	localVmdkDir, err := ioutil.TempDir("", "vmdkdir.")
 	if err != nil {
 		return nil, errors.New("creating tmp file", err)
 	}

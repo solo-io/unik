@@ -1,0 +1,14 @@
+{
+	"ImportPath": "github.com/emc-advanced-dev/unik/docs/examples/example_go_httpd",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v63",
+	"Packages": [
+		"./.."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/emc-advanced-dev/unik/docs/examples",
+			"Rev": "f8cc0dd435de36377eac060c93481cc9f3ae9688"
+		}
+	]
+}
