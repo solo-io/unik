@@ -34,8 +34,8 @@ Due to the frequency with which features and patches are applied to UniK, we hav
   - Compiling [Node.js](docs/compilers/rump.md#nodejs) Applications to Unikernels
   - Compiling [Go](docs/compilers/rump.md#golang) Applications to Unikernels
   - Compiling [Java](docs/compilers/osv.md#java) Applications to Unikernels
-  - Compiling [C/C++](docs/compilers/rump.md#c++) Applications to Unikernels
-  - Compiling [Python3](docs/compilers/rump.md#Python3) Applications to Unikernels
+  - Compiling [C/C++](docs/compilers/rump.md#cc) Applications to Unikernels
+  - Compiling [Python3](docs/compilers/rump.md#Python-3) Applications to Unikernels
 - **Developer Documentation**
   - UniK's [REST API](docs/api.md)
   - Adding [compiler](docs/compilers/README.md) support
