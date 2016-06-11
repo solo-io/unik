@@ -24,10 +24,13 @@ COPY mainstub.c /tmp/build/mainstub.c
 
 ENV RUMP_BAKE=hw_generic
 
-# RUN LIKE THIS: docker run --rm -v /path/to/code:/opt/code projectunik/compilers-rump-go-hw
+# RUN LIKE THIS: docker run --rm -e ROOT_PATH=root_package_path -v /path/to/code:/opt/code projectunik/compilers-rump-go-hw-no-stub
 CMD set -x && \
     cp /tmp/build/gomaincaller.go /tmp/build/mainstub.c . && \
+    mkdir -p ${GOPATH}/src/${ROOT_PATH} && \
+    cp -r ./* ${GOPATH}/src/${ROOT_PATH} && \
+    cd ${GOPATH}/src/${ROOT_PATH} && \
     GO15VENDOREXPERIMENT=1 CC=x86_64-rumprun-netbsd-gcc CGO_ENABLED=1 GOOS=rumprun /usr/local/go/bin/go build -buildmode=c-archive -v -a -x  *.go && \
-    RUMPRUN_STUBLINK=succeed x86_64-rumprun-netbsd-gcc -g -o program mainstub.c $(find . -name "*.a") && \
+    RUMPRUN_STUBLINK=succeed x86_64-rumprun-netbsd-gcc -g -o /opt/code/program mainstub.c $(find . -name "*.a") && \
     rm -f /opt/code/mainstub.c /opt/code/gomaincaller.go && \
-    rumprun-bake $RUMP_BAKE program.bin program
+    rumprun-bake $RUMP_BAKE /opt/code/program.bin /opt/code/program
