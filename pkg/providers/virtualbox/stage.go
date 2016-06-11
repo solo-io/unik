@@ -33,7 +33,7 @@ func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Imag
 		return nil, errors.New("creating directory for boot image", err)
 	}
 	defer func() {
-		if err != nil {
+		if err != nil && !params.NoCleanup {
 			os.RemoveAll(filepath.Dir(imagePath))
 		}
 	}()
@@ -65,15 +65,13 @@ func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Imag
 		Created:        time.Now(),
 	}
 
-	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
+	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {
 		images[params.Name] = image
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return nil, errors.New("modifying image map in state", err)
 	}
-	err = p.state.Save()
-	if err != nil {
+	if err := p.state.Save(); err != nil {
 		return nil, errors.New("saving image map to state", err)
 	}
 

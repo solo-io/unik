@@ -12,6 +12,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
+	"path/filepath"
 )
 
 func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
@@ -68,7 +69,7 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 	}
 
 	logrus.Debugf("copying source boot vmdk")
-	instanceBootImage := instanceDir + "/boot.vmdk"
+	instanceBootImage := filepath.Join(instanceDir, "boot.vmdk")
 	if err := unikos.CopyFile(getImagePath(image.Name), instanceBootImage); err != nil {
 		return nil, errors.New("copying base boot image", err)
 	}
