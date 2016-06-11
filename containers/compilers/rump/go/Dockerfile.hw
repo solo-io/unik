@@ -18,7 +18,6 @@ RUN cd /tmp/gorump/go/src && \
     ln -s /usr/local/go1.5-patched /usr/local/go
 
 RUN mkdir /tmp/build/
-RUN go get github.com/tools/godep
 
 COPY mainstub.c gomaincaller.go /tmp/build/
 
@@ -30,8 +29,7 @@ CMD set -x && \
     mkdir -p ${GOPATH}/src/${ROOT_PATH} && \
     cp -r ./* ${GOPATH}/src/${ROOT_PATH} && \
     cd ${GOPATH}/src/${ROOT_PATH} && \
-    ((if [ -d Godeps ]; then GO15VENDOREXPERIMENT=1 godep restore; fi) || true ) && \
-    CC=x86_64-rumprun-netbsd-gcc CGO_ENABLED=1 GOOS=rumprun /usr/local/go/bin/go build -buildmode=c-archive -v -a -x  *.go && \
+    GO15VENDOREXPERIMENT=1 CC=x86_64-rumprun-netbsd-gcc CGO_ENABLED=1 GOOS=rumprun /usr/local/go/bin/go build -buildmode=c-archive -v -a -x  *.go && \
     RUMPRUN_STUBLINK=succeed x86_64-rumprun-netbsd-gcc -g -o /opt/code/program mainstub.c $(find . -name "*.a") && \
     rm -f /opt/code/mainstub.c /opt/code/gomaincaller.go && \
     rumprun-bake $RUMP_BAKE /opt/code/program.bin /opt/code/program

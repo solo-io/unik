@@ -18,7 +18,6 @@ RUN cd /tmp/gorump/go/src && \
     ln -s /usr/local/go1.5-patched /usr/local/go
 
 RUN mkdir /tmp/build/
-RUN go get github.com/tools/godep
 
 COPY gomaincaller-no-stub.go /tmp/build/gomaincaller.go
 COPY mainstub.c /tmp/build/mainstub.c
@@ -28,8 +27,7 @@ ENV RUMP_BAKE=hw_generic
 # RUN LIKE THIS: docker run --rm -v /path/to/code:/opt/code projectunik/compilers-rump-go-hw
 CMD set -x && \
     cp /tmp/build/gomaincaller.go /tmp/build/mainstub.c . && \
-    (if [ -d Godeps ]; then GO15VENDOREXPERIMENT=1 godep restore; fi) && \
-    CC=x86_64-rumprun-netbsd-gcc CGO_ENABLED=1 GOOS=rumprun /usr/local/go/bin/go build -buildmode=c-archive -v -a -x  *.go && \
+    GO15VENDOREXPERIMENT=1 CC=x86_64-rumprun-netbsd-gcc CGO_ENABLED=1 GOOS=rumprun /usr/local/go/bin/go build -buildmode=c-archive -v -a -x  *.go && \
     RUMPRUN_STUBLINK=succeed x86_64-rumprun-netbsd-gcc -g -o program mainstub.c $(find . -name "*.a") && \
     rm -f /opt/code/mainstub.c /opt/code/gomaincaller.go && \
     rumprun-bake $RUMP_BAKE program.bin program
