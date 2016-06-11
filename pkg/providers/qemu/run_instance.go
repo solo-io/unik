@@ -1,22 +1,19 @@
 package qemu
 
 import (
-	"archive/zip"
-	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/compilers"
-	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/emc-advanced-dev/unik/pkg/util"
+	"path/filepath"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 )
 
 func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
@@ -64,37 +61,26 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 		}
 	}()
 
+	logrus.Debugf("copying boot image")
+	instanceBootImage := filepath.Join(instanceDir, "boot.img")
+	if err := unikos.CopyFile(getImagePath(image.Name), instanceBootImage); err != nil {
+		return nil, errors.New("copying base boot image", err)
+	}
+
 	logrus.Debugf("creating qemu vm")
 
-	// unzip the image
-	cmdline, err := unzipImage(getImagePath(image.Name), instanceDir)
-	if err != nil {
-		return nil, errors.New("unzipping image", err)
-	}
-	kernel := getKernelFileName(instanceDir)
-
-	if len(params.Env) > 0 {
-		if image.RunSpec.Compiler != compilers.Rump {
-			return nil, errors.New("no support for env vars in qemu is only in rump", nil)
-		} else {
-			cmdline = injectEnv(cmdline, params.Env)
-		}
-
-	}
-
-	// qemu double comma escape
-	cmdline = strings.Replace(cmdline, ",", ",,", -1)
-
-	volImpagesInOrder, err := p.getVolumeImages(volumeIdInOrder)
+	volImagesInOrder, err := p.getVolumeImages(volumeIdInOrder)
 	if err != nil {
 		return nil, errors.New("cant get volumes", err)
 	}
 
-	volArgs := volPathToQemuArgs(volImpagesInOrder)
+	volArgs := volPathToQemuArgs(volImagesInOrder)
 
-	qemuArgs := []string{"-s", "-m", "128", "-net",
+	qemuArgs := []string{"-s", "-m", fmt.Sprintf("%v", params.InstanceMemory), "-net",
 		"nic,model=virtio,netdev=mynet0", "-netdev", "user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9",
-		"-kernel", kernel, "-append", cmdline}
+		"-device", "virtio-blk-pci,id=blk0,bootindex=0,drive=hd0",
+		"-drive", fmt.Sprintf("file=%s,format=qcow2,if=none,id=hd0", instanceBootImage),
+	}
 
 	if p.config.NoGraphic {
 		qemuArgs = append(qemuArgs, "-nographic", "-vga", "none")
@@ -103,7 +89,7 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	qemuArgs = append(qemuArgs, volArgs...)
 	cmd := exec.Command("qemu-system-x86_64", qemuArgs...)
 
-	logrus.Debugf("creating qemu command: %s", cmd.Args)
+	util.LogCommand(cmd, true)
 
 	if err := cmd.Start(); err != nil {
 		return nil, errors.New("Can't start qemu - make sure it's in your path.", nil)
@@ -112,6 +98,7 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	var instanceIp string
 
 	instance := &types.Instance{
+		Id:           params.Name,
 		Name:           params.Name,
 		State:          types.InstanceState_Running,
 		IpAddress:      instanceIp,
@@ -150,19 +137,10 @@ func (p *QemuProvider) getVolumeImages(volumeIdInOrder []string) ([]string, erro
 
 func volPathToQemuArgs(volPaths []string) []string {
 	var res []string
-
 	for _, v := range volPaths {
-
 		res = append(res, "-drive", fmt.Sprintf("if=virtio,file=%s,format=qcow2", v))
 	}
-
 	return res
-}
-
-const kernelFileName = "kernel"
-
-func getKernelFileName(instanceDir string) string {
-	return path.Join(instanceDir, kernelFileName)
 }
 
 func injectEnv(cmdline string, env map[string]string) string {
@@ -174,51 +152,4 @@ func injectEnv(cmdline string, env map[string]string) string {
 
 	cmdline = cmdline[:len(cmdline)-2] + "," + strings.Join(envRumpJson, ",") + "}"
 	return cmdline
-}
-
-func unzipImage(imagezip, instanceDir string) (string, error) {
-
-	r, err := zip.OpenReader(imagezip)
-	if err != nil {
-		return "", err
-	}
-
-	kernelFile, err := os.Create(getKernelFileName(instanceDir))
-	if err != nil {
-		if os.IsNotExist(err) {
-			return "", nil
-		}
-		return "", err
-	}
-
-	var cmdlineBuf bytes.Buffer
-
-	for _, f := range r.File {
-		switch f.Name {
-		case config.QemuKernelFileName:
-			rc, err := f.Open()
-			if err != nil {
-				return "", err
-			}
-			_, err = io.Copy(kernelFile, rc)
-			if err != nil {
-				return "", err
-			}
-
-		case config.QemuArgsFileName:
-			rc, err := f.Open()
-			if err != nil {
-				return "", err
-			}
-			_, err = io.Copy(&cmdlineBuf, rc)
-			if err != nil {
-				return "", err
-			}
-		default:
-			return "", errors.New("unkown file in image", nil)
-		}
-	}
-
-	cmdline := cmdlineBuf.String()
-	return cmdline, nil
 }

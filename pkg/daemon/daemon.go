@@ -136,9 +136,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	}
 	_compilers[compilers.RUMP_GO_QEMU] = &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage:   "compilers-rump-go-hw",
+			DockerImage:   "compilers-rump-go-hw-no-stub",
 			CreateImage:   rump.CreateImageQemu,
-		}}
+		},
+	}
 
 	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{

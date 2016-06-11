@@ -36,7 +36,7 @@ func getOurQemu(instance *types.Instance) (ps.Process, error) {
 		return nil, err
 	}
 
-	instanceArg := fmt.Sprintf("/instances/%s/kernel", instance.Name)
+	instanceArg := fmt.Sprintf("/instances/%s/boot.img", instance.Name)
 	for _, proc := range procs {
 		if !strings.Contains(proc.Executable(), "qemu") {
 			continue

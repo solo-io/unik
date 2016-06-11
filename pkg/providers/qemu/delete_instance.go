@@ -3,6 +3,7 @@ package qemu
 import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/Sirupsen/logrus"
 )
 
 func (p *QemuProvider) DeleteInstance(id string, force bool) error {
@@ -10,18 +11,9 @@ func (p *QemuProvider) DeleteInstance(id string, force bool) error {
 	if err != nil {
 		return errors.New("retrieving instance "+id, err)
 	}
-	if instance.State == types.InstanceState_Running {
-		if force {
-			if err := p.StopInstance(instance.Id); err != nil {
-				return errors.New("stopping instance for deletion", err)
-			}
-		} else {
-			return errors.New("instance "+instance.Id+" is still running. try again with --force or power off instance first", err)
-		}
-	}
-	_, err = p.GetImage(instance.ImageId)
-	if err != nil {
-		return errors.New("getting image for instance", err)
+
+	if err := p.StopInstance(instance.Id); err != nil {
+		logrus.Warn("failed terminating instance, assuming instance has externally terminated", err)
 	}
 	volumesToDetach := []*types.Volume{}
 	volumes, err := p.ListVolumes()

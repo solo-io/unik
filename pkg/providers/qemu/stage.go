@@ -7,8 +7,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 )
 
 func (p *QemuProvider) Stage(params types.StageImageParams) (_ *types.Image, err error) {
@@ -16,16 +16,14 @@ func (p *QemuProvider) Stage(params types.StageImageParams) (_ *types.Image, err
 	if err != nil {
 		return nil, errors.New("retrieving image list for existing image", err)
 	}
-
 	for _, image := range images {
 		if image.Name == params.Name {
 			if !params.Force {
 				return nil, errors.New("an image already exists with name '"+params.Name+"', try again with --force", nil)
 			} else {
 				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + params.Name)
-				err = p.DeleteImage(image.Id, true)
-				if err != nil {
-					return nil, errors.New("removing previously existing image", err)
+				if err := p.DeleteImage(image.Id, true); err != nil {
+					logrus.Warn("failed to remove previously existing image", err)
 				}
 			}
 		}
@@ -36,14 +34,14 @@ func (p *QemuProvider) Stage(params types.StageImageParams) (_ *types.Image, err
 		return nil, errors.New("creating directory for boot image", err)
 	}
 	defer func() {
-		if err != nil {
+		if err != nil && !params.NoCleanup {
 			os.RemoveAll(filepath.Dir(imagePath))
 		}
 	}()
 
-	logrus.WithField("raw-image", params.RawImage).Infof("copying boot volume")
-	if err := unikos.CopyFile(params.RawImage.LocalImagePath, imagePath); err != nil {
-		return nil, errors.New("copying qemu kernel", err)
+	logrus.WithField("raw-image", params.RawImage).Infof("creating boot volume from raw image")
+	if err := common.ConvertRawImage(params.RawImage.StageSpec.ImageFormat, types.ImageFormat_QCOW2, params.RawImage.LocalImagePath, imagePath); err != nil {
+		return nil, errors.New("converting raw image to qcow2", err)
 	}
 
 	imagePathInfo, err := os.Stat(imagePath)
@@ -56,7 +54,7 @@ func (p *QemuProvider) Stage(params types.StageImageParams) (_ *types.Image, err
 		"name": params.Name,
 		"id":   params.Name,
 		"size": sizeMb,
-	}).Infof("creating base vmdk for unikernel image")
+	}).Infof("copying raw boot image")
 
 	image := &types.Image{
 		Id:             params.Name,
@@ -68,15 +66,13 @@ func (p *QemuProvider) Stage(params types.StageImageParams) (_ *types.Image, err
 		Created:        time.Now(),
 	}
 
-	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
+	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {
 		images[params.Name] = image
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return nil, errors.New("modifying image map in state", err)
 	}
-	err = p.state.Save()
-	if err != nil {
+	if err := p.state.Save(); err != nil {
 		return nil, errors.New("saving image map to state", err)
 	}
 

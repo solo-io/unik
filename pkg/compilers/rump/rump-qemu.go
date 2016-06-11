@@ -1,16 +1,11 @@
 package rump
 
 import (
-	"archive/zip"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"os"
 	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
-	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
@@ -38,10 +33,17 @@ func createImageQemu(kernel string, args string, mntPoints, bakedEnv []string, n
 	}
 	c = setRumpCmdLine(c, "program.bin", argv, addStub)
 
+	bootBlk := blk{
+		Source:     "dev",
+		Path:       "/dev/ld0e",
+		FSType:     "blk",
+		MountPoint: "/bootpart",
+	}
+	c.Blk = append(c.Blk, bootBlk)
+
 	res := &types.RawImage{}
-	// add root -> sd0 mapping
 	for i, mntPoint := range mntPoints {
-		deviceMapped := fmt.Sprintf("ld%ca", '0'+i)
+		deviceMapped := fmt.Sprintf("ld%ca", '1'+i)
 		blk := blk{
 			Source:     "dev",
 			Path:       "/dev/" + deviceMapped,
@@ -70,54 +72,13 @@ func createImageQemu(kernel string, args string, mntPoints, bakedEnv []string, n
 
 	logrus.Debugf("writing rump json config: %s", cmdline)
 
-	imgFile, err := zipFiles(kernel, cmdline)
+	imgFile, err := BuildBootableImage(kernel, cmdline, true, noCleanup)
 	if err != nil {
 		return nil, err
 	}
 
 	res.LocalImagePath = imgFile
+	res.StageSpec.ImageFormat = types.ImageFormat_RAW
 	return res, nil
-
-}
-
-func zipFiles(kernelFile string, cmdline string) (string, error) {
-	destZip, err := ioutil.TempFile("", "qemu_zip_")
-	if err != nil {
-		return "", err
-	}
-	defer destZip.Close()
-	w := zip.NewWriter(destZip)
-
-	kernelReader, err := os.Open(kernelFile)
-	if err != nil {
-		return "", err
-	}
-	defer kernelReader.Close()
-
-	// create kernel file
-	f, err := w.Create(config.QemuKernelFileName)
-	if err != nil {
-		return "", err
-	}
-	_, err = io.Copy(f, kernelReader)
-	if err != nil {
-		return "", err
-	}
-
-	// create cmdline file
-	f, err = w.Create(config.QemuArgsFileName)
-	if err != nil {
-		return "", err
-	}
-	_, err = f.Write([]byte(cmdline))
-	if err != nil {
-		return "", err
-	}
-
-	if err := w.Close(); err != nil {
-		return "", err
-	}
-
-	return destZip.Name(), nil
 
 }
