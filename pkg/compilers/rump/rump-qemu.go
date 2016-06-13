@@ -7,6 +7,9 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"path/filepath"
+	"io/ioutil"
 )
 
 func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
@@ -74,6 +77,15 @@ func createImageQemu(kernel string, args string, mntPoints, bakedEnv []string, n
 
 	imgFile, err := BuildBootableImage(kernel, cmdline, true, noCleanup)
 	if err != nil {
+		return nil, err
+	}
+
+	//copy kernel for qemu
+	if err := unikos.CopyFile(kernel, filepath.Join(filepath.Dir(imgFile), "program.bin")); err != nil {
+		return nil, err
+	}
+
+	if err := ioutil.WriteFile(filepath.Join(filepath.Dir(imgFile), "cmdline"), []byte(cmdline), 0644); err != nil {
 		return nil, err
 	}
 

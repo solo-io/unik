@@ -52,6 +52,14 @@ func getImagePath(imageName string) string {
 	return filepath.Join(qemuImagesDirectory(), imageName, "boot.img")
 }
 
+func getKernelPath(imageName string) string {
+	return filepath.Join(qemuImagesDirectory(), imageName, "program.bin")
+}
+
+func getCmdlinePath(imageName string) string {
+	return filepath.Join(qemuImagesDirectory(), imageName, "cmdline")
+}
+
 func getInstanceDir(instanceName string) string {
 	return filepath.Join(qemuInstancesDirectory(), instanceName)
 }

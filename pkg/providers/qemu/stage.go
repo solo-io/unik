@@ -9,6 +9,7 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 )
 
 func (p *QemuProvider) Stage(params types.StageImageParams) (_ *types.Image, err error) {
@@ -42,6 +43,16 @@ func (p *QemuProvider) Stage(params types.StageImageParams) (_ *types.Image, err
 	logrus.WithField("raw-image", params.RawImage).Infof("creating boot volume from raw image")
 	if err := common.ConvertRawImage(params.RawImage.StageSpec.ImageFormat, types.ImageFormat_QCOW2, params.RawImage.LocalImagePath, imagePath); err != nil {
 		return nil, errors.New("converting raw image to qcow2", err)
+	}
+
+	kernelFile := filepath.Join(filepath.Dir(params.RawImage.LocalImagePath), "program.bin")
+	if err := unikos.CopyFile(kernelFile, getKernelPath(params.Name)); err != nil {
+		return nil, errors.New("copying kernel file to image dir", err)
+	}
+
+	cmdlineFile := filepath.Join(filepath.Dir(params.RawImage.LocalImagePath), "cmdline")
+	if err := unikos.CopyFile(cmdlineFile, getCmdlinePath(params.Name)); err != nil {
+		return nil, errors.New("copying cmdline file to image dir", err)
 	}
 
 	imagePathInfo, err := os.Stat(imagePath)
