@@ -543,6 +543,7 @@ func (d *UnikDaemon) addEndpoints() {
 				Env:                  runInstanceRequest.Env,
 				InstanceMemory:       runInstanceRequest.MemoryMb,
 				NoCleanup:            runInstanceRequest.NoCleanup,
+				DebugMode:            runInstanceRequest.DebugMode,
 			}
 
 			instance, err := provider.RunInstance(params)

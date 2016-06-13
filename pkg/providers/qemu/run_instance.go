@@ -83,6 +83,7 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	}
 
 	if params.DebugMode {
+		logrus.Debugf("running instance in debug mode.\nattach debugger with `unik debug --instance %s", params.Name)
 		qemuArgs = append(qemuArgs, "-s", "-S")
 	}
 
