@@ -60,10 +60,6 @@ func getCmdlinePath(imageName string) string {
 	return filepath.Join(qemuImagesDirectory(), imageName, "cmdline")
 }
 
-func getInstanceDir(instanceName string) string {
-	return filepath.Join(qemuInstancesDirectory(), instanceName)
-}
-
 func getVolumePath(volumeName string) string {
 	return filepath.Join(qemuVolumesDirectory(), volumeName, "data.img")
 }

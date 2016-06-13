@@ -3,7 +3,6 @@
 package qemu
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	"syscall"
@@ -19,8 +18,12 @@ func (p *QemuProvider) StopInstance(id string) error {
 	if err != nil {
 		return err
 	}
+	image, err := p.GetImage(instance.ImageId)
+	if err != nil {
+		return err
+	}
 
-	proc, err := getOurQemu(instance)
+	proc, err := getOurQemu(image)
 	if err != nil {
 		return err
 	}
@@ -29,14 +32,14 @@ func (p *QemuProvider) StopInstance(id string) error {
 	return syscall.Kill(proc.Pid(), syscall.SIGKILL)
 }
 
-func getOurQemu(instance *types.Instance) (ps.Process, error) {
+func getOurQemu(image *types.Image) (ps.Process, error) {
 
 	procs, err := ps.Processes()
 	if err != nil {
 		return nil, err
 	}
 
-	instanceArg := fmt.Sprintf("/instances/%s/boot.img", instance.Name)
+	instanceArg := getKernelPath(image.Name)
 	for _, proc := range procs {
 		if !strings.Contains(proc.Executable(), "qemu") {
 			continue

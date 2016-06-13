@@ -2,7 +2,6 @@ package qemu
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -12,8 +11,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
-	"path/filepath"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"io/ioutil"
 )
 
 func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
@@ -47,26 +45,6 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 		volumeIdInOrder[controllerPort] = volumeId
 	}
 
-	instanceDir := getInstanceDir(params.Name)
-	os.Mkdir(instanceDir, 0755)
-
-	defer func() {
-		if err != nil {
-			if params.NoCleanup {
-				logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed instance %s.2", params.Name)
-				return
-			}
-			logrus.WithError(err).Errorf("error encountered, ensuring vm and disks are destroyed")
-			os.RemoveAll(instanceDir)
-		}
-	}()
-
-	logrus.Debugf("copying boot image")
-	instanceBootImage := filepath.Join(instanceDir, "boot.img")
-	if err := unikos.CopyFile(getImagePath(image.Name), instanceBootImage); err != nil {
-		return nil, errors.New("copying base boot image", err)
-	}
-
 	logrus.Debugf("creating qemu vm")
 
 	volImagesInOrder, err := p.getVolumeImages(volumeIdInOrder)
@@ -76,10 +54,19 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 
 	volArgs := volPathToQemuArgs(volImagesInOrder)
 
+	cmdlinedata, err := ioutil.ReadFile(getCmdlinePath(image.Name))
+	if err != nil {
+		return nil, errors.New("reading cmdline file", err)
+	}
+	cmdline := injectEnv(string(cmdlinedata), params.Env)
+	cmdline = strings.Replace(cmdline, ",", ",,", -1)
+
 	qemuArgs := []string{"-m", fmt.Sprintf("%v", params.InstanceMemory), "-net",
 		"nic,model=virtio,netdev=mynet0", "-netdev", "user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9",
-		"-device", "virtio-blk-pci,id=blk0,bootindex=0,drive=hd0",
-		"-drive", fmt.Sprintf("file=%s,format=qcow2,if=none,id=hd0", instanceBootImage),
+		"-device", "virtio-blk-pci,id=blk0,drive=hd0",
+		"-drive", fmt.Sprintf("file=%s,format=qcow2,if=none,id=hd0", getImagePath(image.Name)),
+		"-kernel", getKernelPath(image.Name),
+		"-append", cmdline,
 	}
 
 	if params.DebugMode {
@@ -155,6 +142,6 @@ func injectEnv(cmdline string, env map[string]string) string {
 		envRumpJson = append(envRumpJson, fmt.Sprintf("\"env\": \"%s=%s\"", key, value))
 	}
 
-	cmdline = cmdline[:len(cmdline)-2] + "," + strings.Join(envRumpJson, ",") + "}"
+	cmdline = cmdline[:len(cmdline)-2] + "," + strings.Join(envRumpJson, ",") + "}}"
 	return cmdline
 }

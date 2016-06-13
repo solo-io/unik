@@ -4,7 +4,6 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/Sirupsen/logrus"
-	"os"
 )
 
 func (p *QemuProvider) DeleteInstance(id string, force bool) error {
@@ -26,8 +25,6 @@ func (p *QemuProvider) DeleteInstance(id string, force bool) error {
 			volumesToDetach = append(volumesToDetach, volume)
 		}
 	}
-
-	os.RemoveAll(getInstanceDir(instance.Name))
 
 	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 		delete(instances, instance.Id)
