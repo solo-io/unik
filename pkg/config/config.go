@@ -39,11 +39,6 @@ type Qemu struct {
 	NoGraphic bool `yaml:"no_graphic"`
 }
 
-const (
-	QemuKernelFileName = "kernel"
-	QemuArgsFileName   = "args"
-)
-
 type VirtualboxAdapterType string
 
 const (
