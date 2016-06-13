@@ -118,7 +118,7 @@ var _ = FDescribe("Unikernel Functionality", func() {
 							noCleanup := false
 							env := map[string]string{"KEY": "VAL"}
 							memoryMb := 256
-							instance, err := c.Instances().Run(instanceName, image.Name, mountPointsToVols, env, memoryMb, noCleanup)
+							instance, err := c.Instances().Run(instanceName, image.Name, mountPointsToVols, env, memoryMb, noCleanup, false)
 							Expect(err).ToNot(HaveOccurred())
 							instanceIp, err := helpers.WaitForIp(daemonUrl, instance.Id, ipTimeout)
 							Expect(err).ToNot(HaveOccurred())

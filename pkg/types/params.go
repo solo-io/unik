@@ -7,6 +7,7 @@ type RunInstanceParams struct {
 	Env                  map[string]string
 	InstanceMemory       int
 	NoCleanup            bool
+	DebugMode            bool
 }
 
 type StageImageParams struct {

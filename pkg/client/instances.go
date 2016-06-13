@@ -80,7 +80,7 @@ func (i *instances) AttachLogs(id string, deleteOnDisconnect bool) (io.ReadClose
 	return resp.Body, nil
 }
 
-func (i *instances) Run(instanceName, imageName string, mountPointsToVols, env map[string]string, memoryMb int, noCleanup bool) (*types.Instance, error) {
+func (i *instances) Run(instanceName, imageName string, mountPointsToVols, env map[string]string, memoryMb int, noCleanup, debugMode bool) (*types.Instance, error) {
 	runInstanceRequest := daemon.RunInstanceRequest{
 		InstanceName: instanceName,
 		ImageName: imageName,
@@ -88,6 +88,7 @@ func (i *instances) Run(instanceName, imageName string, mountPointsToVols, env m
 		Env: env,
 		MemoryMb: memoryMb,
 		NoCleanup: noCleanup,
+		DebugMode: debugMode,
 	}
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/run", nil, runInstanceRequest)
 	if err != nil  {

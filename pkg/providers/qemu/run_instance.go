@@ -76,10 +76,14 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 
 	volArgs := volPathToQemuArgs(volImagesInOrder)
 
-	qemuArgs := []string{"-s", "-m", fmt.Sprintf("%v", params.InstanceMemory), "-net",
+	qemuArgs := []string{"-m", fmt.Sprintf("%v", params.InstanceMemory), "-net",
 		"nic,model=virtio,netdev=mynet0", "-netdev", "user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9",
 		"-device", "virtio-blk-pci,id=blk0,bootindex=0,drive=hd0",
 		"-drive", fmt.Sprintf("file=%s,format=qcow2,if=none,id=hd0", instanceBootImage),
+	}
+
+	if params.DebugMode {
+		qemuArgs = append(qemuArgs, "-s", "-S")
 	}
 
 	if p.config.NoGraphic {

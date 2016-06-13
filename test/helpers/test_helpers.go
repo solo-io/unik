@@ -259,7 +259,7 @@ func RunExampleInstance(daemonUrl, instanceName, imageName string, mountPointsTo
 	noCleanup := false
 	env := map[string]string{"FOO": "BAR"}
 	memoryMb := 128
-	return client.UnikClient(daemonUrl).Instances().Run(instanceName, imageName, mountPointsToVols, env, memoryMb, noCleanup)
+	return client.UnikClient(daemonUrl).Instances().Run(instanceName, imageName, mountPointsToVols, env, memoryMb, noCleanup, false)
 }
 
 func CreateExampleVolume(daemonUrl, volumeName, provider string, size int) (*types.Volume, error) {

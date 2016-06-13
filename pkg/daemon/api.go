@@ -7,4 +7,5 @@ type RunInstanceRequest struct {
 	Env map[string]string `json:"Env"`
 	MemoryMb int `json:"MemoryMb"`
 	NoCleanup bool `json:"NoCleanup"`
+	DebugMode bool `json:"DebugMode"`
 }

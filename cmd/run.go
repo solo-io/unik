@@ -90,7 +90,7 @@ Example usage:
 				"mounts":       mountPointsToVols,
 				"host":         host,
 			}).Infof("running unik run")
-			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mountPointsToVols, env, instanceMemory, noCleanup)
+			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mountPointsToVols, env, instanceMemory, noCleanup, debugMode)
 			if err != nil {
 				return errors.New(fmt.Sprintf("running image failed: %v", err), nil)
 			}
@@ -114,4 +114,5 @@ func init() {
 	specified in the format 'volume_id:mount_point'`)
 	runCmd.Flags().IntVar(&instanceMemory, "instanceMemory", 0, "<int, optional> amount of memory (in MB) to assign to the instance. if none is given, the provider default will be used")
 	runCmd.Flags().BoolVar(&noCleanup, "no-cleanup", false, "<bool, optional> for debugging; do not clean up artifacts for instances that fail to launch")
+	runCmd.Flags().BoolVar(&debugMode, "debug-mode", false, "<bool, optional> runs the instance in Debug mode so GDB can be attached. Currently only supported on QEMU provider")
 }

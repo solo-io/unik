@@ -156,7 +156,7 @@ var _ = Describe("Instances", func() {
 									env := map[string]string{"FOO": "BAR"}
 									memoryMb := 128
 									mountPointsToVols := map[string]string{"/volume": volume.Id}
-									instance, err := c.Instances().Run(instanceName, image.Name, mountPointsToVols, env, memoryMb, noCleanup)
+									instance, err := c.Instances().Run(instanceName, image.Name, mountPointsToVols, env, memoryMb, noCleanup, false)
 									Expect(err).ToNot(HaveOccurred())
 									instances, err := c.Instances().All()
 									Expect(err).NotTo(HaveOccurred())
