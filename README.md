@@ -53,6 +53,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 * [Virtualbox](docs/providers/virtualbox.md)
 * [AWS](docs/providers/aws.md)
 * [vSphere](docs/providers/vsphere.md)
+* [QEMU](docs/providers/qemu.md)
 
 ### Roadmap:
 * additional provider support including [OpenStack](https://www.openstack.org/)
