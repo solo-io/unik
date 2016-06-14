@@ -1,5 +1,10 @@
 # UniK Changelog
 
+### Tue, Jun 14 2016
+* Added QEMU as a provider.
+  * Note that the QEMU provider does not provide bridged networking support. This means that QEMU instances will not be reachable from the host network.
+  * The QEMU provider includes support for debugging unikernels with `gdb`. See [the qemu provider docs](./providers/qemu.md) for more information.
+
 ---
 
 ### Tue, Jun 7 2016
@@ -18,7 +23,7 @@
     bash test/scripts/test_ginkgo.sh
     ```
     tests currently run against Virtualbox, and Virtualbox is therefore also required to run tests. Note that the tests assume `host_only` networking using `vboxnet1`. To change the VBox network used for tests, modify the values in [`test/scripts/test_ginkgo.sh`](../test/scripts/test_ginkgo.sh)
-*  Container versioning:
+* Container versioning:
     * UniK's dockerized dependencies (all `projectunik` containers) now use version tags.
     * The purpose of this is to keep older versions of UniK stable while permitting containers hosted on Docker Hub to be updated.
     * To upgrade containers, you only need to run

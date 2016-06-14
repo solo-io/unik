@@ -1,6 +1,6 @@
 # vSphere UniK Provider
 
-UniK supports running rumprun unikernels on vSphere.
+UniK supports running rumprun and OSv unikernels on vSphere.
 The vSphere stub of your `daemon-config.yaml` file should look something like the following:
 ```yaml
 providers:

@@ -16,4 +16,7 @@ providers:
       adapter_name: "en0: Wi-Fi (AirPort)"
       adapter_type: bridged
       version: 0.0.0
+  qemu:
+    - name: my-qemu
+      no_graphic: false
 version: 0.0.0

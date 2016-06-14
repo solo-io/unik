@@ -199,7 +199,7 @@ Flags:
   *  `--vol value`             (string,repeated) each --vol flag specifies one volume id and the corresponding mount point to attach to the instance at boot time. volumes must be attached to the instance for each mount point expected by the image. run 'unik image (image_name)' to see the mount points required for the image. specified in the format 'volume_id:mount_point' (default [])
   * `--instanceMemory`      (int, optional) amount of memory (in MB) to assign to the instance. if none is given, the provider default will be used
   * `--no-cleanup`          (bool, optional) tell UniK not to clean up any artifacts from the launch instance process if launching fails. for debugging purposes.
-
+  * `--debug-mode`         (bool, optional) runs the instance in Debug mode so GDB can be attached. Currently only supported on QEMU provider
 ---
 
 #### List available instances

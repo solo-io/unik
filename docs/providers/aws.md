@@ -1,6 +1,6 @@
 # AWS UniK Provider
 
-UniK supports running rumprun unikernels on AWS.
+UniK supports running rumprun and OSv unikernels on AWS.
 The AWS stub of your `daemon-config.yaml` file should look something like the following:
 ```yaml
 providers:
