@@ -12,6 +12,7 @@ all: pull ${SOURCES} binary
 
 .PHONY: pull
 .PHONY: containers
+.PHONY: rump-debugger-qemu
 .PHONY: compilers-rump-base-common
 .PHONY: compilers-rump-base-hw
 .PHONY: compilers-rump-base-xen
@@ -46,6 +47,7 @@ pull:
 	docker pull projectunik/compilers-rump-python3-xen$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-base-xen$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-base-hw$(CONTAINERTAG)
+	docker pull projectunik/rump-debugger-qemu$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-base-common$(CONTAINERTAG)
 #------
 
@@ -70,6 +72,9 @@ compilers-rump-base-xen: compilers-rump-base-common
 
 compilers-rump-go-hw: compilers-rump-base-hw
 	cd containers/compilers/rump/go &&  docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .
+
+rump-debugger-qemu: compilers-rump-base-hw
+	cd containers/debuggers/rump/base &&  docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .
 
 compilers-rump-go-hw-no-stub: compilers-rump-base-hw
 	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-stub .
@@ -169,6 +174,7 @@ remove-containers:
 	-docker rmi -f projectunik/compilers-rump-python3-xen$(CONTAINERTAG)
 	-docker rmi -f projectunik/compilers-rump-base-xen$(CONTAINERTAG)
 	-docker rmi -f projectunik/compilers-rump-base-hw$(CONTAINERTAG)
+	-docker rmi -f projectunik/rump-debugger-qemu$(CONTAINERTAG)
 	-docker rmi -f projectunik/compilers-rump-base-common$(CONTAINERTAG)
 	-docker rmi -f debuggers-rump-base-hw$(CONTAINERTAG)
 
