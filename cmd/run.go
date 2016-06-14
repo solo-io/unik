@@ -10,11 +10,13 @@ import (
 
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/client"
+	"bufio"
+	"net"
 )
 
 var instanceName, imageName string
 var volumes, envPairs []string
-var instanceMemory int
+var instanceMemory, debugPort int
 
 var runCmd = &cobra.Command{
 	Use:   "run",
@@ -95,6 +97,10 @@ Example usage:
 				return errors.New(fmt.Sprintf("running image failed: %v", err), nil)
 			}
 			printInstances(instance)
+			if debugMode {
+				logrus.Infof("attaching debugger to instance %s ...", instance.Name)
+				connectDebugger()
+			}
 			return nil
 		}(); err != nil {
 			logrus.Errorf("failed running instance: %v", err)
@@ -115,4 +121,44 @@ func init() {
 	runCmd.Flags().IntVar(&instanceMemory, "instanceMemory", 0, "<int, optional> amount of memory (in MB) to assign to the instance. if none is given, the provider default will be used")
 	runCmd.Flags().BoolVar(&noCleanup, "no-cleanup", false, "<bool, optional> for debugging; do not clean up artifacts for instances that fail to launch")
 	runCmd.Flags().BoolVar(&debugMode, "debug-mode", false, "<bool, optional> runs the instance in Debug mode so GDB can be attached. Currently only supported on QEMU provider")
+	runCmd.Flags().IntVar(&debugPort, "debug-port", 3001, "<int, optional> target port for debugger tcp connections. used in conjunction with --debug-mode")
+}
+
+func connectDebugger() {
+	addr := fmt.Sprintf("%v:%v", strings.Split(host, ":")[0], debugPort)
+	conn, err := net.Dial("tcp", addr)
+	if err != nil {
+		logrus.Errorf("failed to initiate tcp connection: %v", err)
+		os.Exit(-1)
+	}
+	if _, err := conn.Write([]byte("GET / HTTP/1.0\r\n\r\n")); err != nil {
+		logrus.Errorf("failed to initialize debgger connection: %v", err)
+		os.Exit(-1)
+	}
+
+	go func(){
+		reader := bufio.NewReader(conn)
+		for {
+			data, err := reader.ReadBytes('\n')
+			if err != nil {
+				logrus.Errorf("disconnected from debugger: %v", err)
+				os.Exit(0)
+			}
+			fmt.Print(string(data))
+		}
+	}()
+
+	reader := bufio.NewReader(os.Stdin)
+	logrus.Infof("Connected to %s", host)
+	for {
+		data, err := reader.ReadBytes('\n')
+		if err != nil {
+			logrus.Errorf("failed reading stdin: %v", err)
+			os.Exit(-1)
+		}
+		if _, err := conn.Write(data); err != nil {
+			logrus.Errorf("writing to tcp connection: %v", err)
+			os.Exit(-1)
+		}
+	}
 }

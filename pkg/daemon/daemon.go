@@ -30,6 +30,7 @@ import (
 	"github.com/layer-x/layerx-commons/lxmartini"
 	"path/filepath"
 	"runtime"
+	"os/exec"
 )
 
 type UnikDaemon struct {
@@ -550,6 +551,8 @@ func (d *UnikDaemon) addEndpoints() {
 			if err != nil {
 				return nil, http.StatusInternalServerError, err
 			}
+			cmd := exec.Command("foo")
+			cmd.Stdin = req.Body
 			return instance, http.StatusCreated, nil
 		})
 	})

@@ -10,6 +10,3 @@ RUN cd /opt/gdb-7.11 && \
     ./configure --target=x86_64-linux-gnu && \
     make && \
     make install
-
-CMD []
-ENTRYPOINT /bin/bash

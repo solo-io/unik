@@ -37,6 +37,7 @@ type Virtualbox struct {
 type Qemu struct {
 	Name string `yaml:"name"`
 	NoGraphic bool `yaml:"no_graphic"`
+	DebuggerPort int `yaml:"debugger_port"`
 }
 
 type VirtualboxAdapterType string

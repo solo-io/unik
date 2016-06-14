@@ -70,8 +70,9 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	}
 
 	if params.DebugMode {
-		logrus.Debugf("running instance in debug mode.\nattach debugger with `unik debug --instance %s", params.Name)
+		logrus.Debugf("running instance in debug mode.\nattach unik debugger to port :%v", p.config.DebuggerPort)
 		qemuArgs = append(qemuArgs, "-s", "-S")
+		debuggerTargetImageName = image.Name
 	}
 
 	if p.config.NoGraphic {

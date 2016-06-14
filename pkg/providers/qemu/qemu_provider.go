@@ -6,7 +6,10 @@ import (
 
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/state"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
+
+var debuggerTargetImageName string
 
 type QemuProvider struct {
 	config    config.Qemu
@@ -34,6 +37,14 @@ func NewQemuProvider(config config.Qemu) (*QemuProvider, error) {
 	os.MkdirAll(qemuImagesDirectory(), 0777)
 	os.MkdirAll(qemuInstancesDirectory(), 0777)
 	os.MkdirAll(qemuVolumesDirectory(), 0777)
+
+	if config.DebuggerPort == 0 {
+		config.DebuggerPort = 3001
+	}
+
+	if err := startDebuggerListener(config.DebuggerPort); err != nil {
+		return nil, errors.New("establishing debugger tcp listener", err)
+	}
 
 	p := &QemuProvider{
 		config: config,
