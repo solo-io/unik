@@ -1,8 +1,8 @@
 package cobra
 
 import (
+	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"sort"
 	"strings"
@@ -16,12 +16,9 @@ const (
 	BashCompSubdirsInDir    = "cobra_annotation_bash_completion_subdirs_in_dir"
 )
 
-func preamble(out io.Writer, name string) error {
-	_, err := fmt.Fprintf(out, "# bash completion for %-36s -*- shell-script -*-\n", name)
-	if err != nil {
-		return err
-	}
-	_, err = fmt.Fprintf(out, `
+func preamble(out *bytes.Buffer) {
+	fmt.Fprintf(out, `#!/bin/bash
+
 __debug()
 {
     if [[ -n ${BASH_COMP_DEBUG_FILE} ]]; then
@@ -106,8 +103,6 @@ __handle_reply()
     if [[ ${#COMPREPLY[@]} -eq 0 ]]; then
         declare -F __custom_func >/dev/null && __custom_func
     fi
-
-    __ltrim_colon_completions "$cur"
 }
 
 # The arguments should be in the form "ext1|ext2|extn"
@@ -129,25 +124,14 @@ __handle_flag()
 
     # if a command required a flag, and we found it, unset must_have_one_flag()
     local flagname=${words[c]}
-    local flagvalue
     # if the word contained an =
     if [[ ${words[c]} == *"="* ]]; then
-        flagvalue=${flagname#*=} # take in as flagvalue after the =
         flagname=${flagname%%=*} # strip everything after the =
         flagname="${flagname}=" # but put the = back
     fi
     __debug "${FUNCNAME}: looking for ${flagname}"
     if __contains_word "${flagname}" "${must_have_one_flag[@]}"; then
         must_have_one_flag=()
-    fi
-
-    # keep flag value with flagname as flaghash
-    if [ ${flagvalue} ] ; then
-        flaghash[${flagname}]=${flagvalue}
-    elif [ ${words[ $((c+1)) ]} ] ; then
-        flaghash[${flagname}]=${words[ $((c+1)) ]}
-    else
-        flaghash[${flagname}]="true" # pad "true" for bool flag
     fi
 
     # skip the argument to a two word flag
@@ -159,6 +143,7 @@ __handle_flag()
         fi
     fi
 
+    # skip the flag itself
     c=$((c+1))
 
 }
@@ -181,13 +166,9 @@ __handle_command()
 
     local next_command
     if [[ -n ${last_command} ]]; then
-        next_command="_${last_command}_${words[c]//:/__}"
+        next_command="_${last_command}_${words[c]}"
     else
-        if [[ $c -eq 0 ]]; then
-            next_command="_$(basename ${words[c]//:/__})"
-        else
-            next_command="_${words[c]//:/__}"
-        fi
+        next_command="_${words[c]}"
     fi
     c=$((c+1))
     __debug "${FUNCNAME}: looking for ${next_command}"
@@ -205,8 +186,6 @@ __handle_word()
         __handle_flag
     elif __contains_word "${words[c]}" "${commands[@]}"; then
         __handle_command
-    elif [[ $c -eq 0 ]] && __contains_word "$(basename ${words[c]})" "${commands[@]}"; then
-        __handle_command
     else
         __handle_noun
     fi
@@ -214,18 +193,12 @@ __handle_word()
 }
 
 `)
-	return err
 }
 
-func postscript(w io.Writer, name string) error {
-	name = strings.Replace(name, ":", "__", -1)
-	_, err := fmt.Fprintf(w, "__start_%s()\n", name)
-	if err != nil {
-		return err
-	}
-	_, err = fmt.Fprintf(w, `{
+func postscript(out *bytes.Buffer, name string) {
+	fmt.Fprintf(out, "__start_%s()\n", name)
+	fmt.Fprintf(out, `{
     local cur prev words cword
-    declare -A flaghash 2>/dev/null || :
     if declare -F _init_completion >/dev/null 2>&1; then
         _init_completion -s || return
     else
@@ -247,77 +220,55 @@ func postscript(w io.Writer, name string) error {
 }
 
 `, name)
-	if err != nil {
-		return err
-	}
-	_, err = fmt.Fprintf(w, `if [[ $(type -t compopt) = "builtin" ]]; then
-    complete -o default -F __start_%s %s
+	fmt.Fprintf(out, `if [[ $(type -t compopt) = "builtin" ]]; then
+    complete -F __start_%s %s
 else
-    complete -o default -o nospace -F __start_%s %s
+    complete -o nospace -F __start_%s %s
 fi
 
 `, name, name, name, name)
-	if err != nil {
-		return err
-	}
-	_, err = fmt.Fprintf(w, "# ex: ts=4 sw=4 et filetype=sh\n")
-	return err
+	fmt.Fprintf(out, "# ex: ts=4 sw=4 et filetype=sh\n")
 }
 
-func writeCommands(cmd *Command, w io.Writer) error {
-	if _, err := fmt.Fprintf(w, "    commands=()\n"); err != nil {
-		return err
-	}
+func writeCommands(cmd *Command, out *bytes.Buffer) {
+	fmt.Fprintf(out, "    commands=()\n")
 	for _, c := range cmd.Commands() {
 		if !c.IsAvailableCommand() || c == cmd.helpCommand {
 			continue
 		}
-		if _, err := fmt.Fprintf(w, "    commands+=(%q)\n", c.Name()); err != nil {
-			return err
-		}
+		fmt.Fprintf(out, "    commands+=(%q)\n", c.Name())
 	}
-	_, err := fmt.Fprintf(w, "\n")
-	return err
+	fmt.Fprintf(out, "\n")
 }
 
-func writeFlagHandler(name string, annotations map[string][]string, w io.Writer) error {
+func writeFlagHandler(name string, annotations map[string][]string, out *bytes.Buffer) {
 	for key, value := range annotations {
 		switch key {
 		case BashCompFilenameExt:
-			_, err := fmt.Fprintf(w, "    flags_with_completion+=(%q)\n", name)
-			if err != nil {
-				return err
-			}
+			fmt.Fprintf(out, "    flags_with_completion+=(%q)\n", name)
 
 			if len(value) > 0 {
 				ext := "__handle_filename_extension_flag " + strings.Join(value, "|")
-				_, err = fmt.Fprintf(w, "    flags_completion+=(%q)\n", ext)
+				fmt.Fprintf(out, "    flags_completion+=(%q)\n", ext)
 			} else {
 				ext := "_filedir"
-				_, err = fmt.Fprintf(w, "    flags_completion+=(%q)\n", ext)
-			}
-			if err != nil {
-				return err
+				fmt.Fprintf(out, "    flags_completion+=(%q)\n", ext)
 			}
 		case BashCompSubdirsInDir:
-			_, err := fmt.Fprintf(w, "    flags_with_completion+=(%q)\n", name)
+			fmt.Fprintf(out, "    flags_with_completion+=(%q)\n", name)
 
 			if len(value) == 1 {
 				ext := "__handle_subdirs_in_dir_flag " + value[0]
-				_, err = fmt.Fprintf(w, "    flags_completion+=(%q)\n", ext)
+				fmt.Fprintf(out, "    flags_completion+=(%q)\n", ext)
 			} else {
 				ext := "_filedir -d"
-				_, err = fmt.Fprintf(w, "    flags_completion+=(%q)\n", ext)
-			}
-			if err != nil {
-				return err
+				fmt.Fprintf(out, "    flags_completion+=(%q)\n", ext)
 			}
 		}
 	}
-	return nil
 }
 
-func writeShortFlag(flag *pflag.Flag, w io.Writer) error {
+func writeShortFlag(flag *pflag.Flag, out *bytes.Buffer) {
 	b := (flag.Value.Type() == "bool")
 	name := flag.Shorthand
 	format := "    "
@@ -325,13 +276,11 @@ func writeShortFlag(flag *pflag.Flag, w io.Writer) error {
 		format += "two_word_"
 	}
 	format += "flags+=(\"-%s\")\n"
-	if _, err := fmt.Fprintf(w, format, name); err != nil {
-		return err
-	}
-	return writeFlagHandler("-"+name, flag.Annotations, w)
+	fmt.Fprintf(out, format, name)
+	writeFlagHandler("-"+name, flag.Annotations, out)
 }
 
-func writeFlag(flag *pflag.Flag, w io.Writer) error {
+func writeFlag(flag *pflag.Flag, out *bytes.Buffer) {
 	b := (flag.Value.Type() == "bool")
 	name := flag.Name
 	format := "    flags+=(\"--%s"
@@ -339,64 +288,36 @@ func writeFlag(flag *pflag.Flag, w io.Writer) error {
 		format += "="
 	}
 	format += "\")\n"
-	if _, err := fmt.Fprintf(w, format, name); err != nil {
-		return err
-	}
-	return writeFlagHandler("--"+name, flag.Annotations, w)
+	fmt.Fprintf(out, format, name)
+	writeFlagHandler("--"+name, flag.Annotations, out)
 }
 
-func writeFlags(cmd *Command, w io.Writer) error {
-	_, err := fmt.Fprintf(w, `    flags=()
+func writeFlags(cmd *Command, out *bytes.Buffer) {
+	fmt.Fprintf(out, `    flags=()
     two_word_flags=()
     flags_with_completion=()
     flags_completion=()
 
 `)
-	if err != nil {
-		return err
-	}
-	var visitErr error
 	cmd.NonInheritedFlags().VisitAll(func(flag *pflag.Flag) {
-		if err := writeFlag(flag, w); err != nil {
-			visitErr = err
-			return
-		}
+		writeFlag(flag, out)
 		if len(flag.Shorthand) > 0 {
-			if err := writeShortFlag(flag, w); err != nil {
-				visitErr = err
-				return
-			}
+			writeShortFlag(flag, out)
 		}
 	})
-	if visitErr != nil {
-		return visitErr
-	}
 	cmd.InheritedFlags().VisitAll(func(flag *pflag.Flag) {
-		if err := writeFlag(flag, w); err != nil {
-			visitErr = err
-			return
-		}
+		writeFlag(flag, out)
 		if len(flag.Shorthand) > 0 {
-			if err := writeShortFlag(flag, w); err != nil {
-				visitErr = err
-				return
-			}
+			writeShortFlag(flag, out)
 		}
 	})
-	if visitErr != nil {
-		return visitErr
-	}
 
-	_, err = fmt.Fprintf(w, "\n")
-	return err
+	fmt.Fprintf(out, "\n")
 }
 
-func writeRequiredFlag(cmd *Command, w io.Writer) error {
-	if _, err := fmt.Fprintf(w, "    must_have_one_flag=()\n"); err != nil {
-		return err
-	}
+func writeRequiredFlag(cmd *Command, out *bytes.Buffer) {
+	fmt.Fprintf(out, "    must_have_one_flag=()\n")
 	flags := cmd.NonInheritedFlags()
-	var visitErr error
 	flags.VisitAll(func(flag *pflag.Flag) {
 		for key := range flag.Annotations {
 			switch key {
@@ -407,95 +328,67 @@ func writeRequiredFlag(cmd *Command, w io.Writer) error {
 					format += "="
 				}
 				format += "\")\n"
-				if _, err := fmt.Fprintf(w, format, flag.Name); err != nil {
-					visitErr = err
-					return
-				}
+				fmt.Fprintf(out, format, flag.Name)
 
 				if len(flag.Shorthand) > 0 {
-					if _, err := fmt.Fprintf(w, "    must_have_one_flag+=(\"-%s\")\n", flag.Shorthand); err != nil {
-						visitErr = err
-						return
-					}
+					fmt.Fprintf(out, "    must_have_one_flag+=(\"-%s\")\n", flag.Shorthand)
 				}
 			}
 		}
 	})
-	return visitErr
 }
 
-func writeRequiredNoun(cmd *Command, w io.Writer) error {
-	if _, err := fmt.Fprintf(w, "    must_have_one_noun=()\n"); err != nil {
-		return err
-	}
+func writeRequiredNoun(cmd *Command, out *bytes.Buffer) {
+	fmt.Fprintf(out, "    must_have_one_noun=()\n")
 	sort.Sort(sort.StringSlice(cmd.ValidArgs))
 	for _, value := range cmd.ValidArgs {
-		if _, err := fmt.Fprintf(w, "    must_have_one_noun+=(%q)\n", value); err != nil {
-			return err
-		}
+		fmt.Fprintf(out, "    must_have_one_noun+=(%q)\n", value)
 	}
-	return nil
 }
 
-func gen(cmd *Command, w io.Writer) error {
+func gen(cmd *Command, out *bytes.Buffer) {
 	for _, c := range cmd.Commands() {
 		if !c.IsAvailableCommand() || c == cmd.helpCommand {
 			continue
 		}
-		if err := gen(c, w); err != nil {
-			return err
-		}
+		gen(c, out)
 	}
 	commandName := cmd.CommandPath()
 	commandName = strings.Replace(commandName, " ", "_", -1)
-	commandName = strings.Replace(commandName, ":", "__", -1)
-	if _, err := fmt.Fprintf(w, "_%s()\n{\n", commandName); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintf(w, "    last_command=%q\n", commandName); err != nil {
-		return err
-	}
-	if err := writeCommands(cmd, w); err != nil {
-		return err
-	}
-	if err := writeFlags(cmd, w); err != nil {
-		return err
-	}
-	if err := writeRequiredFlag(cmd, w); err != nil {
-		return err
-	}
-	if err := writeRequiredNoun(cmd, w); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintf(w, "}\n\n"); err != nil {
-		return err
-	}
-	return nil
+	fmt.Fprintf(out, "_%s()\n{\n", commandName)
+	fmt.Fprintf(out, "    last_command=%q\n", commandName)
+	writeCommands(cmd, out)
+	writeFlags(cmd, out)
+	writeRequiredFlag(cmd, out)
+	writeRequiredNoun(cmd, out)
+	fmt.Fprintf(out, "}\n\n")
 }
 
-func (cmd *Command) GenBashCompletion(w io.Writer) error {
-	if err := preamble(w, cmd.Name()); err != nil {
-		return err
-	}
+func (cmd *Command) GenBashCompletion(out *bytes.Buffer) {
+	preamble(out)
 	if len(cmd.BashCompletionFunction) > 0 {
-		if _, err := fmt.Fprintf(w, "%s\n", cmd.BashCompletionFunction); err != nil {
-			return err
-		}
+		fmt.Fprintf(out, "%s\n", cmd.BashCompletionFunction)
 	}
-	if err := gen(cmd, w); err != nil {
-		return err
-	}
-	return postscript(w, cmd.Name())
+	gen(cmd, out)
+	postscript(out, cmd.Name())
 }
 
 func (cmd *Command) GenBashCompletionFile(filename string) error {
+	out := new(bytes.Buffer)
+
+	cmd.GenBashCompletion(out)
+
 	outFile, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer outFile.Close()
 
-	return cmd.GenBashCompletion(outFile)
+	_, err = outFile.Write(out.Bytes())
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // MarkFlagRequired adds the BashCompOneRequiredFlag annotation to the named flag, if it exists.

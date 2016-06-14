@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Protocol buffer comparison.
+// TODO: MessageSet.
 
 package proto
 
@@ -50,9 +51,7 @@ Equality is defined in this way:
     are equal, and extensions sets are equal.
   - Two set scalar fields are equal iff their values are equal.
     If the fields are of a floating-point type, remember that
-    NaN != x for all x, including NaN. If the message is defined
-    in a proto3 .proto file, fields are not "set"; specifically,
-    zero length proto3 "bytes" fields are equal (nil == {}).
+    NaN != x for all x, including NaN.
   - Two repeated fields are equal iff their lengths are the same,
     and their corresponding elements are equal (a "bytes" field,
     although represented by []byte, is not a repeated field)
@@ -90,7 +89,6 @@ func Equal(a, b Message) bool {
 
 // v1 and v2 are known to have the same type.
 func equalStruct(v1, v2 reflect.Value) bool {
-	sprop := GetProperties(v1.Type())
 	for i := 0; i < v1.NumField(); i++ {
 		f := v1.Type().Field(i)
 		if strings.HasPrefix(f.Name, "XXX_") {
@@ -116,7 +114,7 @@ func equalStruct(v1, v2 reflect.Value) bool {
 			}
 			f1, f2 = f1.Elem(), f2.Elem()
 		}
-		if !equalAny(f1, f2, sprop.Prop[i]) {
+		if !equalAny(f1, f2) {
 			return false
 		}
 	}
@@ -143,8 +141,7 @@ func equalStruct(v1, v2 reflect.Value) bool {
 }
 
 // v1 and v2 are known to have the same type.
-// prop may be nil.
-func equalAny(v1, v2 reflect.Value, prop *Properties) bool {
+func equalAny(v1, v2 reflect.Value) bool {
 	if v1.Type() == protoMessageType {
 		m1, _ := v1.Interface().(Message)
 		m2, _ := v2.Interface().(Message)
@@ -157,17 +154,6 @@ func equalAny(v1, v2 reflect.Value, prop *Properties) bool {
 		return v1.Float() == v2.Float()
 	case reflect.Int32, reflect.Int64:
 		return v1.Int() == v2.Int()
-	case reflect.Interface:
-		// Probably a oneof field; compare the inner values.
-		n1, n2 := v1.IsNil(), v2.IsNil()
-		if n1 || n2 {
-			return n1 == n2
-		}
-		e1, e2 := v1.Elem(), v2.Elem()
-		if e1.Type() != e2.Type() {
-			return false
-		}
-		return equalAny(e1, e2, nil)
 	case reflect.Map:
 		if v1.Len() != v2.Len() {
 			return false
@@ -178,22 +164,16 @@ func equalAny(v1, v2 reflect.Value, prop *Properties) bool {
 				// This key was not found in the second map.
 				return false
 			}
-			if !equalAny(v1.MapIndex(key), val2, nil) {
+			if !equalAny(v1.MapIndex(key), val2) {
 				return false
 			}
 		}
 		return true
 	case reflect.Ptr:
-		return equalAny(v1.Elem(), v2.Elem(), prop)
+		return equalAny(v1.Elem(), v2.Elem())
 	case reflect.Slice:
 		if v1.Type().Elem().Kind() == reflect.Uint8 {
 			// short circuit: []byte
-
-			// Edge case: if this is in a proto3 message, a zero length
-			// bytes field is considered the zero value.
-			if prop != nil && prop.proto3 && v1.Len() == 0 && v2.Len() == 0 {
-				return true
-			}
 			if v1.IsNil() != v2.IsNil() {
 				return false
 			}
@@ -204,7 +184,7 @@ func equalAny(v1, v2 reflect.Value, prop *Properties) bool {
 			return false
 		}
 		for i := 0; i < v1.Len(); i++ {
-			if !equalAny(v1.Index(i), v2.Index(i), prop) {
+			if !equalAny(v1.Index(i), v2.Index(i)) {
 				return false
 			}
 		}
@@ -239,7 +219,7 @@ func equalExtensions(base reflect.Type, em1, em2 map[int32]Extension) bool {
 
 		if m1 != nil && m2 != nil {
 			// Both are unencoded.
-			if !equalAny(reflect.ValueOf(m1), reflect.ValueOf(m2), nil) {
+			if !equalAny(reflect.ValueOf(m1), reflect.ValueOf(m2)) {
 				return false
 			}
 			continue
@@ -267,7 +247,7 @@ func equalExtensions(base reflect.Type, em1, em2 map[int32]Extension) bool {
 			log.Printf("proto: badly encoded extension %d of %v: %v", extNum, base, err)
 			return false
 		}
-		if !equalAny(reflect.ValueOf(m1), reflect.ValueOf(m2), nil) {
+		if !equalAny(reflect.ValueOf(m1), reflect.ValueOf(m2)) {
 			return false
 		}
 	}

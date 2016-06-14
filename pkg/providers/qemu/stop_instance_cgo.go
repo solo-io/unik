@@ -3,57 +3,61 @@
 package qemu
 
 import (
-	"os"
-	"strings"
 	"syscall"
 
-	"github.com/digitalocean/go-ps"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/Sirupsen/logrus"
+	"strconv"
 )
 
 func (p *QemuProvider) StopInstance(id string) error {
-
 	instance, err := p.GetInstance(id)
 	if err != nil {
-		return err
-	}
-	image, err := p.GetImage(instance.ImageId)
-	if err != nil {
-		return err
-	}
-
-	proc, err := getOurQemu(image)
-	if err != nil {
-		return err
+		return errors.New("retrieving instance "+id, err)
 	}
 
 	// kill qemu
-	return syscall.Kill(proc.Pid(), syscall.SIGKILL)
-}
-
-func getOurQemu(image *types.Image) (ps.Process, error) {
-
-	procs, err := ps.Processes()
+	pid, err := strconv.Atoi(instance.Id)
 	if err != nil {
-		return nil, err
+		return errors.New("invalid instance id (should be qemu pid)", err)
 	}
 
-	instanceArg := getKernelPath(image.Name)
-	for _, proc := range procs {
-		if !strings.Contains(proc.Executable(), "qemu") {
-			continue
-		}
-
-		// qemu must belong either to us or to init ( will be under init if unik was restarted - we try
-		// make sure it's not started by someone else..)
-		if proc.PPid() != os.Getpid() && proc.PPid() != 1 {
-			continue
-		}
-
-		if strings.Contains(proc.Args(), instanceArg) {
-			return proc, nil
+	if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
+		logrus.Warn("failed terminating instance, assuming instance has externally terminated", err)
+	}
+	volumesToDetach := []*types.Volume{}
+	volumes, err := p.ListVolumes()
+	if err != nil {
+		return errors.New("getting volume list", err)
+	}
+	for _, volume := range volumes {
+		if volume.Attachment == instance.Id {
+			volumesToDetach = append(volumesToDetach, volume)
 		}
 	}
-	return nil, errors.New("Qemu process not found", nil)
+
+	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
+		delete(instances, instance.Id)
+		return nil
+	}); err != nil {
+		return errors.New("modifying image map in state", err)
+	}
+	for _, volume := range volumesToDetach {
+		if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+			volume, ok := volumes[volume.Id]
+			if !ok {
+				return errors.New("no record of "+volume.Id+" in the state", nil)
+			}
+			volume.Attachment = ""
+			return nil
+		}); err != nil {
+			return errors.New("modifying volume map in state", err)
+		}
+	}
+	err = p.state.Save()
+	if err != nil {
+		return errors.New("saving image map to state", err)
+	}
+	return nil
 }

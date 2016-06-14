@@ -7,10 +7,6 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/Microsoft/go-winio",
-			"Rev": "2b085935f02c272e7a1855df6f8fe03029ffcadd"
-		},
-		{
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.10.0",
 			"Rev": "4b6ea7319e214d98c938f12692336f7ca9348d6b"
@@ -146,10 +142,6 @@
 			"Rev": "71acacd42f85e5e82f70a55327789582a5200a90"
 		},
 		{
-			"ImportPath": "github.com/digitalocean/go-ps",
-			"Rev": "4491670bbf2c253467b7068542ad58708e563937"
-		},
-		{
 			"ImportPath": "github.com/docker/docker/pkg/ioutils",
 			"Comment": "v1.4.1-11538-g577adcc",
 			"Rev": "577adcc1eeb58ab29cfbcd50048576b9c8f64584"
@@ -160,91 +152,8 @@
 			"Rev": "577adcc1eeb58ab29cfbcd50048576b9c8f64584"
 		},
 		{
-			"ImportPath": "github.com/docker/engine-api/client",
-			"Comment": "v0.3.1-38-g6156954",
-			"Rev": "6156954c5d57a1728c65593b13f50c405d9de9ed"
-		},
-		{
-			"ImportPath": "github.com/docker/engine-api/client/transport",
-			"Comment": "v0.3.1-38-g6156954",
-			"Rev": "6156954c5d57a1728c65593b13f50c405d9de9ed"
-		},
-		{
-			"ImportPath": "github.com/docker/engine-api/client/transport/cancellable",
-			"Comment": "v0.3.1-38-g6156954",
-			"Rev": "6156954c5d57a1728c65593b13f50c405d9de9ed"
-		},
-		{
-			"ImportPath": "github.com/docker/engine-api/types",
-			"Comment": "v0.3.1-38-g6156954",
-			"Rev": "6156954c5d57a1728c65593b13f50c405d9de9ed"
-		},
-		{
-			"ImportPath": "github.com/docker/engine-api/types/blkiodev",
-			"Comment": "v0.3.1-38-g6156954",
-			"Rev": "6156954c5d57a1728c65593b13f50c405d9de9ed"
-		},
-		{
-			"ImportPath": "github.com/docker/engine-api/types/container",
-			"Comment": "v0.3.1-38-g6156954",
-			"Rev": "6156954c5d57a1728c65593b13f50c405d9de9ed"
-		},
-		{
-			"ImportPath": "github.com/docker/engine-api/types/filters",
-			"Comment": "v0.3.1-38-g6156954",
-			"Rev": "6156954c5d57a1728c65593b13f50c405d9de9ed"
-		},
-		{
-			"ImportPath": "github.com/docker/engine-api/types/network",
-			"Comment": "v0.3.1-38-g6156954",
-			"Rev": "6156954c5d57a1728c65593b13f50c405d9de9ed"
-		},
-		{
-			"ImportPath": "github.com/docker/engine-api/types/registry",
-			"Comment": "v0.3.1-38-g6156954",
-			"Rev": "6156954c5d57a1728c65593b13f50c405d9de9ed"
-		},
-		{
-			"ImportPath": "github.com/docker/engine-api/types/strslice",
-			"Comment": "v0.3.1-38-g6156954",
-			"Rev": "6156954c5d57a1728c65593b13f50c405d9de9ed"
-		},
-		{
-			"ImportPath": "github.com/docker/engine-api/types/time",
-			"Comment": "v0.3.1-38-g6156954",
-			"Rev": "6156954c5d57a1728c65593b13f50c405d9de9ed"
-		},
-		{
-			"ImportPath": "github.com/docker/go-connections/nat",
-			"Comment": "v0.2.0-2-gf549a93",
-			"Rev": "f549a9393d05688dff0992ef3efd8bbe6c628aeb"
-		},
-		{
-			"ImportPath": "github.com/docker/go-connections/sockets",
-			"Comment": "v0.2.0-2-gf549a93",
-			"Rev": "f549a9393d05688dff0992ef3efd8bbe6c628aeb"
-		},
-		{
-			"ImportPath": "github.com/docker/go-connections/tlsconfig",
-			"Comment": "v0.2.0-2-gf549a93",
-			"Rev": "f549a9393d05688dff0992ef3efd8bbe6c628aeb"
-		},
-		{
-			"ImportPath": "github.com/docker/go-units",
-			"Comment": "v0.3.0",
-			"Rev": "5d2041e26a699eaca682e2ea41c8f891e1060444"
-		},
-		{
 			"ImportPath": "github.com/emc-advanced-dev/pkg/errors",
 			"Rev": "209f5ccfc1d9df3494f7cff85c91ce80b12d59b8"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/Sirupsen/logrus",
-			"Rev": "25bc220b299845ae5489fd19bf89c5278864b050"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/golang.org/x/sys/unix",
-			"Rev": "25bc220b299845ae5489fd19bf89c5278864b050"
 		},
 		{
 			"ImportPath": "github.com/gin-gonic/gin",
@@ -278,7 +187,7 @@
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
-			"Rev": "2402d76f3d41f928c7902a765dfc872356dd3aad"
+			"Rev": "7f07925444bb51fa4cf9dfe6f7661876f8852275"
 		},
 		{
 			"ImportPath": "github.com/inconshreveable/mousetrap",
@@ -441,11 +350,6 @@
 			"Rev": "8adf9e1730c55cdc590de7d49766cb2acc88d8f2"
 		},
 		{
-			"ImportPath": "github.com/opencontainers/runc/libcontainer/user",
-			"Comment": "v0.0.7",
-			"Rev": "7ca2aa4873aea7cb4265b1726acb24b90d8726c6"
-		},
-		{
 			"ImportPath": "github.com/pborman/uuid",
 			"Comment": "v1.0-11-gc55201b",
 			"Rev": "c55201b036063326c5b1b89ccfe45a184973d073"
@@ -469,93 +373,85 @@
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/find",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/list",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/object",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/property",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/session",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/task",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/vim25",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/vim25/debug",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/vim25/methods",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/vim25/mo",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/vim25/progress",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/vim25/soap",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/vim25/types",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "github.com/vmware/govmomi/vim25/xml",
-			"Comment": "Release 0.6.2",
-			"Rev": "9051bd6b44125d9472e0c148b5965692ab283d4a"
+			"Comment": "v0.7.1",
+			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
 			"Rev": "e45385e9b226f570b1f086bf287b25d3d4117776"
 		},
 		{
-			"ImportPath": "golang.org/x/net/proxy",
-			"Rev": "e45385e9b226f570b1f086bf287b25d3d4117776"
-		},
-		{
 			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
-		},
-		{
-			"ImportPath": "golang.org/x/sys/windows",
 			"Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
 		},
 		{

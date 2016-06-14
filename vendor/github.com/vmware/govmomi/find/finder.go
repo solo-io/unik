@@ -210,7 +210,9 @@ func (f *Finder) DatacenterList(ctx context.Context, path string) ([]*object.Dat
 	for _, e := range es {
 		ref := e.Object.Reference()
 		if ref.Type == "Datacenter" {
-			dcs = append(dcs, object.NewDatacenter(f.client, ref))
+			dc := object.NewDatacenter(f.client, ref)
+			dc.InventoryPath = e.Path
+			dcs = append(dcs, dc)
 		}
 	}
 

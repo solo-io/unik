@@ -200,12 +200,6 @@ type RawSockaddrNetlink struct {
 	Groups uint32
 }
 
-type RawSockaddrHCI struct {
-	Family  uint16
-	Dev     uint16
-	Channel uint16
-}
-
 type RawSockaddr struct {
 	Family uint16
 	Data   [14]int8
@@ -330,7 +324,6 @@ const (
 	SizeofSockaddrUnix      = 0x6e
 	SizeofSockaddrLinklayer = 0x14
 	SizeofSockaddrNetlink   = 0xc
-	SizeofSockaddrHCI       = 0x6
 	SizeofLinger            = 0x8
 	SizeofIPMreq            = 0x8
 	SizeofIPMreqn           = 0xc
@@ -580,7 +573,6 @@ type Ustat_t struct {
 
 type EpollEvent struct {
 	Events uint32
-	PadFd  int32
 	Fd     int32
 	Pad    int32
 }
@@ -588,7 +580,6 @@ type EpollEvent struct {
 const (
 	AT_FDCWD            = -0x64
 	AT_REMOVEDIR        = 0x200
-	AT_SYMLINK_FOLLOW   = 0x400
 	AT_SYMLINK_NOFOLLOW = 0x100
 )
 

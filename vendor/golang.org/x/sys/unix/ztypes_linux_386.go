@@ -151,15 +151,6 @@ type Flock_t struct {
 	Pid    int32
 }
 
-const (
-	FADV_NORMAL     = 0x0
-	FADV_RANDOM     = 0x1
-	FADV_SEQUENTIAL = 0x2
-	FADV_WILLNEED   = 0x3
-	FADV_DONTNEED   = 0x4
-	FADV_NOREUSE    = 0x5
-)
-
 type RawSockaddrInet4 struct {
 	Family uint16
 	Port   uint16
@@ -195,12 +186,6 @@ type RawSockaddrNetlink struct {
 	Pad    uint16
 	Pid    uint32
 	Groups uint32
-}
-
-type RawSockaddrHCI struct {
-	Family  uint16
-	Dev     uint16
-	Channel uint16
 }
 
 type RawSockaddr struct {
@@ -325,7 +310,6 @@ const (
 	SizeofSockaddrUnix      = 0x6e
 	SizeofSockaddrLinklayer = 0x14
 	SizeofSockaddrNetlink   = 0xc
-	SizeofSockaddrHCI       = 0x6
 	SizeofLinger            = 0x8
 	SizeofIPMreq            = 0x8
 	SizeofIPMreqn           = 0xc
@@ -590,9 +574,8 @@ type EpollEvent struct {
 
 const (
 	AT_FDCWD            = -0x64
-	AT_REMOVEDIR        = 0x200
-	AT_SYMLINK_FOLLOW   = 0x400
 	AT_SYMLINK_NOFOLLOW = 0x100
+	AT_REMOVEDIR        = 0x200
 )
 
 type Termios struct {

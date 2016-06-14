@@ -57,18 +57,12 @@ func (e DatastoreNoSuchFileError) Error() string {
 
 type Datastore struct {
 	Common
-
-	InventoryPath string
 }
 
 func NewDatastore(c *vim25.Client, ref types.ManagedObjectReference) *Datastore {
 	return &Datastore{
 		Common: NewCommon(c, ref),
 	}
-}
-
-func (d Datastore) Name() string {
-	return path.Base(d.InventoryPath)
 }
 
 func (d Datastore) Path(path string) string {
@@ -142,7 +136,7 @@ func (d Datastore) ServiceTicket(ctx context.Context, path string, method string
 
 		// Pick a random attached host
 		host := hosts[rand.Intn(len(hosts))]
-		name, err := host.Name(ctx)
+		name, err := host.ObjectName(ctx)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -314,8 +308,10 @@ func (d Datastore) Stat(ctx context.Context, file string) (types.BaseFileInfo, e
 
 	spec := types.HostDatastoreBrowserSearchSpec{
 		Details: &types.FileQueryFlags{
-			FileType:  true,
-			FileOwner: types.NewBool(true), // TODO: omitempty is generated, but seems to be required
+			FileType:     true,
+			FileSize:     true,
+			Modification: true,
+			FileOwner:    types.NewBool(true),
 		},
 		MatchPattern: []string{path.Base(file)},
 	}
