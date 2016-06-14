@@ -6,6 +6,7 @@ PROJECT_ROOT="$(cd ${PROJECT_ROOT} && pwd)"
 echo "testing virtualbox" && \
 echo "project root is ${PROJECT_ROOT}" && \
     MAKE_CONTAINERS=0 \
+    TEST_QEMU=1 \
     TEST_VIRTUALBOX=1 \
     VBOX_ADAPTER_NAME=vboxnet1 \
     VBOX_ADAPTER_TYPE=host_only \

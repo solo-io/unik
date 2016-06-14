@@ -119,6 +119,14 @@ func NewVsphereConfig() (_ config.Vsphere, err error) {
 	}, nil
 }
 
+func NewQemuConfig() (_ config.Qemu, err error) {
+	return config.Qemu{
+		Name: "TEST-VBOX-CONFIG",
+		NoGraphic: true,
+		DebuggerPort: 3001,
+	}, nil
+}
+
 func ConfigWithAws(config config.DaemonConfig, aws config.Aws) (config.DaemonConfig) {
 	config.Providers.Aws = append(config.Providers.Aws, aws)
 	return config
@@ -131,6 +139,11 @@ func ConfigWithVirtualbox(config config.DaemonConfig, virtualbox config.Virtualb
 
 func ConfigWithVsphere(config config.DaemonConfig, vsphere config.Vsphere) (config.DaemonConfig) {
 	config.Providers.Vsphere = append(config.Providers.Vsphere, vsphere)
+	return config
+}
+
+func ConfigWithQemu(config config.DaemonConfig, qemu config.Qemu) (config.DaemonConfig) {
+	config.Providers.Qemu = append(config.Providers.Qemu, qemu)
 	return config
 }
 
@@ -158,6 +171,14 @@ func NewTestConfig() (cfg config.DaemonConfig) {
 			logrus.Panic(err)
 		}
 		cfg = ConfigWithVsphere(cfg, vsphereConfig)
+		noConfig = false
+	}
+	if os.Getenv("TEST_QEMU") != "" && os.Getenv("TEST_QEMU") != "0" {
+		qemuConfig, err := NewQemuConfig()
+		if err != nil {
+			logrus.Panic(err)
+		}
+		cfg = ConfigWithQemu(cfg, qemuConfig)
 		noConfig = false
 	}
 	if noConfig {
