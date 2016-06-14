@@ -55,39 +55,6 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 	return img, nil
 }
 
-// rump special json
-func ToRumpJson(c rumpConfig) (string, error) {
-
-	blk := c.Blk
-	c.Blk = nil
-
-	jsonConfig, err := json.Marshal(c)
-	if err != nil {
-		return "", err
-	}
-
-	blks := ""
-	for _, b := range blk {
-
-		blkjson, err := json.Marshal(b)
-		if err != nil {
-			return "", err
-		}
-		blks += fmt.Sprintf("\"blk\": %s,", string(blkjson))
-	}
-	var jsonString string
-	if len(blks) > 0 {
-
-		jsonString = string(jsonConfig[:len(jsonConfig)-1]) + "," + blks[:len(blks)-1] + "}"
-
-	} else {
-		jsonString = string(jsonConfig)
-	}
-
-	return jsonString, nil
-
-}
-
 type godeps struct {
 	ImportPath   string   `json:"ImportPath"`
 	GoVersion    string   `json:"GoVersion"`

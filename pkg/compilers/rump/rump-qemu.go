@@ -13,14 +13,6 @@ import (
 )
 
 func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
-	return createImageQemu(kernel, args, mntPoints, bakedEnv, noCleanup, false)
-}
-
-func CreateImageQemuAddStub(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
-	return createImageQemu(kernel, args, mntPoints, bakedEnv, noCleanup, true)
-}
-
-func createImageQemu(kernel string, args string, mntPoints, bakedEnv []string, noCleanup, addStub bool) (*types.RawImage, error) {
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {
@@ -34,7 +26,7 @@ func createImageQemu(kernel string, args string, mntPoints, bakedEnv []string, n
 	if args != "" {
 		argv = strings.Split(args, " ")
 	}
-	c = setRumpCmdLine(c, "program.bin", argv, addStub)
+	c = setRumpCmdLine(c, "program.bin", argv, false)
 
 	bootBlk := blk{
 		Source:     "dev",
@@ -68,7 +60,7 @@ func createImageQemu(kernel string, args string, mntPoints, bakedEnv []string, n
 		Method: DHCP,
 	}
 
-	cmdline, err := ToRumpJson(c)
+	cmdline, err := toRumpJson(c)
 	if err != nil {
 		return nil, err
 	}

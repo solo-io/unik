@@ -166,6 +166,13 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		BootstrapType: rump.BootstrapTypeUDP,
 		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
+	_compilers[compilers.RUMP_NODEJS_QEMU] = &rump.RumpScriptCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage:   "compilers-rump-nodejs-hw-no-stub",
+			CreateImage:   rump.CreateImageQemu,
+		},
+		RunScriptArgs: "/bootpart/node-wrapper.js",
+	}
 
 	_compilers[compilers.RUMP_PYTHON_AWS] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
@@ -179,7 +186,6 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/",
 		},
 	}
-
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-python3-hw",
@@ -192,11 +198,22 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/",
 		},
 	}
-
 	_compilers[compilers.RUMP_PYTHON_VMWARE] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-python3-hw",
 			CreateImage: rump.CreateImageVmwareAddStub,
+		},
+		BootstrapType: rump.BootstrapTypeUDP,
+		RunScriptArgs: "/bootpart/python-wrapper.py",
+		ScriptEnv: []string{
+			"PYTHONHOME=/bootpart/python",
+			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/",
+		},
+	}
+	_compilers[compilers.RUMP_PYTHON_QEMU] = &rump.RumpScriptCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-python3-hw-no-stub",
+			CreateImage: rump.CreateImageQemu,
 		},
 		BootstrapType: rump.BootstrapTypeUDP,
 		RunScriptArgs: "/bootpart/python-wrapper.py",

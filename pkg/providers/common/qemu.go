@@ -24,8 +24,8 @@ func ConvertRawImage(sourceFormat, targetFormat types.ImageFormat, inputFile, ou
 	args := []string{"qemu-img", "convert", "-f", string(sourceFormat), "-O", targetFormatName, inputFile, outputFile}
 
 	logrus.WithField("command", args).Debugf("running command")
-	if out, err := container.CombinedOutput(args...); err != nil {
-		return errors.New("failed converting raw image to "+string(targetFormat)+": "+string(out), err)
+	if err := container.Run(args...); err != nil {
+		return errors.New("failed converting raw image to "+string(targetFormat), err)
 	}
 	return nil
 }
