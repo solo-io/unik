@@ -31,7 +31,6 @@ func TestClient(t *testing.T) {
 				logrus.Panic(err)
 			}
 		}
-		util.SetContainerVer("0.1")
 
 		tmpUnik.SetupUnik()
 		var err error

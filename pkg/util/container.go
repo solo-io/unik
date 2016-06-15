@@ -4,14 +4,22 @@ import (
 	"fmt"
 	"os/exec"
 	"github.com/pborman/uuid"
+	"github.com/Sirupsen/logrus"
+	"encoding/json"
 )
 
-func SetContainerVer(ver string) {
-	containerVer = ver
-}
+//should be set at compile time
+//eg -ldflags "-X github.com/emc-advanced-dev/unik/pkg/util.containerVer=$(cat containers.json)"
+var containerVersionsJson string
 
-// filled in build time by make
-var containerVer string
+var containerVersions map[string]float64
+
+func init(){
+	if err := json.Unmarshal([]byte(containerVersionsJson), &containerVersions); err != nil {
+		logrus.WithError(err).Fatal("failed setting container versions from json string: %s", string(containerVersionsJson))
+	}
+	logrus.WithField("versions", containerVersions).Info("using container versions")
+}
 
 type Container struct {
 	env        map[string]string
@@ -121,6 +129,14 @@ func (c *Container) BuildCmd(arguments ...string) *exec.Cmd {
 
 	args = append(args, fmt.Sprintf("--name=%s", c.containerName))
 
+	var containerVer string
+	containerVerFloat, ok := containerVersions[c.name]
+	if ok {
+		containerVer = fmt.Sprintf("%v", containerVerFloat)
+	} else {
+		logrus.Warnf("version for container %s not found, using version 'latest'", c.name)
+		containerVer = "latest"
+	}
 	args = append(args, "projectunik/"+c.name+":"+containerVer)
 	args = append(args, arguments...)
 

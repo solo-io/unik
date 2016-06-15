@@ -1,0 +1,20 @@
+{
+  "vsphere-client": 0.1,
+  "image-creator": 0.1,
+  "boot-creator": 0.1,
+  "qemu-util": 0.1,
+  "compilers-osv-java": 0.2,
+  "compilers-rump-go-xen": 0.1,
+  "compilers-rump-go-hw": 0.1,
+  "compilers-rump-go-hw-no-stub": 0.1,
+  "compilers-rump-nodejs-hw": 0.1,
+  "compilers-rump-nodejs-hw-no-stub": 0.1,
+  "compilers-rump-nodejs-xen": 0.1,
+  "compilers-rump-python3-hw": 0.1,
+  "compilers-rump-python3-hw-no-stub": 0.1,
+  "compilers-rump-python3-xen": 0.1,
+  "compilers-rump-base-xen": 0.1,
+  "compilers-rump-base-hw": 0.1,
+  "rump-debugger-qemu": 0.1,
+  "compilers-rump-base-common": 0.1
+}
