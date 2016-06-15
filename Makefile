@@ -109,9 +109,6 @@ compilers-rump-python3-xen: compilers-rump-base-xen
 compilers-osv-java: set-container-versions
 	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@$(CONTAINERTAG) .  && rm java-compiler
 
-debuggers-rump-base-hw: compilers-rump-go-hw
-	cd containers/debuggers/rump/base && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .
-
 #utils
 utils: boot-creator image-creator vsphere-client qemu-util
 
@@ -190,7 +187,6 @@ remove-containers:
 	-docker rmi -f projectunik/compilers-rump-base-hw$(CONTAINERTAG)
 	-docker rmi -f projectunik/rump-debugger-qemu$(CONTAINERTAG)
 	-docker rmi -f projectunik/compilers-rump-base-common$(CONTAINERTAG)
-	-docker rmi -f debuggers-rump-base-hw$(CONTAINERTAG)
 
 clean:
 	rm -rf ./_build
