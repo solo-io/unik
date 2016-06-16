@@ -2,15 +2,23 @@ SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 define pull_container
-	docker pull projectunik/$(1):$(shell cat containers/versions.json  | jq .['"$(1)"'])
+	docker pull projectunik/$(1):$(shell cat containers/versions.json  | jq .['$(1)'])
 endef
 
 define build_container
-	cd containers/$(1) && docker build -t projectunik/$(2):$(shell cat containers/versions.json  | jq .['"$(2)"']) -f Dockerfile$(3) .
+	cd containers/$(1) && docker build -t projectunik/$(2):build -f Dockerfile$(3) .
+	$(eval CONTAINER_TAG=$(shell echo 'docker inspect projectunik/$(2):build'))
+	$(eval CONTAINER_TAG=$(shell echo '$(CONTAINER_TAG) | jq .[].Id' -r ))
+	$(eval CONTAINER_TAG=$(shell echo '$(CONTAINER_TAG) | sed 's/sha256://g'' ))
+	$(eval CONTAINER_TAG=$(shell echo '$(CONTAINER_TAG) | head -c 16' ))
+	$(eval CONTAINER_TAG=$(shell echo '$$$$($(CONTAINER_TAG))' ))
+	#echo $(CONTAINER_TAG)
+	docker tag projectunik/$(2):build projectunik/$(2):$(CONTAINER_TAG)
+	docker rmi projectunik/$(2):build
 endef
 
 define remove_container
-	docker rmi -f projectunik/$(1):$(shell cat containers/versions.json  | jq .['"$(1)"'])
+	docker rmi -f projectunik/$(1):$(shell cat containers/versions.json  | jq .['$(1)'])
 endef
 
 all: pull ${SOURCES} binary
@@ -151,7 +159,7 @@ BINARY=unik
 
 # don't override if provided already
 ifeq (,$(TARGET_OS))
-    UNAME:=$(shell uname)
+	UNAME:=$(shell uname)
 	ifeq ($(UNAME),Linux)
 		TARGET_OS:=linux
 	else ifeq ($(UNAME),Darwin)
@@ -185,7 +193,7 @@ containers/version-data.go: containers/versions.json
 instance-listener/bindata/instance_listener_data.go:
 	go-bindata -o instance-listener/bindata/instance_listener_data.go --ignore=instance-listener/bindata/ instance-listener/... && \
 	perl -pi -e 's/package main/package bindata/g' instance-listener/bindata/instance_listener_data.go
-    
+
 #clean up
 .PHONY: uninstall remove-containers clean
 
