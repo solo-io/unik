@@ -49,7 +49,7 @@ pull:
 	docker pull projectunik/compilers-rump-nodejs-hw-no-stub$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-nodejs-xen$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-python3-hw$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-python3-hw-no-stubw$(CONTAINERTAG)
+	docker pull projectunik/compilers-rump-python3-hw-no-stub$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-python3-xen$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-base-xen$(CONTAINERTAG)
 	docker pull projectunik/compilers-rump-base-hw$(CONTAINERTAG)
