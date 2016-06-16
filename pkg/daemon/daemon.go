@@ -31,6 +31,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"os/exec"
+	"github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 type UnikDaemon struct {
@@ -48,6 +49,10 @@ const (
 )
 
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
+	if err := util.InitContainers(); err != nil {
+		return nil, errors.New("initializing containers", err)
+	}
+
 	if runtime.GOOS == "darwin" {
 		tmpDir := filepath.Join(os.Getenv("HOME"), ".unik", "tmp")
 		os.Setenv("TMPDIR", tmpDir)

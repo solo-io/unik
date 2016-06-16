@@ -6,19 +6,22 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/Sirupsen/logrus"
 	"encoding/json"
+	"github.com/emc-advanced-dev/unik/containers"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
-
-//should be set at compile time
-//eg -ldflags "-X github.com/emc-advanced-dev/unik/pkg/util.containerVer=$(cat containers.json)"
-var containerVersionsJson string
 
 var containerVersions map[string]float64
 
-func init(){
-	if err := json.Unmarshal([]byte(containerVersionsJson), &containerVersions); err != nil {
-		logrus.WithError(err).Fatal("failed setting container versions from json string: %s", string(containerVersionsJson))
+func InitContainers() error {
+	versionData, err := versiondata.Asset("containers/versions.json")
+	if err != nil {
+		return errors.New("failed to get version data from containers/versions.json", err)
+	}
+	if err := json.Unmarshal(versionData, &containerVersions); err != nil {
+		return errors.New("failed to unmarshall version data "+ string(versionData), err)
 	}
 	logrus.WithField("versions", containerVersions).Info("using container versions")
+	return nil
 }
 
 type Container struct {

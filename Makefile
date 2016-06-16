@@ -175,8 +175,12 @@ endif
 
 # local build - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
 CONTAINER_VERSIONS_JSON:=$(shell echo $(shell cat containers/versions.json | sed 's/"/\\\"/g') | sed 's/"/\\\"/g' | sed 's/ //g')
-localbuild: instance-listener/bindata/instance_listener_data.go  ${SOURCES}
-	GOOS=${TARGET_OS} go build -ldflags "-X github.com/emc-advanced-dev/unik/pkg/util.containerVersionsJson=$(CONTAINER_VERSIONS_JSON)" -v .
+localbuild: instance-listener/bindata/instance_listener_data.go containers/version-data.go ${SOURCES}
+	GOOS=${TARGET_OS} go build -v .
+
+containers/version-data.go: containers/versions.json
+	go-bindata -o containers/container-versions.go containers/versions.json && \
+	perl -pi -e 's/package main/package versiondata/g' containers/container-versions.go
 
 instance-listener/bindata/instance_listener_data.go:
 	go-bindata -o instance-listener/bindata/instance_listener_data.go --ignore=instance-listener/bindata/ instance-listener/... && \
