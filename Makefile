@@ -12,6 +12,12 @@ define update_container_dependency
 	cd containers/$(1) && perl -pi -e 's/FROM projectunik\/(.*):.*/FROM projectunik\/$$1:$(BASE_VERSION)/g' Dockerfile$(3)
 endef
 
+define update_container_version
+    echo $(2) > tmpfile
+	cat containers/versions.json | jq .['"$(1)"']=\"`cat tmpfile`\" > containers/versions.json
+	rm tmpfile
+endef
+
 define build_container
 	$(eval BASE_CONTAINER=$(shell cd containers/$(1) && cat Dockerfile$(3) | grep FROM | perl -p -e 's/FROM projectunik\/(.*):.*/$$1/g'))
 	echo $(BASE_CONTAINER)
@@ -22,8 +28,8 @@ define build_container
 	$(eval CONTAINER_TAG=$(shell echo '$(CONTAINER_TAG) | sed 's/sha256://g'' ))
 	$(eval CONTAINER_TAG=$(shell echo '$(CONTAINER_TAG) | head -c 16' ))
 	$(eval CONTAINER_TAG=$(shell echo '$$$$($(CONTAINER_TAG))' ))
-	#echo $(CONTAINER_TAG)
 	docker tag projectunik/$(2):build projectunik/$(2):$(CONTAINER_TAG)
+	$(call update_container_version,$(2),$(CONTAINER_TAG))
 	docker rmi projectunik/$(2):build
 endef
 
