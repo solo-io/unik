@@ -25,6 +25,13 @@ const (
 
 var buildImageTimeout = time.Minute * 10
 
+type appInfo struct {
+	groupId       string
+	artifactId    string
+	version       string
+	mainClassName string
+}
+
 func main() {
 	useEc2Bootstrap := flag.Bool("ec2", false, "indicates whether to compile using the wrapper for ec2")
 	groupId := flag.String("groupId", "", "groupid for jar file")
@@ -54,9 +61,9 @@ func main() {
 
 	mvnInstallCmd := exec.Command("mvn", "install:install-file",
 		"-Dfile="+filepath.Join(project_directory, *jarName),
-		"-DgroupId=" + appInfo.groupId,
-		"-DartifactId=" + appInfo.artifactId,
-		"-Dversion=" + appInfo.version,
+		"-DgroupId=" + info.groupId,
+		"-DartifactId=" + info.artifactId,
+		"-Dversion=" + info.version,
 		"-Dpackaging=jar")
 	mvnInstallCmd.Dir = project_directory
 	printCommand(mvnInstallCmd)
@@ -140,7 +147,7 @@ func printCommand(cmd *exec.Cmd) {
 }
 
 func addArgs(capstanFile, args string) error {
-	logrus.Infof("adding %s to args", *args)
+	logrus.Infof("adding %s to args", args)
 	capstanBytes, err := ioutil.ReadFile(capstanFile)
 	if err != nil {
 		return errors.New("reading capstanfile", err)
@@ -152,13 +159,6 @@ func addArgs(capstanFile, args string) error {
 		return errors.New("writing capstanfile", err)
 	}
 	return nil
-}
-
-type appInfo struct {
-	groupId       string
-	artifactId    string
-	version       string
-	mainClassName string
 }
 
 func wrapJavaApplication(info appInfo, javaWrapperDir, appSourceDir string) error {

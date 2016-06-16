@@ -27,10 +27,10 @@ func compileRawImage(params types.CompileImageParams, useEc2Bootstrap bool) (str
 	var config javaProjectConfig
 	data, err := ioutil.ReadFile(filepath.Join(sourcesDir, "manifest.yaml"))
 	if err != nil {
-		return nil, errors.New("failed to read manifest.yaml file", err)
+		return "", errors.New("failed to read manifest.yaml file", err)
 	}
 	if err := yaml.Unmarshal(data, &config); err != nil {
-		return nil, errors.New("failed to parse yaml manifest.yaml file", err)
+		return "", errors.New("failed to parse yaml manifest.yaml file", err)
 	}
 
 	container := unikutil.NewContainer("compilers-osv-java").WithVolume("/dev", "/dev").WithVolume(sourcesDir+"/", "/project_directory")
