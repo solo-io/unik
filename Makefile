@@ -5,7 +5,17 @@ define pull_container
 	docker pull projectunik/$(1):$(shell cat containers/versions.json  | jq .['$(1)'])
 endef
 
+define update_container_dependency
+	cat containers/versions.json | jq .['"$(2)"'] -r
+	$(eval BASE_VERSION=$(shell cat containers/versions.json | jq .['"$(2)"'] -r))
+	echo $(BASE_VERSION)
+	cd containers/$(1) && perl -pi -e 's/FROM projectunik\/(.*):.*/FROM projectunik\/$$1:$(BASE_VERSION)/g' Dockerfile$(3)
+endef
+
 define build_container
+	$(eval BASE_CONTAINER=$(shell cd containers/$(1) && cat Dockerfile$(3) | grep FROM | perl -p -e 's/FROM projectunik\/(.*):.*/$$1/g'))
+	echo $(BASE_CONTAINER)
+	$(if $(findstring FROM,$(BASE_CONTAINER)),,$(call update_container_dependency,$(1),$(BASE_CONTAINER),$(3)))
 	cd containers/$(1) && docker build -t projectunik/$(2):build -f Dockerfile$(3) .
 	$(eval CONTAINER_TAG=$(shell echo 'docker inspect projectunik/$(2):build'))
 	$(eval CONTAINER_TAG=$(shell echo '$(CONTAINER_TAG) | jq .[].Id' -r ))
