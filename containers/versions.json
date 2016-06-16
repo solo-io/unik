@@ -1,9 +1,9 @@
 {
-  "vsphere-client": "32218e7f8af25ebc",
+  "vsphere-client": "e7c3b16da78e7caa",
   "image-creator": "5b6556f11c0f75c7",
   "boot-creator": "f4e2a090c949227d",
   "qemu-util": "a73fcb7905a05552",
-  "compilers-osv-java": "0adb934cbcca41ac",
+  "compilers-osv-java": "aa1a042365a3607a",
   "compilers-rump-go-xen": "711c71ecd7ac0124",
   "compilers-rump-go-hw": "dcc22a34cad8c12a",
   "compilers-rump-go-hw-no-stub": "b6e747fac04be62a",
