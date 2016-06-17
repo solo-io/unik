@@ -61,7 +61,6 @@ all: pull ${SOURCES} binary
 .PHONY: vsphere-client
 .PHONY: qemu-util
 .PHONY: utils
-.PHONY: 
 
 #pull containers
 pull:
@@ -91,15 +90,15 @@ containers: compilers utils
 
 #compilers
 compilers: compilers-rump-go-hw \
+           compilers-rump-go-hw-no-stub \
            compilers-rump-go-xen \
            compilers-rump-nodejs-hw \
            compilers-rump-nodejs-hw-no-stub \
            compilers-rump-nodejs-xen \
-           compilers-osv-java \
-           compilers-rump-go-hw-no-stub \
            compilers-rump-python3-hw \
            compilers-rump-python3-hw-no-stub \
-           compilers-rump-python3-xen
+           compilers-rump-python3-xen \
+           compilers-osv-java
 
 compilers-rump-base-common: 
 	$(call build_container,compilers/rump/base,$@,.common)
@@ -198,7 +197,6 @@ endif
 #----
 
 # local build - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
-CONTAINER_VERSIONS_JSON:=$(shell echo $(shell cat containers/versions.json | sed 's/"/\\\"/g') | sed 's/"/\\\"/g' | sed 's/ //g')
 localbuild: instance-listener/bindata/instance_listener_data.go containers/version-data.go ${SOURCES}
 	GOOS=${TARGET_OS} go build -v .
 
