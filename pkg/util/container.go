@@ -1,3 +1,5 @@
+// +build !container-binary
+
 package util
 
 import (

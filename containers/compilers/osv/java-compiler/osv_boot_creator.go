@@ -65,7 +65,6 @@ func main() {
 		"-DartifactId=" + info.artifactId,
 		"-Dversion=" + info.version,
 		"-Dpackaging=jar")
-	mvnInstallCmd.Dir = project_directory
 	printCommand(mvnInstallCmd)
 	if out, err := mvnInstallCmd.CombinedOutput(); err != nil {
 		logrus.WithError(err).Error(string(out))

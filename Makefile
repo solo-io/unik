@@ -141,7 +141,7 @@ compilers-rump-python3-xen: compilers-rump-base-xen
 	$(call build_container,compilers/rump/python3,$@,.xen)
 
 compilers-osv-java:
-	cd containers/compilers/osv/java-compiler && GOOS=linux go build
+	cd containers/compilers/osv/java-compiler && GOOS=linux go build -tags container-binary
 	$(call build_container,compilers/osv/java-compiler,$@,)
 	cd containers/compilers/osv/java-compiler && rm java-compiler
 
@@ -149,19 +149,23 @@ compilers-osv-java:
 utils: boot-creator image-creator vsphere-client qemu-util
 
 boot-creator: 
-	cd containers/utils/boot-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build
+	cd containers/utils/boot-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build -tags container-binary
 	$(call build_container,utils/boot-creator,$@,)
 	cd containers/utils/boot-creator && rm boot-creator
 
 image-creator: 
-	cd containers/utils/image-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build
+	cd containers/utils/image-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build -tags container-binary
 	$(call build_container,utils/image-creator,$@,)
 	cd containers/utils/image-creator && rm image-creator
 
-vsphere-client: 
+vsphere-client: containers/utils/vsphere-client/vsphere-client.empty
+
+VSPHERE_CLIENT_SOURCES := containers/utils/vsphere-client/Dockerfile containers/utils/vsphere-client/pom.xml  $(shell find containers/utils/vsphere-client/src/)
+containers/utils/vsphere-client/vsphere-client.empty: $(VSPHERE_CLIENT_SOURCES)
 	cd containers/utils/vsphere-client && mvn package
-	$(call build_container,utils/vsphere-client,$@,)
+	$(call build_container,utils/vsphere-client,vsphere-client,)
 	cd containers/utils/vsphere-client && rm -rf target
+	touch containers/utils/vsphere-client/vsphere-client.empty
 
 qemu-util: 
 	$(call build_container,utils/qemu-util,$@,)
@@ -217,6 +221,7 @@ uninstall:
 remove-containers:
 	-docker rmi -f projectunik/binary
 	-$(call remove_container,vsphere-client)
+	-rm -rf containers/utils/vsphere-client/vsphere-client.empty
 	-$(call remove_container,image-creator)
 	-$(call remove_container,boot-creator)
 	-$(call remove_container,compilers-osv-java)
