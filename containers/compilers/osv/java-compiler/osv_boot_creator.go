@@ -38,7 +38,8 @@ func main() {
 	artifactId := flag.String("artifactId", "", "artifactid for jar file")
 	version := flag.String("version", "", "artifactid for jar file")
 	mainClassName := flag.String("mainClassName", "", "mainClassName for jar file")
-	jarName := flag.String("jarName", "", "name of jar file (not path)")
+	jarPath := flag.String("jarName", "", "name of jar file (not path)")
+	buildCmd := flag.String("buildCmd", "", "optional build command to build project (if not a jar)")
 	args := flag.String("args", "", "arguments to kernel")
 	flag.Parse()
 	javaMainCallerDir := java_main_caller_udp_bootstrap_dir //use udp by default
@@ -59,15 +60,37 @@ func main() {
 	}
 	logrus.AddHook(&unikutil.AddTraceHook{true})
 
+	if *buildCmd != "" {
+		buildArgs := strings.Split(*buildCmd, " ")
+		var params []string
+		if len(buildArgs) > 1 {
+			params = buildArgs[1:]
+		}
+		build := exec.Command(buildArgs[0], params...)
+		build.Dir = project_directory
+		build.Stdout = os.Stdout
+		build.Stderr = os.Stderr
+		printCommand(build)
+		if err := build.Run(); err != nil {
+			logrus.WithError(err).Error("failed running build command")
+			os.Exit(-1)
+		}
+	}
+
+	if _, err := os.Stat(filepath.Join(project_directory, *jarPath)); err != nil {
+		logrus.WithError(err).Error("failed to stat "+filepath.Join(project_directory, *jarPath))
+		os.Exit(-1)
+	}
+
 	mvnInstallCmd := exec.Command("mvn", "install:install-file",
-		"-Dfile="+filepath.Join(project_directory, *jarName),
+		"-Dfile="+filepath.Join(project_directory, *jarPath),
 		"-DgroupId=" + info.groupId,
 		"-DartifactId=" + info.artifactId,
 		"-Dversion=" + info.version,
 		"-Dpackaging=jar")
 	printCommand(mvnInstallCmd)
 	if out, err := mvnInstallCmd.CombinedOutput(); err != nil {
-		logrus.WithError(err).Error(string(out))
+		logrus.WithError(err).Error("failed running mvn install: "+ string(out))
 		os.Exit(-1)
 	}
 
