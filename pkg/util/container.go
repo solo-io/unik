@@ -12,7 +12,7 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 )
 
-var containerVersions map[string]float64
+var containerVersions map[string]string
 
 func InitContainers() error {
 	versionData, err := versiondata.Asset("containers/versions.json")
@@ -134,11 +134,8 @@ func (c *Container) BuildCmd(arguments ...string) *exec.Cmd {
 
 	args = append(args, fmt.Sprintf("--name=%s", c.containerName))
 
-	var containerVer string
-	containerVerFloat, ok := containerVersions[c.name]
-	if ok {
-		containerVer = fmt.Sprintf("%v", containerVerFloat)
-	} else {
+	containerVer, ok := containerVersions[c.name]
+	if !ok {
 		logrus.Warnf("version for container %s not found, using version 'latest'", c.name)
 		containerVer = "latest"
 	}
