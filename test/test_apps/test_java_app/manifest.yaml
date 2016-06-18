@@ -1,0 +1,6 @@
+artifact_filename: target/testapp-1.0-SNAPSHOT-jar-with-dependencies.jar
+build_command: mvn package
+main_class_name: com.emc.testapp.App
+group_id: com.emc.testapp
+artifact_id: testapp
+version: 1.0-SNAPSHOT
