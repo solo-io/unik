@@ -4,7 +4,6 @@ import (
 	"os/exec"
 	"os"
 	"strings"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"time"
@@ -58,7 +57,6 @@ func main() {
 		logrus.WithError(err).Errorf("Failed to wrap java project Main Class", err)
 		os.Exit(-1)
 	}
-	logrus.AddHook(&unikutil.AddTraceHook{true})
 
 	if *buildCmd != "" {
 		buildArgs := strings.Split(*buildCmd, " ")

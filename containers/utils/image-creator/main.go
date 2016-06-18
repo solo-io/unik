@@ -12,14 +12,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
-type volumeslice []unikutil.RawVolume
+type volumeslice []unikos.RawVolume
 
 func (m *volumeslice) String() string {
 
-	return fmt.Sprintf("%v", ([]unikutil.RawVolume)(*m))
+	return fmt.Sprintf("%v", ([]unikos.RawVolume)(*m))
 }
 
 // The second method is Set(value string) error
@@ -37,7 +36,7 @@ func (m *volumeslice) Set(value string) error {
 	if len(volparts) >= 2 {
 		size, _ = strconv.ParseInt(volparts[1], 0, 64)
 	}
-	*m = append(*m, unikutil.RawVolume{Path: folder, Size: size})
+	*m = append(*m, unikos.RawVolume{Path: folder, Size: size})
 
 	return nil
 }
@@ -75,7 +74,7 @@ func main() {
 		diskLabelGen := func(device string) unikos.Partitioner { return &unikos.DiskLabelPartioner{device} }
 
 		// rump so we use disklabel
-		err := unikos.CreateVolumes(imgFile, []unikutil.RawVolume(volumes), diskLabelGen)
+		err := unikos.CreateVolumes(imgFile, []unikos.RawVolume(volumes), diskLabelGen)
 
 		if err != nil {
 			panic(err)

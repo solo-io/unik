@@ -13,6 +13,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 var timeout = time.Second * 10
@@ -70,7 +71,7 @@ func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error)
 	instanceListenerVol, err := p.GetVolume(instanceListenerData)
 	if err != nil {
 		newVolume = true
-		imagePath, err := unikos.BuildEmptyDataVolume(10)
+		imagePath, err := util.BuildEmptyDataVolume(10)
 		if err != nil {
 			return errors.New("failed creating raw data volume", err)
 		}

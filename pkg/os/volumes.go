@@ -7,9 +7,12 @@ import (
 	"text/template"
 
 	log "github.com/Sirupsen/logrus"
-
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
+
+type RawVolume struct {
+	Path string `json:"Path"`
+	Size int64  `json:"Size"`
+}
 
 const GrubTemplate = `default=0
 fallback=1
@@ -288,7 +291,7 @@ func formatDeviceAndCopyContents(folder string, dev BlockDevice) error {
 	return nil
 }
 
-func CreateSingleVolume(rootFile string, folder unikutil.RawVolume) error {
+func CreateSingleVolume(rootFile string, folder RawVolume) error {
 	ext2Overhead := MegaBytes(2).ToBytes()
 
 	size := folder.Size
@@ -339,7 +342,7 @@ func copyToPart(folder string, part Resource) error {
 	return formatDeviceAndCopyContents(folder, imgLodName)
 }
 
-func CreateVolumes(imgFile string, volumes []unikutil.RawVolume, newPartitioner func(device string) Partitioner) error {
+func CreateVolumes(imgFile string, volumes []RawVolume, newPartitioner func(device string) Partitioner) error {
 	if len(volumes) == 0 {
 		return nil
 	}
