@@ -12,10 +12,16 @@ define update_container_dependency
 	cd containers/$(1) && perl -pi -e 's/FROM projectunik\/(.*):.*/FROM projectunik\/$$1:$(BASE_VERSION)/g' Dockerfile$(3)
 endef
 
+define update_version_bindata
+	go-bindata -o containers/container-versions.go containers/versions.json && \
+	perl -pi -e 's/package main/package versiondata/g' containers/container-versions.go
+endef
+
 define update_container_version
     echo $(2) > tmpfile
 	cat containers/versions.json | jq .['"$(1)"']=\"`cat tmpfile`\" > containers/versions.json
 	rm tmpfile
+	$(call update_version_bindata)
 endef
 
 define build_container
@@ -205,8 +211,7 @@ localbuild: instance-listener/bindata/instance_listener_data.go containers/versi
 	GOOS=${TARGET_OS} go build -v .
 
 containers/version-data.go: containers/versions.json
-	go-bindata -o containers/container-versions.go containers/versions.json && \
-	perl -pi -e 's/package main/package versiondata/g' containers/container-versions.go
+	$(call update_version_bindata)
 
 instance-listener/bindata/instance_listener_data.go:
 	go-bindata -o instance-listener/bindata/instance_listener_data.go --ignore=instance-listener/bindata/ instance-listener/... && \
