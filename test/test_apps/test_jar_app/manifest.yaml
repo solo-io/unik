@@ -1,5 +1,4 @@
 artifact_filename: testapp-1.0-SNAPSHOT-jar-with-dependencies.jar
-main_class_name: com.emc.testapp.App
-group_id: com.emc.testapp
-artifact_id: testapp
-version: 1.0-SNAPSHOT
+properties:
+  - property1=foo
+  - property2=bar

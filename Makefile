@@ -147,9 +147,11 @@ compilers-rump-python3-xen: compilers-rump-base-xen
 	$(call build_container,compilers/rump/python3,$@,.xen)
 
 compilers-osv-java:
+	cd containers/compilers/osv/java-compiler/java-main-caller && mvn package
 	cd containers/compilers/osv/java-compiler && GOOS=linux go build -tags container-binary
 	$(call build_container,compilers/osv/java-compiler,$@,)
 	cd containers/compilers/osv/java-compiler && rm java-compiler
+	cd containers/compilers/osv/java-compiler/java-main-caller && rm -rf target
 
 #utils
 utils: boot-creator image-creator vsphere-client qemu-util

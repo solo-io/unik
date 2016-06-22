@@ -10,55 +10,27 @@ import (
 	"path/filepath"
 	"flag"
 	"io/ioutil"
-	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 //expect project directory at /project_directory; mount w/ -v FOLDER:/project_directory
 //output dir will be /project_directory
 //output files to whatever is mounted to /project_directory
 const (
-	java_main_caller_udp_bootstrap_dir = "/java-main-caller-udp-bootstrap"
-	java_main_caller_ec2_bootstrap_dir = "/java-main-caller-ec2-bootstrap"
 	project_directory = "/project_directory"
 )
 
 var buildImageTimeout = time.Minute * 10
 
-type appInfo struct {
-	groupId       string
-	artifactId    string
-	version       string
-	mainClassName string
-}
-
 func main() {
 	useEc2Bootstrap := flag.Bool("ec2", false, "indicates whether to compile using the wrapper for ec2")
-	groupId := flag.String("groupId", "", "groupid for jar file")
-	artifactId := flag.String("artifactId", "", "artifactid for jar file")
-	version := flag.String("version", "", "artifactid for jar file")
-	mainClassName := flag.String("mainClassName", "", "mainClassName for jar file")
-	jarPath := flag.String("jarName", "", "name of jar file (not path)")
+	artifactName := flag.String("artifactName", "", "name of jar or war file (not path)")
 	buildCmd := flag.String("buildCmd", "", "optional build command to build project (if not a jar)")
+	properties := flag.String("properties", "", "-D properties passed to jar apps")
 	args := flag.String("args", "", "arguments to kernel")
 	flag.Parse()
-	javaMainCallerDir := java_main_caller_udp_bootstrap_dir //use udp by default
-	if *useEc2Bootstrap {
-		javaMainCallerDir = java_main_caller_ec2_bootstrap_dir
-	}
-	out, _ := exec.Command("ls", "/").CombinedOutput()
-	fmt.Println(strings.Split(string(out), "\n"))
-	info := appInfo{
-		groupId: *groupId,
-		artifactId: *artifactId,
-		version: *version,
-		mainClassName: *mainClassName,
-	}
-	if err := wrapJavaApplication(info, javaMainCallerDir, project_directory); err != nil {
-		logrus.WithError(err).Errorf("Failed to wrap java project Main Class", err)
-		os.Exit(-1)
-	}
 
 	if *buildCmd != "" {
+		logrus.WithField("cmd", *buildCmd).Info("running user specified build command")
 		buildArgs := strings.Split(*buildCmd, " ")
 		var params []string
 		if len(buildArgs) > 1 {
@@ -75,36 +47,82 @@ func main() {
 		}
 	}
 
-	if _, err := os.Stat(filepath.Join(project_directory, *jarPath)); err != nil {
-		logrus.WithError(err).Error("failed to stat "+filepath.Join(project_directory, *jarPath))
+	artifactFile := filepath.Join(project_directory, *artifactName)
+	if _, err := os.Stat(artifactFile); err != nil {
+		logrus.WithError(err).Error("failed to stat "+filepath.Join(project_directory, *artifactName)+"; is artifact_file set correctly?")
+		logrus.Info("listing project files for debug purposes:")
+		listProjectFiles := exec.Command("find", project_directory)
+		listProjectFiles.Stdout = os.Stdout
+		listProjectFiles.Stderr = os.Stderr
+		listProjectFiles.Run()
 		os.Exit(-1)
 	}
 
-	mvnInstallCmd := exec.Command("mvn", "install:install-file",
-		"-Dfile="+filepath.Join(project_directory, *jarPath),
-		"-DgroupId=" + info.groupId,
-		"-DartifactId=" + info.artifactId,
-		"-Dversion=" + info.version,
-		"-Dpackaging=jar")
-	printCommand(mvnInstallCmd)
-	if out, err := mvnInstallCmd.CombinedOutput(); err != nil {
-		logrus.WithError(err).Error("failed running mvn install: "+ string(out))
-		os.Exit(-1)
+	propertyArr := strings.Split(*properties, " ")
+	proprtiesStr := ""
+	for _, prop := range propertyArr {
+		//format key=val
+		proprtiesStr = fmt.Sprintf("-D%s %s", prop, proprtiesStr)
 	}
-
-	//add args to capstanfile
+	argsStr := ""
+	if *useEc2Bootstrap {
+		argsStr += "-bootstrapType=ec2 "
+	} else {
+		argsStr += "-bootstrapType=udp "
+	}
 	if *args != "" {
-		if err := addArgs(filepath.Join(javaMainCallerDir, "Capstanfile"), *args); err != nil {
-			logrus.WithError(err).Error("adding capstan args failed")
+		argsStr += fmt.Sprintf("-appArgs=%s ", strings.Join(strings.Split(*args, " "), ",,"))
+	}
+
+	if strings.HasSuffix(*artifactName, ".war") {
+		logrus.Infof(".war file detected. Using Apache Tomcat to deploy")
+		argsStr += "-tomcat "
+		tomcatCapstanFileContents := fmt.Sprintf(`
+base: unik-tomcat
+
+cmdline: /java.so %s -cp /usr/tomcat/bin/bootstrap.jar:usr/tomcat/bin/tomcat-juli.jar -jar /program.jar %s
+
+#
+# List of files that are included in the generated image.
+#
+files:
+  /usr/tomcat/webapps/%s: %s`, proprtiesStr,
+			argsStr,
+			filepath.Base(artifactFile), artifactFile)
+		if err := ioutil.WriteFile(filepath.Join(project_directory, "Capstanfile"), []byte(tomcatCapstanFileContents), 0644); err != nil {
+			logrus.WithError(err).Error("failed writing capstanfile")
 			os.Exit(-1)
 		}
+	} else if strings.HasSuffix(*artifactName, ".jar") {
+		logrus.Infof("building Java unikernel from .jar file")
+		argsStr += fmt.Sprintf("-jarName=/%s", filepath.Base(artifactFile))
+		jarRunnerCapstanFileContents := fmt.Sprintf(`
+base: unik-jar-runner
+
+cmdline: /java.so %s -cp /%s -jar /program.jar %s
+
+#
+# List of files that are included in the generated image.
+#
+files:
+  /%s: %s`, 		proprtiesStr,
+			filepath.Base(artifactFile),
+			argsStr,
+			filepath.Base(artifactFile), artifactFile)
+		if err := ioutil.WriteFile(filepath.Join(project_directory, "Capstanfile"), []byte(jarRunnerCapstanFileContents), 0644); err != nil {
+			logrus.WithError(err).Error("failed writing capstanfile")
+			os.Exit(-1)
+		}
+	} else {
+		logrus.Errorf("%s is not of type .war or .jar, exiting!", *artifactName)
+		os.Exit(-1)
 	}
 
 	go func() {
 		fmt.Println("capstain building")
 
 		capstanCmd := exec.Command("capstan", "run", "-p", "qemu")
-		capstanCmd.Dir = javaMainCallerDir
+		capstanCmd.Dir = project_directory
 		capstanCmd.Stdout = os.Stdout
 		capstanCmd.Stderr = os.Stderr
 		printCommand(capstanCmd)
@@ -113,7 +131,7 @@ func main() {
 			os.Exit(-1)
 		}
 	}()
-	capstanImage := filepath.Join(os.Getenv("HOME"), ".capstan", "instances", "qemu", javaMainCallerDir, "disk.qcow2")
+	capstanImage := filepath.Join(os.Getenv("HOME"), ".capstan", "instances", "qemu", "project_directory", "disk.qcow2")
 
 	select {
 	case <-fileReady(capstanImage):
@@ -164,47 +182,4 @@ func fileReady(filename string) <-chan struct{} {
 
 func printCommand(cmd *exec.Cmd) {
 	fmt.Printf("running command from dir %s: %v\n", cmd.Dir, cmd.Args)
-}
-
-func addArgs(capstanFile, args string) error {
-	logrus.Infof("adding %s to args", args)
-	capstanBytes, err := ioutil.ReadFile(capstanFile)
-	if err != nil {
-		return errors.New("reading capstanfile", err)
-	}
-	capstanContents := strings.Replace(string(capstanBytes), "cmdline: /java.so -jar /program.jar", fmt.Sprintf("cmdline: /java.so -jar /program.jar %s", args), -1)
-
-	err = ioutil.WriteFile(capstanFile, []byte(capstanContents), 0666)
-	if err != nil {
-		return errors.New("writing capstanfile", err)
-	}
-	return nil
-}
-
-func wrapJavaApplication(info appInfo, javaWrapperDir, appSourceDir string) error {
-	wrapperPomBytes, err := ioutil.ReadFile(javaWrapperDir + "/pom.xml")
-	if err != nil {
-		return errors.New("reading app pom bytes", err)
-	}
-	wrapperPomContents := strings.Replace(string(wrapperPomBytes), "REPLACE_WITH_GROUPID", info.groupId, -1)
-	wrapperPomContents = strings.Replace(wrapperPomContents, "REPLACE_WITH_ARTIFACTID", info.artifactId, -1)
-	wrapperPomContents = strings.Replace(wrapperPomContents, "REPLACE_WITH_VERSION", info.version, -1)
-
-	err = ioutil.WriteFile(javaWrapperDir + "/pom.xml", []byte(wrapperPomContents), 0666)
-	if err != nil {
-		return errors.New("writing pom.xml", err)
-	}
-
-	wrapperMainContentBytes, err := ioutil.ReadFile(javaWrapperDir + "/src/main/java/com/emc/wrapper/Wrapper.java")
-	if err != nil {
-		return errors.New("reading java pom bytes", err)
-	}
-	wrapperMainContents := strings.Replace(string(wrapperMainContentBytes), "REPLACE_WITH_MAIN_CLASS", info.mainClassName, -1)
-
-	err = ioutil.WriteFile(javaWrapperDir + "/src/main/java/com/emc/wrapper/Wrapper.java", []byte(wrapperMainContents), 0666)
-	if err != nil {
-		return errors.New("writing Wrapper class around app class", err)
-	}
-
-	return nil
 }

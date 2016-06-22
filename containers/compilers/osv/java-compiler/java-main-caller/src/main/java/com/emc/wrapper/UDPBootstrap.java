@@ -3,7 +3,6 @@ package com.emc.wrapper;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.sun.jna.Library;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -16,9 +15,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 
-public class Bootstrap {
-    public static ByteArrayOutputStream logBuffer = new ByteArrayOutputStream();
-    public static void bootstrap() {
+public class UDPBootstrap extends Bootstrap {
+    public void bootstrap() {
         //connect stdout to logs
         MultiOutputStream multiOut = new MultiOutputStream(System.out, logBuffer);
         MultiOutputStream multiErr = new MultiOutputStream(System.err, logBuffer);
@@ -30,21 +28,7 @@ public class Bootstrap {
         System.setErr(stderr);
 
         //listen to requests for logs
-        try {
-            HttpServer server = HttpServer.create(new InetSocketAddress(9876), 0);
-            server.createContext("/logs", new ServeLogs());
-            server.setExecutor(null); // creates a default executor
-            server.start();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            System.out.println("starting logs server failed, exiting...");
-            try {
-                Thread.sleep(15000);
-            } catch (Exception e) {
-                //ignore
-            }
-            System.exit(-1);
-        }
+        listenForLogs();
 
         System.out.printf("unik v0.0 bootstrapping beginning...");
 
@@ -157,21 +141,6 @@ public class Bootstrap {
         return sb.toString();
     }
 
-    private static String getHTTP(String urlToRead) throws IOException {
-        System.out.printf("url: %s\n", urlToRead);
-        StringBuilder result = new StringBuilder();
-        URL url = new URL(urlToRead);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        String line;
-        while ((line = rd.readLine()) != null) {
-            result.append(line);
-        }
-        rd.close();
-        return result.toString();
-    }
-
     private static String postHTTP(String urlToRead) throws IOException {
         System.out.printf("url: %s\n", urlToRead);
         StringBuilder result = new StringBuilder();
@@ -187,54 +156,5 @@ public class Bootstrap {
         return result.toString();
     }
 
-    private static void setEnv(Map<String, String> newenv)
-    {
-        try
-        {
-            Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
-            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
-            theEnvironmentField.setAccessible(true);
-            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
-            env.putAll(newenv);
-            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
-            theCaseInsensitiveEnvironmentField.setAccessible(true);
-            Map<String, String> cienv = (Map<String, String>)     theCaseInsensitiveEnvironmentField.get(null);
-            cienv.putAll(newenv);
-        }
-        catch (NoSuchFieldException e)
-        {
-            try {
-                Class[] classes = Collections.class.getDeclaredClasses();
-                Map<String, String> env = System.getenv();
-                for(Class cl : classes) {
-                    if("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
-                        Field field = cl.getDeclaredField("m");
-                        field.setAccessible(true);
-                        Object obj = field.get(env);
-                        Map<String, String> map = (Map<String, String>) obj;
-                        map.clear();
-                        map.putAll(newenv);
-                    }
-                }
-            } catch (Exception e2) {
-                e2.printStackTrace();
-            }
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
-    }
-
     private static class MacAddressNotFoundException extends Exception {}
-
-    private static class ServeLogs implements HttpHandler {
-        @Override
-        public void handle(HttpExchange t) throws IOException {
-            byte[] bytes = Bootstrap.logBuffer.toByteArray();
-            System.out.println("Response length: "+bytes.length);
-            OutputStream os = t.getResponseBody();
-            t.sendResponseHeaders(200, bytes.length);
-            os.write(bytes);
-            os.close();
-        }
-    }
 }

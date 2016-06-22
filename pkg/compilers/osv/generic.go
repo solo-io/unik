@@ -10,16 +10,14 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"gopkg.in/yaml.v2"
+	"strings"
 )
 
 
 type javaProjectConfig struct {
 	ArtifactFilename string `yaml:"artifact_filename"`
 	BuildCmd string `yaml:"build_command"`
-	MainClassName string `yaml:"main_class_name"`
-	GroupId string `yaml:"group_id"`
-	ArtifactId string `yaml:"artifact_id"`
-	Version string `yaml:"version"`
+	Properties []string `yaml:"properties"`
 }
 
 func compileRawImage(params types.CompileImageParams, useEc2Bootstrap bool) (string, error) {
@@ -40,14 +38,13 @@ func compileRawImage(params types.CompileImageParams, useEc2Bootstrap bool) (str
 		args = append(args, "-ec2", "true")
 	}
 
-	args = append(args, "-jarName", config.ArtifactFilename)
+	args = append(args, "-artifactName", config.ArtifactFilename)
 	args = append(args, "-args", params.Args)
-	args = append(args, "-groupId", config.GroupId)
-	args = append(args, "-artifactId", config.ArtifactId)
-	args = append(args, "-version", config.Version)
-	args = append(args, "-mainClassName", config.MainClassName)
 	if config.BuildCmd != "" {
 		args = append(args, "-buildCmd", config.BuildCmd)
+	}
+	if len(config.Properties) > 0 {
+		args = append(args, "-properties", strings.Join(config.Properties, " "))
 	}
 
 	logrus.WithFields(logrus.Fields{
