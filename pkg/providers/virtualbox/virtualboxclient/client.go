@@ -44,11 +44,18 @@ func vboxManage(args ...string) ([]byte, error) {
 }
 
 func parseVmInfo(vmInfo string) (*VboxVm, error) {
-	var uuid, macAddr string
+	var name, uuid, macAddr string
 	var running bool
 	devices := []*VboxDevice{}
 	lines := strings.Split(vmInfo, "\n")
 	for _, line := range lines {
+		if strings.HasPrefix(line, "NAME:") {
+			rLineBegin, err := regexp.Compile("NAME:\\ +")
+			if err != nil {
+				return nil, errors.New("compiling regex", err)
+			}
+			name = string(rLineBegin.ReplaceAll([]byte(line), []byte("")))
+		}
 		if strings.HasPrefix(line, "UUID:") {
 			rLineBegin, err := regexp.Compile("UUID:\\ +")
 			if err != nil {
@@ -84,7 +91,7 @@ func parseVmInfo(vmInfo string) (*VboxVm, error) {
 	if uuid == "" {
 		return nil, errors.New("uuid address not found in vm info: "+string(vmInfo), nil)
 	}
-	return &VboxVm{MACAddr: macAddr, Running: running, Devices: devices, UUID: uuid}, nil
+	return &VboxVm{Name: name, MACAddr: macAddr, Running: running, Devices: devices, UUID: uuid}, nil
 }
 
 func parseDevice(deviceLine string) (*VboxDevice, error) {
@@ -148,16 +155,15 @@ func Vms() ([]*VboxVm, error) {
 }
 
 func GetVm(vmNameOrId string) (*VboxVm, error) {
-	vms, err := Vms()
+	vmInfo, err := vboxManage("showvminfo", vmNameOrId)
 	if err != nil {
-		return nil, errors.New("getting vm list", err)
+		return nil, errors.New("getting vm info for "+vmNameOrId, err)
 	}
-	for _, vm := range vms {
-		if vm.Name == vmNameOrId {
-			return vm, nil
-		}
+	vm, err := parseVmInfo(string(vmInfo))
+	if err != nil {
+		return nil, errors.New("parsing vm info string", err)
 	}
-	return nil, errors.New("vm "+ vmNameOrId +" not found", err)
+	return vm, nil
 }
 
 func CreateVm(vmName, baseFolder string, memoryMb int, adapterName string, adapterType config.VirtualboxAdapterType, storageDriver types.StorageDriver) error {
