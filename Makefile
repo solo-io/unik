@@ -18,7 +18,7 @@ define update_version_bindata
 endef
 
 define update_container_version
-    echo $(2) > tmpfile
+	echo $(2) > tmpfile
 	cat containers/versions.json | jq .['"$(1)"']=\"`cat tmpfile`\" > containers/versions.json
 	rm tmpfile
 	$(call update_version_bindata)
@@ -88,7 +88,6 @@ pull:
 	$(call pull_container,compilers-rump-base-hw)
 	$(call pull_container,rump-debugger-qemu)
 	$(call pull_container,compilers-rump-base-common)
->>>>>>> osv-java-refactor
 #------
 
 #build containers from source
