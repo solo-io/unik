@@ -97,6 +97,8 @@ var _ = FDescribe("Unikernel Functionality", func() {
 								compiler = fmt.Sprintf("rump-python-%s", provider)
 								break
 							case strings.Contains(imageName, "java"):
+							case strings.Contains(imageName, "jar"):
+							case strings.Contains(imageName, "war"):
 								logrus.Infof("found image type JAVA: %s", imageName)
 								compiler = fmt.Sprintf("osv-java-%s", provider)
 								break
