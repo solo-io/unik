@@ -17,6 +17,7 @@ import (
 const (
 	test_go_app = "test_go_app"
 	test_java_app = "test_java_app"
+	test_jar_app = "test_jar_app"
 	test_nodejs_app = "test_nodejs_app"
 	test_python3_app = "test_python3_app"
 )
@@ -47,6 +48,7 @@ var _ = FDescribe("Unikernel Functionality", func() {
 					}
 					imagesWithoutVolumes := []string{
 						test_java_app,
+						test_jar_app,
 					}
 					providersWithVolumes := []string{}
 					//TODO: aws should support mounts

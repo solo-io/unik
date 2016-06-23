@@ -1,0 +1,4 @@
+artifact_filename: sample.war
+properties:
+  - property1=foo
+  - property2=bar

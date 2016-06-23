@@ -1,0 +1,2 @@
+build_command: mvn package
+artifact_filename: target/petclinic.war 

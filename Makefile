@@ -1,12 +1,47 @@
 SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
-# When containers change, change this 
-CONTAINERVER:=0.1
+define pull_container
+	docker pull projectunik/$(1):$(shell cat containers/versions.json  | jq .['$(1)'])
+endef
 
-ifneq ($(CONTAINERVER),)
-CONTAINERTAG:=:$(CONTAINERVER)
-endif
+define update_container_dependency
+	cat containers/versions.json | jq .['"$(2)"'] -r
+	$(eval BASE_VERSION=$(shell cat containers/versions.json | jq .['"$(2)"'] -r))
+	echo $(BASE_VERSION)
+	cd containers/$(1) && perl -pi -e 's/FROM projectunik\/(.*):.*/FROM projectunik\/$$1:$(BASE_VERSION)/g' Dockerfile$(3)
+endef
+
+define update_version_bindata
+	go-bindata -o containers/container-versions.go containers/versions.json && \
+	perl -pi -e 's/package main/package versiondata/g' containers/container-versions.go
+endef
+
+define update_container_version
+    echo $(2) > tmpfile
+	cat containers/versions.json | jq .['"$(1)"']=\"`cat tmpfile`\" > containers/versions.json
+	rm tmpfile
+	$(call update_version_bindata)
+endef
+
+define build_container
+	$(eval BASE_CONTAINER=$(shell cd containers/$(1) && cat Dockerfile$(3) | grep FROM | perl -p -e 's/FROM projectunik\/(.*):.*/$$1/g'))
+	echo $(BASE_CONTAINER)
+	$(if $(findstring FROM,$(BASE_CONTAINER)),,$(call update_container_dependency,$(1),$(BASE_CONTAINER),$(3)))
+	cd containers/$(1) && docker build -t projectunik/$(2):build -f Dockerfile$(3) .
+	$(eval CONTAINER_TAG=$(shell echo 'docker inspect projectunik/$(2):build'))
+	$(eval CONTAINER_TAG=$(shell echo '$(CONTAINER_TAG) | jq .[].Id' -r ))
+	$(eval CONTAINER_TAG=$(shell echo '$(CONTAINER_TAG) | sed 's/sha256://g'' ))
+	$(eval CONTAINER_TAG=$(shell echo '$(CONTAINER_TAG) | head -c 16' ))
+	$(eval CONTAINER_TAG=$(shell echo '$$$$($(CONTAINER_TAG))' ))
+	docker tag projectunik/$(2):build projectunik/$(2):$(CONTAINER_TAG)
+	$(call update_container_version,$(2),$(CONTAINER_TAG))
+	docker rmi projectunik/$(2):build
+endef
+
+define remove_container
+	docker rmi -f projectunik/$(1):$(shell cat containers/versions.json  | jq .['$(1)'])
+endef
 
 all: pull ${SOURCES} binary
 
@@ -32,29 +67,28 @@ all: pull ${SOURCES} binary
 .PHONY: vsphere-client
 .PHONY: qemu-util
 .PHONY: utils
-.PHONY: set-container-versions
 
 #pull containers
 pull:
 	echo "Pullling containers from docker hub"
-	docker pull projectunik/vsphere-client$(CONTAINERTAG)
-	docker pull projectunik/image-creator$(CONTAINERTAG)
-	docker pull projectunik/boot-creator$(CONTAINERTAG)
-	docker pull projectunik/qemu-util$(CONTAINERTAG)
-	docker pull projectunik/compilers-osv-java$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-go-hw$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-go-hw-no-stub$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-go-xen$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-nodejs-hw$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-nodejs-hw-no-stub$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-nodejs-xen$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-python3-hw$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-python3-hw-no-stub$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-python3-xen$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-base-xen$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-base-hw$(CONTAINERTAG)
-	docker pull projectunik/rump-debugger-qemu$(CONTAINERTAG)
-	docker pull projectunik/compilers-rump-base-common$(CONTAINERTAG)
+	$(call pull_container,vsphere-client)
+	$(call pull_container,boot-creator)
+	$(call pull_container,qemu-util)
+	$(call pull_container,compilers-osv-java)
+	$(call pull_container,compilers-rump-go-hw)
+	$(call pull_container,compilers-rump-go-hw-no-stub)
+	$(call pull_container,compilers-rump-go-xen)
+	$(call pull_container,compilers-rump-nodejs-hw)
+	$(call pull_container,compilers-rump-nodejs-hw-no-stub)
+	$(call pull_container,compilers-rump-nodejs-xen)
+	$(call pull_container,compilers-rump-python3-hw)
+	$(call pull_container,compilers-rump-python3-hw-no-stub)
+	$(call pull_container,compilers-rump-python3-xen)
+	$(call pull_container,compilers-rump-base-xen)
+	$(call pull_container,compilers-rump-base-hw)
+	$(call pull_container,rump-debugger-qemu)
+	$(call pull_container,compilers-rump-base-common)
+>>>>>>> osv-java-refactor
 #------
 
 #build containers from source
@@ -62,70 +96,88 @@ containers: compilers utils
 	echo "Built containers from source"
 
 #compilers
-compilers: compilers-rump-go-hw compilers-rump-go-xen compilers-rump-nodejs-hw compilers-rump-nodejs-hw-no-stub compilers-rump-nodejs-xen compilers-osv-java compilers-rump-go-hw-no-stub compilers-rump-python3-hw compilers-rump-python3-hw-no-stub compilers-rump-python3-xen
+compilers: compilers-rump-go-hw \
+           compilers-rump-go-hw-no-stub \
+           compilers-rump-go-xen \
+           compilers-rump-nodejs-hw \
+           compilers-rump-nodejs-hw-no-stub \
+           compilers-rump-nodejs-xen \
+           compilers-rump-python3-hw \
+           compilers-rump-python3-hw-no-stub \
+           compilers-rump-python3-xen \
+           compilers-osv-java
 
-set-container-versions:
-	find ./containers -type f -print0 | xargs -0 perl -pi -e 's/FROM projectunik\/(.*):[0-9]\.[0-9]+/FROM projectunik\/$${1}$(CONTAINERTAG)/g'
-
-compilers-rump-base-common: set-container-versions
-	cd containers/compilers/rump/base && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.common .
+compilers-rump-base-common: 
+	$(call build_container,compilers/rump/base,$@,.common)
 
 compilers-rump-base-hw: compilers-rump-base-common
-	cd containers/compilers/rump/base && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .
+	$(call build_container,compilers/rump/base,$@,.hw)
 
 compilers-rump-base-xen: compilers-rump-base-common
-	cd containers/compilers/rump/base && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen .
+	$(call build_container,compilers/rump/base,$@,.xen)
 
 compilers-rump-go-hw: compilers-rump-base-hw
-	cd containers/compilers/rump/go &&  docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .
+	$(call build_container,compilers/rump/go,$@,.hw)
 
 rump-debugger-qemu: compilers-rump-base-hw
-	cd containers/debuggers/rump/base &&  docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .
+	$(call build_container,debuggers/rump/base,$@,.hw)
 
 compilers-rump-go-hw-no-stub: compilers-rump-base-hw
+	$(call build_container,compilers/rump/go,$@,.hw.no-stub)
 	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-stub .
 
 compilers-rump-go-xen: compilers-rump-base-xen
-	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen .
+	$(call build_container,compilers/rump/go,$@,.xen)
 
 compilers-rump-nodejs-hw: compilers-rump-base-hw
-	cd containers/compilers/rump/nodejs && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .
+	$(call build_container,compilers/rump/nodejs,$@,.hw)
 
 compilers-rump-nodejs-hw-no-stub: compilers-rump-base-hw
-	cd containers/compilers/rump/nodejs && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-stub .
+	$(call build_container,compilers/rump/nodejs,$@,.hw.no-stub)
 
 compilers-rump-nodejs-xen: compilers-rump-base-xen
-	cd containers/compilers/rump/nodejs && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen .
+	$(call build_container,compilers/rump/nodejs,$@,.xen)
 
 compilers-rump-python3-hw: compilers-rump-base-hw
-	cd containers/compilers/rump/python3 && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .
+	$(call build_container,compilers/rump/python3,$@,.hw)
 
 compilers-rump-python3-hw-no-stub: compilers-rump-base-hw
-	cd containers/compilers/rump/python3 && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-stub .
+	$(call build_container,compilers/rump/python3,$@,.hw.no-stub)
 
 compilers-rump-python3-xen: compilers-rump-base-xen
-	cd containers/compilers/rump/python3 && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen .
+	$(call build_container,compilers/rump/python3,$@,.xen)
 
-compilers-osv-java: set-container-versions
-	cd containers/compilers/osv/java-compiler && GOOS=linux go build && docker build -t projectunik/$@$(CONTAINERTAG) .  && rm java-compiler
-
-debuggers-rump-base-hw: compilers-rump-go-hw
-	cd containers/debuggers/rump/base && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw .
+compilers-osv-java:
+	cd containers/compilers/osv/java-compiler/java-main-caller && mvn package
+	cd containers/compilers/osv/java-compiler && GOOS=linux go build -tags container-binary
+	$(call build_container,compilers/osv/java-compiler,$@,)
+	cd containers/compilers/osv/java-compiler && rm java-compiler
+	cd containers/compilers/osv/java-compiler/java-main-caller && rm -rf target
 
 #utils
 utils: boot-creator image-creator vsphere-client qemu-util
 
-boot-creator: set-container-versions
-	cd containers/utils/boot-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile . && rm boot-creator
+boot-creator: 
+	cd containers/utils/boot-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build -tags container-binary
+	$(call build_container,utils/boot-creator,$@,)
+	cd containers/utils/boot-creator && rm boot-creator
 
-image-creator: set-container-versions
-	cd containers/utils/image-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile . && rm image-creator
+image-creator: 
+	cd containers/utils/image-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build -tags container-binary
+	$(call build_container,utils/image-creator,$@,)
+	cd containers/utils/image-creator && rm image-creator
 
-vsphere-client: set-container-versions
-	cd containers/utils/vsphere-client && mvn package && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile . && rm -rf target
+vsphere-client: containers/utils/vsphere-client/vsphere-client.empty
 
-qemu-util: set-container-versions
-	cd containers/utils/qemu-util && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile .
+VSPHERE_CLIENT_SOURCES := containers/utils/vsphere-client/Dockerfile containers/utils/vsphere-client/pom.xml  $(shell find containers/utils/vsphere-client/src/)
+containers/utils/vsphere-client/vsphere-client.empty: $(VSPHERE_CLIENT_SOURCES)
+	cd containers/utils/vsphere-client && mvn package
+	$(call build_container,utils/vsphere-client,vsphere-client,)
+	cd containers/utils/vsphere-client && rm -rf target
+	touch containers/utils/vsphere-client/vsphere-client.empty
+
+qemu-util: 
+	$(call build_container,utils/qemu-util,$@,)
 
 #------
 
@@ -135,7 +187,7 @@ BINARY=unik
 
 # don't override if provided already
 ifeq (,$(TARGET_OS))
-    UNAME:=$(shell uname)
+	UNAME:=$(shell uname)
 	ifeq ($(UNAME),Linux)
 		TARGET_OS:=linux
 	else ifeq ($(UNAME),Darwin)
@@ -158,13 +210,16 @@ endif
 #----
 
 # local build - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
-localbuild: instance-listener/bindata/instance_listener_data.go  ${SOURCES}
-	 GOOS=${TARGET_OS} go build -ldflags "-X github.com/emc-advanced-dev/unik/pkg/util.containerVer=$(CONTAINERVER)" .
+localbuild: instance-listener/bindata/instance_listener_data.go containers/version-data.go ${SOURCES}
+	GOOS=${TARGET_OS} go build -v .
+
+containers/version-data.go: containers/versions.json
+	$(call update_version_bindata)
 
 instance-listener/bindata/instance_listener_data.go:
 	go-bindata -o instance-listener/bindata/instance_listener_data.go --ignore=instance-listener/bindata/ instance-listener/... && \
 	perl -pi -e 's/package main/package bindata/g' instance-listener/bindata/instance_listener_data.go
-    
+
 #clean up
 .PHONY: uninstall remove-containers clean
 
@@ -172,25 +227,25 @@ uninstall:
 	rm $(which ${BINARY})
 
 remove-containers:
-	-docker rmi -f projectunik/binary$(CONTAINERTAG)
-	-docker rmi -f projectunik/vsphere-client$(CONTAINERTAG)
-	-docker rmi -f projectunik/image-creator$(CONTAINERTAG)
-	-docker rmi -f projectunik/boot-creator$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-osv-java$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-go-xen$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-go-hw$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-go-hw-no-stub(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-nodejs-hw$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-nodejs-hw-no-stub$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-nodejs-xen$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-python3-hw$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-python3-hw-no-stub$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-python3-xen$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-base-xen$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-base-hw$(CONTAINERTAG)
-	-docker rmi -f projectunik/rump-debugger-qemu$(CONTAINERTAG)
-	-docker rmi -f projectunik/compilers-rump-base-common$(CONTAINERTAG)
-	-docker rmi -f debuggers-rump-base-hw$(CONTAINERTAG)
+	-docker rmi -f projectunik/binary
+	-$(call remove_container,vsphere-client)
+	-rm -rf containers/utils/vsphere-client/vsphere-client.empty
+	-$(call remove_container,image-creator)
+	-$(call remove_container,boot-creator)
+	-$(call remove_container,compilers-osv-java)
+	-$(call remove_container,compilers-rump-go-xen)
+	-$(call remove_container,compilers-rump-go-hw)
+	-$(call remove_container,compilers-rump-go-hw-no-stub)
+	-$(call remove_container,compilers-rump-nodejs-hw)
+	-$(call remove_container,compilers-rump-nodejs-hw-no-stub)
+	-$(call remove_container,compilers-rump-nodejs-xen)
+	-$(call remove_container,compilers-rump-python3-hw)
+	-$(call remove_container,compilers-rump-python3-hw-no-stub)
+	-$(call remove_container,compilers-rump-python3-xen)
+	-$(call remove_container,compilers-rump-base-xen)
+	-$(call remove_container,compilers-rump-base-hw)
+	-$(call remove_container,rump-debugger-qemu)
+	-$(call remove_container,compilers-rump-base-common)
 
 clean:
 	rm -rf ./_build

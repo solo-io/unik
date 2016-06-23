@@ -31,6 +31,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"os/exec"
+	"github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 type UnikDaemon struct {
@@ -48,6 +49,10 @@ const (
 )
 
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
+	if err := util.InitContainers(); err != nil {
+		return nil, errors.New("initializing containers", err)
+	}
+
 	if runtime.GOOS == "darwin" {
 		tmpDir := filepath.Join(os.Getenv("HOME"), ".unik", "tmp")
 		os.Setenv("TMPDIR", tmpDir)
@@ -687,7 +692,7 @@ func (d *UnikDaemon) addEndpoints() {
 				if err != nil {
 					return nil, http.StatusBadRequest, errors.New("could not parse given size", err)
 				}
-				imagePath, err = unikos.BuildRawDataImage(dataTar, unikos.MegaBytes(size), provider.GetConfig().UsePartitionTables)
+				imagePath, err = util.BuildRawDataImage(dataTar, unikos.MegaBytes(size), provider.GetConfig().UsePartitionTables)
 				if err != nil {
 					return nil, http.StatusInternalServerError, errors.New("creating raw volume image", err)
 				}
@@ -707,7 +712,7 @@ func (d *UnikDaemon) addEndpoints() {
 					"size": size,
 					"name": volumeName,
 				}).Debugf("creating empty volume started")
-				imagePath, err = unikos.BuildEmptyDataVolume(unikos.MegaBytes(size))
+				imagePath, err = util.BuildEmptyDataVolume(unikos.MegaBytes(size))
 				if err != nil {
 					return nil, http.StatusInternalServerError, errors.New("failed building raw image", err)
 				}

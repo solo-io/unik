@@ -1,5 +1,16 @@
 # UniK Changelog
 
+## Fri, Jun 17 2016
+* UniK's Containers are now (automatically) versioned by the first 16 characters of their SHA256 checksum.
+* Changed OSv / Java support:
+  * The OSv/Java compiler in UniK will now build a unikernel from any `.jar` or `.war` file.
+  * There are two options for building Java unikernels:
+    - directly from a compiled fat `.jar` or `.war` file
+    - using UniK to invoke the build on your Java sources (e.g. with `mvn package` or `gradle build`)
+  * UniK now requires that a `manifest.yaml` file be present in the root directory of Java projects. See the [OSv Java Compiler Documentation](compilers/osv.md#java) or the [Getting Started with Java (New)](getting_started_java.md) for more information.
+
+---
+
 ### Tue, Jun 14 2016
 * Added QEMU as a provider.
   * Note that the QEMU provider does not provide bridged networking support. This means that QEMU instances will not be reachable from the host network.

@@ -4,20 +4,18 @@ import (
 	"os/exec"
 	"os"
 	"strings"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"time"
 	"path/filepath"
 	"flag"
+	"io/ioutil"
 )
 
 //expect project directory at /project_directory; mount w/ -v FOLDER:/project_directory
 //output dir will be /project_directory
 //output files to whatever is mounted to /project_directory
 const (
-	java_main_caller_udp_bootstrap_dir = "/java-main-caller-udp-bootstrap"
-	java_main_caller_ec2_bootstrap_dir = "/java-main-caller-ec2-bootstrap"
 	project_directory = "/project_directory"
 )
 
@@ -25,49 +23,98 @@ var buildImageTimeout = time.Minute * 10
 
 func main() {
 	useEc2Bootstrap := flag.Bool("ec2", false, "indicates whether to compile using the wrapper for ec2")
+	artifactName := flag.String("artifactName", "", "name of jar or war file (not path)")
+	buildCmd := flag.String("buildCmd", "", "optional build command to build project (if not a jar)")
+	properties := flag.String("properties", "", "-D properties passed to jar apps")
+	args := flag.String("args", "", "arguments to kernel")
 	flag.Parse()
-	javaMainCallerDir := java_main_caller_udp_bootstrap_dir //use udp by default
+
+	if *buildCmd != "" {
+		logrus.WithField("cmd", *buildCmd).Info("running user specified build command")
+		buildArgs := strings.Split(*buildCmd, " ")
+		var params []string
+		if len(buildArgs) > 1 {
+			params = buildArgs[1:]
+		}
+		build := exec.Command(buildArgs[0], params...)
+		build.Dir = project_directory
+		build.Stdout = os.Stdout
+		build.Stderr = os.Stderr
+		printCommand(build)
+		if err := build.Run(); err != nil {
+			logrus.WithError(err).Error("failed running build command")
+			os.Exit(-1)
+		}
+	}
+
+	artifactFile := filepath.Join(project_directory, *artifactName)
+	if _, err := os.Stat(artifactFile); err != nil {
+		logrus.WithError(err).Error("failed to stat "+filepath.Join(project_directory, *artifactName)+"; is artifact_file set correctly?")
+		logrus.Info("listing project files for debug purposes:")
+		listProjectFiles := exec.Command("find", project_directory)
+		listProjectFiles.Stdout = os.Stdout
+		listProjectFiles.Stderr = os.Stderr
+		listProjectFiles.Run()
+		os.Exit(-1)
+	}
+
+	propertyArr := strings.Split(*properties, " ")
+	proprtiesStr := ""
+	for _, prop := range propertyArr {
+		//format key=val
+		proprtiesStr = fmt.Sprintf("-D%s %s", prop, proprtiesStr)
+	}
+	argsStr := ""
 	if *useEc2Bootstrap {
-		javaMainCallerDir = java_main_caller_ec2_bootstrap_dir
+		argsStr += "-bootstrapType=ec2 "
+	} else {
+		argsStr += "-bootstrapType=udp "
 	}
-	out, _ := exec.Command("ls", "/").CombinedOutput()
-	fmt.Println(strings.Split(string(out), "\n"))
-	appInfo, err := wrapJavaApplication(javaMainCallerDir, project_directory)
-	if err != nil {
-		logrus.WithError(err).Errorf("Failed to wrap java project Main Class", err)
-		os.Exit(-1)
-	}
-	logrus.AddHook(&unikutil.AddTraceHook{true})
-	fmt.Printf("read info from java project: %v\n", appInfo)
-
-	fmt.Printf("runnning mvn clean")
-	mvnClean := exec.Command("mvn", "clean")
-	mvnClean.Dir = project_directory
-	if err := mvnClean.Run(); err != nil {
-		fmt.Printf("mvn clean failed, simply cleaning up %s/target", project_directory)
-		os.RemoveAll(filepath.Join(project_directory, "target"))
+	if *args != "" {
+		argsStr += fmt.Sprintf("-appArgs=%s ", strings.Join(strings.Split(*args, " "), ",,"))
 	}
 
-	fmt.Printf("running mvn package\n")
+	if strings.HasSuffix(*artifactName, ".war") {
+		logrus.Infof(".war file detected. Using Apache Tomcat to deploy")
+		argsStr += "-tomcat "
+		tomcatCapstanFileContents := fmt.Sprintf(`
+base: unik-tomcat
 
-	mvnPackageCmd := exec.Command("mvn", "package")
-	mvnPackageCmd.Dir = project_directory
-	printCommand(mvnPackageCmd)
-	if out, err := mvnPackageCmd.CombinedOutput(); err != nil {
-		logrus.WithError(err).Error(string(out))
-		os.Exit(-1)
-	}
+cmdline: /java.so %s -cp /usr/tomcat/bin/bootstrap.jar:usr/tomcat/bin/tomcat-juli.jar -jar /program.jar %s
 
-	mvnInstallCmd := exec.Command("mvn", "install:install-file",
-		"-Dfile=target/" + appInfo.ArtifactId + "-" + appInfo.Version + "-jar-with-dependencies.jar",
-		"-DgroupId=" + appInfo.GroupId,
-		"-DartifactId=" + appInfo.ArtifactId,
-		"-Dversion=" + appInfo.Version,
-		"-Dpackaging=jar")
-	mvnInstallCmd.Dir = project_directory
-	printCommand(mvnInstallCmd)
-	if out, err := mvnInstallCmd.CombinedOutput(); err != nil {
-		logrus.WithError(err).Error(string(out))
+#
+# List of files that are included in the generated image.
+#
+files:
+  /usr/tomcat/webapps/%s: %s`, proprtiesStr,
+			argsStr,
+			filepath.Base(artifactFile), artifactFile)
+		if err := ioutil.WriteFile(filepath.Join(project_directory, "Capstanfile"), []byte(tomcatCapstanFileContents), 0644); err != nil {
+			logrus.WithError(err).Error("failed writing capstanfile")
+			os.Exit(-1)
+		}
+	} else if strings.HasSuffix(*artifactName, ".jar") {
+		logrus.Infof("building Java unikernel from .jar file")
+		argsStr += fmt.Sprintf("-jarName=/%s", filepath.Base(artifactFile))
+		jarRunnerCapstanFileContents := fmt.Sprintf(`
+base: unik-jar-runner
+
+cmdline: /java.so %s -cp /%s -jar /program.jar %s
+
+#
+# List of files that are included in the generated image.
+#
+files:
+  /%s: %s`, 		proprtiesStr,
+			filepath.Base(artifactFile),
+			argsStr,
+			filepath.Base(artifactFile), artifactFile)
+		if err := ioutil.WriteFile(filepath.Join(project_directory, "Capstanfile"), []byte(jarRunnerCapstanFileContents), 0644); err != nil {
+			logrus.WithError(err).Error("failed writing capstanfile")
+			os.Exit(-1)
+		}
+	} else {
+		logrus.Errorf("%s is not of type .war or .jar, exiting!", *artifactName)
 		os.Exit(-1)
 	}
 
@@ -75,16 +122,16 @@ func main() {
 		fmt.Println("capstain building")
 
 		capstanCmd := exec.Command("capstan", "run", "-p", "qemu")
-		capstanCmd.Dir = javaMainCallerDir
+		capstanCmd.Dir = project_directory
 		capstanCmd.Stdout = os.Stdout
 		capstanCmd.Stderr = os.Stderr
 		printCommand(capstanCmd)
 		if err := capstanCmd.Run(); err != nil {
-			logrus.WithError(err).Error("captsain build failed")
+			logrus.WithError(err).Error("capstan build failed")
 			os.Exit(-1)
 		}
 	}()
-	capstanImage := filepath.Join(os.Getenv("HOME"), ".capstan", "instances", "qemu", javaMainCallerDir, "disk.qcow2")
+	capstanImage := filepath.Join(os.Getenv("HOME"), ".capstan", "instances", "qemu", "project_directory", "disk.qcow2")
 
 	select {
 	case <-fileReady(capstanImage):

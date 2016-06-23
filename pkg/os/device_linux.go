@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 )
 
 func Mount(device BlockDevice) (mntpoint string, err error) {
@@ -245,7 +244,7 @@ type DeviceMapperDevice struct {
 }
 
 func randomDeviceName() string {
-	return "dev" + unikutil.RandStringBytes(4)
+	return "dev" + RandStringBytes(4)
 }
 
 // Device device name is generated, user can chagne it..

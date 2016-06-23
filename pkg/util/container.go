@@ -1,17 +1,30 @@
+// +build !container-binary
+
 package util
 
 import (
 	"fmt"
 	"os/exec"
 	"github.com/pborman/uuid"
+	"github.com/Sirupsen/logrus"
+	"encoding/json"
+	"github.com/emc-advanced-dev/unik/containers"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
-func SetContainerVer(ver string) {
-	containerVer = ver
-}
+var containerVersions map[string]string
 
-// filled in build time by make
-var containerVer string
+func InitContainers() error {
+	versionData, err := versiondata.Asset("containers/versions.json")
+	if err != nil {
+		return errors.New("failed to get version data from containers/versions.json", err)
+	}
+	if err := json.Unmarshal(versionData, &containerVersions); err != nil {
+		return errors.New("failed to unmarshall version data "+ string(versionData), err)
+	}
+	logrus.WithField("versions", containerVersions).Info("using container versions")
+	return nil
+}
 
 type Container struct {
 	env        map[string]string
@@ -121,6 +134,11 @@ func (c *Container) BuildCmd(arguments ...string) *exec.Cmd {
 
 	args = append(args, fmt.Sprintf("--name=%s", c.containerName))
 
+	containerVer, ok := containerVersions[c.name]
+	if !ok {
+		logrus.Warnf("version for container %s not found, using version 'latest'", c.name)
+		containerVer = "latest"
+	}
 	args = append(args, "projectunik/"+c.name+":"+containerVer)
 	args = append(args, arguments...)
 

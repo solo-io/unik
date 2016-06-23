@@ -9,15 +9,42 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"gopkg.in/yaml.v2"
+	"strings"
 )
+
+
+type javaProjectConfig struct {
+	ArtifactFilename string `yaml:"artifact_filename"`
+	BuildCmd string `yaml:"build_command"`
+	Properties []string `yaml:"properties"`
+}
 
 func compileRawImage(params types.CompileImageParams, useEc2Bootstrap bool) (string, error) {
 	sourcesDir := params.SourcesDir
+
+	var config javaProjectConfig
+	data, err := ioutil.ReadFile(filepath.Join(sourcesDir, "manifest.yaml"))
+	if err != nil {
+		return "", errors.New("failed to read manifest.yaml file", err)
+	}
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return "", errors.New("failed to parse yaml manifest.yaml file", err)
+	}
 
 	container := unikutil.NewContainer("compilers-osv-java").WithVolume("/dev", "/dev").WithVolume(sourcesDir+"/", "/project_directory")
 	var args []string
 	if useEc2Bootstrap {
 		args = append(args, "-ec2", "true")
+	}
+
+	args = append(args, "-artifactName", config.ArtifactFilename)
+	args = append(args, "-args", params.Args)
+	if config.BuildCmd != "" {
+		args = append(args, "-buildCmd", config.BuildCmd)
+	}
+	if len(config.Properties) > 0 {
+		args = append(args, "-properties", strings.Join(config.Properties, " "))
 	}
 
 	logrus.WithFields(logrus.Fields{
