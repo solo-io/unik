@@ -78,7 +78,7 @@ func createImageVmware(kernel string, args string, mntPoints, bakedEnv []string,
 	res.StageSpec.ImageFormat = types.ImageFormat_RAW
 	res.RunSpec.StorageDriver = types.StorageDriver_SCSI
 	res.RunSpec.VsphereNetworkType = types.VsphereNetworkType_E1000
-	res.RunSpec.DefaultInstanceMemory = 512
+	res.RunSpec.DefaultInstanceMemory = 256
 	logrus.WithField("runspec", res.RunSpec).Infof("created raw vmware image")
 	return res, nil
 }

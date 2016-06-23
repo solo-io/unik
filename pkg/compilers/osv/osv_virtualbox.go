@@ -5,7 +5,7 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 )
 
-const OSV_VIRTUALBOX_MEMORY = 256
+const OSV_VIRTUALBOX_MEMORY = 512
 
 type OsvVirtualboxCompiler struct {}
 
