@@ -1,2 +1,2 @@
 build_command: mvn package
-artifact_name: target/petclinic.war 
+artifact_filename: target/petclinic.war 
