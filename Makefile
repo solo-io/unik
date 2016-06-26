@@ -13,8 +13,7 @@ define update_container_dependency
 endef
 
 define update_version_bindata
-	go-bindata -o containers/container-versions.go containers/versions.json && \
-	perl -pi -e 's/package main/package versiondata/g' containers/container-versions.go
+	go-bindata -pkg versiondata -o containers/container-versions.go containers/versions.json
 endef
 
 define update_container_version
@@ -61,6 +60,7 @@ all: pull ${SOURCES} binary
 .PHONY: compilers-rump-python3-hw-no-stub
 .PHONY: compilers-rump-python3-xen
 .PHONY: compilers-osv-java
+
 .PHONY: compilers
 .PHONY: boot-creator
 .PHONY: image-creator
@@ -216,8 +216,7 @@ containers/version-data.go: containers/versions.json
 	$(call update_version_bindata)
 
 instance-listener/bindata/instance_listener_data.go:
-	go-bindata -o instance-listener/bindata/instance_listener_data.go --ignore=instance-listener/bindata/ instance-listener/... && \
-	perl -pi -e 's/package main/package bindata/g' instance-listener/bindata/instance_listener_data.go
+	go-bindata -pkg bindata -o instance-listener/bindata/instance_listener_data.go --ignore=instance-listener/bindata/ instance-listener/...
 
 #clean up
 .PHONY: uninstall remove-containers clean
