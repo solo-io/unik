@@ -28,6 +28,11 @@ type Vsphere struct {
 	NetworkLabel    string `yaml:"network"`
 }
 
+type Photon struct {
+	Name      string `yaml:"name"`
+	PhotonURL string `yaml:"photon_url"`
+}
+
 type Virtualbox struct {
 	Name                  string                `yaml:"name"`
 	AdapterName           string                `yaml:"adapter_name"`

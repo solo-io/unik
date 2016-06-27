@@ -22,16 +22,18 @@ const (
 	Infrastructure_VSPHERE    Infrastructure = "VSPHERE"
 	Infrastructure_VIRTUALBOX Infrastructure = "VIRTUALBOX"
 	Infrastructure_QEMU       Infrastructure = "QEMU"
+	Infrastructure_PHOTON     Infrastructure = "PHOTON"
 )
 
 type Image struct {
-	Id             string         `json:"Id"`
-	Name           string         `json:"Name"`
-	SizeMb         int64          `json:"SizeMb"`
-	Infrastructure Infrastructure `json:"Infrastructure"`
-	Created        time.Time      `json:"Created"`
-	StageSpec      StageSpec      `json:"StageSpec"`
-	RunSpec        RunSpec        `json:"RunSpec"`
+	Id               string         `json:"Id"`
+	Name             string         `json:"Name"`
+	SizeMb           int64          `json:"SizeMb"`
+	Infrastructure   Infrastructure `json:"Infrastructure"`
+	Created          time.Time      `json:"Created"`
+	StageSpec        StageSpec      `json:"StageSpec"`
+	RunSpec          RunSpec        `json:"RunSpec"`
+	InfrastructureId string         `json:"InfrastructureId"`
 }
 
 func (image *Image) Copy() *Image {
@@ -151,7 +153,8 @@ const (
 )
 
 type RunSpec struct {
-	DeviceMappings        []DeviceMapping    `json:"DeviceMappings"`        //required for all compilers
+	DeviceMappings []DeviceMapping `json:"DeviceMappings"` //required for all compilers
+	// DefaultInstanceMemory is in MB
 	DefaultInstanceMemory int                `json:"DefaultInstanceMemory"` //required for all compilers
 	StorageDriver         StorageDriver      `json:"StorageDriver,omitempty"`
 	VsphereNetworkType    VsphereNetworkType `json:"VsphereNetworkType"`
