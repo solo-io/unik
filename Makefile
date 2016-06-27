@@ -2,7 +2,7 @@ SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 define pull_container
-	docker pull projectunik/$(1):$(shell cat containers/versions.json  | jq .['$(1)'])
+	docker pull projectunik/$(1):$(shell jq '.["$(1)"]' containers/versions.json)
 endef
 
 define update_container_dependency
