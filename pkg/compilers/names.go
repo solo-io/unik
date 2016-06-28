@@ -7,7 +7,7 @@ const (
 	RUMP_GO_VIRTUALBOX = "rump-go-virtualbox"
 	RUMP_GO_VMWARE     = "rump-go-vmware"
 	RUMP_GO_QEMU       = "rump-go-qemu"
-	RUMP_GO_PHOTON       = "rump-go-photon"
+	RUMP_GO_PHOTON     = "rump-go-photon"
 
 	RUMP_NODEJS_AWS        = "rump-nodejs-aws"
 	RUMP_NODEJS_VIRTUALBOX = "rump-nodejs-virtualbox"

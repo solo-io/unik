@@ -7,9 +7,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"os/exec"
+	"path/filepath"
+	"runtime"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/pkg/ioutils"
@@ -22,6 +27,7 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers"
 	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
+	"github.com/emc-advanced-dev/unik/pkg/providers/photon"
 	"github.com/emc-advanced-dev/unik/pkg/providers/qemu"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
@@ -30,10 +36,6 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/go-martini/martini"
 	"github.com/layer-x/layerx-commons/lxmartini"
-	"os/exec"
-	"path/filepath"
-	"runtime"
-	"sort"
 )
 
 type UnikDaemon struct {
@@ -48,6 +50,7 @@ const (
 	vsphere_provider    = "vsphere"
 	virtualbox_provider = "virtualbox"
 	qemu_provider       = "qemu"
+	photon_provider     = "photon"
 )
 
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
@@ -120,6 +123,29 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		p = p.WithState(s)
 		_providers[qemu_provider] = p
 		break
+	}
+
+	for _, photonConfig := range config.Providers.Photon {
+		logrus.Infof("Bootstrapping provider %s with config %v", photon_provider, photonConfig)
+		p, err := photon.NewPhotonProvider(photonConfig)
+		if err != nil {
+			return nil, errors.New("initializing qemu provider", err)
+		}
+		s, err := state.BasicStateFromFile(photon.PhotonStateFile())
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read qemu state file at %s, creating blank qemu state", photon.PhotonStateFile())
+			s = state.NewBasicState(photon.PhotonStateFile())
+		}
+		p = p.WithState(s)
+		_providers[photon_provider] = p
+		break
+	}
+
+	_compilers[compilers.RUMP_GO_PHOTON] = &rump.RumpGoCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-go-hw",
+			CreateImage: rump.CreateImageVmware,
+		},
 	}
 
 	_compilers[compilers.RUMP_GO_AWS] = &rump.RumpGoCompiler{

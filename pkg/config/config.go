@@ -10,6 +10,7 @@ type Providers struct {
 	Vsphere    []Vsphere    `yaml:"vsphere"`
 	Virtualbox []Virtualbox `yaml:"virtualbox"`
 	Qemu       []Qemu       `yaml:"qemu"`
+	Photon     []Photon     `yaml:"photon"`
 }
 
 type Aws struct {
