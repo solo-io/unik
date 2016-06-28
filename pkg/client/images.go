@@ -44,8 +44,8 @@ func (i *images) Get(id string) (*types.Image, error) {
 	return &image, nil
 }
 
-func (i *images) Build(name, sourceTar, compiler, provider, args string, mounts []string, force, noCleanup bool) (*types.Image, error) {
-	query := fmt.Sprintf("?compiler=%s&provider=%s&args=%s&mounts=%s&force=%v&no_cleanup=%v", compiler, provider, args, strings.Join(mounts, ","), force, noCleanup)
+func (i *images) Build(name, sourceTar, compiler, provider, args, staticIpConfig string, mounts []string, force, noCleanup bool) (*types.Image, error) {
+	query := fmt.Sprintf("?compiler=%s&provider=%s&args=%s&static_ip_config=%s&mounts=%s&force=%v&no_cleanup=%v", compiler, provider, args, staticIpConfig, strings.Join(mounts, ","), force, noCleanup)
 	resp, body, err := lxhttpclient.PostFile(i.unikIP, "/images/"+name+"/create"+query, "tarfile", sourceTar)
 	if err != nil  {
 		return nil, errors.New("request failed", err)

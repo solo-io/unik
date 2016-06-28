@@ -6,17 +6,18 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
-func CreateImageVmware(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
-	return createImageVmware(kernel, args, mntPoints, bakedEnv, noCleanup, false)
+func CreateImageVmware(kernel string, args string, mntPoints, bakedEnv []string, staticIpConfig string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVmware(kernel, args, staticIpConfig, mntPoints, bakedEnv, noCleanup, false)
 }
 
-func CreateImageVmwareAddStub(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
-	return createImageVmware(kernel, args, mntPoints, bakedEnv, noCleanup, true)
+func CreateImageVmwareAddStub(kernel string, args string, mntPoints, bakedEnv []string, staticIpConfig string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVmware(kernel, args, staticIpConfig, mntPoints, bakedEnv, noCleanup, true)
 }
 
-func createImageVmware(kernel string, args string, mntPoints, bakedEnv []string, noCleanup, addStub bool) (*types.RawImage, error) {
+func createImageVmware(kernel, args, staticIpConfig string, mntPoints, bakedEnv []string, noCleanup, addStub bool) (*types.RawImage, error) {
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {
@@ -62,6 +63,23 @@ func createImageVmware(kernel string, args string, mntPoints, bakedEnv []string,
 		If:     "wm0",
 		Type:   "inet",
 		Method: DHCP,
+	}
+
+	if staticIpConfig != "" {
+		staticConf := strings.Split(staticIpConfig, ",")
+		if len(staticConf) != 3 {
+			return nil, errors.New("static ip config should be a string in the format ADDR,NETMASK,GATWAY", nil)
+		}
+		addr := staticConf[0]
+		mask := staticConf[1]
+		gw := staticConf[2]
+		c.Net = &net{
+			If: c.Net.If,
+			Method: Static,
+			Addr: addr,
+			Mask: mask,
+			Gatway: gw,
+		}
 	}
 
 	cmdline, err := toRumpJson(c)

@@ -8,15 +8,15 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
-	return createImageVirtualBox(kernel, args, mntPoints, bakedEnv, noCleanup, false)
+func CreateImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string, staticIpConfig string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVirtualBox(kernel, args, staticIpConfig, mntPoints, bakedEnv, noCleanup, false)
 }
 
-func CreateImageVirtualBoxAddStub(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
-	return createImageVirtualBox(kernel, args, mntPoints, bakedEnv, noCleanup, true)
+func CreateImageVirtualBoxAddStub(kernel string, args string, mntPoints, bakedEnv []string, staticIpConfig string, noCleanup bool) (*types.RawImage, error) {
+	return createImageVirtualBox(kernel, args, staticIpConfig, mntPoints, bakedEnv, noCleanup, true)
 }
 
-func createImageVirtualBox(kernel string, args string, mntPoints, bakedEnv []string, noCleanup, addStub bool) (*types.RawImage, error) {
+func createImageVirtualBox(kernel string, args, staticIpConfig string, mntPoints, bakedEnv []string, noCleanup, addStub bool) (*types.RawImage, error) {
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {

@@ -21,6 +21,7 @@ type net struct {
 	Method Method `json:"method,omitempty"`
 	Addr   string `json:"addr,omitempty"`
 	Mask   string `json:"mask,omitempty"`
+	Gatway string `json:"gw,omitempty"`
 	Cloner string `json:"cloner,omitempty"`
 }
 

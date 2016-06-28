@@ -27,5 +27,6 @@ type CompileImageParams struct {
 	SourcesDir string
 	Args       string
 	MntPoints  []string
+	StaticIpConfig string
 	NoCleanup  bool
 }

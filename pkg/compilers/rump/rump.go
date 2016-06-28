@@ -40,7 +40,6 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 		fmt.Sprintf("ROOT_PATH=%s", g.ImportPath),
 	}
 
-
 	if err := r.runContainer(sourcesDir, containerEnv); err != nil {
 		return nil, err
 	}
@@ -48,7 +47,7 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 	// now we should program.bin
 	resultFile := path.Join(sourcesDir, "program.bin")
 	logrus.Debugf("finished kernel binary at %s", resultFile)
-	img, err := r.CreateImage(resultFile, params.Args, params.MntPoints, nil, params.NoCleanup)
+	img, err := r.CreateImage(resultFile, params.Args, params.MntPoints, nil, params.StaticIpConfig, params.NoCleanup)
 	if err != nil {
 		return nil, errors.New("creating boot volume from kernel binary", err)
 	}

@@ -71,7 +71,7 @@ func execContainer(imageName string, cmds []string, binds map[string]string, pri
 
 type RumCompilerBase struct {
 	DockerImage   string
-	CreateImage   func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error)
+	CreateImage   func(kernel, args string, mntPoints, bakedEnv []string, staticIpConfig string, noCleanup bool) (*types.RawImage, error)
 }
 
 func (r *RumCompilerBase) runContainer(localFolder string, envPairs []string) error {

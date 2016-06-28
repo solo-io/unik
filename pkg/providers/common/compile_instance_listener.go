@@ -9,9 +9,10 @@ import (
 	"github.com/emc-advanced-dev/unik/instance-listener/bindata"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"fmt"
 )
 
-func CompileInstanceListener(sourceDir, instanceListenerPrefix, dockerImage string, createImageFunc func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error)) (*types.RawImage, error) {
+func CompileInstanceListener(sourceDir, instanceListenerPrefix, dockerImage string, createImageFunc func(kernel, args string, mntPoints, bakedEnv []string, staticIpConfig string, noCleanup bool) (*types.RawImage, error)) (*types.RawImage, error) {
 	mainData, err := bindata.Asset("instance-listener/main.go")
 	if err != nil {
 		return nil, errors.New("reading binary data of instance listener main", err)
@@ -30,10 +31,19 @@ func CompileInstanceListener(sourceDir, instanceListenerPrefix, dockerImage stri
 		return nil, errors.New("copying contents of instance listener Godeps.json", err)
 	}
 
+	staticAddr := os.Getenv("IL_ADDR")
+	staticNetmask := os.Getenv("IL_NETMASK")
+	staticGateway := os.Getenv("IL_GATEWAY")
+	var staticIpConfig string
+	if staticAddr != "" && staticNetmask != "" && staticGateway != "" {
+		staticIpConfig = fmt.Sprintf("%s,%s,%s", staticAddr, staticNetmask, staticGateway)
+	}
+
 	params := types.CompileImageParams{
 		SourcesDir: sourceDir,
 		Args:       "-prefix " + instanceListenerPrefix,
 		MntPoints:  []string{"/data"},
+		StaticIpConfig: staticIpConfig,
 	}
 	rumpGoCompiler := &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{

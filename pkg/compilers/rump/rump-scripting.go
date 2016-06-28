@@ -65,5 +65,5 @@ func (r *RumpScriptCompiler) CompileRawImage(params types.CompileImageParams) (*
 	// now we should program.bin
 	resultFile := path.Join(sourcesDir, "program.bin")
 
-	return r.CreateImage(resultFile, args, params.MntPoints, r.ScriptEnv, params.NoCleanup)
+	return r.CreateImage(resultFile, args, params.MntPoints, r.ScriptEnv, params.StaticIpConfig, params.NoCleanup)
 }

@@ -371,6 +371,8 @@ func (d *UnikDaemon) addEndpoints() {
 				noCleanup = true
 			}
 
+			staticIpConfig := req.FormValue("static_ip_config")
+
 			logrus.WithFields(logrus.Fields{
 				"force":        force,
 				"mount-points": mountPoints,
@@ -385,6 +387,7 @@ func (d *UnikDaemon) addEndpoints() {
 				SourcesDir: sourcesDir,
 				Args:       args,
 				MntPoints:  mountPoints,
+				StaticIpConfig: staticIpConfig,
 				NoCleanup:  noCleanup,
 			}
 

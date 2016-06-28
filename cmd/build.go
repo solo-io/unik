@@ -12,7 +12,7 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 )
 
-var name, sourcePath, compiler, provider, runArgs string
+var name, sourcePath, compiler, provider, runArgs, staticIpConfig string
 var mountPoints []string
 var force, noCleanup bool
 
@@ -79,6 +79,7 @@ Another example (using only the required parameters):
 				"mountPoints": mountPoints,
 				"force":       force,
 				"host":        host,
+				"static-ip-config":        staticIpConfig,
 			}).Infof("running unik build")
 			sourceTar, err := ioutil.TempFile("", "sources.tar.gz.")
 			if err != nil {
@@ -89,7 +90,7 @@ Another example (using only the required parameters):
 				return errors.New("failed to tar sources", err)
 			}
 			logrus.Infof("App packaged as tarball: %s\n", sourceTar.Name())
-			image, err := client.UnikClient(host).Images().Build(name, sourceTar.Name(), compiler, provider, runArgs, mountPoints, force, noCleanup)
+			image, err := client.UnikClient(host).Images().Build(name, sourceTar.Name(), compiler, provider, runArgs, staticIpConfig, mountPoints, force, noCleanup)
 			if err != nil {
 				return errors.New("building image failed", err)
 			}
@@ -109,6 +110,7 @@ func init() {
 	buildCmd.Flags().StringVar(&compiler, "compiler", "", "<string,required> name of the unikernel compiler to use")
 	buildCmd.Flags().StringVar(&provider, "provider", "", "<string,required> name of the target infrastructure to compile for")
 	buildCmd.Flags().StringVar(&runArgs, "args", "", "<string,optional> to be passed to the unikernel at runtime")
+	buildCmd.Flags().StringVar(&staticIpConfig, "static-ip", "", "<string,optional> use Static ip configuration instead of DHCP (rump only) used in the format --static-ip=IP_ADDR,NETMASK,GATEWAY")
 	buildCmd.Flags().StringSliceVar(&mountPoints, "mountpoint", []string{}, "<string,repeated> specify up to 8 mount points for volumes")
 	buildCmd.Flags().BoolVar(&force, "force", false, "<bool, optional> force overwriting a previously existing")
 	buildCmd.Flags().BoolVar(&noCleanup, "no-cleanup", false, "<bool, optional> for debugging; do not clean up artifacts for images that fail to build")

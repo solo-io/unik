@@ -10,9 +10,10 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"path/filepath"
 	"io/ioutil"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
-func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string, staticIpConfig string, noCleanup bool) (*types.RawImage, error) {
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {
@@ -58,6 +59,23 @@ func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string, n
 		If:     "vioif0",
 		Type:   "inet",
 		Method: DHCP,
+	}
+
+	if staticIpConfig != "" {
+		staticConf := strings.Split(staticIpConfig, ",")
+		if len(staticConf) != 3 {
+			return nil, errors.New("static ip config should be a string in the format ADDR,NETMASK,GATWAY", nil)
+		}
+		addr := staticConf[0]
+		mask := staticConf[1]
+		gw := staticConf[2]
+		c.Net = &net{
+			If: c.Net.If,
+			Method: Static,
+			Addr: addr,
+			Mask: mask,
+			Gatway: gw,
+		}
 	}
 
 	cmdline, err := toRumpJson(c)
