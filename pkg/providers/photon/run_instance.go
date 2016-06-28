@@ -1,6 +1,8 @@
 package photon
 
 import (
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
@@ -93,7 +95,44 @@ func (p *PhotonProvider) RunInstance(params types.RunInstanceParams) (_ *types.I
 		AttachedDisks: nil,
 		Environment:   params.Env,
 	}
-	p.client.Projects.CreateVM(p.projectId, vmspec)
 
-	return nil, errors.New("not implemented", nil)
+	task, err := p.client.Projects.CreateVM(p.projectId, vmspec)
+
+	if err != nil {
+		return nil, errors.New("Creating vm", err)
+	}
+
+	task, err = p.waitForTaskSuccess(task)
+
+	if err != nil {
+		return nil, errors.New("Waiting for create vm", err)
+	}
+
+	// TODO: not sure we can use instance listener for photon..
+	instanceIp := ""
+	// TODO: add infrastructure id?
+
+	instance := &types.Instance{
+		Id:             task.Entity.ID,
+		Name:           params.Name,
+		State:          types.InstanceState_Pending,
+		IpAddress:      instanceIp,
+		Infrastructure: types.Infrastructure_PHOTON,
+		ImageId:        image.Id,
+		Created:        time.Now(),
+	}
+
+	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
+		instances[instance.Id] = instance
+		return nil
+	}); err != nil {
+		return nil, errors.New("modifying instance map in state", err)
+	}
+	if err := p.state.Save(); err != nil {
+		return nil, errors.New("saving instance volume map to state", err)
+	}
+
+	logrus.WithField("instance", instance).Infof("instance created successfully")
+
+	return instance, nil
 }

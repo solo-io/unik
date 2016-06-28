@@ -4,6 +4,9 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/emc-advanced-dev/pkg/errors"
 
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/state"
@@ -51,4 +54,17 @@ func NewPhotonProvider(config config.Photon) (*PhotonProvider, error) {
 func (p *PhotonProvider) WithState(state state.State) *PhotonProvider {
 	p.state = state
 	return p
+}
+
+func (p *PhotonProvider) waitForTaskSuccess(task *photon.Task) (*photon.Task, error) {
+	task, err := p.client.Tasks.WaitTimeout(task.ID, 30*time.Minute)
+	if err != nil {
+		return nil, errors.New("error waiting for task creating photon image", err)
+	}
+
+	if task.State != "COMPLETED" {
+		return nil, errors.New("Error with task "+task.ID, nil)
+	}
+
+	return task, nil
 }

@@ -72,13 +72,9 @@ func (p *PhotonProvider) Stage(params types.StageImageParams) (_ *types.Image, e
 			return "", errors.New("error creating photon image", err)
 		}
 
-		task, err = p.client.Tasks.WaitTimeout(task.ID, 30*time.Minute)
+		task, err = p.waitForTaskSuccess(task)
 		if err != nil {
 			return "", errors.New("error waiting for task creating photon image", err)
-		}
-
-		if task.State != "COMPLETED" {
-			return "", errors.New("Error with task "+task.ID, nil)
 		}
 
 		return task.Entity.ID, nil
