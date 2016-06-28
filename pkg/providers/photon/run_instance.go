@@ -47,13 +47,9 @@ func (p *PhotonProvider) getFlavor(image *types.Image) string {
 		if machineMem >= (float64)(image.RunSpec.DefaultInstanceMemory) {
 			if minFlavorIndex == -1 {
 				minFlavorIndex = i
-			} else {
-				if machineMem < getMemMb(&flavorList.Items[minFlavorIndex]) {
-					minFlavorIndex = i
-				}
-
+			} else if machineMem < getMemMb(&flavorList.Items[minFlavorIndex]) {
+				minFlavorIndex = i
 			}
-
 		}
 	}
 
