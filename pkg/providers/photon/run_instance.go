@@ -1,6 +1,7 @@
 package photon
 
 import (
+	"strings"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -33,33 +34,22 @@ func getMemMb(flavor *photon.Flavor) float64 {
 
 }
 
-func (p *PhotonProvider) getFlavor(image *types.Image) string {
+func (p *PhotonProvider) getUnikFlavor(kind string) (*photon.Flavor, error) {
 	options := &photon.FlavorGetOptions{
-		Kind: "vm",
+		Kind: kind,
 		Name: "",
 	}
 	flavorList, err := p.client.Flavors.GetAll(options)
 	if err != nil {
-		return ""
+		return nil, err
 	}
-	var minFlavorIndex int = -1
-	for i := range flavorList.Items {
-		machineMem := getMemMb(&flavorList.Items[i])
-
-		if machineMem >= (float64)(image.RunSpec.DefaultInstanceMemory) {
-			if minFlavorIndex == -1 {
-				minFlavorIndex = i
-			} else if machineMem < getMemMb(&flavorList.Items[minFlavorIndex]) {
-				minFlavorIndex = i
-			}
+	for _, f := range flavorList.Items {
+		if strings.Contains(f.Name, "unik-") {
+			return &f, nil
 		}
 	}
 
-	if minFlavorIndex == -1 {
-		return ""
-	}
-
-	return flavorList.Items[minFlavorIndex].Name
+	return nil, errors.New("No flavor found", nil)
 }
 
 func (p *PhotonProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
@@ -82,17 +72,29 @@ func (p *PhotonProvider) RunInstance(params types.RunInstanceParams) (_ *types.I
 		return nil, errors.New("invalid mapping for volume", err)
 	}
 
-	flavor := p.getFlavor(image)
-	if flavor == "" {
-		return nil, errors.New("Can't get flavor for vm", nil)
+	vmflavor, err := p.getUnikFlavor("vm")
+	if err != nil {
+		return nil, errors.New("can't get vm flavor", err)
+	}
+
+	diskflavor, err := p.getUnikFlavor("ephemeral-disk")
+	if err != nil {
+		return nil, errors.New("can't get disk flavor", err)
+	}
+
+	disk := photon.AttachedDisk{
+		Flavor:   diskflavor.Name,
+		Kind:     "ephemeral-disk",
+		Name:     "bootdisk-" + image.Id,
+		BootDisk: true,
 	}
 
 	vmspec := &photon.VmCreateSpec{
-		Flavor:        flavor,
+		Flavor:        vmflavor.Name,
 		SourceImageID: image.InfrastructureId,
 		Name:          params.Name,
 		Affinities:    nil,
-		AttachedDisks: nil,
+		AttachedDisks: []photon.AttachedDisk{disk},
 		Environment:   params.Env,
 	}
 
