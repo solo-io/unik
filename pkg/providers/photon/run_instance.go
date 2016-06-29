@@ -136,5 +136,5 @@ func (p *PhotonProvider) RunInstance(params types.RunInstanceParams) (_ *types.I
 
 	logrus.WithField("instance", instance).Infof("instance created successfully")
 
-	return instance, nil
+	return instance, p.StartInstance(instance.Id)
 }

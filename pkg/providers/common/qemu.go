@@ -1,7 +1,9 @@
 package common
 
 import (
+	"bytes"
 	"encoding/json"
+	"os"
 	"path/filepath"
 
 	"github.com/Sirupsen/logrus"
@@ -21,12 +23,73 @@ func ConvertRawImage(sourceFormat, targetFormat types.ImageFormat, inputFile, ou
 	container := unikutil.NewContainer("qemu-util").WithVolume(dir, dir).
 		WithVolume(outDir, outDir)
 
-	args := []string{"qemu-img", "convert", "-f", string(sourceFormat), "-O", targetFormatName, inputFile, outputFile}
+	args := []string{"qemu-img", "convert", "-f", string(sourceFormat), "-O", targetFormatName}
+	if targetFormat == types.ImageFormat_VMDK {
+		args = append(args, "-o", "compat6")
+	}
+
+	args = append(args, inputFile, outputFile)
 
 	logrus.WithField("command", args).Debugf("running command")
 	if err := container.Run(args...); err != nil {
 		return errors.New("failed converting raw image to "+string(targetFormat), err)
 	}
+	return nil
+}
+
+func fixVmdk(vmdkFile string) error {
+	file, err := os.OpenFile(vmdkFile, os.O_RDWR, 0)
+	if err != nil {
+		return errors.New("can't open vmdk", err)
+	}
+	defer file.Close()
+
+	var buffer [1024]byte
+
+	n, err := file.Read(buffer[:])
+	if err != nil {
+		return errors.New("can't read vmdk", err)
+	}
+	if n < len(buffer) {
+		return errors.New("bad vmdk", err)
+	}
+
+	_, err = file.Seek(0, os.SEEK_SET)
+	if err != nil {
+		return errors.New("can't seek vmdk", err)
+	}
+
+	result := bytes.Replace(buffer[:], []byte("# The disk Data Base"), []byte("# The Disk Data Base"), 1)
+
+	_, err = file.Write(result)
+	if err != nil {
+		return errors.New("can't write vmdk", err)
+	}
+
+	return nil
+}
+
+func ConvertRawToNewVmdk(inputFile, outputFile string) error {
+
+	dir := filepath.Dir(inputFile)
+	outDir := filepath.Dir(outputFile)
+
+	container := unikutil.NewContainer("euranova/ubuntu-vbox").WithVolume(dir, dir).
+		WithVolume(outDir, outDir)
+
+	args := []string{
+		"VBoxManage", "convertfromraw", inputFile, outputFile, "--format", "vmdk", "--variant", "Stream"}
+
+	logrus.WithField("command", args).Debugf("running command")
+	if err := container.Run(args...); err != nil {
+		return errors.New("failed converting raw image to vmdk", err)
+	}
+
+	err := fixVmdk(outputFile)
+	if err != nil {
+		return errors.New("failed converting raw image to vmdk", err)
+	}
+
 	return nil
 }
 

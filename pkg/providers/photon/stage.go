@@ -23,7 +23,7 @@ func createVmdk(params types.StageImageParams, workVmdk func(file string) (strin
 	localVmdkFile := filepath.Join(localVmdkDir, "boot.vmdk")
 
 	logrus.WithField("raw-image", params.RawImage).Infof("creating boot volume from raw image")
-	if err := common.ConvertRawImage(params.RawImage.StageSpec.ImageFormat, types.ImageFormat_VMDK, params.RawImage.LocalImagePath, localVmdkFile); err != nil {
+	if err := common.ConvertRawToNewVmdk(params.RawImage.LocalImagePath, localVmdkFile); err != nil {
 		return "", 0, errors.New("converting raw image to vmdk", err)
 	}
 

@@ -32,6 +32,7 @@ type Vsphere struct {
 type Photon struct {
 	Name      string `yaml:"name"`
 	PhotonURL string `yaml:"photon_url"`
+	ProjectId string `yaml:"project_id"`
 }
 
 type Virtualbox struct {
