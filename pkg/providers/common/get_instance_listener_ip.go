@@ -7,11 +7,15 @@ import (
 	"github.com/Sirupsen/logrus"
 	"bytes"
 	"time"
+	"os"
 )
 
 var socket *net.UDPConn
 
 func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, error) {
+	if addr := os.Getenv("IL_ADDR"); addr != "" {
+		return addr
+	}
 	errc := make(chan error)
 	go func(){
 		<-time.After(timeout)

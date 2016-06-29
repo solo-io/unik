@@ -18,12 +18,6 @@ var timeout = time.Second * 10
 var instanceListenerData = "InstanceListenerData"
 
 func (p *VsphereProvider) deployInstanceListener() (err error) {
-	logrus.Infof("checking if instance listener is alive...")
-	if instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout); err == nil {
-		logrus.Infof("instance listener is alive with IP %s", instanceListenerIp)
-		return nil
-	}
-	logrus.Infof("cannot contact instance listener... cleaning up previous if it exists..")
 	c := p.getClient()
 	c.PowerOffVm(VsphereUnikInstanceListener)
 	c.DestroyVm(VsphereUnikInstanceListener)
