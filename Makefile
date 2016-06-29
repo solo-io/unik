@@ -95,6 +95,7 @@ pull:
 	$(call pull_container,compilers-rump-base-hw)
 	$(call pull_container,rump-debugger-qemu)
 	$(call pull_container,compilers-rump-base-common)
+	docker pull euranova/ubuntu-vbox
 #------
 
 #build containers from source
