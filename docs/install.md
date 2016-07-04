@@ -2,7 +2,7 @@
 
 #### Prerequisites:
 - [Docker](http://www.docker.com/) installed and running with at least 8GB available space for building images
-- ['jq'](https://stedolan.github.io/jq/)
+- [`jq`](https://stedolan.github.io/jq/)
 - [`make`](https://www.gnu.org/software/make/)
 - [Virtualbox](https://www.virtualbox.org/) (if using the [virtualbox provider](providers/virtualbox.md))
 

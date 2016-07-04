@@ -9,7 +9,7 @@ In this tutorial we'll be:
 #### Prerequisites
 Ensure that each of the following are installed
 - [Docker](http://www.docker.com/) installed and running with at least 4GB available space for building images
-- ['jq'](https://stedolan.github.io/jq/)
+- [`jq`](https://stedolan.github.io/jq/)
 - [`make`](https://www.gnu.org/software/make/)
 - [Virtualbox](https://www.virtualbox.org/)
 - [Maven](https://maven.apache.org/download.cgi)

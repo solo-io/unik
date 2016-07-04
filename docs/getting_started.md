@@ -9,7 +9,7 @@ In this tutorial we'll be:
 #### Prerequisites
 Ensure that each of the following are installed
 - [Docker](http://www.docker.com/) installed and running with at least 6GB available space for building images
-- ['jq'](https://stedolan.github.io/jq/)
+- [`jq`](https://stedolan.github.io/jq/)
 - [`make`](https://www.gnu.org/software/make/)
 - [Virtualbox](https://www.virtualbox.org/)
 - `$GOPATH` should be set and `$GOPATH/bin` should be part of your `$PATH` (see https://golang.org/doc/code.html#GOPATH)
