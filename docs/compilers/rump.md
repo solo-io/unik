@@ -68,7 +68,7 @@ Compiling Python applications on rumprun requires the following parameters be me
 * One "main" file somewhere in your project
 * All dependencies installed locally to the root directory of your project.
   * This can be done by running the following command for each module your project depends on:
-    ```bash
+    ```
     pip install --install-option="--prefix=<PATH_TO_PROJECT_ROOT>" --ignore-installed <MODULE_NAME>
     ```
 * A configuration file named `manifest.yaml` in the root directory of your project.
