@@ -4,7 +4,7 @@ The Instance Listener is a special component of UniK that bootstraps UniK uniker
 
 The instance listener is a virtual appliance that is meant to run continuously on the provider you are using. If UniK detects configuration for one of the providers that requires use of the instance listener in your `daemon-config.yaml`, it will attempt to automatically deploy and boot the instance listener on that infrastructure when you launch the daemon.
 
-There is no additional configuration necessary to deploy the instance listener. UniK **automatically compile and deploy the instance listener as a unikernel**.
+There is no additional configuration necessary to deploy the instance listener. UniK **automatically compiles and deploys the instance listener as a unikernel**.
 
 The code for the instance listener
 
