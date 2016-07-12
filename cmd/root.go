@@ -26,8 +26,8 @@ instances across infrastructures.
 
 Create a client configuration file with 'unik target'
 
-You may set a custom client configuration file w
-ith the global flag --client-config=<path>`,
+You may set a custom client configuration file
+with the global flag --client-config=<path>`,
 }
 
 func init() {
