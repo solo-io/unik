@@ -39,7 +39,7 @@ define build_container
 endef
 
 define remove_container
-	docker rmi -f projectunik/$(1):$(shell cat containers/versions.json  | jq .['$(1)'])
+	docker rmi -f projectunik/$(1):$(shell cat containers/versions.json  | jq '.["$(1)"]')
 endef
 
 all: pull ${SOURCES} binary
@@ -106,7 +106,7 @@ compilers: compilers-rump-go-hw \
            compilers-rump-python3-xen \
            compilers-osv-java
 
-compilers-rump-base-common: 
+compilers-rump-base-common:
 	$(call build_container,compilers/rump/base,$@,.common)
 
 compilers-rump-base-hw: compilers-rump-base-common
@@ -156,12 +156,12 @@ compilers-osv-java:
 #utils
 utils: boot-creator image-creator vsphere-client qemu-util
 
-boot-creator: 
+boot-creator:
 	cd containers/utils/boot-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build -tags container-binary
 	$(call build_container,utils/boot-creator,$@,)
 	cd containers/utils/boot-creator && rm boot-creator
 
-image-creator: 
+image-creator:
 	cd containers/utils/image-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build -tags container-binary
 	$(call build_container,utils/image-creator,$@,)
 	cd containers/utils/image-creator && rm image-creator
@@ -175,7 +175,7 @@ containers/utils/vsphere-client/vsphere-client.empty: $(VSPHERE_CLIENT_SOURCES)
 	cd containers/utils/vsphere-client && rm -rf target
 	touch containers/utils/vsphere-client/vsphere-client.empty
 
-qemu-util: 
+qemu-util:
 	$(call build_container,utils/qemu-util,$@,)
 
 #------
