@@ -64,3 +64,9 @@ const (
 type ClientConfig struct {
 	Host string `yaml:"host"`
 }
+
+type HubConfig struct {
+	URL string `yaml:"url"`
+	Username string `yaml:"user"`
+	Password string `yaml:"pass"`
+}
