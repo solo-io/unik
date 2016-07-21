@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/spf13/cobra"
@@ -10,7 +11,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-	"github.com/Sirupsen/logrus"
 )
 
 var loginCmd = &cobra.Command{

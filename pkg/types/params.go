@@ -32,13 +32,13 @@ type CompileImageParams struct {
 
 type PullImagePararms struct {
 	ImageName string
-	HubUrl string
-	User string
-	Pass string
+	HubUrl    string
+	User      string
+	Pass      string
 }
 type PushImagePararms struct {
 	ImageName string
-	HubUrl string
-	User string
-	Pass string
+	HubUrl    string
+	User      string
+	Pass      string
 }
