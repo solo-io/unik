@@ -1,13 +1,13 @@
 package cmd
 
 import (
+	"bufio"
+	"fmt"
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
-	"github.com/emc-advanced-dev/unik/pkg/config"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"io/ioutil"
-	"fmt"
-	"bufio"
 	"os"
 	"strings"
 )
@@ -45,7 +45,6 @@ var loginCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(loginCmd)
 }
-
 
 func setHubConfig(url, user, pass string) error {
 	data, err := yaml.Marshal(config.HubConfig{URL: url, Username: user, Password: pass})
