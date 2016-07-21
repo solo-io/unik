@@ -27,6 +27,9 @@ type Provider interface {
 	DeleteVolume(id string, force bool) error
 	AttachVolume(id, instanceId, mntPoint string) error
 	DetachVolume(id string) error
+	//Hub
+	PullImage(params types.PullImagePararms) error
+	PushImage(params types.PushImagePararms) error
 }
 
 type ProviderConfig struct {
