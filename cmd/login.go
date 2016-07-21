@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"github.com/Sirupsen/logrus"
 )
 
 var loginCmd = &cobra.Command{
@@ -18,27 +19,34 @@ var loginCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defaultUrl := "http://hub.projectunik.io"
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Printf("Unik Hub Repository URL [%v]: ", defaultUrl)
-		url, err := reader.ReadString('\n')
-		if err != nil {
-			return err
+		if err := func() error {
+			fmt.Printf("Unik Hub Repository URL [%v]: ", defaultUrl)
+			url, err := reader.ReadString('\n')
+			if err != nil {
+				return err
+			}
+			url = strings.Trim(url, "\n")
+			if len(url) < 1 {
+				url = defaultUrl
+			}
+			fmt.Printf("Username: ")
+			user, err := reader.ReadString('\n')
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Password: ")
+			pass, err := reader.ReadString('\n')
+			if err != nil {
+				return err
+			}
+			if err := setHubConfig(url, strings.Trim(user, "\n"), strings.Trim(pass, "\n")); err != nil {
+				return err
+			}
+			fmt.Printf("using url %v\n", url)
+			return nil
+		}(); err != nil {
+			logrus.Fatal(err)
 		}
-		url = strings.Trim(url, "\n")
-		if len(url) < 1 {
-			url = defaultUrl
-		}
-		fmt.Printf("Username: ")
-		user, err := reader.ReadString('\n')
-		if err != nil {
-			return err
-		}
-		fmt.Printf("Password: ")
-		pass, err := reader.ReadString('\n')
-		if err != nil {
-			return err
-		}
-		setHubConfig(url, strings.Trim(user, "\n"), strings.Trim(pass, "\n"))
-		fmt.Printf("using url %v\n", url)
 	},
 }
 
