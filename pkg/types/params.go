@@ -1,5 +1,7 @@
 package types
 
+import "github.com/emc-advanced-dev/unik/pkg/config"
+
 type RunInstanceParams struct {
 	Name                 string
 	ImageId              string
@@ -31,14 +33,12 @@ type CompileImageParams struct {
 }
 
 type PullImagePararms struct {
+	Config    config.HubConfig
 	ImageName string
-	HubUrl    string
-	User      string
-	Pass      string
+	Force     bool
 }
+
 type PushImagePararms struct {
+	Config    config.HubConfig
 	ImageName string
-	HubUrl    string
-	User      string
-	Pass      string
 }
