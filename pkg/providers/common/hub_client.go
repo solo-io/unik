@@ -7,11 +7,11 @@ import (
 	"github.com/djannot/aws-sdk-go/aws/session"
 	"github.com/djannot/aws-sdk-go/private/signer/v4"
 	"github.com/djannot/aws-sdk-go/service/s3"
+	"github.com/djannot/aws-sdk-go/service/s3/s3manager"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"os"
-	"github.com/djannot/aws-sdk-go/service/s3/s3manager"
 )
 
 func PullImage(config config.HubConfig, imageName, imagePath string) error {
@@ -30,18 +30,14 @@ func PullImage(config config.HubConfig, imageName, imagePath string) error {
 		Password: aws.String(config.Password),
 	}
 	downloader := s3manager.NewDownloader(session.New())
-	n, err := downloader.Download(file, )
-	req, out := s3.New(session.New()).PutObjectRequest(params)
-	req = sign(config, req)
-
-	if err := req.Send(); err != nil {
+	downloader.RequestOption = func(req *request.Request) {
+		req = sign(config, req)
+	}
+	n, err := downloader.Download(file, params)
+	if err != nil {
 		return errors.New("downloading file", err)
 	}
-	if req.Error != nil {
-		return errors.New("get object failed", req.Error)
-	}
-
-	logrus.Infof("Image saved to %s", imagePath)
+	logrus.Infof("%v bytes saved to %s", n, imagePath)
 	return nil
 }
 
@@ -74,7 +70,7 @@ func PushImage(config config.HubConfig, imageName, imagePath string) error {
 		ContentType:   aws.String("application/octet-stream"),
 	}
 	req, _ := s3.New(session.New()).PutObjectRequest(params)
-	req := sign(config, req)
+	req = sign(config, req)
 
 	if err := req.Send(); err != nil {
 		return errors.New("uploading file", err)
