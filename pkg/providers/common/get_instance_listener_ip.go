@@ -14,7 +14,7 @@ var socket *net.UDPConn
 
 func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, error) {
 	if addr := os.Getenv("IL_ADDR"); addr != "" {
-		return addr
+		return addr, nil
 	}
 	errc := make(chan error)
 	go func(){
