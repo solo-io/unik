@@ -143,123 +143,123 @@
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws/awserr",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws/awsutil",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws/client",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws/client/metadata",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws/corehandlers",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws/credentials",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws/credentials/ec2rolecreds",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws/defaults",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws/ec2metadata",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws/request",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/aws/session",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/private/endpoints",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/private/protocol",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/private/protocol/query",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/private/protocol/query/queryutil",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/private/protocol/rest",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/private/protocol/restxml",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/private/protocol/xml/xmlutil",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/private/signer/v4",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/private/waiter",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/service/s3",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/service/s3/s3iface",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/djannot/aws-sdk-go/service/s3/s3manager",
-			"Comment": "v1.1.34-5-gfe2b74f",
-			"Rev": "fe2b74fc02510d36be4c3f468df829d37b439831"
+			"Comment": "v1.1.34-6-g9f7614b",
+			"Rev": "9f7614b561f3c01fca74ff860125cf3838cbc1bc"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/ioutils",

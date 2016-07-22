@@ -41,7 +41,7 @@ type Downloader struct {
 	S3 s3iface.S3API
 
 	//Optional processing on GetObjectRequest
-	RequestOption func(req *request.Request)
+	RequestOption func(req *request.Request) *request.Request
 }
 
 // NewDownloader creates a new Downloader instance to downloads objects from
@@ -141,7 +141,7 @@ type downloader struct {
 
 
 	//Optional processing on GetObjectRequest
-	requestOption func(req *request.Request)
+	requestOption func(req *request.Request) *request.Request
 }
 
 // init initializes the downloader with default options.
