@@ -94,7 +94,7 @@ Example usage:
 			}).Infof("running unik run")
 			instance, err := client.UnikClient(host).Instances().Run(instanceName, imageName, mountPointsToVols, env, instanceMemory, noCleanup, debugMode)
 			if err != nil {
-				return errors.New(fmt.Sprintf("running image failed: %v", err), nil)
+				return errors.New("running image failed: %v", err)
 			}
 			printInstances(instance)
 			if debugMode {
