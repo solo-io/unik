@@ -41,8 +41,8 @@ public class Wrapper {
                     System.getProperties().put("port.http.nonssl", port);
                     System.out.printf("using custom port %s\n", port);
                 } else {
-                    System.getProperties().put("port.http.nonssl", "8080");
-                    System.out.printf("using default port %s\n", "8080");
+                    System.getProperties().put("port.http.nonssl", "8081");
+                    System.out.printf("using default port %s\n", "8081");
                 }
                 Class<?> klass = Thread.currentThread().getContextClassLoader().loadClass("org.apache.catalina.startup.Bootstrap");
                 Method main = klass.getMethod("main", String[].class);

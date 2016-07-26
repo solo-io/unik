@@ -64,7 +64,9 @@ Example usage:
 					if err != nil {
 						return err
 					}
-					fmt.Printf(line)
+					if line != "\n" {
+						fmt.Printf(line)
+					}
 				}
 			} else {
 				logrus.WithFields(logrus.Fields{"host": host, "instance": instanceName}).Info("getting instance logs")
