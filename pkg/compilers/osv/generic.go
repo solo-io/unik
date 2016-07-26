@@ -35,7 +35,7 @@ func compileRawImage(params types.CompileImageParams, useEc2Bootstrap bool) (str
 	container := unikutil.NewContainer("compilers-osv-java").WithVolume("/dev", "/dev").WithVolume(sourcesDir+"/", "/project_directory")
 	var args []string
 	if useEc2Bootstrap {
-		args = append(args, "-ec2", "true")
+		args = append(args, "-ec2")
 	}
 
 	args = append(args, "-artifactName", config.ArtifactFilename)
