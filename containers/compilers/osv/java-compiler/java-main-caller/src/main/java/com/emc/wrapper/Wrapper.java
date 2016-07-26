@@ -36,6 +36,14 @@ public class Wrapper {
                 System.getProperties().put("catalina.base", "/usr/tomcat");
                 System.getProperties().put("catalina.home", "/usr/tomcat");
                 System.getProperties().put("java.io.tmpdir", "/usr/tomcat/temp");
+                String port = System.getenv().get("PORT");
+                if (port != null) {
+                    System.getProperties().put("port.http.nonssl", port);
+                    System.out.printf("using custom port %s\n", port);
+                } else {
+                    System.getProperties().put("port.http.nonssl", "8080");
+                    System.out.printf("using default port %s\n", "8080");
+                }
                 Class<?> klass = Thread.currentThread().getContextClassLoader().loadClass("org.apache.catalina.startup.Bootstrap");
                 Method main = klass.getMethod("main", String[].class);
                 args = new String[1];

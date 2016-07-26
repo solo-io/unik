@@ -28,6 +28,7 @@ RUN rm -rf /jar-runner
 RUN cd / && git clone https://github.com/cloudius-systems/osv-apps
 RUN cd /osv-apps/tomcat && \
     make
+RUN cd /osv-apps/tomcat && sed -i -e 's/port="8081"/port="${port.http.nonssl}"/g' ROOTFS/usr/tomcat/conf/server.xml
 COPY Capstanfile-war /osv-apps/tomcat/Capstanfile
 RUN cd /osv-apps/tomcat && \
     capstan build unik-tomcat
