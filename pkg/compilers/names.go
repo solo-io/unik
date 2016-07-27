@@ -21,4 +21,6 @@ const (
 	OSV_JAVA_AWS = "osv-java-aws"
 	OSV_JAVA_VIRTUALBOX = "osv-java-virtualbox"
 	OSV_JAVA_VMAWRE = "osv-java-vmware"
+
+	INCLUDEOS_CPP_VIRTUALBOX = "includeos-cpp-virtualbox"
 )

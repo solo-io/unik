@@ -6,6 +6,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -191,6 +192,10 @@ func CreateVm(vmName, baseFolder string, memoryMb int, adapterName string, adapt
 		if _, err := vboxManage("storagectl", vmName, "--name", "SATA Controller", "--add", "sata", "--controller", "IntelAHCI"); err != nil {
 			return errors.New("adding sata storage controller", err)
 		}
+	case types.StorageDriver_IDE:
+		if _, err := vboxManage("storagectl", vmName, "--name", "IDE Controller", "--add", "ide", "--bootable", "on"); err != nil {
+			return errors.New("adding sata storage controller", err)
+		}
 	}
 	//NIC ORDER MATTERS
 	if _, err := vboxManage(nicArgs...); err != nil {
@@ -201,6 +206,9 @@ func CreateVm(vmName, baseFolder string, memoryMb int, adapterName string, adapt
 	}
 	if _, err := vboxManage("modifyvm", vmName, "--memory", fmt.Sprintf("%v", memoryMb)); err != nil {
 		return errors.New("setting nat networking on vm", err)
+	}
+	if _, err := vboxManage("modifyvm", vmName, "--uart1", "0x3F8", "4", "--uartmode1", "file", path.Join(baseFolder, vmName, "Logs", "serial.log")); err != nil {
+		return errors.New("setting serial", err)
 	}
 	return nil
 }
@@ -281,6 +289,8 @@ func AttachDisk(vmNameOrId, vmdkPath string, controllerPort int, storageDriver t
 		return attachDiskSCSI(vmNameOrId, vmdkPath, controllerPort)
 	case types.StorageDriver_SATA:
 		return attachDiskSATA(vmNameOrId, vmdkPath, controllerPort)
+	case types.StorageDriver_IDE:
+		return attachDiskIDE(vmNameOrId, vmdkPath, controllerPort)
 	}
 	return errors.New("unknown storage driver "+string(storageDriver), nil)
 }
@@ -297,6 +307,13 @@ func DetachDisk(vmNameOrId string, controllerPort int, storageDriver types.Stora
 
 func attachDiskSCSI(vmNameOrId, vmdkPath string, controllerPort int) error {
 	if _, err := vboxManage("storageattach", vmNameOrId, "--storagectl", "SCSI", "--port", fmt.Sprintf("%v", controllerPort), "--type", "hdd", "--medium", vmdkPath); err != nil {
+		return errors.New("attaching storage", err)
+	}
+	return nil
+}
+
+func attachDiskIDE(vmNameOrId, vmdkPath string, controllerPort int) error {
+	if _, err := vboxManage("storageattach", vmNameOrId, "--storagectl", "IDE Controller", "--port", fmt.Sprintf("%v", controllerPort), "--device", "0", "--type", "hdd", "--medium", vmdkPath); err != nil {
 		return errors.New("attaching storage", err)
 	}
 	return nil
