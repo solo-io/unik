@@ -520,11 +520,11 @@ func (d *UnikDaemon) addEndpoints() {
 				logFn := func() (string, error) {
 					return provider.GetInstanceLogs(instanceId)
 				}
-				err := streamOutput(logFn, output)
-				if err != nil {
+				if err := streamOutput(logFn, output); err != nil {
 					logrus.WithError(err).WithFields(logrus.Fields{
 						"instanceId": instanceId,
 					}).Warnf("streaming logs stopped")
+					return nil, http.StatusInternalServerError, err
 				}
 				return nil, 0, nil
 			}
@@ -856,7 +856,14 @@ func (d *UnikDaemon) addEndpoints() {
 	})
 }
 
-func streamOutput(outputFunc func() (string, error), w io.Writer) error {
+func streamOutput(outputFunc func() (string, error), w io.Writer) (err error) {
+	//give instance some time to start logs server
+	if err := util.Retry(30, time.Millisecond * 500, func() error {
+		_, err := outputFunc()
+		return err
+	}); err != nil {
+		return err
+	}
 	linesCounted := -1
 	for {
 		time.Sleep(100 * time.Millisecond)
