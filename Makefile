@@ -42,8 +42,9 @@ define remove_container
 	docker rmi -f projectunik/$(1):$(shell cat containers/versions.json  | jq '.["$(1)"]')
 endef
 
-all: pull ${SOURCES} binary
+all: pull ${SOURCES} binary submodules
 
+.PHONY: submodules
 .PHONY: pull
 .PHONY: containers
 .PHONY: rump-debugger-qemu
@@ -69,6 +70,9 @@ all: pull ${SOURCES} binary
 .PHONY: vsphere-client
 .PHONY: qemu-util
 .PHONY: utils
+
+submodules:
+	git submodule update --init --recursive
 
 #pull containers
 pull:
