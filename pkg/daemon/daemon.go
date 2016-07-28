@@ -15,6 +15,7 @@ import (
 	"github.com/docker/docker/pkg/ioutils"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
+	"github.com/emc-advanced-dev/unik/pkg/compilers/includeos"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/osv"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
 	"github.com/emc-advanced-dev/unik/pkg/config"
@@ -146,6 +147,8 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			CreateImage:   rump.CreateImageQemu,
 		},
 	}
+
+	_compilers[compilers.INCLUDEOS_CPP_VIRTUALBOX] = &includeos.IncludeosVirtualboxCompiler{}
 
 	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{

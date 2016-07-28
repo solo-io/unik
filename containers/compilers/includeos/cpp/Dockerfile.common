@@ -1,0 +1,9 @@
+FROM ubuntu:16.04
+MAINTAINER includeos.org
+RUN \
+  apt-get update && \
+  apt-get install -y bc git lsb-release sudo
+RUN useradd -m includeos && echo "includeos:includeos" | chpasswd && adduser includeos sudo
+RUN git clone https://github.com/hioa-cs/IncludeOS.git
+WORKDIR IncludeOS
+RUN /bin/bash install.sh
