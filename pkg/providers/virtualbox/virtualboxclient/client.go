@@ -194,7 +194,7 @@ func CreateVm(vmName, baseFolder string, memoryMb int, adapterName string, adapt
 		}
 	case types.StorageDriver_IDE:
 		if _, err := vboxManage("storagectl", vmName, "--name", "IDE Controller", "--add", "ide", "--bootable", "on"); err != nil {
-			return errors.New("adding sata storage controller", err)
+			return errors.New("adding ide storage controller", err)
 		}
 	}
 	//NIC ORDER MATTERS
