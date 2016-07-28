@@ -857,6 +857,12 @@ func (d *UnikDaemon) addEndpoints() {
 }
 
 func streamOutput(outputFunc func() (string, error), w io.Writer) (err error) {
+	defer func(){
+		if err != nil {
+			w.Write([]byte(err.Error()))
+		}
+	}()
+
 	//give instance some time to start logs server
 	if err := util.Retry(30, time.Millisecond * 500, func() error {
 		_, err := outputFunc()
