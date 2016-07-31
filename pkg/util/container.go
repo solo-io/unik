@@ -3,13 +3,14 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	"os/exec"
-	"github.com/pborman/uuid"
+
 	"github.com/Sirupsen/logrus"
-	"encoding/json"
-	"github.com/emc-advanced-dev/unik/containers"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/containers"
+	"github.com/pborman/uuid"
 )
 
 var containerVersions map[string]string
@@ -20,20 +21,20 @@ func InitContainers() error {
 		return errors.New("failed to get version data from containers/versions.json", err)
 	}
 	if err := json.Unmarshal(versionData, &containerVersions); err != nil {
-		return errors.New("failed to unmarshall version data "+ string(versionData), err)
+		return errors.New("failed to unmarshall version data "+string(versionData), err)
 	}
 	logrus.WithField("versions", containerVersions).Info("using container versions")
 	return nil
 }
 
 type Container struct {
-	env        map[string]string
-	privileged bool
-	volumes    map[string]string
-	interactive    bool
-	network    string
+	env           map[string]string
+	privileged    bool
+	volumes       map[string]string
+	interactive   bool
+	network       string
 	containerName string
-	name       string
+	name          string
 }
 
 func NewContainer(imageName string) *Container {
@@ -106,7 +107,7 @@ func (c *Container) CombinedOutput(arguments ...string) ([]byte, error) {
 	return c.BuildCmd(arguments...).CombinedOutput()
 }
 
-func (c* Container) Stop() error {
+func (c *Container) Stop() error {
 	return exec.Command("docker", "stop", c.containerName).Run()
 }
 
@@ -139,7 +140,11 @@ func (c *Container) BuildCmd(arguments ...string) *exec.Cmd {
 		logrus.Warnf("version for container %s not found, using version 'latest'", c.name)
 		containerVer = "latest"
 	}
-	args = append(args, "projectunik/"+c.name+":"+containerVer)
+
+	finalName := "projectunik/" + c.name + ":" + containerVer
+	logrus.Info("Starting container ", finalName)
+
+	args = append(args, finalName)
 	args = append(args, arguments...)
 
 	cmd := exec.Command("docker", args...)
