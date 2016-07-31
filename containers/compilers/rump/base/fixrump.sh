@@ -33,13 +33,20 @@ sed -i -e 's/RUMPPCIDEVS+=\tmiiphy/RUMPPCIDEVS+=  pci_scsi miiphy/' /opt/rumprun
 
 cp /tmp/patches/rumprun-bake.conf /opt/rumprun/app-tools/rumprun-bake.conf
 
-cp /tmp/patches/rump/rumprun.c   /opt/rumprun/lib/librumprun_base/rumprun.c
+
 cp /tmp/patches/rump/kern.ldscript   /opt/rumprun/platform/hw/arch/amd64/kern.ldscript
+else
+# platform is xen
+cp /tmp/patches/rump/minios-x86_64.lds /opt/rumprun/platform/xen/xen/arch/x86/minios-x86_64.lds
+
+fi
+
+
+# all platforms
+
+cp /tmp/patches/rump/rumprun.c   /opt/rumprun/lib/librumprun_base/rumprun.c
 cp /tmp/patches/rump/rumprun-bake.in   /opt/rumprun/app-tools/rumprun-bake.in
 
 
 ./build-rr.sh -d $DESTDIR -o ./obj $PLATFORM build -- $BUILDRUMP_EXTRA && \
 ./build-rr.sh -d $DESTDIR -o ./obj $PLATFORM install
-
-
-fi

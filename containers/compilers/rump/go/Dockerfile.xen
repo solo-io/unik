@@ -1,27 +1,30 @@
-FROM projectunik/compilers-rump-base-xen:1ae58a3b3be9328f
+FROM projectunik/compilers-rump-base-xen:b679f2ea93988c9b
 
-ENV GOROOT=/usr/local/go
-ENV GOPATH=$HOME/go
-ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+RUN curl https://storage.googleapis.com/golang/go1.6.3.linux-amd64.tar.gz | tar xz -C /usr/local && \
+    mv /usr/local/go /usr/local/go1.6 && ln -s /usr/local/go1.6 /usr/local/go && \
+    cd /tmp && git clone https://github.com/deferpanic/gorump && cd gorump && git checkout f1d676f985f8b337b58ba4b81cf808070798be9b
 
-RUN curl https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz | tar xz -C /usr/local && \
-    mv /usr/local/go /usr/local/go1.5 && ln -s /usr/local/go1.5 /usr/local/go && \
-    cd /tmp && git clone https://github.com/deferpanic/gorump
-
+# fix go needs to be re-visited if we use go > 1.5
 COPY fixgo.sh /tmp/
 
-RUN cd /tmp/gorump/go/src && \
+RUN cd /tmp/gorump/go1.5/src && \
     bash /tmp/fixgo.sh && \
-    GOROOT_BOOTSTRAP=/usr/local/go GOOS=rumprun GOARCH=amd64 ./make.bash && \
-    cd /tmp && mv gorump/go /usr/local/go1.5-patched && \
+    CGO_ENABLED=0 GOROOT_BOOTSTRAP=/usr/local/go GOOS=rumprun GOARCH=amd64 ./make.bash && \
+    cd /tmp && mv gorump/go1.5/ /usr/local/go-patched && \
     rm /usr/local/go  && \
-    ln -s /usr/local/go1.5-patched /usr/local/go
+    ln -s /usr/local/go-patched /usr/local/go
 
 RUN mkdir /tmp/build/
 
 COPY mainstub.c gomaincaller.go /tmp/build/
 
 ENV RUMP_BAKE=xen_pv
+
+
+ENV GOROOT=/usr/local/go
+ENV GOPATH=/opt/go
+ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+
 
 # RUN LIKE THIS: docker run --rm -e ROOT_PATH=root_package_path -v /path/to/code:/opt/code projectunik/compilers-rump-go-xen
 CMD set -x && \

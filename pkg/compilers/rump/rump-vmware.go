@@ -45,7 +45,7 @@ func createImageVmware(kernel string, args string, mntPoints, bakedEnv []string,
 	c.Blk = append(c.Blk, bootBlk)
 
 	for i, mntPoint := range mntPoints {
-		deviceMapped := fmt.Sprintf("sd1%c", 'a'+i)
+		deviceMapped := fmt.Sprintf("sd%ca", '1'+i)
 		blk := blk{
 			Source:     "dev",
 			Path:       "/dev/" + deviceMapped,
