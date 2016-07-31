@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-go-xen:711c71ecd7ac0124
+FROM projectunik/compilers-rump-go-xen:52211b6fb801a63d
 
 RUN apt-get update
 RUN apt-get install -y libsqlite3-dev libssl-dev
