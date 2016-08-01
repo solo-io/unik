@@ -10,4 +10,4 @@ echo "project root is ${PROJECT_ROOT}" && \
     TEST_VIRTUALBOX=1 \
     VBOX_ADAPTER_NAME=vboxnet1 \
     VBOX_ADAPTER_TYPE=host_only \
-    ginkgo -r -v
+    ginkgo -r -v $1 $2 $3
