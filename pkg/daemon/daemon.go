@@ -182,54 +182,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
 
-	_compilers[compilers.RUMP_PYTHON_AWS] = &rump.RumpScriptCompiler{
-		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage: "compilers-rump-python3-xen",
-			CreateImage: rump.CreateImageAwsAddStub,
-		},
-		BootstrapType: rump.BootstrapTypeEC2,
-		RunScriptArgs: "/bootpart/python-wrapper.py",
-		ScriptEnv: []string{
-			"PYTHONHOME=/bootpart/python",
-			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/",
-		},
-	}
-	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = &rump.RumpScriptCompiler{
-		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage: "compilers-rump-python3-hw",
-			CreateImage: rump.CreateImageVirtualBoxAddStub,
-		},
-		BootstrapType: rump.BootstrapTypeUDP,
-		RunScriptArgs: "/bootpart/python-wrapper.py",
-		ScriptEnv: []string{
-			"PYTHONHOME=/bootpart/python",
-			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/",
-		},
-	}
-	_compilers[compilers.RUMP_PYTHON_VMWARE] = &rump.RumpScriptCompiler{
-		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage: "compilers-rump-python3-hw",
-			CreateImage: rump.CreateImageVmwareAddStub,
-		},
-		BootstrapType: rump.BootstrapTypeUDP,
-		RunScriptArgs: "/bootpart/python-wrapper.py",
-		ScriptEnv: []string{
-			"PYTHONHOME=/bootpart/python",
-			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/",
-		},
-	}
-	_compilers[compilers.RUMP_PYTHON_QEMU] = &rump.RumpScriptCompiler{
-		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage: "compilers-rump-python3-hw-no-stub",
-			CreateImage: rump.CreateImageQemu,
-		},
-		BootstrapType: rump.BootstrapTypeUDP,
-		RunScriptArgs: "/bootpart/python-wrapper.py",
-		ScriptEnv: []string{
-			"PYTHONHOME=/bootpart/python",
-			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/",
-		},
-	}
+	_compilers[compilers.RUMP_PYTHON_AWS] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageAwsAddStub, rump.BootstrapTypeEC2)
+	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVirtualBoxAddStub, rump.BootstrapTypeUDP)
+	_compilers[compilers.RUMP_PYTHON_VMWARE] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVmwareAddStub, rump.BootstrapTypeUDP)
+	_compilers[compilers.RUMP_PYTHON_QEMU] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.BootstrapTypeUDP)
 
 	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{}
 	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{}
