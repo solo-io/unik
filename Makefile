@@ -42,11 +42,14 @@ define remove_container
 	docker rmi -f projectunik/$(1):$(shell cat containers/versions.json  | jq '.["$(1)"]')
 endef
 
-all: pull ${SOURCES} binary
+all: pull ${SOURCES} binary submodules
 
+.PHONY: submodules
 .PHONY: pull
 .PHONY: containers
 .PHONY: rump-debugger-qemu
+.PHONY: compilers-includeos-cpp-common
+.PHONY: compilers-includeos-cpp-hw
 .PHONY: compilers-rump-base-common
 .PHONY: compilers-rump-base-hw
 .PHONY: compilers-rump-base-xen
@@ -68,12 +71,16 @@ all: pull ${SOURCES} binary
 .PHONY: qemu-util
 .PHONY: utils
 
+submodules:
+	git submodule update --init --recursive
+
 #pull containers
 pull:
 	echo "Pullling containers from docker hub"
 	$(call pull_container,vsphere-client)
 	$(call pull_container,boot-creator)
 	$(call pull_container,qemu-util)
+	#$(call pull_container,compilers-includeos-cpp-hw)
 	$(call pull_container,compilers-osv-java)
 	$(call pull_container,compilers-rump-go-hw)
 	$(call pull_container,compilers-rump-go-hw-no-stub)
@@ -95,7 +102,8 @@ containers: compilers utils
 	echo "Built containers from source"
 
 #compilers
-compilers: compilers-rump-go-hw \
+compilers: compilers-includeos-cpp-hw \
+           compilers-rump-go-hw \
            compilers-rump-go-hw-no-stub \
            compilers-rump-go-xen \
            compilers-rump-nodejs-hw \
@@ -105,6 +113,12 @@ compilers: compilers-rump-go-hw \
            compilers-rump-python3-hw-no-stub \
            compilers-rump-python3-xen \
            compilers-osv-java
+
+compilers-includeos-cpp-common:
+	$(call build_container,compilers/includeos/cpp,$@,.common)
+
+compilers-includeos-cpp-hw: compilers-includeos-cpp-common
+	$(call build_container,compilers/includeos/cpp,$@,.hw)
 
 compilers-rump-base-common:
 	$(call build_container,compilers/rump/base,$@,.common)

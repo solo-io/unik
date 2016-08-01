@@ -67,3 +67,18 @@ func (r *RumpScriptCompiler) CompileRawImage(params types.CompileImageParams) (*
 
 	return r.CreateImage(resultFile, args, params.MntPoints, r.ScriptEnv, params.NoCleanup)
 }
+
+func NewRumpPythonCompiler(dockerImage string, createImage func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error), bootStrapType string) *RumpScriptCompiler {
+	return &RumpScriptCompiler{
+		RumCompilerBase: RumCompilerBase{
+			DockerImage: dockerImage,
+			CreateImage: createImage,
+		},
+		BootstrapType: bootStrapType,
+		RunScriptArgs: "/bootpart/python-wrapper.py",
+		ScriptEnv: []string{
+			"PYTHONHOME=/bootpart/python",
+			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/:/bootpart/bin/",
+		},
+	}
+}

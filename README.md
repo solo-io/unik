@@ -15,7 +15,7 @@ To stay up-to-date on UniK, follow us [@ProjectUnik](https://twitter.com/Project
 
 ### *Changelog*:
 
-Due to the frequency with which features and patches are applied to UniK, we have decided to list these changes by date an [unversioned changelog](docs/changelog.md).
+Due to the frequency with which features and patches are applied to UniK, we have decided to list these changes by date in our [unversioned changelog](docs/changelog.md).
 
 ---
 
@@ -34,7 +34,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
   - Compiling [Node.js](docs/compilers/rump.md#nodejs) Applications to Unikernels
   - Compiling [Go](docs/compilers/rump.md#golang) Applications to Unikernels
   - Compiling [Java](docs/compilers/osv.md#java) Applications to Unikernels
-  - Compiling [C/C++](docs/compilers/rump.md#cc) Applications to Unikernels
+  - Compiling [C/C++](docs/compilers/includeos.md) Applications to Unikernels
   - Compiling [Python3](docs/compilers/rump.md#python-3) Applications to Unikernels
 - **Developer Documentation**
   - Adding [compiler](docs/compilers/README.md) support
@@ -43,8 +43,9 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 ---
 
 ### Supported unikernel types:
-* **rump**: UniK supports compiling [C/C++](docs/compilers/rump.md#c++), [Node.js](docs/compilers/rump.md#nodejs) and [Go](docs/compilers/rump.md#golang) code into [rumprun](docs/compilers/rump.md) unikernels
+* **rump**: UniK supports compiling [Python](docs/compilers/rump.md#python-3), [Node.js](docs/compilers/rump.md#nodejs) and [Go](docs/compilers/rump.md#golang) code into [rumprun](docs/compilers/rump.md) unikernels
 * **OSv**: UniK supports compiling Java code into [OSv](http://osv.io/) unikernels
+* **IncludeOS**: UniK supports compiling C++ code into [IncludeOS](http://www.includeos.org/) unikernels.
 
 *We are looking for community help to add support for more unikernel types and languages.*
 
@@ -71,6 +72,6 @@ UniK is still experimental! APIs and compatibility are subject to change. We are
 
 ### Thanks
 
-**UniK** would not be possible without the valuable open-source work of projects in the unikernel community. We would like to extend a special thank-you to [rumpkernel](https://github.com/rumpkernel/), [deferpanic](https://github.com/deferpanic), and [cloudius systems](https://github.com/cloudius-systems).
+**UniK** would not be possible without the valuable open-source work of projects in the unikernel community. We would like to extend a special thank-you to [rumpkernel](https://github.com/rumpkernel/), [deferpanic](https://github.com/deferpanic), [cloudius systems](https://github.com/cloudius-systems), and [IncludeOS](http://www.includeos.org/).
 
 <!--(for contributors): push images: CONTAINERVER=0.1 for i in $(docker images | grep projectunik/ | awk '{print $1}'); do docker push $i:$CONTAINERVER; done-->

@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	example_cpp_includeos = "example-cpp-includeos"
 	example_go_httpd = "example_go_httpd"
 	example_godeps_go_app = "example_godeps_go_app"
 	example_go_nontrivial = "example-go-nontrivial"
@@ -79,8 +80,10 @@ var _ = Describe("Instances", func() {
 						example_go_nontrivial,
 					}
 					providers := []string{}
+					entries := []table.TableEntry{}
 					if len(cfg.Providers.Virtualbox) > 0 {
 						providers = append(providers, "virtualbox")
+						entries = append(entries, table.Entry(example_cpp_includeos, example_cpp_includeos, false, "virtualbox"))
 					}
 					if len(cfg.Providers.Aws) > 0 {
 						providers = append(providers, "aws")
@@ -88,7 +91,6 @@ var _ = Describe("Instances", func() {
 					if len(cfg.Providers.Vsphere) > 0 {
 						providers = append(providers, "vsphere")
 					}
-					entries := []table.TableEntry{}
 					if len(cfg.Providers.Qemu) > 0 {
 						entries = append(entries, table.Entry(example_go_httpd, example_go_httpd, true, "qemu"))
 						entries = append(entries, table.Entry(example_godeps_go_app, example_godeps_go_app, true, "qemu"))
@@ -104,6 +106,10 @@ var _ = Describe("Instances", func() {
 						table.DescribeTable("running images", func(imageName string, withVolume bool, provider string) {
 							compiler := ""
 							switch {
+							case strings.Contains(imageName, "includeos"):
+								logrus.Infof("found image type IncludeOS: %s", imageName)
+								compiler = fmt.Sprintf("includeos-cpp-%s", provider)
+								break
 							case strings.Contains(imageName, "go"):
 								logrus.Infof("found image type GO: %s", imageName)
 								compiler = fmt.Sprintf("rump-go-%s", provider)
