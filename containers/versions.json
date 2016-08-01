@@ -3,7 +3,7 @@
   "image-creator": "ce8bc7bf03c5da5c",
   "boot-creator": "3cf35a75988c907f",
   "qemu-util": "a73fcb7905a05552",
-  "compilers-osv-java": "d15b503cbff99eb8",
+  "compilers-osv-java": "656076bbf26131c0",
   "compilers-rump-go-xen": "52211b6fb801a63d",
   "compilers-rump-go-hw": "c73c279a63725c7e",
   "compilers-rump-go-hw-no-stub": "8b4a36d2939bc612",
