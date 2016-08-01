@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-base-common:d9756ca64b7f9a61
+FROM projectunik/compilers-rump-base-common:d16776a7c3dd168a
 
 ENV PLATFORM=xen
 ENV BUILDRUMP_EXTRA=

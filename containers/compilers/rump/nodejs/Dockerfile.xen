@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-base-xen:b679f2ea93988c9b
+FROM projectunik/compilers-rump-base-xen:e8117ef5dddcdabe
 
 RUN apt-get update
 RUN apt-get install -y python
