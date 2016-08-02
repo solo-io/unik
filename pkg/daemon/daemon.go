@@ -474,6 +474,7 @@ func (d *UnikDaemon) addEndpoints() {
 
 				deleteOnDisconnect := req.URL.Query().Get("delete")
 				if strings.ToLower(deleteOnDisconnect) == "true" {
+					logrus.Warnf("INSTANCE %v WILL BE TERMINTED ON CLIENT DISCONNECT!", instanceId)
 					defer provider.DeleteInstance(instanceId, true)
 				}
 
@@ -853,7 +854,7 @@ func streamOutput(outputFunc func() (string, error), w io.Writer) (err error) {
 
 				_, err = w.Write([]byte(logLines[linesCounted] + "\n"))
 				if err != nil {
-					return nil
+					return errors.New("writing to connection", err)
 				}
 			}
 		}
