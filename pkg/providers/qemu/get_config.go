@@ -12,6 +12,7 @@ func (p *QemuProvider) GetConfig() providers.ProviderConfig {
 			compilers.RUMP_GO_QEMU,
 			compilers.RUMP_NODEJS_QEMU,
 			compilers.RUMP_PYTHON_QEMU,
+			compilers.INCLUDEOS_CPP_QEMU,
 		},
 	}
 }

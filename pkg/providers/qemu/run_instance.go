@@ -49,24 +49,26 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 
 	volImagesInOrder, err := p.getVolumeImages(volumeIdInOrder)
 	if err != nil {
-		return nil, errors.New("cant get volumes", err)
+		return nil, errors.New("can't get volumes", err)
 	}
 
 	volArgs := volPathToQemuArgs(volImagesInOrder)
 
-	cmdlinedata, err := ioutil.ReadFile(getCmdlinePath(image.Name))
-	if err != nil {
-		return nil, errors.New("reading cmdline file", err)
-	}
-	cmdline := injectEnv(string(cmdlinedata), params.Env)
-	cmdline = strings.Replace(cmdline, ",", ",,", -1)
-
 	qemuArgs := []string{"-m", fmt.Sprintf("%v", params.InstanceMemory), "-net",
 		"nic,model=virtio,netdev=mynet0", "-netdev", "user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9",
-		"-device", "virtio-blk-pci,id=blk0,drive=hd0",
-		"-drive", fmt.Sprintf("file=%s,format=qcow2,if=none,id=hd0", getImagePath(image.Name)),
-		"-kernel", getKernelPath(image.Name),
-		"-append", cmdline,
+	}
+
+	cmdlinedata, err := ioutil.ReadFile(getCmdlinePath(image.Name))
+	if err != nil {
+		logrus.Debugf("cmdLine not found, assuming classic bootloader")
+		qemuArgs = append(qemuArgs, "-drive", fmt.Sprintf("file=%s,format=raw,if=ide", getImagePath(image.Name)))
+	} else {
+		cmdline := injectEnv(string(cmdlinedata), params.Env)
+		cmdline = strings.Replace(cmdline, ",", ",,", -1)
+		qemuArgs = append(qemuArgs, "-device", "virtio-blk-pci,id=blk0,drive=hd0")
+		qemuArgs = append(qemuArgs, "-drive", fmt.Sprintf("file=%s,format=qcow2,if=none,id=hd0", getImagePath(image.Name)))
+		qemuArgs = append(qemuArgs, "-kernel", getKernelPath(image.Name))
+		qemuArgs = append(qemuArgs, "-append", cmdline)
 	}
 
 	if params.DebugMode {
@@ -85,7 +87,7 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	util.LogCommand(cmd, true)
 
 	if err := cmd.Start(); err != nil {
-		return nil, errors.New("Can't start qemu - make sure it's in your path.", nil)
+		return nil, errors.New("can't start qemu - make sure it's in your path.", nil)
 	}
 
 	var instanceIp string

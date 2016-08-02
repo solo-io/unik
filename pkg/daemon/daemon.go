@@ -148,6 +148,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		},
 	}
 
+	_compilers[compilers.INCLUDEOS_CPP_QEMU] = &includeos.IncludeosQemuCompiler{}
 	_compilers[compilers.INCLUDEOS_CPP_VIRTUALBOX] = &includeos.IncludeosVirtualboxCompiler{}
 
 	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
