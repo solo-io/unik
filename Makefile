@@ -42,7 +42,7 @@ define remove_container
 	docker rmi -f projectunik/$(1):$(shell cat containers/versions.json  | jq '.["$(1)"]')
 endef
 
-all: pull ${SOURCES} binary submodules
+all: pull ${SOURCES} binary 
 
 .PHONY: submodules
 .PHONY: pull
@@ -223,7 +223,7 @@ endif
 #----
 
 # local build - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
-localbuild: instance-listener/bindata/instance_listener_data.go containers/version-data.go ${SOURCES}
+localbuild: instance-listener/bindata/instance_listener_data.go containers/version-data.go submodules ${SOURCES}
 	GOOS=${TARGET_OS} go build -v .
 
 containers/version-data.go: containers/versions.json
