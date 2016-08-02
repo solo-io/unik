@@ -94,6 +94,7 @@ var _ = Describe("Instances", func() {
 					if len(cfg.Providers.Qemu) > 0 {
 						entries = append(entries, table.Entry(example_go_httpd, example_go_httpd, true, "qemu"))
 						entries = append(entries, table.Entry(example_godeps_go_app, example_godeps_go_app, true, "qemu"))
+						entries = append(entries, table.Entry(example_cpp_includeos, example_cpp_includeos, false, "qemu"))
 					}
 					for _, imageName := range imageNames {
 						for _, provider := range providers {
