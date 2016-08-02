@@ -46,11 +46,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 ### Supported unikernel types:
 * **rump**: UniK supports compiling [Python](docs/compilers/rump.md#python-3), [Node.js](docs/compilers/rump.md#nodejs) and [Go](docs/compilers/rump.md#golang) code into [rumprun](docs/compilers/rump.md) unikernels
 * **OSv**: UniK supports compiling Java code into [OSv](http://osv.io/) unikernels
-<<<<<<< HEAD
-* **IncludeOS**: UniK supports compiling C++ code into [IncludeOS](http://www.includeos.org/) unikernels.
-=======
 * **IncludeOS**: UniK supports compiling C++ code into [IncludeOS](https://github.com/hioa-cs/IncludeOS) unikernels
->>>>>>> d6f1f391b99aaf0bfa6e52363b0e063640522887
 
 *We are looking for community help to add support for more unikernel types and languages.*
 
