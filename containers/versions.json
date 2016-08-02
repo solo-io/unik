@@ -11,6 +11,8 @@
   "compilers-rump-python3-xen": "1995cd437e302d45",
   "compilers-rump-base-xen": "e8117ef5dddcdabe",
   "compilers-rump-base-hw": "d6f5c541f38f74bd",
+  "compilers-includeos-cpp-common": "df9c830467f8b120",
+  "compilers-includeos-cpp-hw": "7f19d78debeb0cc1",
   "rump-debugger-qemu": "49f1796b79f46203",
   "compilers-rump-base-common": "d16776a7c3dd168a",
   "image-creator": "fc2512fd8b56ad35",
