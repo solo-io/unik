@@ -33,6 +33,7 @@ import (
 	"runtime"
 	"os/exec"
 	"github.com/emc-advanced-dev/unik/pkg/util"
+	"sort"
 )
 
 type UnikDaemon struct {
@@ -791,27 +792,29 @@ func (d *UnikDaemon) addEndpoints() {
 	d.server.Get("/available_compilers", func(res http.ResponseWriter, req *http.Request) {
 		handle(res, req, func() (interface{}, int, error) {
 			logrus.Debugf("listing available compilers")
-			availableCompilers := []string{}
+			availableCompilers := sort.StringSlice{}
 			for compilerName := range d.compilers {
 				availableCompilers = append(availableCompilers, compilerName)
 			}
+			availableCompilers.Sort()
 			logrus.WithFields(logrus.Fields{
 				"compilers": availableCompilers,
 			}).Infof("compilers")
-			return availableCompilers, http.StatusOK, nil
+			return []string(availableCompilers), http.StatusOK, nil
 		})
 	})
 	d.server.Get("/available_providers", func(res http.ResponseWriter, req *http.Request) {
 		handle(res, req, func() (interface{}, int, error) {
 			logrus.Debugf("listing available providers")
-			availableProviders := []string{}
+			availableProviders := sort.StringSlice{}
 			for compilerName := range d.providers {
 				availableProviders = append(availableProviders, compilerName)
 			}
+			availableProviders.Sort()
 			logrus.WithFields(logrus.Fields{
 				"providers": availableProviders,
 			}).Infof("providers")
-			return availableProviders, http.StatusOK, nil
+			return []string(availableProviders), http.StatusOK, nil
 		})
 	})
 }
