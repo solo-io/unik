@@ -1,7 +1,14 @@
 package photon
 
-import "github.com/emc-advanced-dev/pkg/errors"
+import (
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+)
 
 func (p *PhotonProvider) GetInstanceLogs(id string) (string, error) {
-	return "", errors.New("not supported", nil)
+	instance, err := p.GetInstance(id)
+	if err != nil {
+		return "", errors.New("retrieving instance "+id, err)
+	}
+	return common.GetInstanceLogs(instance)
 }
