@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -x
 
 curl -sSL https://get.docker.com/ | sh
 sudo usermod -aG docker $USER
@@ -11,6 +12,9 @@ sudo apt-get install -y git curl jq make golang virtualbox
 echo 'export GOPATH=${HOME}/go' >> ${HOME}/.bashrc
 echo 'export PATH=${PATH}:${HOME}/go/bin' >> ${HOME}/.bashrc
 source ${HOME}/.bashrc
+
+export GOPATH=${HOME}/go
+export PATH=${PATH}:${HOME}/go/bin
 
 mkdir -p $GOPATH/src/github.com/emc-advanced-dev/
 go get -u github.com/jteeuwen/go-bindata/...
