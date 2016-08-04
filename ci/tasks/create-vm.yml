@@ -1,0 +1,17 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source: {repository: projectunik/unik-ci-image}
+inputs:
+  - name: unik-source
+run:
+  path: unik-source/ci/tasks/create-vm.sh
+params:
+  VSPHERE_HOST: ""
+  COMPUTE_RESOURCE_HOST: ""
+  RESOURCE_POOL_NAME: ""
+  VSPHERE_TEMPLATE_NAME: ""
+  VM_NAME: ""
+  VSPHERE_USER: ""
+  VSPHERE_PASSWORD: ""

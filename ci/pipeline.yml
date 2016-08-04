@@ -1,0 +1,48 @@
+---
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
+
+resources:
+  - name: failure-alert
+    type: slack-notification
+    source:
+      url: {{concourse-job-failure-notifications-slack-webhook-url}}
+  - name: unik-source
+    type: git
+    source:
+      uri: https://github.com/emc-advanced-dev/unik
+      branch: ci
+
+groups:
+- name: unik
+  jobs:
+    - create-unik-test-server
+#    - aws-integration
+#    - qemu-integration
+#    - vsphere-integration
+#    - virtualbox-integration
+
+jobs:
+- name: create-unik-test-server
+  plan:
+  - get: unik-source
+    trigger: true
+  - task: create-vm
+    file: unik-source/ci/tasks/create-vm.yml
+    params:
+      VSPHERE_HOST: {{VSPHERE_HOST}}
+      COMPUTE_RESOURCE_HOST: {{COMPUTE_RESOURCE_HOST}}
+      RESOURCE_POOL_NAME: {{RESOURCE_POOL_NAME}}
+      VSPHERE_TEMPLATE_NAME: {{VSPHERE_TEMPLATE_NAME}}
+      VM_NAME: {{VM_NAME}}
+      VSPHERE_USER: {{VSPHERE_USER}}
+      VSPHERE_PASSWORD: {{VSPHERE_PASSWORD}}
+  on_failure:
+    put: failure-alert
+    params:
+      text: "job create-unik-test-server failed"
+      icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
