@@ -1,6 +1,8 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "vsphere-unik-test-box"
 
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+
   config.vm.provider :vsphere do |vsphere|
     # The vSphere host we're going to connect to
     vsphere.host = ENV["VSPHERE_HOST"]

@@ -6,7 +6,7 @@ curl -sSL https://get.docker.com/ | sh
 sudo usermod -aG docker $USER
 sudo add-apt-repository ppa:ubuntu-lxc/lxd-stable
 sudo apt-get update
-sudo apt-get -y git curl jq make golang virtualbox
+sudo apt-get install -y git curl jq make golang virtualbox
 
 echo 'export GOPATH=${HOME}/go' >> ${HOME}/.bashrc
 echo 'export PATH=${PATH}:${HOME}/go/bin' >> ${HOME}/.bashrc
