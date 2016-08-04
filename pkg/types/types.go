@@ -33,7 +33,6 @@ type Image struct {
 	Created          time.Time      `json:"Created"`
 	StageSpec        StageSpec      `json:"StageSpec"`
 	RunSpec          RunSpec        `json:"RunSpec"`
-	InfrastructureId string         `json:"InfrastructureId"`
 }
 
 // TODO: why not use the normal go by-value copy?
@@ -43,7 +42,6 @@ func (image *Image) Copy() *Image {
 		Name:             image.Name,
 		SizeMb:           image.SizeMb,
 		Infrastructure:   image.Infrastructure,
-		InfrastructureId: image.InfrastructureId,
 		Created:          image.Created,
 		StageSpec:        image.StageSpec,
 		RunSpec:          image.RunSpec,

@@ -91,7 +91,7 @@ func (p *PhotonProvider) RunInstance(params types.RunInstanceParams) (_ *types.I
 
 	vmspec := &photon.VmCreateSpec{
 		Flavor:        vmflavor.Name,
-		SourceImageID: image.InfrastructureId,
+		SourceImageID: image.Id,
 		Name:          params.Name,
 		Affinities:    nil,
 		AttachedDisks: []photon.AttachedDisk{disk},

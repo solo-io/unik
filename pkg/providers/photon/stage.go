@@ -85,13 +85,12 @@ func (p *PhotonProvider) Stage(params types.StageImageParams) (_ *types.Image, e
 
 	// upload images
 	image := &types.Image{
-		Id:               params.Name,
+		Id:               imgId,
 		Name:             params.Name,
 		StageSpec:        params.RawImage.StageSpec,
 		RunSpec:          params.RawImage.RunSpec,
 		SizeMb:           sizeMb,
 		Infrastructure:   types.Infrastructure_PHOTON,
-		InfrastructureId: imgId,
 		Created:          time.Now(),
 	}
 
