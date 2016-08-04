@@ -246,7 +246,7 @@ endif
 	@echo "Install finished! UniK binary can be found at $(shell pwd)/_build/unik"
 #----
 
-# local build - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
+#local build - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
 localbuild: instance-listener/bindata/instance_listener_data.go containers/version-data.go submodules ${SOURCES}
 	GOOS=${TARGET_OS} go build -v .
 
@@ -255,6 +255,19 @@ containers/version-data.go: containers/versions.json
 
 instance-listener/bindata/instance_listener_data.go: instance-listener/main.go
 	go-bindata -pkg bindata -o instance-listener/bindata/instance_listener_data.go --ignore=instance-listener/bindata/ instance-listener/...
+
+#-----
+
+#ci/test (dev only)
+
+.PHONY: ci
+.PHONY: unik-ci-image
+
+ci: unik-ci-image
+
+unik-ci-image:
+	cd ci/containers/unik-ci-image/ && docker build -t projectunik/$@ -f Dockerfile .
+#----
 
 #clean up
 .PHONY: uninstall remove-containers clean

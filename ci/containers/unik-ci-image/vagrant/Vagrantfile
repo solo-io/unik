@@ -1,0 +1,31 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "vsphere-unik-test-box"
+
+  config.vm.provider :vsphere do |vsphere|
+    # The vSphere host we're going to connect to
+    vsphere.host = ENV["VSPHERE_HOST"]
+
+   # The ESX host for the new VM
+    vsphere.compute_resource_name = ENV["COMPUTE_RESOURCE_HOST"]
+
+    # The resource pool for the new VM
+    vsphere.resource_pool_name = ENV["RESOURCE_POOL_NAME"]
+
+    # The template we're going to clone
+    vsphere.template_name = ENV["VSPHERE_TEMPLATE_NAME"]
+
+    # The name of the new machine
+    vsphere.name = ENV["VM_NAME"]
+
+    # vSphere login
+    vsphere.user = ENV["VSPHERE_USER"]
+
+    # vSphere password
+    vsphere.password = ENV["VSPHERE_PASSWORD"]
+
+    # If you don't have SSL configured correctly, set this to 'true'
+    vsphere.insecure = true
+  end
+
+  config.vm.provision "shell", path: "install/provision.sh"
+end
