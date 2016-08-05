@@ -1,0 +1,10 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source: {repository: projectunik/unik-ci-image}
+inputs:
+  - name: unik-source
+  - name: vagrant-out
+run:
+  path: unik-source/ci/tasks/virtualbox-integration.sh

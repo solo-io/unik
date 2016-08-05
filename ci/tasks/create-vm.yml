@@ -5,6 +5,8 @@ image_resource:
   source: {repository: projectunik/unik-ci-image}
 inputs:
   - name: unik-source
+outputs:
+  - name: vagrant-out
 run:
   path: unik-source/ci/tasks/create-vm.sh
 params:

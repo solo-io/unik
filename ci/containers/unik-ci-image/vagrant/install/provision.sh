@@ -18,11 +18,15 @@ export PATH=${PATH}:${HOME}/go/bin
 
 mkdir -p $GOPATH/src/github.com/emc-advanced-dev/
 go get -u github.com/jteeuwen/go-bindata/...
+go get -u github.com/onsi/ginkgo/ginkgo
+go get -u github.com/onsi/gomega
 
 cd $GOPATH/src/github.com/emc-advanced-dev/
 git clone https://github.com/emc-advanced-dev/unik
+# TODO: make containers. will make a much longer build, but iwll test changes to code that affects containers
+# cd unik && make containers && make localbuild
 
-
+set +e
 #set up vbox networks
 NET=$(VBoxManage list hostonlyifs | grep vboxnet0)
 if [ -z "$NET" ]
@@ -35,5 +39,7 @@ if [ -z "$NAT" ]
 then
     VBoxManage natnetwork add --netname nat --network eth0
 fi
+
+set -e
 
 #TODO: start natnetwork

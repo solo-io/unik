@@ -11,7 +11,11 @@ set -e
 : ${VSPHERE_PASSWORD:?}
 
 export VM_NAME=${VM_NAME}${RANDOM}
+VAGRANT_OUT=${PWD}/vagrant-out/
 
 echo using ${VM_NAME}
 
 cd /vagrant && vagrant up
+
+mkdir -p ${VAGRANT_OUT}
+cp -r /vagrant/* ${VAGRANT_OUT}/
