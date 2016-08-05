@@ -133,6 +133,8 @@ vif = [ 'bridge=xenbr0,script=metadata-fake,mac=00:16:3e:58:88:57' ]
 disk = [ '/home/vagrant/boot-vol.img,raw,sda1,rw' ]
 ```
 
+Save this as aws-test.conf
+
 Notes:
 - memory and vcpus should match the instance you are emulating
 - disk should point the image built by unik. use "--no-cleanup" in unik so it would not delete it after it's uploaded to AWS
@@ -141,7 +143,7 @@ Notes:
 # Run! 
 
 ```
-sudo  xl create -c ./xlxlxlxlxl
+sudo  xl create -c ./aws-test.conf
 ```
 
 cntrl+] to exit console

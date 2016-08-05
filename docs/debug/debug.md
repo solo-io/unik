@@ -1,6 +1,21 @@
-Debugging tips
+# Debugging status
 
-You can use QEMU to source level debugging. Use different qemu configurations to simulate different hypervisors. this is usefull to test that various drivers work as expected.
+## VMware
+VMware offers a gdb stub that you can use for live gdb debugging, but it is hard to debug on boot, as there is no way to wait for the debugger.
+
+## VirtuaBox
+The have their own debugger. I did not find a working gdb stub for 64 bit guests. I only use it when i have to.
+
+## QEMU
+Best debugging support, gdb stub and suspends boot.
+
+# Debugging tips
+
+In general whenever I had a problem, I tried to emulate the conditions of the problem in Qemu, as it offers the best debugging experience: 
+- You can use QEMU to source level debugging. 
+- Can use different qemu configurations to simulate different hypervisors (this is usefull to test that various drivers work as expected).
+- Can wait for debugger to debug boot problems
+- Easy command line workflow
 
 # To run QEMU similar to VirtualBox:
 
