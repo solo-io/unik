@@ -135,6 +135,9 @@ compilers-rump-go-hw: compilers-rump-base-hw
 rump-debugger-qemu: compilers-rump-base-hw
 	$(call build_container,debuggers/rump/base,$@,.hw)
 
+rump-debugger-xen: compilers-rump-base-xen
+	$(call build_container,debuggers/rump/base,$@,.xen)
+
 compilers-rump-go-hw-no-stub: compilers-rump-base-hw
 	$(call build_container,compilers/rump/go,$@,.hw.no-stub)
 	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-stub .
