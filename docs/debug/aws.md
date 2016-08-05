@@ -1,4 +1,10 @@
 Debugging UniK Amazon images
+
+When debugging unikernels, the main tool amazon offers us is "Get System logs". This basically limits you to "printf" debugging style.
+
+To use a real debugger, you can build your own xen hypervisor, that will run the same unik images that were built for amazon. 
+You can then use gdb to debug your code.
+
 # Get Xen
 
 I used this vagrant box: https://github.com/englishm/vagrant-xen
@@ -137,8 +143,18 @@ Save this as aws-test.conf
 
 Notes:
 - memory and vcpus should match the instance you are emulating
-- disk should point the image built by unik. use "--no-cleanup" in unik so it would not delete it after it's uploaded to AWS
+- disk should point the image built by unik. use "--no-cleanup" in `unik build` so it would not delete it after it's uploaded to AWS. 
+You will see new file and a folder created in the unik tmp folder. For example:
+```
+~/W/g/s/g/e/unik ❯❯❯ ls -tlr  ~/.unik/tmp/
+total 319488
+...
+drwx------  7 kohavy  720748206       238 Aug  3 16:47 bootable-image-directory.411462683
+-rw-r--r--  1 kohavy  720748206  54525952 Aug  3 16:47 boot-creator-result.img.940436670
+```
+Copy the file (in our example, `boot-creator-result.img.940436670`) to the vagrant machine. note the folder as you will need it for later.
 - kernel is the path to pv-grub built previously.
+- leave extra param as it is (it describes how unik layouts the disk image)
 
 # Run! 
 
@@ -146,14 +162,15 @@ Notes:
 sudo  xl create -c ./aws-test.conf
 ```
 
-cntrl+] to exit console
+`ctrl+]` to exit console
 
+You can delete the vm when you are done:
 ```
 sudo xl destroy aws-test
 ```
 
 # Debug! 
-once bug reproduces - get dom id:
+After starting your vm (with `xl create`), to attached with a debugger,  get dom id:
 
 ```
 sudo  xl list
