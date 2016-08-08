@@ -26,7 +26,7 @@ type Provider interface {
 }
 ```
 
-**Providers** handle the long-term management of UniK's principle object types:
+**Providers** handle the long-term management of UniK's principal object types:
 * Images
 * Instances
 * Volumes

@@ -89,7 +89,7 @@ Ensure that each of the following are installed
   ```
 
 2. Try running this code with `go run http.go`. Visit [http://localhost:8080/](http://localhost:8080/) to see that the server is running.
-3. We need to create a dummy `Godeps` file. This is necessary to tell the Go compiler how Go projects and their dependencies are structured. Fortunately, with this example, our project has no dependencies, and we can just fill out a simple `Godeps` file without installing [`godep`](https://github.com/tools/godep). Note: for Go projects with imported dependencies, and nested packages, you will need to install Godeps and run `GO15VENDOREXPERIMENT=1 godep save ./...` in your project. see [Compiling Go Apps with UniK](compilers/rump.md#golang) for more information.
+3. We need to create a dummy `Godeps` file. This is necessary to tell the Go compiler how Go projects and their dependencies are structured. Fortunately, with this example, our project has no dependencies, and we can just fill out a simple `Godeps` file without installing [`godep`](https://github.com/tools/godep). Note: for Go projects with imported dependencies, and nested packages, you will need to install Godeps and run `GO15VENDOREXPERIMENT=1 godep save ./...` in your project. See [Compiling Go Apps with UniK](compilers/rump.md#golang) for more information.
   * To create the dummy Godeps file, create a folder named `Godeps` in the same directory as `httpd.go`. Inside, create a file named `Godeps.json` and paste the following inside:
   ```json
   {
@@ -119,7 +119,7 @@ Ensure that each of the following are installed
   ```
   unik build --name myImage --path ./ --compiler rump-go-virtualbox --provider virtualbox
   ```
-  this command will instruct UniK to compile the sources found in the working directory (`./`) using the `rump-go-virtualbox` compiler, and stage the image for running the `virtualbox` provider.
+  This command will instruct UniK to compile the sources found in the working directory (`./`) using the `rump-go-virtualbox` compiler, and stage the image for running the `virtualbox` provider.
 2. You can watch the output of the `build` command in the terminal window running the daemon.
 3. When `build` finishes, the resulting disk image will reside at `$HOME/.unik/virtualbox/images/myImage/boot.vmdk`
 4. Run an instance of this image with

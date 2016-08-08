@@ -89,7 +89,7 @@ Ensure that each of the following are installed
 
   Try running this code with `node server.js`. Visit [http://localhost:8080/](http://localhost:8080/) to see that the server is running.
 
-    *Note:* for Node.js projects with imported dependencies, you will need to install npm and run `npm install <package_name>` for each package yuor application requires.See [Compiling Node.js Apps with UniK](compilers/rump.md#nodejs) for more information.
+    *Note:* for Node.js projects with imported dependencies, you will need to install npm and run `npm install <package_name>` for each package your application requires. See [Compiling Node.js Apps with UniK](compilers/rump.md#nodejs) for more information.
 
 5. We need to create a manifest file to tell UniK the name of the file which contains the entrypoint to our application. In this case, it's just `server.js`.
 

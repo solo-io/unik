@@ -77,7 +77,7 @@ In the Virtualbox stub:
 #### AWS
 AWS provider in UniK assumes use of default AWS credential chain. This means either [setting AWS access key id and secret key in your environment](http://docs.aws.amazon.com/aws-sdk-php/v2/guide/credentials.html#environment-credentials), or using the default [AWS configuration file](http://docs.aws.amazon.com/cli/latest/topic/config-vars.html).
 
-Region and zone should be speified like so in the AWS stub:
+Region and zone should be specified like so in the AWS stub:
 ```yaml
   aws:
     - name: any-name-you-want

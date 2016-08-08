@@ -14,7 +14,7 @@ import (
 )
 
 func AwsStateFile() string {
-	return filepath.Join(config.Internal.UnikHome, "aws/state.json")
+	return filepath.Join(config.Internal.UnikHome, "aws", "state.json")
 }
 
 type AwsProvider struct {

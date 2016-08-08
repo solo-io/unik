@@ -242,7 +242,7 @@ unik start --instance INSTANCE_NAME
 
 #### Retrieve or Follow Instance Logs
 ```
-unik start --instance INSTANCE_NAME
+unik logs --instance INSTANCE_NAME
 ```
 Retrieves logs from a running unikernel instance.
 
@@ -256,7 +256,7 @@ a persistent http connection managed instances.
 
 Example usage:
 ```
-unik logs --instancce myInstance
+unik logs --instance myInstance
 ```
 * will return captured stdout from myInstance since boot time
 
@@ -271,13 +271,13 @@ unik logs --instance myInstance --follow --delete
 ##### Create a Volume
 
 ```
-
+unik create-volume
 ```
-reate a data volume which can be attached to and detached from
+Creates a data volume which can be attached to and detached from
 unik-managed instances.
 
 Volumes can be created from a directory, which will copy the contents
-of the directory onto the voume. Empty volume can also be created.
+of the directory onto the volume. Empty volume can also be created.
 
 Volumes will persist after instances are deleted, allowing application data
 to be persisted beyond the lifecycle of individual instances.
@@ -287,7 +287,7 @@ not necessary. UniK will automatically size the volume to fit the data provided.
 A larger volume can be requested with the --size flag.
 
 If no data directory is provided, --size is a required parameter to specify the
-desired size for the empty volume to be createad.
+desired size for the empty volume to be created.
 
 Volumes are created for a specific provider, specified with the --provider flag.
 Volumes can only be attached to instances of the same provider type.
