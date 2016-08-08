@@ -19,4 +19,8 @@ providers:
   qemu:
     - name: my-qemu
       no_graphic: false
+  photon:
+    - name: my-photon
+    - photon_url: http://172.16.78.200
+    - project_id: 4bc04cea-2698-4e15-973f-a52b65151ae2
 version: 0.0.0
