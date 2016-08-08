@@ -49,7 +49,7 @@ jobs:
       icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
 - name: virtualbox-integration
   plan:
-  - get: unik-source
+  - get: vagrant-out
     passed: [create-unik-vm]
     trigger: true
   - task: virtualbox-integration
