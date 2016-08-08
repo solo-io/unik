@@ -11,7 +11,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func CompileInstanceListener(sourceDir, instanceListenerPrefix, dockerImage string, createImageFunc func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error)) (*types.RawImage, error) {
+func CompileInstanceListener(sourceDir, instanceListenerPrefix, dockerImage string, createImageFunc func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error), enablePersistence bool) (*types.RawImage, error) {
 	mainData, err := bindata.Asset("instance-listener/main.go")
 	if err != nil {
 		return nil, errors.New("reading binary data of instance listener main", err)
@@ -30,11 +30,20 @@ func CompileInstanceListener(sourceDir, instanceListenerPrefix, dockerImage stri
 		return nil, errors.New("copying contents of instance listener Godeps.json", err)
 	}
 
+	args := "-prefix " + instanceListenerPrefix
+	if enablePersistence {
+		args = args + " -enablePersistence"
+	}
+
 	params := types.CompileImageParams{
 		SourcesDir: sourceDir,
-		Args:       "-prefix " + instanceListenerPrefix,
-		MntPoints:  []string{"/data"},
+		Args:       args,
 	}
+
+	if enablePersistence {
+		params.MntPoints = []string{"/data"}
+	}
+
 	rumpGoCompiler := &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: dockerImage,

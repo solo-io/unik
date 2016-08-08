@@ -31,6 +31,7 @@ func main() {
 		log.Printf("arg %v: %s", i, arg)
 	}
 	dataPrefix := flag.String("prefix", "unik_", "prefix for data sent via udp (for identification purposes")
+	enablePersistence := flag.Bool("enablePersistence", true, "assume a persistent volume is mounted to /data")
 	flag.Parse()
 	for i, arg := range flag.Args() {
 
@@ -43,6 +44,9 @@ func main() {
 	if *dataPrefix == "" {
 		log.Printf("ERROR: -prefix cannot be \"\"")
 		return
+	}
+	if !*enablePersistence {
+		os.MkdirAll("/data", 0755)
 	}
 	ipMapLock := sync.RWMutex{}
 	envMapLock := sync.RWMutex{}
