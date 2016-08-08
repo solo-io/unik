@@ -31,3 +31,4 @@ test/scripts/build.out
 unik
 __pycache__/
 containers/container-versions.go
+_debug
