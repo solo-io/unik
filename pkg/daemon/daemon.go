@@ -129,11 +129,11 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		logrus.Infof("Bootstrapping provider %s with config %v", photon_provider, photonConfig)
 		p, err := photon.NewPhotonProvider(photonConfig)
 		if err != nil {
-			return nil, errors.New("initializing qemu provider", err)
+			return nil, errors.New("initializing photon provider", err)
 		}
 		s, err := state.BasicStateFromFile(photon.PhotonStateFile())
 		if err != nil {
-			logrus.WithError(err).Warnf("failed to read qemu state file at %s, creating blank qemu state", photon.PhotonStateFile())
+			logrus.WithError(err).Warnf("failed to read photon state file at %s, creating blank photon state", photon.PhotonStateFile())
 			s = state.NewBasicState(photon.PhotonStateFile())
 		}
 		p = p.WithState(s)
