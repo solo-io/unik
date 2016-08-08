@@ -10,6 +10,7 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/containers"
 	"github.com/pborman/uuid"
+	"strings"
 )
 
 var containerVersions map[string]string
@@ -140,7 +141,10 @@ func (c *Container) BuildCmd(arguments ...string) *exec.Cmd {
 		containerVer = "latest"
 	}
 
-	finalName := "projectunik/" + c.name + ":" + containerVer
+	finalName := c.name + ":" + containerVer
+	if !strings.Contains(finalName, "/") { /*projectunik container*/
+		finalName = "projectunik/" + finalName
+	}
 	logrus.Info("Starting container ", finalName)
 
 	args = append(args, finalName)
