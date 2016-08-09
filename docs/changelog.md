@@ -4,7 +4,7 @@
 * Update version of Rump in all Rump containers. Fixes I/O panic running Gorump on AWS
 
 ## Thu, Jul 28 2016
-* UniK now supports running [IncludeOS](http://www.includeos.org/) Unikernels (for C++). Currently only the Virtualbox provider can run IncludeOS unikernels.
+* UniK now supports running [IncludeOS](http://www.includeos.org/) Unikernels (for C++). Currently only the Virtualbox and QEMU providers can run IncludeOS unikernels.
 
 ## Fri, Jun 17 2016
 * UniK's Containers are now (automatically) versioned by the first 16 characters of their SHA256 checksum.
