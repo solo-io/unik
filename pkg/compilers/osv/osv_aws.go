@@ -6,12 +6,13 @@ import (
 )
 
 type OsvAwsCompiler struct {
+	OSvCompilerBase
 }
 
 const OSV_AWS_MEMORY = 1024
 
 func (osvCompiler *OsvAwsCompiler) CompileRawImage(params types.CompileImageParams) (_ *types.RawImage, err error) {
-	resultFile, err := compileRawImage(params, true)
+	resultFile, err := osvCompiler.CreateImage(params, true)
 	if err != nil {
 		return nil, errors.New("failed to compile raw osv image", err)
 	}

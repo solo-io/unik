@@ -189,9 +189,21 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_PYTHON_VMWARE] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVmwareAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_QEMU] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.BootstrapTypeUDP)
 
-	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{}
-	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{}
-	_compilers[compilers.OSV_JAVA_VMAWRE] = &osv.OsvVmwareCompiler{}
+	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{
+		OSvCompilerBase: osv.OSvCompilerBase{
+			CreateImage: osv.CreateImageJava,
+		},
+	}
+	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{
+		OSvCompilerBase: osv.OSvCompilerBase{
+			CreateImage: osv.CreateImageJava,
+		},
+	}
+	_compilers[compilers.OSV_JAVA_VMAWRE] = &osv.OsvVmwareCompiler{
+		OSvCompilerBase: osv.OSvCompilerBase{
+			CreateImage: osv.CreateImageJava,
+		},
+	}
 
 	d := &UnikDaemon{
 		server:    lxmartini.QuietMartini(),
