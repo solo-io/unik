@@ -38,38 +38,7 @@ var _ = Describe("Instances", func() {
 					c.Volumes().Delete(volume.Id, true)
 				}
 			})
-			Context("no instances exist", func() {
-				if len(cfg.Providers.Virtualbox) > 0 && len(cfg.Providers.Vsphere) < 1 ||
-					len(cfg.Providers.Virtualbox) < 1 && len(cfg.Providers.Vsphere) > 0 {
-					Context("on virtualbox or vsphere provider", func() {
-						It("returns a list with only the Instance Listener VM", func() {
-							instances, err := c.Instances().All()
-							Expect(err).NotTo(HaveOccurred())
-							Expect(instances).To(HaveLen(1))
-							Expect(instances[0].Name).To(ContainSubstring("Listener"))
-						})
-
-					})
-				} else if len(cfg.Providers.Virtualbox) > 0 && len(cfg.Providers.Vsphere) > 0 {
-					Context("on virtualbox and vsphere providers", func() {
-						It("returns a list with only the Instance Listener VMs", func() {
-							instances, err := c.Instances().All()
-							Expect(err).NotTo(HaveOccurred())
-							Expect(instances).To(HaveLen(2))
-							Expect(instances[0].Name).To(ContainSubstring("Listener"))
-							Expect(instances[1].Name).To(ContainSubstring("Listener"))
-						})
-
-					})
-				} else if len(cfg.Providers.Virtualbox) < 1 && len(cfg.Providers.Vsphere) < 1 {
-					It("returns an empty list", func() {
-						instances, err := c.Instances().All()
-						Expect(err).NotTo(HaveOccurred())
-						Expect(instances).To(BeEmpty())
-					})
-				}
-			})
-			Context("instances exist", func() {
+			Context("it builds the image", func() {
 				Describe("Run()", func() {
 					imageNames := []string{
 						example_nodejs_app,
