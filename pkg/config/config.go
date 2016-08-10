@@ -10,6 +10,7 @@ type Providers struct {
 	Vsphere    []Vsphere    `yaml:"vsphere"`
 	Virtualbox []Virtualbox `yaml:"virtualbox"`
 	Qemu       []Qemu       `yaml:"qemu"`
+	Xen        []Xen        `yaml:"xen"`
 }
 
 type Aws struct {
@@ -38,6 +39,12 @@ type Qemu struct {
 	Name         string `yaml:"name"`
 	NoGraphic    bool   `yaml:"no_graphic"`
 	DebuggerPort int    `yaml:"debugger_port"`
+}
+
+type Xen struct {
+	Name string `yaml:"name"`
+	NoGraphic bool `yaml:"no_graphic"`
+	DebuggerPort int `yaml:"debugger_port"`
 }
 
 type VirtualboxAdapterType string
