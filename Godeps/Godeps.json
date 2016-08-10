@@ -447,6 +447,16 @@
 			"Rev": "d39fd6858eeb5a8ac81a103063eaccd50c2b3e17"
 		},
 		{
+			"ImportPath": "github.com/vmware/photon-controller-go-sdk/photon",
+			"Comment": "PROMOTED-79",
+			"Rev": "f258a6d3b306fa6c0ea92a7d78d7dbe36c9539f8"
+		},
+		{
+			"ImportPath": "github.com/vmware/photon-controller-go-sdk/photon/internal/rest",
+			"Comment": "PROMOTED-79",
+			"Rev": "f258a6d3b306fa6c0ea92a7d78d7dbe36c9539f8"
+		},
+		{
 			"ImportPath": "golang.org/x/net/context",
 			"Rev": "e45385e9b226f570b1f086bf287b25d3d4117776"
 		},
