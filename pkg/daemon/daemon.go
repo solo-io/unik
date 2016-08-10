@@ -125,7 +125,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_GO_AWS] = &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-go-xen",
-			CreateImage: rump.CreateImageAws,
+			CreateImage: rump.CreateImageXen,
 		},
 	}
 	_compilers[compilers.RUMP_GO_VMWARE] = &rump.RumpGoCompiler{
@@ -155,7 +155,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-nodejs-xen",
-			CreateImage: rump.CreateImageAws,
+			CreateImage: rump.CreateImageXen,
 		},
 		BootstrapType: rump.BootstrapTypeEC2,
 		RunScriptArgs: "/bootpart/node-wrapper.js",
@@ -184,7 +184,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
 
-	_compilers[compilers.RUMP_PYTHON_AWS] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageAwsAddStub, rump.BootstrapTypeEC2)
+	_compilers[compilers.RUMP_PYTHON_AWS] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeEC2)
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVirtualBoxAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_VMWARE] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVmwareAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_QEMU] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.BootstrapTypeUDP)

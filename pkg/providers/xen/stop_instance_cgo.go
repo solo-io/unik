@@ -5,9 +5,9 @@ package qemu
 import (
 	"syscall"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/Sirupsen/logrus"
 	"strconv"
 )
 

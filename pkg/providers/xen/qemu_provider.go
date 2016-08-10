@@ -9,8 +9,8 @@ import (
 )
 
 type XenProvider struct {
-	config    config.Xen
-	state     state.State
+	config config.Xen
+	state  state.State
 }
 
 func XenStateFile() string {
