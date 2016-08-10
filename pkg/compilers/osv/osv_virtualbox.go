@@ -7,12 +7,14 @@ import (
 
 const OSV_VIRTUALBOX_MEMORY = 512
 
-type OsvVirtualboxCompiler struct{}
+type OsvVirtualboxCompiler struct {
+	OSvCompilerBase
+}
 
 func (osvCompiler *OsvVirtualboxCompiler) CompileRawImage(params types.CompileImageParams) (_ *types.RawImage, err error) {
-	resultFile, err := compileRawImage(params, false)
+	resultFile, err := osvCompiler.CreateImage(params, false)
 	if err != nil {
-		return nil, errors.New("failed to compile raw osv image", err)
+		return nil, errors.New("failed to compile raw OSv Java image", err)
 	}
 	return &types.RawImage{
 		LocalImagePath: resultFile,
