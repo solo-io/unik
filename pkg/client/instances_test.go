@@ -3,23 +3,23 @@ package client_test
 import (
 	. "github.com/emc-advanced-dev/unik/pkg/client"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/emc-advanced-dev/unik/test/helpers"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"strings"
+	"github.com/emc-advanced-dev/unik/test/helpers"
+	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
-	"fmt"
+	. "github.com/onsi/gomega"
+	"strings"
 )
 
 const (
-	example_cpp_includeos = "example-cpp-includeos"
-	example_go_httpd = "example_go_httpd"
-	example_godeps_go_app = "example_godeps_go_app"
-	example_go_nontrivial = "example-go-nontrivial"
-	example_nodejs_app = "example-nodejs-app"
-	example_java_project = "example_java_project"
+	example_cpp_includeos  = "example-cpp-includeos"
+	example_go_httpd       = "example_go_httpd"
+	example_godeps_go_app  = "example_godeps_go_app"
+	example_go_nontrivial  = "example-go-nontrivial"
+	example_nodejs_app     = "example-nodejs-app"
+	example_java_project   = "example_java_project"
 	example_python_project = "example-python3-httpd"
 )
 
@@ -40,7 +40,7 @@ var _ = Describe("Instances", func() {
 			})
 			Context("no instances exist", func() {
 				if len(cfg.Providers.Virtualbox) > 0 && len(cfg.Providers.Vsphere) < 1 ||
-				len(cfg.Providers.Virtualbox) < 1 && len(cfg.Providers.Vsphere) > 0 {
+					len(cfg.Providers.Virtualbox) < 1 && len(cfg.Providers.Vsphere) > 0 {
 					Context("on virtualbox or vsphere provider", func() {
 						It("returns a list with only the Instance Listener VM", func() {
 							instances, err := c.Instances().All()
@@ -160,7 +160,7 @@ var _ = Describe("Instances", func() {
 									var err error
 									image, err = helpers.BuildExampleImage(daemonUrl, imageName, compiler, provider, mounts)
 									Expect(err).ToNot(HaveOccurred())
-									volume, err = helpers.CreateExampleVolume(daemonUrl, "test_volume_" + imageName, provider, 15)
+									volume, err = helpers.CreateExampleVolume(daemonUrl, "test_volume_"+imageName, provider, 15)
 									Expect(err).ToNot(HaveOccurred())
 									instanceName := imageName
 									noCleanup := false

@@ -6,9 +6,9 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"time"
 )
 
@@ -26,7 +26,7 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		if err != nil {
 			logrus.WithError(err).Errorf("aws running instance encountered an error")
 			if instanceId != "" {
-				if  params.NoCleanup {
+				if params.NoCleanup {
 					logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed instance %s0", instanceId)
 					return
 				}
@@ -85,7 +85,7 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 			AvailabilityZone: aws.String(p.config.Zone),
 		},
 		InstanceType: aws.String(instanceType),
-		UserData: aws.String(encodedData),
+		UserData:     aws.String(encodedData),
 	}
 
 	runInstanceOutput, err := ec2svc.RunInstances(runInstanceInput)
@@ -169,7 +169,7 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 
 type instanceType struct {
 	memory int
-	name string
+	name   string
 }
 
 var hvmInstanceTypes = []instanceType{

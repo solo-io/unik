@@ -13,11 +13,10 @@ import (
 	"strings"
 )
 
-
 type javaProjectConfig struct {
-	ArtifactFilename string `yaml:"artifact_filename"`
-	BuildCmd string `yaml:"build_command"`
-	Properties []string `yaml:"properties"`
+	ArtifactFilename string   `yaml:"artifact_filename"`
+	BuildCmd         string   `yaml:"build_command"`
+	Properties       []string `yaml:"properties"`
 }
 
 func compileRawImage(params types.CompileImageParams, useEc2Bootstrap bool) (string, error) {

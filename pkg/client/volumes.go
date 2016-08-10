@@ -1,12 +1,12 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"net/http"
-	"github.com/emc-advanced-dev/pkg/errors"
-	"encoding/json"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 type volumes struct {
@@ -15,7 +15,7 @@ type volumes struct {
 
 func (v *volumes) All() ([]*types.Volume, error) {
 	resp, body, err := lxhttpclient.Get(v.unikIP, "/volumes", nil)
-	if err != nil  {
+	if err != nil {
 		return nil, errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -30,7 +30,7 @@ func (v *volumes) All() ([]*types.Volume, error) {
 
 func (v *volumes) Get(id string) (*types.Volume, error) {
 	resp, body, err := lxhttpclient.Get(v.unikIP, "/volumes/"+id, nil)
-	if err != nil  {
+	if err != nil {
 		return nil, errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -46,7 +46,7 @@ func (v *volumes) Get(id string) (*types.Volume, error) {
 func (v *volumes) Delete(id string, force bool) error {
 	query := fmt.Sprintf("?force=%v", force)
 	resp, body, err := lxhttpclient.Delete(v.unikIP, "/volumes/"+id+query, nil)
-	if err != nil  {
+	if err != nil {
 		return errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusNoContent {
@@ -61,10 +61,10 @@ func (v *volumes) Create(name, dataTar, provider string, size int, noCleanup boo
 	var (
 		resp *http.Response
 		body []byte
-		err error
+		err  error
 	)
 	if dataTar == "" {
-		resp, body, err = lxhttpclient.Post(v.unikIP, "/volumes/" + name + query, nil, nil)
+		resp, body, err = lxhttpclient.Post(v.unikIP, "/volumes/"+name+query, nil, nil)
 		if err != nil {
 			return nil, errors.New("request failed", err)
 		}
@@ -72,7 +72,7 @@ func (v *volumes) Create(name, dataTar, provider string, size int, noCleanup boo
 			return nil, errors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 		}
 	} else {
-		resp, body, err = lxhttpclient.PostFile(v.unikIP, "/volumes/" + name + query, "tarfile", dataTar)
+		resp, body, err = lxhttpclient.PostFile(v.unikIP, "/volumes/"+name+query, "tarfile", dataTar)
 		if err != nil {
 			return nil, errors.New("request failed", err)
 		}
@@ -90,7 +90,7 @@ func (v *volumes) Create(name, dataTar, provider string, size int, noCleanup boo
 func (v *volumes) Attach(id, instanceId, mountPoint string) error {
 	query := fmt.Sprintf("?mount=%v", mountPoint)
 	resp, body, err := lxhttpclient.Post(v.unikIP, "/volumes/"+id+"/attach/"+instanceId+query, nil, nil)
-	if err != nil  {
+	if err != nil {
 		return errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusAccepted {
@@ -101,7 +101,7 @@ func (v *volumes) Attach(id, instanceId, mountPoint string) error {
 
 func (v *volumes) Detach(id string) error {
 	resp, body, err := lxhttpclient.Post(v.unikIP, "/volumes/"+id+"/detach", nil, nil)
-	if err != nil  {
+	if err != nil {
 		return errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusAccepted {

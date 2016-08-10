@@ -1,19 +1,19 @@
 package helpers
 
 import (
-	"os"
-	"github.com/emc-advanced-dev/unik/pkg/config"
+	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"path/filepath"
-	"os/exec"
-	"github.com/emc-advanced-dev/unik/pkg/util"
-	"io/ioutil"
+	"github.com/emc-advanced-dev/unik/pkg/client"
+	"github.com/emc-advanced-dev/unik/pkg/config"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/unik/pkg/client"
-	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/unik/pkg/util"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"runtime"
-	"fmt"
 	"time"
 )
 
@@ -59,9 +59,9 @@ func NewAwsConfig() (_ config.Aws, err error) {
 		return
 	}
 	return config.Aws{
-		Name: "TEST-AWS-CONFIG",
+		Name:   "TEST-AWS-CONFIG",
 		Region: region,
-		Zone: zone,
+		Zone:   zone,
 	}, nil
 }
 
@@ -76,8 +76,8 @@ func NewVirtualboxConfig() (_ config.Virtualbox, err error) {
 	}
 
 	return config.Virtualbox{
-		Name: "TEST-VBOX-CONFIG",
-		AdapterName: adapterName,
+		Name:                  "TEST-VBOX-CONFIG",
+		AdapterName:           adapterName,
 		VirtualboxAdapterType: config.VirtualboxAdapterType(adapterType),
 	}, nil
 }
@@ -109,40 +109,40 @@ func NewVsphereConfig() (_ config.Vsphere, err error) {
 	}
 
 	return config.Vsphere{
-		Name: "TEST-VBOX-CONFIG",
-		VsphereUser: vsphereUser,
+		Name:            "TEST-VBOX-CONFIG",
+		VsphereUser:     vsphereUser,
 		VspherePassword: vspherePassword,
-		VsphereURL: vsphereUrl,
-		Datastore: vsphereDatastore,
-		Datacenter: vsphereDatacenter,
-		NetworkLabel: vsphereNetworkLabel,
+		VsphereURL:      vsphereUrl,
+		Datastore:       vsphereDatastore,
+		Datacenter:      vsphereDatacenter,
+		NetworkLabel:    vsphereNetworkLabel,
 	}, nil
 }
 
 func NewQemuConfig() (_ config.Qemu, err error) {
 	return config.Qemu{
-		Name: "TEST-VBOX-CONFIG",
-		NoGraphic: true,
+		Name:         "TEST-VBOX-CONFIG",
+		NoGraphic:    true,
 		DebuggerPort: 3001,
 	}, nil
 }
 
-func ConfigWithAws(config config.DaemonConfig, aws config.Aws) (config.DaemonConfig) {
+func ConfigWithAws(config config.DaemonConfig, aws config.Aws) config.DaemonConfig {
 	config.Providers.Aws = append(config.Providers.Aws, aws)
 	return config
 }
 
-func ConfigWithVirtualbox(config config.DaemonConfig, virtualbox config.Virtualbox) (config.DaemonConfig) {
+func ConfigWithVirtualbox(config config.DaemonConfig, virtualbox config.Virtualbox) config.DaemonConfig {
 	config.Providers.Virtualbox = append(config.Providers.Virtualbox, virtualbox)
 	return config
 }
 
-func ConfigWithVsphere(config config.DaemonConfig, vsphere config.Vsphere) (config.DaemonConfig) {
+func ConfigWithVsphere(config config.DaemonConfig, vsphere config.Vsphere) config.DaemonConfig {
 	config.Providers.Vsphere = append(config.Providers.Vsphere, vsphere)
 	return config
 }
 
-func ConfigWithQemu(config config.DaemonConfig, qemu config.Qemu) (config.DaemonConfig) {
+func ConfigWithQemu(config config.DaemonConfig, qemu config.Qemu) config.DaemonConfig {
 	config.Providers.Qemu = append(config.Providers.Qemu, qemu)
 	return config
 }
@@ -311,13 +311,13 @@ func GetProjectRoot() string {
 
 func WaitForIp(daemonUrl, instanceId string, timeout time.Duration) (string, error) {
 	errc := make(chan error)
-	go func(){
+	go func() {
 		<-time.After(timeout)
 		errc <- errors.New("getting instance ip timed out after "+timeout.String(), nil)
 	}()
 
 	resultc := make(chan string)
-	go func(){
+	go func() {
 		logrus.Infof("retrieving ip for instance %s", instanceId)
 		started := time.Now()
 		end := started.Add(timeout)
@@ -332,13 +332,13 @@ func WaitForIp(daemonUrl, instanceId string, timeout time.Duration) (string, err
 				return
 			}
 			logrus.Debugf("sleeping %v left...", end.Sub(time.Now()))
- 			time.Sleep(time.Second)
+			time.Sleep(time.Second)
 		}
 	}()
 	select {
-	case result := <- resultc:
+	case result := <-resultc:
 		return result, nil
-	case err := <- errc:
+	case err := <-errc:
 		return "", err
 	}
 }

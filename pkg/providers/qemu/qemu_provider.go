@@ -4,16 +4,16 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/state"
-	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 var debuggerTargetImageName string
 
 type QemuProvider struct {
-	config    config.Qemu
-	state     state.State
+	config config.Qemu
+	state  state.State
 }
 
 func QemuStateFile() string {

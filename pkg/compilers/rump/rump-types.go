@@ -31,9 +31,9 @@ type commandLine struct {
 }
 
 type rumpConfig struct {
-	Rc   []commandLine      `json:"rc"`
-	Net  *net               `json:"net,omitempty"`
-	Net1 *net               `json:"net1,omitempty"`
-	Blk  []blk              `json:"blk,omitempty"`
-	Env  map[string]string  `json:"env,omitempty"`
+	Rc   []commandLine     `json:"rc"`
+	Net  *net              `json:"net,omitempty"`
+	Net1 *net              `json:"net1,omitempty"`
+	Blk  []blk             `json:"blk,omitempty"`
+	Env  map[string]string `json:"env,omitempty"`
 }

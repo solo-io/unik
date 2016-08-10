@@ -2,12 +2,12 @@ package vsphere
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere/vsphereclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"time"
-	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere/vsphereclient"
 )
 
 func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
@@ -62,7 +62,7 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 			return nil, errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 		}
 
-		go func(){
+		go func() {
 			if err := unikutil.Retry(5, time.Duration(1000*time.Millisecond), func() error {
 				logrus.Debugf("getting instance ip")
 				if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
@@ -76,7 +76,7 @@ func (p *VsphereProvider) ListInstances() ([]*types.Instance, error) {
 					}
 					return nil
 				}); err != nil {
-					logrus.WithError(err).Warnf("failed to get instance "+instance.Name+" ip")
+					logrus.WithError(err).Warnf("failed to get instance " + instance.Name + " ip")
 				}
 				return nil
 			}); err != nil {

@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"log"
-	"path/filepath"
 	"os"
+	"path/filepath"
 )
 
 func main() {

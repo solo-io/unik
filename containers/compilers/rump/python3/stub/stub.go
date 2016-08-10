@@ -72,8 +72,7 @@ func main() {
 		close(closeChan)
 	}()
 
-
-	envLoop:
+envLoop:
 	for {
 		log.Printf("waiting for UniK bootstrap")
 		select {

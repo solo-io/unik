@@ -7,9 +7,9 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 func (p *QemuProvider) Stage(params types.StageImageParams) (_ *types.Image, err error) {

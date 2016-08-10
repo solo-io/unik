@@ -2,11 +2,11 @@ package virtualbox
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"time"
 )
 
@@ -18,7 +18,7 @@ func (p *VirtualboxProvider) ListInstances() ([]*types.Instance, error) {
 	for _, instance := range p.state.GetInstances() {
 		vm, err := virtualboxclient.GetVm(instance.Name)
 		if err != nil {
-			return nil, errors.New("retrieving vm for instance id " + instance.Name, err)
+			return nil, errors.New("retrieving vm for instance id "+instance.Name, err)
 		}
 		macAddr := vm.MACAddr
 

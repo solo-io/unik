@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/emc-advanced-dev/pkg/errors"
 	"flag"
 	"fmt"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"path"
 	"strconv"

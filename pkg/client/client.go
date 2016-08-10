@@ -1,11 +1,11 @@
 package client
 
 import (
-	"github.com/layer-x/layerx-commons/lxhttpclient"
-	"github.com/emc-advanced-dev/pkg/errors"
-	"fmt"
-	"net/http"
 	"encoding/json"
+	"fmt"
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/layer-x/layerx-commons/lxhttpclient"
+	"net/http"
 )
 
 type client struct {
@@ -30,7 +30,7 @@ func (c *client) Volumes() *volumes {
 
 func (c *client) AvailableCompilers() ([]string, error) {
 	resp, body, err := lxhttpclient.Get(c.unikIP, "/available_compilers", nil)
-	if err != nil  {
+	if err != nil {
 		return nil, errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -45,7 +45,7 @@ func (c *client) AvailableCompilers() ([]string, error) {
 
 func (c *client) AvailableProviders() ([]string, error) {
 	resp, body, err := lxhttpclient.Get(c.unikIP, "/available_providers", nil)
-	if err != nil  {
+	if err != nil {
 		return nil, errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {

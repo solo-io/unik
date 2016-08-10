@@ -1,8 +1,8 @@
 package os
 
 import (
-	"github.com/emc-advanced-dev/pkg/errors"
 	"fmt"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 )
 

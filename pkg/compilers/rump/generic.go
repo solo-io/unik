@@ -70,8 +70,8 @@ func execContainer(imageName string, cmds []string, binds map[string]string, pri
 }
 
 type RumCompilerBase struct {
-	DockerImage   string
-	CreateImage   func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error)
+	DockerImage string
+	CreateImage func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error)
 }
 
 func (r *RumCompilerBase) runContainer(localFolder string, envPairs []string) error {
@@ -91,14 +91,14 @@ func (r *RumCompilerBase) runContainer(localFolder string, envPairs []string) er
 func setRumpCmdLine(c rumpConfig, prog string, argv []string, addStub bool) rumpConfig {
 	if addStub {
 		stub := commandLine{
-			Bin: "stub",
+			Bin:  "stub",
 			Argv: []string{},
 		}
 		c.Rc = append(c.Rc, stub)
 	}
 	progrc := commandLine{
-		Bin: "program",
-		Argv:    argv,
+		Bin:  "program",
+		Argv: argv,
 	}
 	c.Rc = append(c.Rc, progrc)
 	return c

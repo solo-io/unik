@@ -1,11 +1,11 @@
 package common
 
 import (
-	"github.com/emc-advanced-dev/pkg/errors"
-	"strings"
-	"net"
-	"github.com/Sirupsen/logrus"
 	"bytes"
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
+	"net"
+	"strings"
 	"time"
 )
 
@@ -13,7 +13,7 @@ var socket *net.UDPConn
 
 func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, error) {
 	errc := make(chan error)
-	go func(){
+	go func() {
 		<-time.After(timeout)
 		errc <- errors.New("getting instance listener ip timed out after "+timeout.String(), nil)
 	}()
@@ -31,7 +31,7 @@ func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, er
 	}
 	resultc := make(chan string)
 	var stopLoop bool
-	go func(){
+	go func() {
 		logrus.Infof("UDP Server listening on %s:%v", "0.0.0.0", 9876)
 		for !stopLoop {
 			data := make([]byte, 4096)
@@ -49,9 +49,9 @@ func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, er
 		}
 	}()
 	select {
-	case result := <- resultc:
+	case result := <-resultc:
 		return result, nil
-	case err := <- errc:
+	case err := <-errc:
 		stopLoop = true
 		return "", err
 	}

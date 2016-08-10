@@ -1,15 +1,14 @@
 package util
 
 import (
-	"sort"
-	"fmt"
-	"time"
-	"github.com/Sirupsen/logrus"
 	"bytes"
+	"fmt"
+	"github.com/Sirupsen/logrus"
 	"runtime"
+	"sort"
 	"strings"
+	"time"
 )
-
 
 //Redaction formatter
 
@@ -141,9 +140,9 @@ func (f *RedactedTextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entr
 func needsQuoting(text string) bool {
 	for _, ch := range text {
 		if !((ch >= 'a' && ch <= 'z') ||
-		(ch >= 'A' && ch <= 'Z') ||
-		(ch >= '0' && ch <= '9') ||
-		ch == '-' || ch == '.') {
+			(ch >= 'A' && ch <= 'Z') ||
+			(ch >= '0' && ch <= '9') ||
+			ch == '-' || ch == '.') {
 			return false
 		}
 	}

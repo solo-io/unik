@@ -1,17 +1,17 @@
 package includeos
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"path"
-	"path/filepath"
-	"os"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/emc-advanced-dev/pkg/errors"
 	goerrors "errors"
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"os"
+	"path"
+	"path/filepath"
 )
 
-type IncludeosVirtualboxCompiler struct {}
+type IncludeosVirtualboxCompiler struct{}
 
 func (i *IncludeosVirtualboxCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
 	sourcesDir := params.SourcesDir
@@ -35,18 +35,18 @@ func (i *IncludeosVirtualboxCompiler) findFirstImageFile(directory string) (stri
 	dir, err := os.Open(directory)
 	if err != nil {
 		return "", errors.New("could not open dir", err)
-  }
-  defer dir.Close()
+	}
+	defer dir.Close()
 	files, err := dir.Readdir(-1)
 	if err != nil {
 		return "", errors.New("could not read dir", err)
 	}
 	for _, file := range files {
 		if file.Mode().IsRegular() {
-      if filepath.Ext(file.Name()) == ".img" {
-      	return file.Name(), nil
-      }
-    }
-  }
+			if filepath.Ext(file.Name()) == ".img" {
+				return file.Name(), nil
+			}
+		}
+	}
 	return "", errors.New("no image file found", goerrors.New("end of dir"))
 }

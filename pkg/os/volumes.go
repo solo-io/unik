@@ -181,7 +181,6 @@ func CreateBootImageOnFilePvGrub(rootFile string, sizeOfFile DiskSize, progPath,
 	}
 	defer rootLo.Release()
 
-
 	bootLabel := "boot"
 	// format the device and mount and copy
 	err = RunLogCommand("mkfs", "-L", bootLabel, "-I", "128", "-t", "ext2", bootDevice.Name())

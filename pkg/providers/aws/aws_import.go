@@ -19,8 +19,8 @@ import (
 	"math/rand"
 
 	"github.com/emc-advanced-dev/pkg/errors"
-	"strings"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"strings"
 )
 
 func init() {
@@ -154,9 +154,9 @@ func createDataVolumeFromRawImage(s3svc *s3.S3, ec2svc *ec2.EC2, imgFile string,
 	volparams := &ec2.ImportVolumeInput{
 		AvailabilityZone: aws.String(az), // Required
 		Image: &ec2.DiskImageDetail{ // Required
-			Bytes:             aws.Int64(toGigs(imageSize)), // Required
-			Format:            aws.String(strings.ToUpper(string(imageFormat))),   // Required
-			ImportManifestUrl: aws.String(getManiUrlStr),  // Required
+			Bytes:             aws.Int64(toGigs(imageSize)),                     // Required
+			Format:            aws.String(strings.ToUpper(string(imageFormat))), // Required
+			ImportManifestUrl: aws.String(getManiUrlStr),                        // Required
 		},
 		Volume: &ec2.VolumeDetail{ // Required
 			Size: aws.Int64(toGigs(imageSize)), // Required
@@ -264,7 +264,7 @@ func deleteBucket(s3svc *s3.S3, bucketName string) error {
 	for _, object := range objects.Contents {
 		deleteObjectParams := &s3.DeleteObjectInput{
 			Bucket: aws.String(bucketName),
-			Key: object.Key,
+			Key:    object.Key,
 		}
 		_, err := s3svc.DeleteObject(deleteObjectParams)
 		if err != nil {

@@ -1,8 +1,8 @@
 package virtualbox
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 )
 
 func (p *VirtualboxProvider) StopInstance(id string) error {

@@ -2,8 +2,8 @@ package vsphere
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 func (p *VsphereProvider) DeleteImage(id string, force bool) error {
@@ -32,7 +32,7 @@ func (p *VsphereProvider) DeleteImage(id string, force bool) error {
 	imageDir := getImageDatastoreDir(image.Name)
 	logrus.Infof("deleting image file at %s", imageDir)
 	if err := p.getClient().Rmdir(imageDir); err != nil {
-		return errors.New("deleting image file at "+ imageDir, err)
+		return errors.New("deleting image file at "+imageDir, err)
 	}
 
 	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {

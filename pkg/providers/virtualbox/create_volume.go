@@ -2,9 +2,9 @@ package virtualbox
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"path/filepath"
 	"time"
@@ -19,7 +19,7 @@ func (p *VirtualboxProvider) CreateVolume(params types.CreateVolumeParams) (_ *t
 		return nil, errors.New("creating directory for volume file", err)
 	}
 	defer func() {
-		if  params.NoCleanup {
+		if params.NoCleanup {
 			logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed volume %s at %s", params.Name, volumePath)
 			return
 		}

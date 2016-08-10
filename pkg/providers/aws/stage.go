@@ -4,12 +4,12 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"io/ioutil"
 	"os"
 	"time"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"io/ioutil"
 )
 
 var kernelIdMap = map[string]string{
@@ -194,8 +194,8 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 	image := &types.Image{
 		Id:             imageId,
 		Name:           params.Name,
-		RunSpec:	params.RawImage.RunSpec,
-		StageSpec:	params.RawImage.StageSpec,
+		RunSpec:        params.RawImage.RunSpec,
+		StageSpec:      params.RawImage.StageSpec,
 		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_AWS,
 		Created:        time.Now(),

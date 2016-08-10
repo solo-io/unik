@@ -2,9 +2,9 @@ package vsphere
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 func (p *VsphereProvider) AttachVolume(id, instanceId, mntPoint string) error {

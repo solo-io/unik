@@ -3,11 +3,11 @@ package os
 import (
 	"archive/tar"
 	log "github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"io"
 	"os"
-	"path"
 	"os/exec"
-	"github.com/emc-advanced-dev/pkg/errors"
+	"path"
 )
 
 func ExtractTar(tarArchive io.ReadCloser, localFolder string) error {

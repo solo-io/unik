@@ -8,9 +8,9 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"bufio"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/client"
-	"bufio"
 	"net"
 )
 
@@ -136,7 +136,7 @@ func connectDebugger() {
 		os.Exit(-1)
 	}
 
-	go func(){
+	go func() {
 		reader := bufio.NewReader(conn)
 		for {
 			data, err := reader.ReadBytes('\n')

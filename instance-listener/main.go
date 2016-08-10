@@ -6,16 +6,16 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
-	"log"
 	"time"
-	"flag"
-	"os"
 )
 
 const statefile = "/data/statefile.json"
@@ -53,10 +53,10 @@ func main() {
 
 	data, err := ioutil.ReadFile(statefile)
 	if err != nil {
-		log.Printf("could not read statefile, maybe this is first boot: "+err.Error())
+		log.Printf("could not read statefile, maybe this is first boot: " + err.Error())
 	} else {
 		if err := json.Unmarshal(data, &s); err != nil {
-			log.Printf("failed to parse state json: "+err.Error())
+			log.Printf("failed to parse state json: " + err.Error())
 		}
 	}
 
@@ -67,7 +67,7 @@ func main() {
 	}
 
 	log.Printf("Starting unik discovery (udp heartbeat broadcast) with ip %s", listenerIp.String())
-	info := []byte(*dataPrefix +":"+ listenerIp.String())
+	info := []byte(*dataPrefix + ":" + listenerIp.String())
 	listenerIpMask := listenerIp.DefaultMask()
 	BROADCAST_IPv4 := reverseMask(listenerIp, listenerIpMask)
 	if listenerIpMask == nil {
@@ -98,7 +98,7 @@ func main() {
 		if req.Method != "POST" {
 			res.WriteHeader(http.StatusNotFound)
 			return
-		} 
+		}
 		splitAddr := strings.Split(req.RemoteAddr, ":")
 		if len(splitAddr) < 1 {
 			log.Printf("req.RemoteAddr: %v, could not parse remote addr into ip/port combination", req.RemoteAddr)
@@ -127,7 +127,7 @@ func main() {
 		}
 		data, err := json.Marshal(env)
 		if err != nil {
-			log.Printf("could not marshal env to json: "+err.Error())
+			log.Printf("could not marshal env to json: " + err.Error())
 			return
 		}
 		log.Printf("responding with data: %s", data)

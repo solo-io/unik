@@ -1,12 +1,12 @@
 package virtualbox
 
 import (
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"path/filepath"
 	"strconv"
-	"github.com/Sirupsen/logrus"
 )
 
 func (p *VirtualboxProvider) DetachVolume(id string) error {

@@ -176,7 +176,7 @@ func DirSize(path string) (int64, error) {
 		if !info.IsDir() {
 			size += info.Size()
 		}
-		log.Debugf("total size %v after adding file %s", (int64(size) >> 20) + 10, info.Name())
+		log.Debugf("total size %v after adding file %s", (int64(size)>>20)+10, info.Name())
 		return err
 	})
 	return size, err

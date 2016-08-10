@@ -3,22 +3,22 @@ package client_test
 import (
 	. "github.com/emc-advanced-dev/unik/pkg/client"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/emc-advanced-dev/unik/test/helpers"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"strings"
+	"github.com/emc-advanced-dev/unik/test/helpers"
+	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
-	"fmt"
+	. "github.com/onsi/gomega"
+	"strings"
 	"time"
 )
 
 const (
-	test_go_app = "test_go_app"
-	test_java_app = "test_java_app"
-	test_jar_app = "test_jar_app"
-	test_nodejs_app = "test_nodejs_app"
+	test_go_app      = "test_go_app"
+	test_java_app    = "test_java_app"
+	test_jar_app     = "test_jar_app"
+	test_nodejs_app  = "test_nodejs_app"
 	test_python3_app = "test_python3_app"
 )
 
@@ -114,7 +114,7 @@ var _ = Describe("Unikernel Functionality", func() {
 							var err error
 							if withVolume {
 								mounts = append(mounts, "/data")
-								volume, err = helpers.CreateTestDataVolume(daemonUrl, "test_volume_" + imageName, provider)
+								volume, err = helpers.CreateTestDataVolume(daemonUrl, "test_volume_"+imageName, provider)
 								Expect(err).ToNot(HaveOccurred())
 								mountPointsToVols["/data"] = volume.Id
 							}

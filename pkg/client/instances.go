@@ -1,14 +1,14 @@
 package client
 
 import (
-	"fmt"
-	"github.com/layer-x/layerx-commons/lxhttpclient"
-	"net/http"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"encoding/json"
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"io"
+	"fmt"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
+	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxhttpclient"
+	"io"
+	"net/http"
 )
 
 type instances struct {
@@ -17,7 +17,7 @@ type instances struct {
 
 func (i *instances) All() ([]*types.Instance, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/instances", nil)
-	if err != nil  {
+	if err != nil {
 		return nil, errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -32,7 +32,7 @@ func (i *instances) All() ([]*types.Instance, error) {
 
 func (i *instances) Get(id string) (*types.Instance, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/instances/"+id, nil)
-	if err != nil  {
+	if err != nil {
 		return nil, errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -48,7 +48,7 @@ func (i *instances) Get(id string) (*types.Instance, error) {
 func (i *instances) Delete(id string, force bool) error {
 	query := fmt.Sprintf("?force=%v", force)
 	resp, body, err := lxhttpclient.Delete(i.unikIP, "/instances/"+id+query, nil)
-	if err != nil  {
+	if err != nil {
 		return errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusNoContent {
@@ -59,7 +59,7 @@ func (i *instances) Delete(id string, force bool) error {
 
 func (i *instances) GetLogs(id string) (string, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/instances/"+id+"/logs", nil)
-	if err != nil  {
+	if err != nil {
 		return "", errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -71,7 +71,7 @@ func (i *instances) GetLogs(id string) (string, error) {
 func (i *instances) AttachLogs(id string, deleteOnDisconnect bool) (io.ReadCloser, error) {
 	query := fmt.Sprintf("?follow=%v&delete=%v", true, deleteOnDisconnect)
 	resp, err := lxhttpclient.GetAsync(i.unikIP, "/instances/"+id+"/logs"+query, nil)
-	if err != nil  {
+	if err != nil {
 		return nil, errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -83,15 +83,15 @@ func (i *instances) AttachLogs(id string, deleteOnDisconnect bool) (io.ReadClose
 func (i *instances) Run(instanceName, imageName string, mountPointsToVols, env map[string]string, memoryMb int, noCleanup, debugMode bool) (*types.Instance, error) {
 	runInstanceRequest := daemon.RunInstanceRequest{
 		InstanceName: instanceName,
-		ImageName: imageName,
-		Mounts: mountPointsToVols,
-		Env: env,
-		MemoryMb: memoryMb,
-		NoCleanup: noCleanup,
-		DebugMode: debugMode,
+		ImageName:    imageName,
+		Mounts:       mountPointsToVols,
+		Env:          env,
+		MemoryMb:     memoryMb,
+		NoCleanup:    noCleanup,
+		DebugMode:    debugMode,
 	}
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/run", nil, runInstanceRequest)
-	if err != nil  {
+	if err != nil {
 		return nil, errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusCreated {
@@ -106,7 +106,7 @@ func (i *instances) Run(instanceName, imageName string, mountPointsToVols, env m
 
 func (i *instances) Start(id string) error {
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+id+"/start", nil, nil)
-	if err != nil  {
+	if err != nil {
 		return errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -117,7 +117,7 @@ func (i *instances) Start(id string) error {
 
 func (i *instances) Stop(id string) error {
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/instances/"+id+"/stop", nil, nil)
-	if err != nil  {
+	if err != nil {
 		return errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {

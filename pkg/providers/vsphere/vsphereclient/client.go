@@ -289,20 +289,20 @@ func (vc *VsphereClient) CopyFile(src, dest string) error {
 		"[" + vc.ds + "] " + dest,
 	}
 	if err := container.Run(args...); err != nil {
-                lastSlash := strings.LastIndex(dest, "/")
-	        directory := "/"
-	        file := dest[lastSlash + 1:]
-	        if(lastSlash != -1) {
-		        directory += dest[0:lastSlash]
-		        file = dest[lastSlash + 1:]
-	        }
-                files, err := vc.Ls(directory)
-                if err != nil {
-		        return errors.New("failed running vsphere-client.jar CopyFile "+src+" "+dest, err)
-                }
-                if !unikutil.StringInSlice(file, files) {
-		        return errors.New("failed running vsphere-client.jar CopyFile "+src+" "+dest, err)
-                }
+		lastSlash := strings.LastIndex(dest, "/")
+		directory := "/"
+		file := dest[lastSlash+1:]
+		if lastSlash != -1 {
+			directory += dest[0:lastSlash]
+			file = dest[lastSlash+1:]
+		}
+		files, err := vc.Ls(directory)
+		if err != nil {
+			return errors.New("failed running vsphere-client.jar CopyFile "+src+" "+dest, err)
+		}
+		if !unikutil.StringInSlice(file, files) {
+			return errors.New("failed running vsphere-client.jar CopyFile "+src+" "+dest, err)
+		}
 	}
 	return nil
 }

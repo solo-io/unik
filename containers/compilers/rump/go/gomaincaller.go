@@ -2,20 +2,20 @@ package main
 
 import (
 	"C"
-	"os"
-	"unsafe"
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"time"
-	"fmt"
-	"io"
-	"bufio"
+	"unsafe"
 )
 
 //export gomaincaller
@@ -76,7 +76,7 @@ func stubMain() {
 	if err := os.Chdir("/bootpart"); err != nil {
 		panic(err)
 	}
-	
+
 	envChan := make(chan map[string]string)
 
 	closeChan := make(chan struct{})
@@ -111,7 +111,7 @@ func stubMain() {
 		close(closeChan)
 	}()
 
-	envLoop:
+envLoop:
 	for {
 		log.Printf("waiting for UniK bootstrap")
 		select {
@@ -179,7 +179,7 @@ func getListenerIp(closeChan <-chan struct{}) (string, error) {
 		return "", err
 	}
 	for {
-		log.Printf("UDP Server listening on %s:%v", "0.0.0.0",9876)
+		log.Printf("UDP Server listening on %s:%v", "0.0.0.0", 9876)
 		data := make([]byte, 4096)
 		_, remoteAddr, err := socket.ReadFromUDP(data)
 		if err != nil {
@@ -193,7 +193,7 @@ func getListenerIp(closeChan <-chan struct{}) (string, error) {
 		select {
 		case <-closeChan:
 			return "", nil //registered with ec2
-		default :
+		default:
 			continue
 		}
 	}

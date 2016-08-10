@@ -1,13 +1,13 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"net/http"
-	"github.com/emc-advanced-dev/pkg/errors"
-	"encoding/json"
 	"strings"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 type images struct {
@@ -16,7 +16,7 @@ type images struct {
 
 func (i *images) All() ([]*types.Image, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/images", nil)
-	if err != nil  {
+	if err != nil {
 		return nil, errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -31,7 +31,7 @@ func (i *images) All() ([]*types.Image, error) {
 
 func (i *images) Get(id string) (*types.Image, error) {
 	resp, body, err := lxhttpclient.Get(i.unikIP, "/images/"+id, nil)
-	if err != nil  {
+	if err != nil {
 		return nil, errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -47,7 +47,7 @@ func (i *images) Get(id string) (*types.Image, error) {
 func (i *images) Build(name, sourceTar, compiler, provider, args string, mounts []string, force, noCleanup bool) (*types.Image, error) {
 	query := fmt.Sprintf("?compiler=%s&provider=%s&args=%s&mounts=%s&force=%v&no_cleanup=%v", compiler, provider, args, strings.Join(mounts, ","), force, noCleanup)
 	resp, body, err := lxhttpclient.PostFile(i.unikIP, "/images/"+name+"/create"+query, "tarfile", sourceTar)
-	if err != nil  {
+	if err != nil {
 		return nil, errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusCreated {
@@ -63,7 +63,7 @@ func (i *images) Build(name, sourceTar, compiler, provider, args string, mounts 
 func (i *images) Delete(id string, force bool) error {
 	query := fmt.Sprintf("?force=%v", force)
 	resp, body, err := lxhttpclient.Delete(i.unikIP, "/images/"+id+query, nil)
-	if err != nil  {
+	if err != nil {
 		return errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusNoContent {

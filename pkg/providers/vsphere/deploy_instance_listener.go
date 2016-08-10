@@ -8,10 +8,10 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
-	"strings"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
+	"strings"
 )
 
 var timeout = time.Second * 10
@@ -113,7 +113,7 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 	if err := c.CopyFile(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
 		return errors.New("copying boot.vmdk", err)
 	}
-	if err := c.CopyFile(strings.TrimSuffix(getImageDatastorePath(image.Name), ".vmdk") + "-flat.vmdk", strings.TrimSuffix(instanceBootImagePath, ".vmdk") + "-flat.vmdk"); err != nil {
+	if err := c.CopyFile(strings.TrimSuffix(getImageDatastorePath(image.Name), ".vmdk")+"-flat.vmdk", strings.TrimSuffix(instanceBootImagePath, ".vmdk")+"-flat.vmdk"); err != nil {
 		return errors.New("copying boot-flat.vmdk", err)
 	}
 	if err := c.AttachDisk(VsphereUnikInstanceListener, instanceBootImagePath, 0, image.RunSpec.StorageDriver); err != nil {

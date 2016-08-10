@@ -51,7 +51,7 @@ func (providers Providers) ProviderForImage(imageId string) (Provider, error) {
 			return provider, nil
 		}
 	}
-	return nil, errors.New("image " + imageId + " not found", nil)
+	return nil, errors.New("image "+imageId+" not found", nil)
 }
 
 func (providers Providers) ProviderForInstance(instanceId string) (Provider, error) {
@@ -61,7 +61,7 @@ func (providers Providers) ProviderForInstance(instanceId string) (Provider, err
 			return provider, nil
 		}
 	}
-	return nil, errors.New("instance " + instanceId + " not found", nil)
+	return nil, errors.New("instance "+instanceId+" not found", nil)
 }
 
 func (providers Providers) ProviderForVolume(volumeId string) (Provider, error) {
@@ -71,5 +71,5 @@ func (providers Providers) ProviderForVolume(volumeId string) (Provider, error) 
 			return provider, nil
 		}
 	}
-	return nil, errors.New("volume " + volumeId + " not found", nil)
+	return nil, errors.New("volume "+volumeId+" not found", nil)
 }

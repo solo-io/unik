@@ -1,12 +1,12 @@
 package qemu
 
 import (
+	"fmt"
 	"github.com/Sirupsen/logrus"
-	"net"
 	"github.com/emc-advanced-dev/pkg/errors"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"net"
 	"path/filepath"
-	"fmt"
 )
 
 func startDebuggerListener(port int) error {
@@ -15,8 +15,8 @@ func startDebuggerListener(port int) error {
 	if err != nil {
 		return errors.New("establishing tcp listener on "+addr, err)
 	}
-	logrus.Info("listening on "+addr)
-	go func(){
+	logrus.Info("listening on " + addr)
+	go func() {
 		for {
 			conn, err := ln.Accept()
 			if err != nil {
@@ -35,9 +35,9 @@ func connectDebugger(conn net.Conn) {
 		return
 	}
 	container := unikutil.NewContainer("rump-debugger-qemu").
-			WithNet("host").
-			WithVolume(filepath.Dir(getKernelPath(debuggerTargetImageName)), "/opt/prog/").
-			Interactive(true)
+		WithNet("host").
+		WithVolume(filepath.Dir(getKernelPath(debuggerTargetImageName)), "/opt/prog/").
+		Interactive(true)
 
 	cmd := container.BuildCmd(
 		"/opt/gdb-7.11/gdb/gdb",
@@ -53,7 +53,7 @@ func connectDebugger(conn net.Conn) {
 		logrus.WithError(err).Error("error starting debugger container")
 		return
 	}
-	defer func(){
+	defer func() {
 		//reset debugger target
 		debuggerTargetImageName = ""
 		container.Stop()

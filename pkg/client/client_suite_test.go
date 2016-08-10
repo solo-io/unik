@@ -4,16 +4,16 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"testing"
-	"github.com/emc-advanced-dev/unik/test/helpers"
+	"encoding/json"
 	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/emc-advanced-dev/unik/pkg/daemon"
+	"github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/emc-advanced-dev/unik/test/helpers"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"net/http"
-	"encoding/json"
-	"time"
 	"os"
+	"testing"
+	"time"
 )
 
 var cfg = helpers.NewTestConfig()
@@ -22,7 +22,7 @@ func TestClient(t *testing.T) {
 	RegisterFailHandler(Fail)
 	var d *daemon.UnikDaemon
 	var tmpUnik helpers.TempUnikHome
-	BeforeSuite(func(){
+	BeforeSuite(func() {
 		if os.Getenv("DEBUG_OFF") != "1" {
 			logrus.SetLevel(logrus.DebugLevel)
 		}
@@ -41,7 +41,7 @@ func TestClient(t *testing.T) {
 		go d.Run(3000)
 
 	})
-	AfterSuite(func(){
+	AfterSuite(func() {
 		//if err := helpers.RemoveContainers(projectRoot); err != nil {
 		//	logrus.Panic(err)
 		//}
@@ -70,18 +70,18 @@ func testInstanceEndpoint(instanceIp, path, expectedResponse string) {
 	var resp *http.Response
 	var body []byte
 	var err error
-	err = util.Retry(10, 2 * time.Second, func() error{
+	err = util.Retry(10, 2*time.Second, func() error {
 		resp, body, err = lxhttpclient.Get(instanceIp+":8080", path, nil)
 		return err
 	})
 	logrus.WithFields(logrus.Fields{
 		"resp": resp,
 		"body": string(body),
-		"err": err,
+		"err":  err,
 	}).Debugf("got resp")
 	Expect(err).ToNot(HaveOccurred())
 	Expect(resp.StatusCode).To(Equal(http.StatusOK))
-	var testResponse struct{
+	var testResponse struct {
 		Message string `json:"message"`
 	}
 	err = json.Unmarshal(body, &testResponse)

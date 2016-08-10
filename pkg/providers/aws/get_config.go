@@ -1,8 +1,8 @@
 package aws
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/providers"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
+	"github.com/emc-advanced-dev/unik/pkg/providers"
 )
 
 func (p *AwsProvider) GetConfig() providers.ProviderConfig {

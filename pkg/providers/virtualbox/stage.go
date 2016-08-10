@@ -2,9 +2,9 @@ package virtualbox
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"path/filepath"
 	"time"
@@ -18,7 +18,7 @@ func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Imag
 	for _, image := range images {
 		if image.Name == params.Name {
 			if !params.Force {
-				return nil, errors.New("an image already exists with name '"+ params.Name +"', try again with --force", nil)
+				return nil, errors.New("an image already exists with name '"+params.Name+"', try again with --force", nil)
 			} else {
 				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + params.Name)
 				if err := p.DeleteImage(image.Id, true); err != nil {
@@ -58,8 +58,8 @@ func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Imag
 	image := &types.Image{
 		Id:             params.Name,
 		Name:           params.Name,
-		RunSpec:	params.RawImage.RunSpec,
-		StageSpec:	params.RawImage.StageSpec,
+		RunSpec:        params.RawImage.RunSpec,
+		StageSpec:      params.RawImage.StageSpec,
 		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_VIRTUALBOX,
 		Created:        time.Now(),

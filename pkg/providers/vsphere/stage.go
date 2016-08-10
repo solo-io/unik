@@ -2,14 +2,14 @@ package vsphere
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/pkg/errors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
-	"time"
 	"strings"
-	"io/ioutil"
+	"time"
 )
 
 func (p *VsphereProvider) Stage(params types.StageImageParams) (_ *types.Image, err error) {
@@ -20,7 +20,7 @@ func (p *VsphereProvider) Stage(params types.StageImageParams) (_ *types.Image, 
 	for _, image := range images {
 		if image.Name == params.Name {
 			if !params.Force {
-				return nil, errors.New("an image already exists with name '"+ params.Name +"', try again with --force", nil)
+				return nil, errors.New("an image already exists with name '"+params.Name+"', try again with --force", nil)
 			} else {
 				logrus.WithField("image", image).Warnf("force: deleting previous image with name " + params.Name)
 				if err := p.DeleteImage(image.Id, true); err != nil {
@@ -60,9 +60,9 @@ func (p *VsphereProvider) Stage(params types.StageImageParams) (_ *types.Image, 
 	sizeMb := rawImageFile.Size() >> 20
 
 	logrus.WithFields(logrus.Fields{
-		"name": params.Name,
-		"id":   params.Name,
-		"size": sizeMb,
+		"name":           params.Name,
+		"id":             params.Name,
+		"size":           sizeMb,
 		"datastore-path": vsphereImageDir,
 	}).Infof("importing base vmdk for unikernel image")
 
@@ -73,8 +73,8 @@ func (p *VsphereProvider) Stage(params types.StageImageParams) (_ *types.Image, 
 	image := &types.Image{
 		Id:             params.Name,
 		Name:           params.Name,
-		StageSpec:	params.RawImage.StageSpec,
-		RunSpec:	params.RawImage.RunSpec,
+		StageSpec:      params.RawImage.StageSpec,
+		RunSpec:        params.RawImage.RunSpec,
 		SizeMb:         sizeMb,
 		Infrastructure: types.Infrastructure_VSPHERE,
 		Created:        time.Now(),

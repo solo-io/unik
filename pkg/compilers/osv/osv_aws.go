@@ -1,8 +1,8 @@
 package osv
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 type OsvAwsCompiler struct {
@@ -18,7 +18,7 @@ func (osvCompiler *OsvAwsCompiler) CompileRawImage(params types.CompileImagePara
 	return &types.RawImage{
 		LocalImagePath: resultFile,
 		StageSpec: types.StageSpec{
-			ImageFormat: types.ImageFormat_QCOW2,
+			ImageFormat:           types.ImageFormat_QCOW2,
 			XenVirtualizationType: types.XenVirtualizationType_HVM,
 		},
 		RunSpec: types.RunSpec{

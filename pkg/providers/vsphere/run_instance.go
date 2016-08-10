@@ -2,10 +2,10 @@ package vsphere
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"time"
 )
@@ -18,7 +18,7 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 	}).Infof("running instance %s", params.Name)
 
 	if _, err := p.GetInstance(params.Name); err == nil {
-		return nil, errors.New("instance with name "+ params.Name +" already exists. virtualbox provider requires unique names for instances", nil)
+		return nil, errors.New("instance with name "+params.Name+" already exists. virtualbox provider requires unique names for instances", nil)
 	}
 
 	image, err := p.GetImage(params.ImageId)
@@ -38,7 +38,7 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 
 	defer func() {
 		if err != nil {
-			if  params.NoCleanup {
+			if params.NoCleanup {
 				logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed instance %s001", params.Name)
 				return
 			}

@@ -1,8 +1,8 @@
 package vsphere
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 func (p *VsphereProvider) DeleteVolume(id string, force bool) error {
@@ -22,7 +22,7 @@ func (p *VsphereProvider) DeleteVolume(id string, force bool) error {
 	volumeDir := getVolumeDatastoreDir(volume.Name)
 	err = p.getClient().Rmdir(volumeDir)
 	if err != nil {
-		return errors.New("could not delete volume at path "+ volumeDir, err)
+		return errors.New("could not delete volume at path "+volumeDir, err)
 	}
 	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		delete(volumes, volume.Id)

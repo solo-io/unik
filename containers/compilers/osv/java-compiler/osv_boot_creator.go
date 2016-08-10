@@ -1,15 +1,15 @@
 package main
 
 import (
-	"os/exec"
-	"os"
-	"strings"
+	"flag"
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	"time"
-	"path/filepath"
-	"flag"
 	"io/ioutil"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"time"
 )
 
 //expect project directory at /project_directory; mount w/ -v FOLDER:/project_directory
@@ -49,7 +49,7 @@ func main() {
 
 	artifactFile := filepath.Join(project_directory, *artifactName)
 	if _, err := os.Stat(artifactFile); err != nil {
-		logrus.WithError(err).Error("failed to stat "+filepath.Join(project_directory, *artifactName)+"; is artifact_file set correctly?")
+		logrus.WithError(err).Error("failed to stat " + filepath.Join(project_directory, *artifactName) + "; is artifact_file set correctly?")
 		logrus.Info("listing project files for debug purposes:")
 		listProjectFiles := exec.Command("find", project_directory)
 		listProjectFiles.Stdout = os.Stdout
@@ -105,7 +105,7 @@ cmdline: /java.so %s -cp /%s -jar /program.jar %s
 # List of files that are included in the generated image.
 #
 files:
-  /%s: %s`, 		proprtiesStr,
+  /%s: %s`, proprtiesStr,
 			filepath.Base(artifactFile),
 			argsStr,
 			filepath.Base(artifactFile), artifactFile)
@@ -148,7 +148,7 @@ files:
 		"-O", "qcow2",
 		"-o", "compat=0.10",
 		capstanImage,
-		project_directory + "/boot.qcow2")
+		project_directory+"/boot.qcow2")
 	printCommand(convertToCompatibleCmd)
 	if out, err := convertToCompatibleCmd.CombinedOutput(); err != nil {
 		logrus.WithError(err).Error(string(out))
@@ -178,7 +178,6 @@ func fileReady(filename string) <-chan struct{} {
 	}()
 	return closeChan
 }
-
 
 func printCommand(cmd *exec.Cmd) {
 	fmt.Printf("running command from dir %s: %v\n", cmd.Dir, cmd.Args)

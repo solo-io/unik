@@ -1,9 +1,9 @@
 package lxerrors
 
 import (
-"fmt"
-"runtime"
-"strings"
+	"fmt"
+	"runtime"
+	"strings"
 )
 
 type lxerror struct {
@@ -17,7 +17,7 @@ func New(message string, err error) *lxerror {
 	return &lxerror{
 		message: message,
 		err:     err,
-		file: getTrace(),
+		file:    getTrace(),
 	}
 }
 
@@ -33,7 +33,7 @@ func getTrace() string {
 	pathComponents := strings.Split(fn, "/")
 	var truncatedPath string
 	if len(pathComponents) > 3 {
-		truncatedPath = strings.Join(pathComponents[len(pathComponents) - 2:], "/")
+		truncatedPath = strings.Join(pathComponents[len(pathComponents)-2:], "/")
 	} else {
 		truncatedPath = strings.Join(pathComponents, "/")
 	}

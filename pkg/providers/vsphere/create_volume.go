@@ -2,13 +2,13 @@ package vsphere
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/pkg/errors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
-	"io/ioutil"
 )
 
 func (p *VsphereProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.Volume, err error) {
@@ -40,9 +40,9 @@ func (p *VsphereProvider) CreateVolume(params types.CreateVolumeParams) (_ *type
 	}
 	defer func() {
 		if err != nil {
-			if  params.NoCleanup {
+			if params.NoCleanup {
 				logrus.Warnf("because --no-cleanup flag was provided, not cleaning up failed volume %s at %s", params.Name, vsphereVolumeDir)
-					return
+				return
 			}
 			logrus.WithError(err).Warnf("creating volume failed, cleaning up volume on datastore")
 			c.Rmdir(vsphereVolumeDir)

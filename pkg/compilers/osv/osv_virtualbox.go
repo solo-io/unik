@@ -1,13 +1,13 @@
 package osv
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 const OSV_VIRTUALBOX_MEMORY = 512
 
-type OsvVirtualboxCompiler struct {}
+type OsvVirtualboxCompiler struct{}
 
 func (osvCompiler *OsvVirtualboxCompiler) CompileRawImage(params types.CompileImageParams) (_ *types.RawImage, err error) {
 	resultFile, err := compileRawImage(params, false)
@@ -23,7 +23,7 @@ func (osvCompiler *OsvVirtualboxCompiler) CompileRawImage(params types.CompileIm
 			DeviceMappings: []types.DeviceMapping{
 				types.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"},
 			},
-			StorageDriver: types.StorageDriver_SATA,
+			StorageDriver:         types.StorageDriver_SATA,
 			DefaultInstanceMemory: OSV_VIRTUALBOX_MEMORY,
 		},
 	}, nil

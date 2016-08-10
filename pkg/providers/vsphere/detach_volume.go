@@ -1,9 +1,9 @@
 package vsphere
 
 import (
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"path/filepath"
 	"strconv"
 )
@@ -36,7 +36,7 @@ func (p *VsphereProvider) DetachVolume(id string) error {
 		}
 	}
 	if controllerKey == "" {
-		return errors.New("could not find device attached to "+instance.Name+" that matches volume "+ getVolumeDatastorePath(volume.Name), nil)
+		return errors.New("could not find device attached to "+instance.Name+" that matches volume "+getVolumeDatastorePath(volume.Name), nil)
 	}
 
 	controllerPort, err := strconv.Atoi(controllerKey)

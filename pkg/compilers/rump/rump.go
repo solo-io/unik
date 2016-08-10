@@ -40,7 +40,6 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 		fmt.Sprintf("ROOT_PATH=%s", g.ImportPath),
 	}
 
-
 	if err := r.runContainer(sourcesDir, containerEnv); err != nil {
 		return nil, err
 	}
