@@ -5,11 +5,11 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/containers"
 	"github.com/pborman/uuid"
+	"os/exec"
 	"strings"
 )
 

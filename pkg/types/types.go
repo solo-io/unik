@@ -26,25 +26,25 @@ const (
 )
 
 type Image struct {
-	Id               string         `json:"Id"`
-	Name             string         `json:"Name"`
-	SizeMb           int64          `json:"SizeMb"`
-	Infrastructure   Infrastructure `json:"Infrastructure"`
-	Created          time.Time      `json:"Created"`
-	StageSpec        StageSpec      `json:"StageSpec"`
-	RunSpec          RunSpec        `json:"RunSpec"`
+	Id             string         `json:"Id"`
+	Name           string         `json:"Name"`
+	SizeMb         int64          `json:"SizeMb"`
+	Infrastructure Infrastructure `json:"Infrastructure"`
+	Created        time.Time      `json:"Created"`
+	StageSpec      StageSpec      `json:"StageSpec"`
+	RunSpec        RunSpec        `json:"RunSpec"`
 }
 
 // TODO: why not use the normal go by-value copy?
 func (image *Image) Copy() *Image {
 	return &Image{
-		Id:               image.Id,
-		Name:             image.Name,
-		SizeMb:           image.SizeMb,
-		Infrastructure:   image.Infrastructure,
-		Created:          image.Created,
-		StageSpec:        image.StageSpec,
-		RunSpec:          image.RunSpec,
+		Id:             image.Id,
+		Name:           image.Name,
+		SizeMb:         image.SizeMb,
+		Infrastructure: image.Infrastructure,
+		Created:        image.Created,
+		StageSpec:      image.StageSpec,
+		RunSpec:        image.RunSpec,
 	}
 }
 

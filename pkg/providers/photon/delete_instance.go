@@ -12,7 +12,7 @@ func (p *PhotonProvider) DeleteInstance(id string, force bool) error {
 	}
 	if instance.State == types.InstanceState_Running {
 		if !force {
-			return errors.New("instance " + instance.Id + "is still running. try again with --force or power off instance first", err)
+			return errors.New("instance "+instance.Id+"is still running. try again with --force or power off instance first", err)
 		} else {
 			p.StopInstance(instance.Id)
 		}

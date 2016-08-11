@@ -85,13 +85,13 @@ func (p *PhotonProvider) Stage(params types.StageImageParams) (_ *types.Image, e
 
 	// upload images
 	image := &types.Image{
-		Id:               imgId,
-		Name:             params.Name,
-		StageSpec:        params.RawImage.StageSpec,
-		RunSpec:          params.RawImage.RunSpec,
-		SizeMb:           sizeMb,
-		Infrastructure:   types.Infrastructure_PHOTON,
-		Created:          time.Now(),
+		Id:             imgId,
+		Name:           params.Name,
+		StageSpec:      params.RawImage.StageSpec,
+		RunSpec:        params.RawImage.RunSpec,
+		SizeMb:         sizeMb,
+		Infrastructure: types.Infrastructure_PHOTON,
+		Created:        time.Now(),
 	}
 
 	err = p.state.ModifyImages(func(images map[string]*types.Image) error {

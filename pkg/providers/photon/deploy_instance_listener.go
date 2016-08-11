@@ -142,7 +142,6 @@ func (p *PhotonProvider) runInstanceListener(image *types.Image) (err error) {
 		return errors.New("Waiting for create vm", err)
 	}
 
-
 	instanceId := task.Entity.ID
 	task, err = p.client.VMs.Start(instanceId)
 	if err != nil {
@@ -154,8 +153,7 @@ func (p *PhotonProvider) runInstanceListener(image *types.Image) (err error) {
 		return errors.New("Starting vm", err)
 	}
 
-
-	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, time.Minute * 5)
+	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, time.Minute*5)
 	if err != nil {
 		return errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 	}
