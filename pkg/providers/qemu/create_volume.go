@@ -45,7 +45,7 @@ func (p *QemuProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.V
 		Name:           params.Name,
 		SizeMb:         sizeMb,
 		Attachment:     "",
-		Infrastructure: types.Infrastructure_VIRTUALBOX,
+		Infrastructure: types.Infrastructure_QEMU,
 		Created:        time.Now(),
 	}
 

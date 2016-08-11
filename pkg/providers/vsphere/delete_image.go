@@ -20,7 +20,7 @@ func (p *VsphereProvider) DeleteImage(id string, force bool) error {
 			if !force {
 				return errors.New("instance "+instance.Id+" found which uses image "+image.Id+"; try again with force=true", nil)
 			} else {
-				logrus.Warnf("deleting instance %s which belongs to instance %s", instance.Id, image.Id)
+				logrus.Warnf("deleting instance %s which belongs to image %s", instance.Id, image.Id)
 				err = p.DeleteInstance(instance.Id, true)
 				if err != nil {
 					return errors.New("failed to delete instance "+instance.Id+" which is using image "+image.Id, err)
