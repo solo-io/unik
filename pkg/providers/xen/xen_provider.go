@@ -6,6 +6,7 @@ import (
 
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/state"
+	"os/exec"
 )
 
 type XenProvider struct {
