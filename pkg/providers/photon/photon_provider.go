@@ -48,7 +48,7 @@ func NewPhotonProvider(config config.Photon) (*PhotonProvider, error) {
 		state:  state.NewBasicState(PhotonStateFile()),
 	}
 
-	p.client = photon.NewClient(p.config.PhotonURL, nil, nil)
+	p.client = photon.NewClient(p.config.PhotonURL, "", nil)
 	p.projectId = p.config.ProjectId
 	_, err := p.client.Status.Get()
 	if err != nil {

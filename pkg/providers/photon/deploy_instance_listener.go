@@ -85,9 +85,7 @@ func (p *PhotonProvider) deleteOldImage() error {
 	if err := p.DeleteImage(PhotonUnikInstanceListener, true); err != nil {
 		return nil
 	}
-	images, err := p.client.Images.GetAll(&photon.ImageGetOptions{
-		Name: PhotonUnikInstanceListener,
-	})
+	images, err := p.client.Images.GetAll()
 	if err != nil {
 		return errors.New("retrieving photon image list", err)
 	}
