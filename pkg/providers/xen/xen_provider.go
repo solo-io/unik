@@ -1,17 +1,17 @@
-package qemu
+package xen
 
 import (
 	"os"
 	"path/filepath"
 
 	"github.com/emc-advanced-dev/unik/pkg/config"
+	"github.com/emc-advanced-dev/unik/pkg/providers/xen/xenclient"
 	"github.com/emc-advanced-dev/unik/pkg/state"
-	"os/exec"
 )
 
 type XenProvider struct {
-	config config.Xen
 	state  state.State
+	client *xenclient.XenClient
 }
 
 func XenStateFile() string {
@@ -30,19 +30,18 @@ func xenVolumesDirectory() string {
 	return filepath.Join(config.Internal.UnikHome, "xen/volumes/")
 }
 
-func NewQemuProvider(config config.Qemu) (*XenProvider, error) {
+func NewXenProvider(config config.Xen) (*XenProvider, error) {
 
 	os.MkdirAll(xenImagesDirectory(), 0777)
 	os.MkdirAll(xenInstancesDirectory(), 0777)
 	os.MkdirAll(xenVolumesDirectory(), 0777)
 
-	if config.DebuggerPort == 0 {
-		config.DebuggerPort = 3001
-	}
-
 	p := &XenProvider{
-		config: config,
-		state:  state.NewBasicState(XenStateFile()),
+		state: state.NewBasicState(XenStateFile()),
+		client: &xenclient.XenClient{
+			KernelPath: config.KernelPath,
+			XenBridge:  config.XenBridge,
+		},
 	}
 
 	return p, nil
@@ -57,12 +56,8 @@ func getImagePath(imageName string) string {
 	return filepath.Join(xenImagesDirectory(), imageName, "boot.img")
 }
 
-func getKernelPath(imageName string) string {
-	return filepath.Join(xenImagesDirectory(), imageName, "program.bin")
-}
-
-func getCmdlinePath(imageName string) string {
-	return filepath.Join(xenImagesDirectory(), imageName, "cmdline")
+func getInstanceDir(instanceName string) string {
+	return filepath.Join(xenInstancesDirectory(), instanceName)
 }
 
 func getVolumePath(volumeName string) string {
