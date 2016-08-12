@@ -1,4 +1,4 @@
-package qemu
+package xen
 
 import "github.com/emc-advanced-dev/unik/pkg/types"
 

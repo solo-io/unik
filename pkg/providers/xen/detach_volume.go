@@ -1,4 +1,4 @@
-package qemu
+package xen
 
 import "github.com/emc-advanced-dev/pkg/errors"
 
