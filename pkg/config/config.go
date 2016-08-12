@@ -42,9 +42,9 @@ type Qemu struct {
 }
 
 type Xen struct {
-	Name         string `yaml:"name"`
-	NoGraphic    bool   `yaml:"no_graphic"`
-	DebuggerPort int    `yaml:"debugger_port"`
+	Name       string `yaml:"name"`
+	KernelPath string `yaml:"pv_kernel"`
+	XenBridge  string `yaml:"xen_bridge"`
 }
 
 type VirtualboxAdapterType string
