@@ -5,6 +5,7 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"os"
+	"path/filepath"
 )
 
 func (p *VirtualboxProvider) DeleteImage(id string, force bool) error {
@@ -32,8 +33,7 @@ func (p *VirtualboxProvider) DeleteImage(id string, force bool) error {
 
 	imagePath := getImagePath(image.Name)
 	logrus.Warnf("deleting image file at %s", imagePath)
-	err = os.Remove(imagePath)
-	if err != nil {
+	if err := os.RemoveAll(filepath.Dir(imagePath)); err != nil {
 		return errors.New("deleing image file at "+imagePath, err)
 	}
 

@@ -11,6 +11,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
+	"path/filepath"
 	"strings"
 )
 
@@ -73,7 +74,7 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		if err != nil {
 			return errors.New("failed creating raw data volume", err)
 		}
-		defer os.Remove(imagePath)
+		defer os.RemoveAll(filepath.Dir(imagePath))
 
 		params := types.CreateVolumeParams{
 			Name:      instanceListenerData,

@@ -14,6 +14,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
+	"path/filepath"
 )
 
 var timeout = time.Second * 10
@@ -75,7 +76,7 @@ func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error)
 		if err != nil {
 			return errors.New("failed creating raw data volume", err)
 		}
-		defer os.Remove(imagePath)
+		defer os.RemoveAll(filepath.Dir(imagePath))
 		createVolumeParams := types.CreateVolumeParams{
 			Name:      instanceListenerData,
 			ImagePath: imagePath,
