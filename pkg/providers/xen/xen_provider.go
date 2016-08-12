@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/providers/xen/xenclient"
 	"github.com/emc-advanced-dev/unik/pkg/state"
@@ -42,6 +43,10 @@ func NewXenProvider(config config.Xen) (*XenProvider, error) {
 			KernelPath: config.KernelPath,
 			XenBridge:  config.XenBridge,
 		},
+	}
+
+	if err := p.deployInstanceListener(); err != nil {
+		return errors.New("deploying xen instance listener", err)
 	}
 
 	return p, nil

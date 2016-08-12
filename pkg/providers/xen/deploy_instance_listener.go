@@ -1,4 +1,4 @@
-package virtualbox
+package xen
 
 import (
 	"io/ioutil"
@@ -9,47 +9,50 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
 	"github.com/emc-advanced-dev/unik/pkg/config"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
+	"github.com/emc-advanced-dev/unik/pkg/providers/xen/xenclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
 	"path/filepath"
 )
 
+const (
+	instanceListenerPrefix  = "unik_xen"
+	XenUnikInstanceListener = "XenUnikInstanceListener"
+)
+
 var timeout = time.Second * 10
 var instanceListenerData = "InstanceListenerData"
 
-func (p *VirtualboxProvider) deployInstanceListener(config config.Virtualbox) error {
+func (p *XenProvider) deployInstanceListener() error {
 	logrus.Infof("checking if instance listener is alive...")
 	if instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout); err == nil {
 		logrus.Infof("instance listener is alive with IP %s", instanceListenerIp)
 		return nil
 	}
 	logrus.Infof("cannot contact instance listener... cleaning up previous if it exists..")
-	virtualboxclient.PowerOffVm(VboxUnikInstanceListener)
-	virtualboxclient.DestroyVm(VboxUnikInstanceListener)
+	p.client.DestroyVm(XenUnikInstanceListener)
 	logrus.Infof("compiling new instance listener")
-	sourceDir, err := ioutil.TempDir("", "vbox.instancelistener.")
+	sourceDir, err := ioutil.TempDir("", "xen.instancelistener.")
 	if err != nil {
 		return errors.New("creating temp dir for instance listener source", err)
 	}
 	defer os.RemoveAll(sourceDir)
-	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "compilers-rump-go-hw-no-stub", rump.CreateImageVirtualBox)
+	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "compilers-rump-go-xen-no-stub", rump.CreateImageXen)
 	if err != nil {
 		return errors.New("compiling instance listener source to unikernel", err)
 	}
 	defer os.Remove(rawImage.LocalImagePath)
 	logrus.Infof("staging new instance listener image")
-	os.RemoveAll(getImagePath(VboxUnikInstanceListener))
+	os.RemoveAll(getImagePath(XenUnikInstanceListener))
 	params := types.StageImageParams{
-		Name:     VboxUnikInstanceListener,
+		Name:     XenUnikInstanceListener,
 		RawImage: rawImage,
 		Force:    true,
 	}
 	image, err := p.Stage(params)
 	if err != nil {
-		return errors.New("building bootable virtualbox image for instsance listener", err)
+		return errors.New("building bootable xen image for instsance listener", err)
 	}
 	defer func() {
 		if err != nil {
@@ -63,7 +66,7 @@ func (p *VirtualboxProvider) deployInstanceListener(config config.Virtualbox) er
 	return nil
 }
 
-func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error) {
+func (p *XenProvider) runInstanceListener(image *types.Image) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"image-id": image.Id,
 	}).Infof("running instance of instance listener")
@@ -93,13 +96,12 @@ func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error)
 		}()
 	}
 
-	instanceDir := getInstanceDir(VboxUnikInstanceListener)
+	instanceDir := getInstanceDir(XenUnikInstanceListener)
 	defer func() {
 		if err != nil {
 			logrus.WithError(err).Warnf("error encountered, ensuring vm and disks are destroyed")
-			virtualboxclient.PowerOffVm(VboxUnikInstanceListener)
 			p.DetachVolume(instanceListenerVol.Id)
-			virtualboxclient.DestroyVm(VboxUnikInstanceListener)
+			p.client.DestroyVm(XenUnikInstanceListener)
 			os.RemoveAll(instanceDir)
 			if newVolume {
 				os.RemoveAll(getVolumePath(instanceListenerData))
@@ -107,32 +109,25 @@ func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error)
 		}
 	}()
 
-	logrus.Debugf("creating virtualbox vm")
+	logrus.Debugf("creating xen vm")
 
-	if err := virtualboxclient.CreateVm(VboxUnikInstanceListener, virtualboxInstancesDirectory(), image.RunSpec.DefaultInstanceMemory, p.config.AdapterName, p.config.VirtualboxAdapterType, image.RunSpec.StorageDriver); err != nil {
+	xenParams := xenclient.CreateVmParams{
+		Name:      XenUnikInstanceListener,
+		Memory:    image.RunSpec.DefaultInstanceMemory,
+		BootImage: getImagePath(image.Name),
+		VmDir:     getInstanceDir(XenUnikInstanceListener),
+		DataVolumes: []xenclient.VolumeConfig{
+			xenclient.VolumeConfig{
+				ImagePath:  getVolumePath(instanceListenerVol.Name),
+				DeviceName: "sdb1",
+			},
+		},
+	}
+
+	if err := p.client.CreateVm(xenParams); err != nil {
 		return errors.New("creating vm", err)
 	}
 
-	logrus.Debugf("copying base boot vmdk to instance dir")
-	logrus.Debugf("copying source boot vmdk")
-	instanceBootImage := instanceDir + "/boot.vmdk"
-	if err := unikos.CopyFile(getImagePath(image.Name), instanceBootImage); err != nil {
-		return errors.New("copying base boot image", err)
-	}
-	if err := virtualboxclient.RefreshDiskUUID(instanceBootImage); err != nil {
-		return errors.New("refreshing disk uuid", err)
-	}
-	if err := virtualboxclient.AttachDisk(VboxUnikInstanceListener, instanceBootImage, 0, image.RunSpec.StorageDriver); err != nil {
-		return errors.New("attaching boot vol to instance", err)
-	}
-
-	controllerPort, err := common.GetControllerPortForMnt(image, "/data")
-	if err != nil {
-		return errors.New("getting controller port for mnt point", err)
-	}
-	if err := virtualboxclient.AttachDisk(VboxUnikInstanceListener, getVolumePath(instanceListenerVol.Name), controllerPort, image.RunSpec.StorageDriver); err != nil {
-		return errors.New("attaching to vm", err)
-	}
 	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volume, ok := volumes[instanceListenerVol.Id]
 		if !ok {
@@ -147,25 +142,26 @@ func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error)
 		return errors.New("saving instance volume map to state", err)
 	}
 
-	logrus.Debugf("powering on vm")
-	if err := virtualboxclient.PowerOnVm(VboxUnikInstanceListener); err != nil {
-		return errors.New("powering on vm", err)
-	}
-
 	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, time.Minute*5)
 	if err != nil {
 		return errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 	}
 
-	vm, err := virtualboxclient.GetVm(VboxUnikInstanceListener)
+	doms, err := p.client.ListVms()
 	if err != nil {
-		return errors.New("getting vm info from virtualbox", err)
+		return errors.New("getting vm info from xen", err)
+	}
+	instanceId := XenUnikInstanceListener
+	for _, d := range doms {
+		if d.Config.CInfo.Name == XenUnikInstanceListener {
+			instanceId = d.Domid
+			break
+		}
 	}
 
-	instanceId := vm.UUID
 	instance := &types.Instance{
 		Id:             instanceId,
-		Name:           VboxUnikInstanceListener,
+		Name:           XenUnikInstanceListener,
 		State:          types.InstanceState_Pending,
 		IpAddress:      instanceListenerIp,
 		Infrastructure: types.Infrastructure_VIRTUALBOX,
