@@ -7,12 +7,12 @@ import (
 
 func (p *XenProvider) GetConfig() providers.ProviderConfig {
 	return providers.ProviderConfig{
-		UsePartitionTables: true,
+		UsePartitionTables: false,
 		SupportedCompilers: []string{
-			compilers.RUMP_GO_QEMU,
-			compilers.RUMP_NODEJS_QEMU,
-			compilers.RUMP_PYTHON_QEMU,
-			compilers.INCLUDEOS_CPP_QEMU,
+			compilers.RUMP_GO_XEN,
+			compilers.RUMP_NODEJS_XEN,
+			compilers.RUMP_PYTHON_XEN,
+			compilers.OSV_JAVA_XEN,
 		},
 	}
 }
