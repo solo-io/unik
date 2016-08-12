@@ -8,7 +8,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
@@ -29,6 +28,7 @@ func (p *XenProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 			}
 		}
 	}
+
 	imagePath := getImagePath(params.Name)
 	logrus.Debugf("making directory: %s", filepath.Dir(imagePath))
 	if err := os.MkdirAll(filepath.Dir(imagePath), 0777); err != nil {
@@ -40,27 +40,8 @@ func (p *XenProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 		}
 	}()
 
-	kernelPath := filepath.Join(filepath.Dir(params.RawImage.LocalImagePath), "program.bin")
-	if _, err := os.Stat(kernelPath); os.IsNotExist(err) {
-		logrus.Debugf("program.bin does not exist, assuming classic bootloader")
-		if err := unikos.CopyFile(params.RawImage.LocalImagePath, getImagePath(params.Name)); err != nil {
-			return nil, errors.New("copying bootable image to image dir", err)
-		}
-	} else {
-		logrus.WithField("raw-image", params.RawImage).Infof("creating boot volume from raw image")
-		if err := common.ConvertRawImage(params.RawImage.StageSpec.ImageFormat, types.ImageFormat_QCOW2, params.RawImage.LocalImagePath, imagePath); err != nil {
-			return nil, errors.New("converting raw image to qcow2", err)
-		}
-
-		kernelFile := filepath.Join(filepath.Dir(params.RawImage.LocalImagePath), "program.bin")
-		if err := unikos.CopyFile(kernelFile, getKernelPath(params.Name)); err != nil {
-			return nil, errors.New("copying kernel file to image dir", err)
-		}
-
-		cmdlineFile := filepath.Join(filepath.Dir(params.RawImage.LocalImagePath), "cmdline")
-		if err := unikos.CopyFile(cmdlineFile, getCmdlinePath(params.Name)); err != nil {
-			return nil, errors.New("copying cmdline file to image dir", err)
-		}
+	if err := unikos.CopyFile(params.RawImage.LocalImagePath, getImagePath(params.Name)); err != nil {
+		return nil, errors.New("copying bootable image to image dir", err)
 	}
 
 	imagePathInfo, err := os.Stat(imagePath)
