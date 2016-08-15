@@ -5,20 +5,21 @@ When debugging unikernels, the main tool amazon offers us is "Get System logs". 
 To use a real debugger, you can build your own xen hypervisor, that will run the same unik images that were built for amazon. 
 You can then use gdb to debug your code.
 
+These instructions are for OS X. can be used in Linux with minor modifications.
+
 # Get Xen
 
 I used this vagrant box: https://github.com/englishm/vagrant-xen
 
-In the vagrant config, enabled a public network:
+In the vagrant config, forward port 9999:
 ```
 ...
-config.vm.network "public_network"
+config.vm.network "forwarded_port", guest: 9999, host: 9999
 ...
 
 ```
 
 This will be important later when we want to connect to this machine with gdb.
-I am sure there is better way to get this communication working, this was just the fastest for me.
 
 ## PV Grub
 Once you got the box running, ssh inside it (```vagrant ssh```). 
@@ -28,7 +29,7 @@ In general, the instructions are [here](http://wiki.xen.org/wiki/PvGrub
 ). Before doing "./configure", install these packages as well (otherwise build will fail):
 
 ```
-sudo apt-get install libaio-dev libssl-dev libc6-dev-i386 texinfo
+sudo apt-get install libaio-dev libssl-dev libc6-dev-i386 texinfo git
 ```
 
 ## Add a bridge
@@ -36,7 +37,7 @@ sudo apt-get install libaio-dev libssl-dev libc6-dev-i386 texinfo
 To add a bridge, add the following lines to /etc/network/interfaces:
 ```
 iface xenbr0 inet dhcp
-    bridge_ports eth0 eth0:0
+    bridge_ports eth0
     bridge_stp off
     bridge_maxwait 0
     bridge_fd 0
@@ -93,7 +94,7 @@ EOF
 
 Then start python fake metadata server:
 ```
-sudo python -c 'import SimpleHTTPServer;import SocketServer; SocketServer.TCPServer(("", 80), SimpleHTTPServer.SimpleHTTPRequestHandler).serve_forever()'
+sudo python -m SimpleHTTPServer 80
 ```
 
 # XL Config file
@@ -185,11 +186,16 @@ Start gdb stub on the vagrant machine
 ```
 sudo /usr/lib/xen-4.4/bin/gdbsx -a 3 64 9999
 ```
+OR just do this:
+```
+sudo /usr/lib/xen-4.4/bin/gdbsx -a $(sudo xl list|tail -1 | awk '{print $2}') 64 9999
+```
+
 
 Start our gdb container (your container tab might differ, check containers/versions.json):
 ```
 docker run --net host --rm -t -i -v /Users/kohavy/.unik/tmp/bootable-image-directory.411462683/:/opt/code:ro  projectunik/rump-debugger-xen:7fa273029766
-/opt/gdb-7.11/gdb/gdb -ex 'target remote <vagrant-ip>:9999' /opt/code/program.bin
+/opt/gdb-7.11/gdb/gdb -ex 'target remote 192.168.1.109:9999' /opt/code/program.bin
 ```
 
 Debug your problems away!
