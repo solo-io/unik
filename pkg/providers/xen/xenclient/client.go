@@ -2,9 +2,9 @@ package xenclient
 
 import (
 	"bytes"
-	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"io/ioutil"
 	"os/exec"
@@ -33,12 +33,12 @@ vcpus = 1
 # Network devices
 # A list of 'vifspec' entries as described in
 # docs/misc/xl-network-configuration.markdown
-vif = [ 'bridge=%s,mac=%s' ]
+vif = [ 'bridge=%s' ]
 
 # Disk Devices
 # A list of 'diskspec' entries as described in
 # docs/misc/xl-disk-configuration.txt
-disk = [ '%s,sda1,rw'%s ]
+disk = [ '%s,raw,sda1,rw'%s ]
 
 on_poweroff = "preserve"
 on_reboot = "preserve"
@@ -64,19 +64,17 @@ type VolumeConfig struct {
 }
 
 func (c *XenClient) CreateVm(params CreateVmParams) error {
-	mac, err := randomMac()
-	if err != nil {
-		return errors.New("generating mac addr", err)
-	}
 	volumes := ""
 	for _, vol := range params.DataVolumes {
-		volumes = fmt.Sprintf("%s, '%s,%s,rw'", volumes, vol.ImagePath, vol.DeviceName)
+		volumes = fmt.Sprintf("%s, '%s,raw,%s,rw'", volumes, vol.ImagePath, vol.DeviceName)
 	}
-	xenConf := fmt.Sprintf(xenConfBase, params.Name, c.KernelPath, params.Memory, c.XenBridge, mac, params.BootImage, volumes)
+	xenConf := fmt.Sprintf(xenConfBase, params.Name, c.KernelPath, params.Memory, c.XenBridge, params.BootImage, volumes)
 	confFile := filepath.Join(params.VmDir, "xen.conf")
 	if err := ioutil.WriteFile(confFile, []byte(xenConf), 0644); err != nil {
 		return errors.New("writing xen conf file for vm", err)
 	}
+
+	logrus.Debugf("using xen config:\n%s", xenConf)
 
 	if _, err := xl("create", confFile); err != nil {
 		return errors.New("creating domain", err)
@@ -112,17 +110,6 @@ func xl(args ...string) ([]byte, error) {
 		return out, errors.New(errBuf.String(), err)
 	}
 	return out, nil
-}
-
-// http://stackoverflow.com/questions/21018729/generate-mac-address-in-go
-func randomMac() (string, error) {
-	buf := make([]byte, 6)
-	if _, err := rand.Read(buf); err != nil {
-		return "", err
-	}
-	// Set the local bit
-	buf[0] |= 2
-	return fmt.Printf("%02x:%02x:%02x:%02x:%02x:%02x", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]), nil
 }
 
 type domList []struct {
