@@ -23,6 +23,7 @@ const (
 	Infrastructure_VIRTUALBOX Infrastructure = "VIRTUALBOX"
 	Infrastructure_QEMU       Infrastructure = "QEMU"
 	Infrastructure_PHOTON     Infrastructure = "PHOTON"
+	Infrastructure_XEN        Infrastructure = "XEN"
 )
 
 type Image struct {

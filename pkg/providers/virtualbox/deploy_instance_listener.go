@@ -14,12 +14,13 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
+	"path/filepath"
 )
 
 var timeout = time.Second * 10
 var instanceListenerData = "InstanceListenerData"
 
-func (p *VirtualboxProvider) DeployInstanceListener(config config.Virtualbox) error {
+func (p *VirtualboxProvider) deployInstanceListener(config config.Virtualbox) error {
 	logrus.Infof("checking if instance listener is alive...")
 	if instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout); err == nil {
 		logrus.Infof("instance listener is alive with IP %s", instanceListenerIp)
@@ -75,7 +76,7 @@ func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error)
 		if err != nil {
 			return errors.New("failed creating raw data volume", err)
 		}
-		defer os.Remove(imagePath)
+		defer os.RemoveAll(filepath.Dir(imagePath))
 		createVolumeParams := types.CreateVolumeParams{
 			Name:      instanceListenerData,
 			ImagePath: imagePath,

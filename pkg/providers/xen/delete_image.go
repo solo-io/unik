@@ -1,12 +1,15 @@
-package vsphere
+package xen
 
 import (
+	"os"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"path/filepath"
 )
 
-func (p *VsphereProvider) DeleteImage(id string, force bool) error {
+func (p *XenProvider) DeleteImage(id string, force bool) error {
 	image, err := p.GetImage(id)
 	if err != nil {
 		return errors.New("retrieving image", err)
@@ -29,19 +32,21 @@ func (p *VsphereProvider) DeleteImage(id string, force bool) error {
 		}
 	}
 
-	imageDir := getImageDatastoreDir(image.Name)
-	logrus.Infof("deleting image file at %s", imageDir)
-	if err := p.getClient().Rmdir(imageDir); err != nil {
-		return errors.New("deleting image file at "+imageDir, err)
+	imagePath := getImagePath(image.Name)
+	logrus.Warnf("deleting image file at %s", imagePath)
+	if err := os.RemoveAll(filepath.Dir(imagePath)); err != nil {
+		return errors.New("deleing image file at "+imagePath, err)
 	}
 
-	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {
+	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
 		delete(images, image.Id)
 		return nil
-	}); err != nil {
+	})
+	if err != nil {
 		return errors.New("modifying image map in state", err)
 	}
-	if err := p.state.Save(); err != nil {
+	err = p.state.Save()
+	if err != nil {
 		return errors.New("saving modified image map to state", err)
 	}
 	return nil

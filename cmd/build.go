@@ -38,7 +38,7 @@ Image names must be unique. If an image exists with the same name, you can force
 --force flag
 
 Example usage:
-	unik build --name myUnikernel --path ./myApp/src --compiler rump-go-aws --provider aws --mountpoint /foo --mountpoint /bar --args '-myParameter MYVALUE' --force
+	unik build --name myUnikernel --path ./myApp/src --compiler rump-go-xen --provider aws --mountpoint /foo --mountpoint /bar --args '-myParameter MYVALUE' --force
 
 	# will create a unikernel named myUnikernel using the sources found in ./myApp/src,
 	# compiled using rumprun for the xen hypervisor, targeting AWS infrastructure,

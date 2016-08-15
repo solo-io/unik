@@ -1,53 +1,57 @@
-package vsphere
+package xen
 
 import (
 	"io/ioutil"
 	"os"
 	"time"
 
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"github.com/emc-advanced-dev/unik/pkg/providers/xen/xenclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
-	"path/filepath"
-	"strings"
+)
+
+const (
+	instanceListenerPrefix  = "unik_xen"
+	XenUnikInstanceListener = "XenUnikInstanceListener"
 )
 
 var timeout = time.Second * 10
 var instanceListenerData = "InstanceListenerData"
 
-func (p *VsphereProvider) deployInstanceListener() (err error) {
+func (p *XenProvider) deployInstanceListener() error {
 	logrus.Infof("checking if instance listener is alive...")
 	if instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout); err == nil {
 		logrus.Infof("instance listener is alive with IP %s", instanceListenerIp)
 		return nil
 	}
 	logrus.Infof("cannot contact instance listener... cleaning up previous if it exists..")
-	c := p.getClient()
-	c.PowerOffVm(VsphereUnikInstanceListener)
-	c.DestroyVm(VsphereUnikInstanceListener)
+	p.client.DestroyVm(XenUnikInstanceListener)
 	logrus.Infof("compiling new instance listener")
-	sourceDir, err := ioutil.TempDir("", "vsphereinstancelistener.")
+	sourceDir, err := ioutil.TempDir("", "xen.instancelistener.")
 	if err != nil {
 		return errors.New("creating temp dir for instance listener source", err)
 	}
 	defer os.RemoveAll(sourceDir)
-	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "compilers-rump-go-hw-no-stub", rump.CreateImageVmware, true)
+	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "compilers-rump-go-xen-no-stub", rump.CreateImageXen)
 	if err != nil {
 		return errors.New("compiling instance listener source to unikernel", err)
 	}
+	defer os.Remove(rawImage.LocalImagePath)
 	logrus.Infof("staging new instance listener image")
-	c.Rmdir(getImageDatastoreDir(VsphereUnikInstanceListener))
+	os.RemoveAll(getImagePath(XenUnikInstanceListener))
 	params := types.StageImageParams{
-		Name:     VsphereUnikInstanceListener,
+		Name:     XenUnikInstanceListener,
 		RawImage: rawImage,
 		Force:    true,
 	}
 	image, err := p.Stage(params)
 	if err != nil {
-		return errors.New("building bootable vsphere image for instsance listener", err)
+		return errors.New("building bootable xen image for instsance listener", err)
 	}
 	defer func() {
 		if err != nil {
@@ -61,7 +65,7 @@ func (p *VsphereProvider) deployInstanceListener() (err error) {
 	return nil
 }
 
-func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
+func (p *XenProvider) runInstanceListener(image *types.Image) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"image-id": image.Id,
 	}).Infof("running instance of instance listener")
@@ -74,61 +78,56 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		if err != nil {
 			return errors.New("failed creating raw data volume", err)
 		}
-		defer os.RemoveAll(filepath.Dir(imagePath))
-
-		params := types.CreateVolumeParams{
+		defer os.RemoveAll(imagePath)
+		createVolumeParams := types.CreateVolumeParams{
 			Name:      instanceListenerData,
 			ImagePath: imagePath,
 		}
-		instanceListenerVol, err = p.CreateVolume(params)
+
+		instanceListenerVol, err = p.CreateVolume(createVolumeParams)
 		if err != nil {
 			return errors.New("creating data vol for instance listener", err)
 		}
+		defer func() {
+			if err != nil {
+				p.DeleteVolume(instanceListenerVol.Id, true)
+			}
+		}()
 	}
 
-	c := p.getClient()
-
-	instanceDir := getInstanceDatastoreDir(VsphereUnikInstanceListener)
 	defer func() {
 		if err != nil {
 			logrus.WithError(err).Warnf("error encountered, ensuring vm and disks are destroyed")
 			p.DetachVolume(instanceListenerVol.Id)
-			c.PowerOffVm(VsphereUnikInstanceListener)
-			c.DestroyVm(VsphereUnikInstanceListener)
-			c.Rmdir(instanceDir)
+			p.client.DestroyVm(XenUnikInstanceListener)
+			os.RemoveAll(getInstanceDir(XenUnikInstanceListener))
 			if newVolume {
-				p.DeleteVolume(instanceListenerVol.Id, true)
+				os.RemoveAll(getVolumePath(instanceListenerData))
 			}
-			c.Rmdir(getVolumeDatastorePath(instanceListenerData))
 		}
 	}()
 
-	logrus.Debugf("creating vsphere vm")
+	logrus.Debugf("creating xen vm")
 
-	if err := c.CreateVm(VsphereUnikInstanceListener, image.RunSpec.DefaultInstanceMemory, image.RunSpec.VsphereNetworkType, p.config.NetworkLabel); err != nil {
+	xenParams := xenclient.CreateVmParams{
+		Name:      XenUnikInstanceListener,
+		Memory:    image.RunSpec.DefaultInstanceMemory,
+		BootImage: getImagePath(image.Name),
+		VmDir:     getInstanceDir(XenUnikInstanceListener),
+		DataVolumes: []xenclient.VolumeConfig{
+			xenclient.VolumeConfig{
+				ImagePath:  getVolumePath(instanceListenerVol.Name),
+				DeviceName: "sdb1",
+			},
+		},
+	}
+
+	os.MkdirAll(getInstanceDir(XenUnikInstanceListener), 0755)
+
+	if err := p.client.CreateVm(xenParams); err != nil {
 		return errors.New("creating vm", err)
 	}
 
-	logrus.Debugf("copying base boot image to instance dir")
-	instanceBootImagePath := instanceDir + "/boot.vmdk"
-	if err := c.CopyFile(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
-		return errors.New("copying boot.vmdk", err)
-	}
-	if err := c.CopyFile(strings.TrimSuffix(getImageDatastorePath(image.Name), ".vmdk")+"-flat.vmdk", strings.TrimSuffix(instanceBootImagePath, ".vmdk")+"-flat.vmdk"); err != nil {
-		return errors.New("copying boot-flat.vmdk", err)
-	}
-	if err := c.AttachDisk(VsphereUnikInstanceListener, instanceBootImagePath, 0, image.RunSpec.StorageDriver); err != nil {
-		return errors.New("attaching boot vol to instance", err)
-	}
-
-	controllerPort, err := common.GetControllerPortForMnt(image, "/data")
-	if err != nil {
-		return errors.New("getting controller port for mnt point", err)
-	}
-	logrus.Infof("attaching %s to %s on controller port %v", instanceListenerVol.Id, VsphereUnikInstanceListener, controllerPort)
-	if err := c.AttachDisk(VsphereUnikInstanceListener, getVolumeDatastorePath(instanceListenerVol.Name), controllerPort, image.RunSpec.StorageDriver); err != nil {
-		return errors.New("attaching disk to vm", err)
-	}
 	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volume, ok := volumes[instanceListenerVol.Id]
 		if !ok {
@@ -143,28 +142,29 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		return errors.New("saving instance volume map to state", err)
 	}
 
-	logrus.Debugf("powering on vm")
-	if err := c.PowerOnVm(VsphereUnikInstanceListener); err != nil {
-		return errors.New("powering on vm", err)
-	}
-
-	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, time.Second*60)
+	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, time.Minute*5)
 	if err != nil {
 		return errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
 	}
 
-	vm, err := c.GetVm(VsphereUnikInstanceListener)
+	doms, err := p.client.ListVms()
 	if err != nil {
-		return errors.New("getting vm info from vsphere", err)
+		return errors.New("getting vm info from xen", err)
+	}
+	instanceId := XenUnikInstanceListener
+	for _, d := range doms {
+		if d.Config.CInfo.Name == XenUnikInstanceListener {
+			instanceId = fmt.Sprintf("%d", d.Domid)
+			break
+		}
 	}
 
-	instanceId := vm.Config.UUID
 	instance := &types.Instance{
 		Id:             instanceId,
-		Name:           VsphereUnikInstanceListener,
+		Name:           XenUnikInstanceListener,
 		State:          types.InstanceState_Pending,
 		IpAddress:      instanceListenerIp,
-		Infrastructure: types.Infrastructure_VSPHERE,
+		Infrastructure: types.Infrastructure_VIRTUALBOX,
 		ImageId:        image.Id,
 		Created:        time.Now(),
 	}

@@ -1,11 +1,11 @@
-package aws
+package xen
 
 import (
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/providers"
 )
 
-func (p *AwsProvider) GetConfig() providers.ProviderConfig {
+func (p *XenProvider) GetConfig() providers.ProviderConfig {
 	return providers.ProviderConfig{
 		UsePartitionTables: false,
 		SupportedCompilers: []string{

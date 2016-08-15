@@ -7,15 +7,15 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func CreateImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
-	return createImageAws(kernel, args, mntPoints, bakedEnv, noCleanup, false)
+func CreateImageXen(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageXen(kernel, args, mntPoints, bakedEnv, noCleanup, false)
 }
 
-func CreateImageAwsAddStub(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
-	return createImageAws(kernel, args, mntPoints, bakedEnv, noCleanup, true)
+func CreateImageXenAddStub(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
+	return createImageXen(kernel, args, mntPoints, bakedEnv, noCleanup, true)
 }
 
-func createImageAws(kernel, args string, mntPoints, bakedEnv []string, noCleanup, addStub bool) (*types.RawImage, error) {
+func createImageXen(kernel, args string, mntPoints, bakedEnv []string, noCleanup, addStub bool) (*types.RawImage, error) {
 	// create rump config
 	var c rumpConfig
 	if bakedEnv != nil {

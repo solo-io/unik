@@ -1,4 +1,4 @@
-package qemu
+package xen
 
 import (
 	"os"
@@ -7,11 +7,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
-func (p *QemuProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.Volume, err error) {
+func (p *XenProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.Volume, err error) {
 	if _, volumeErr := p.GetImage(params.Name); volumeErr == nil {
 		return nil, errors.New("volume already exists", nil)
 	}
@@ -30,9 +29,6 @@ func (p *QemuProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.V
 		}
 	}()
 	logrus.WithField("raw-image", params.ImagePath).Infof("creating volume from raw image")
-	if err := common.ConvertRawImage(types.ImageFormat_RAW, types.ImageFormat_QCOW2, params.ImagePath, volumePath); err != nil {
-		return nil, errors.New("converting raw image to vmdk", err)
-	}
 
 	rawImageFile, err := os.Stat(params.ImagePath)
 	if err != nil {
@@ -40,12 +36,16 @@ func (p *QemuProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.V
 	}
 	sizeMb := rawImageFile.Size() >> 20
 
+	if err := os.Rename(params.ImagePath, volumePath); err != nil {
+		return nil, errors.New("copying raw image from "+params.ImagePath+"to "+volumePath, err)
+	}
+
 	volume := &types.Volume{
 		Id:             params.Name,
 		Name:           params.Name,
 		SizeMb:         sizeMb,
 		Attachment:     "",
-		Infrastructure: types.Infrastructure_QEMU,
+		Infrastructure: types.Infrastructure_XEN,
 		Created:        time.Now(),
 	}
 

@@ -11,6 +11,7 @@ type Providers struct {
 	Virtualbox []Virtualbox `yaml:"virtualbox"`
 	Qemu       []Qemu       `yaml:"qemu"`
 	Photon     []Photon     `yaml:"photon"`
+	Xen        []Xen        `yaml:"xen"`
 }
 
 type Aws struct {
@@ -45,6 +46,12 @@ type Qemu struct {
 	Name         string `yaml:"name"`
 	NoGraphic    bool   `yaml:"no_graphic"`
 	DebuggerPort int    `yaml:"debugger_port"`
+}
+
+type Xen struct {
+	Name       string `yaml:"name"`
+	KernelPath string `yaml:"pv_kernel"`
+	XenBridge  string `yaml:"xen_bridge"`
 }
 
 type VirtualboxAdapterType string

@@ -31,6 +31,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/qemu"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
+	"github.com/emc-advanced-dev/unik/pkg/providers/xen"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
@@ -51,6 +52,7 @@ const (
 	virtualbox_provider = "virtualbox"
 	qemu_provider       = "qemu"
 	photon_provider     = "photon"
+	xen_provider        = "xen"
 )
 
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
@@ -148,10 +150,26 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		},
 	}
 
-	_compilers[compilers.RUMP_GO_AWS] = &rump.RumpGoCompiler{
+	for _, xenConfig := range config.Providers.Xen {
+		logrus.Infof("Bootstrapping provider %s with config %v", xen_provider, xenConfig)
+		p, err := xen.NewXenProvider(xenConfig)
+		if err != nil {
+			return nil, errors.New("initializing qemu provider", err)
+		}
+		s, err := state.BasicStateFromFile(xen.XenStateFile())
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read xen state file at %s, creating blank state", xen.XenStateFile())
+			s = state.NewBasicState(xen.XenStateFile())
+		}
+		p = p.WithState(s)
+		_providers[xen_provider] = p
+		break
+	}
+
+	_compilers[compilers.RUMP_GO_XEN] = &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-go-xen",
-			CreateImage: rump.CreateImageAws,
+			CreateImage: rump.CreateImageXen,
 		},
 	}
 	_compilers[compilers.RUMP_GO_VMWARE] = &rump.RumpGoCompiler{
@@ -178,10 +196,10 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.INCLUDEOS_CPP_QEMU] = &includeos.IncludeosQemuCompiler{}
 	_compilers[compilers.INCLUDEOS_CPP_VIRTUALBOX] = &includeos.IncludeosVirtualboxCompiler{}
 
-	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
+	_compilers[compilers.RUMP_NODEJS_XEN] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-nodejs-xen",
-			CreateImage: rump.CreateImageAws,
+			CreateImage: rump.CreateImageXen,
 		},
 		BootstrapType: rump.BootstrapTypeEC2,
 		RunScriptArgs: "/bootpart/node-wrapper.js",
@@ -210,12 +228,12 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
 
-	_compilers[compilers.RUMP_PYTHON_AWS] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageAwsAddStub, rump.BootstrapTypeEC2)
+	_compilers[compilers.RUMP_PYTHON_XEN] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeEC2)
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVirtualBoxAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_VMWARE] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVmwareAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_QEMU] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.BootstrapTypeUDP)
 
-	_compilers[compilers.OSV_JAVA_AWS] = &osv.OsvAwsCompiler{
+	_compilers[compilers.OSV_JAVA_XEN] = &osv.OsvAwsCompiler{
 		OSvCompilerBase: osv.OSvCompilerBase{
 			CreateImage: osv.CreateImageJava,
 		},
