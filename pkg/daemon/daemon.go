@@ -25,6 +25,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/qemu"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
+	"github.com/emc-advanced-dev/unik/pkg/providers/xen"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
@@ -48,6 +49,7 @@ const (
 	vsphere_provider    = "vsphere"
 	virtualbox_provider = "virtualbox"
 	qemu_provider       = "qemu"
+	xen_provider        = "xen"
 )
 
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
@@ -119,6 +121,22 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		}
 		p = p.WithState(s)
 		_providers[qemu_provider] = p
+		break
+	}
+
+	for _, xenConfig := range config.Providers.Xen {
+		logrus.Infof("Bootstrapping provider %s with config %v", xen_provider, xenConfig)
+		p, err := xen.NewXenProvider(xenConfig)
+		if err != nil {
+			return nil, errors.New("initializing qemu provider", err)
+		}
+		s, err := state.BasicStateFromFile(xen.XenStateFile())
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read xen state file at %s, creating blank state", xen.XenStateFile())
+			s = state.NewBasicState(xen.XenStateFile())
+		}
+		p = p.WithState(s)
+		_providers[xen_provider] = p
 		break
 	}
 
