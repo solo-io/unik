@@ -25,7 +25,6 @@ ENV GOROOT=/usr/local/go
 ENV GOPATH=/opt/go
 ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
-
 # RUN LIKE THIS: docker run --rm -e ROOT_PATH=root_package_path -v /path/to/code:/opt/code projectunik/compilers-rump-go-hw-no-stub
 CMD set -x && \
     cp /tmp/build/gomaincaller.go /tmp/build/mainstub.c . && \

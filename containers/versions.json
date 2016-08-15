@@ -7,7 +7,7 @@
   "compilers-rump-go-xen": "980626d511a947f7",
   "compilers-rump-go-hw": "7395a3fce49487bf",
   "compilers-rump-go-hw-no-stub": "1f1ff4bec62530d2",
-  "compilers-rump-go-xen-no-stub": "6d9b8f10cf5220ae",
+  "compilers-rump-go-xen-no-stub": "31e3bc76929ef73d",
   "compilers-rump-python3-hw-no-stub": "4fd20fd8d3536750",
   "compilers-rump-python3-xen": "1995cd437e302d45",
   "compilers-rump-base-xen": "e8117ef5dddcdabe",
