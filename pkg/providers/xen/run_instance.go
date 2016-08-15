@@ -70,14 +70,14 @@ func (p *XenProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 	}
 
 	if err := p.client.CreateVm(xenParams); err != nil {
-		return errors.New("creating xen domain", err)
+		return nil, errors.New("creating xen domain", err)
 	}
 
 	instanceId := params.Name
 	if doms, err := p.client.ListVms(); err == nil {
 		for _, d := range doms {
 			if d.Config.CInfo.Name == params.Name {
-				instanceId = d.Domid
+				instanceId = fmt.Sprintf("%d", d.Domid)
 				break
 			}
 		}

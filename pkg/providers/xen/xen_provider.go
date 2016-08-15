@@ -46,7 +46,7 @@ func NewXenProvider(config config.Xen) (*XenProvider, error) {
 	}
 
 	if err := p.deployInstanceListener(); err != nil {
-		return errors.New("deploying xen instance listener", err)
+		return nil, errors.New("deploying xen instance listener", err)
 	}
 
 	return p, nil

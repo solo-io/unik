@@ -5,15 +5,14 @@ import (
 	"os"
 	"time"
 
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
-	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/providers/xen/xenclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
-	"path/filepath"
 )
 
 const (
@@ -79,7 +78,7 @@ func (p *XenProvider) runInstanceListener(image *types.Image) (err error) {
 		if err != nil {
 			return errors.New("failed creating raw data volume", err)
 		}
-		defer os.RemoveAll(filepath.Dir(imagePath))
+		defer os.RemoveAll(imagePath)
 		createVolumeParams := types.CreateVolumeParams{
 			Name:      instanceListenerData,
 			ImagePath: imagePath,
@@ -96,13 +95,12 @@ func (p *XenProvider) runInstanceListener(image *types.Image) (err error) {
 		}()
 	}
 
-	instanceDir := getInstanceDir(XenUnikInstanceListener)
 	defer func() {
 		if err != nil {
 			logrus.WithError(err).Warnf("error encountered, ensuring vm and disks are destroyed")
 			p.DetachVolume(instanceListenerVol.Id)
 			p.client.DestroyVm(XenUnikInstanceListener)
-			os.RemoveAll(instanceDir)
+			os.RemoveAll(getInstanceDir(XenUnikInstanceListener))
 			if newVolume {
 				os.RemoveAll(getVolumePath(instanceListenerData))
 			}
@@ -123,6 +121,8 @@ func (p *XenProvider) runInstanceListener(image *types.Image) (err error) {
 			},
 		},
 	}
+
+	os.MkdirAll(getInstanceDir(XenUnikInstanceListener), 0755)
 
 	if err := p.client.CreateVm(xenParams); err != nil {
 		return errors.New("creating vm", err)
@@ -154,7 +154,7 @@ func (p *XenProvider) runInstanceListener(image *types.Image) (err error) {
 	instanceId := XenUnikInstanceListener
 	for _, d := range doms {
 		if d.Config.CInfo.Name == XenUnikInstanceListener {
-			instanceId = d.Domid
+			instanceId = fmt.Sprintf("%d", d.Domid)
 			break
 		}
 	}
