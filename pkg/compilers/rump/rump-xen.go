@@ -82,7 +82,7 @@ func createImageXen(kernel, args string, mntPoints, bakedEnv []string, noCleanup
 		ImageFormat:           types.ImageFormat_RAW,
 		XenVirtualizationType: types.XenVirtualizationType_Paravirtual,
 	}
-	res.RunSpec.DefaultInstanceMemory = 256
+	res.RunSpec.DefaultInstanceMemory = 1024 // todo: investigate why rump uses so much memory on xen
 
 	return res, nil
 }
