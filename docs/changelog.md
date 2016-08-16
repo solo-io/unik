@@ -1,5 +1,9 @@
 # UniK Changelog
 
+## Tue Aug 16 2016
+* Add support for local Xen provider. Supports Rump and OSv unikernels at current time. Persistent (data) volumes are still a TODO on Xen.
+* Add support for VMware Photon API as an additional means of running unikernels on ESXi. Support is still a work-in-progress and not well-documented at this time.
+
 ## Tue Aug 2 2016
 * Update version of Rump in all Rump containers. Fixes I/O panic running Gorump on AWS
 
