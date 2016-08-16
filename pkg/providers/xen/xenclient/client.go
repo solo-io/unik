@@ -12,12 +12,6 @@ import (
 )
 
 const xenConfBase = `
-# Example PV Linux guest configuration
-# =====================================================================
-#
-# This is a fairly minimal example of what is required for a
-# Paravirtualised Linux guest. For a more complete guide see xl.cfg(5)
-
 # Guest name
 name = "%s"
 
