@@ -65,6 +65,9 @@ var _ = Describe("Instances", func() {
 						entries = append(entries, table.Entry(example_godeps_go_app, example_godeps_go_app, true, "qemu"))
 						entries = append(entries, table.Entry(example_cpp_includeos, example_cpp_includeos, false, "qemu"))
 					}
+					if len(cfg.Providers.Xen) > 0 {
+						providers = append(providers, "xen")
+					}
 					for _, imageName := range imageNames {
 						for _, provider := range providers {
 							entries = append(entries, table.Entry(imageName, imageName, false, provider))
@@ -97,6 +100,7 @@ var _ = Describe("Instances", func() {
 							}
 							//vsphere -> vmware for compilers
 							compiler = strings.Replace(compiler, "vsphere", "vmware", -1)
+							compiler = strings.Replace(compiler, "aws", "xen", -1)
 							if !withVolume {
 								Context("with no volume", func() {
 									mounts := []string{}

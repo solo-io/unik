@@ -62,6 +62,9 @@ var _ = Describe("Unikernel Functionality", func() {
 					if len(cfg.Providers.Aws) > 0 {
 						providersWithoutVolumes = append(providersWithoutVolumes, "aws")
 					}
+					if len(cfg.Providers.Xen) > 0 {
+						providersWithoutVolumes = append(providersWithoutVolumes, "xen")
+					}
 					entries := []table.TableEntry{}
 					for _, imageName := range imagesWithVolumes {
 						for _, provider := range providersWithVolumes {
@@ -109,6 +112,7 @@ var _ = Describe("Unikernel Functionality", func() {
 							}
 							//vsphere -> vmware for compilers
 							compiler = strings.Replace(compiler, "vsphere", "vmware", -1)
+							compiler = strings.Replace(compiler, "aws", "xen", -1)
 							mounts := []string{}
 							mountPointsToVols := map[string]string{}
 							var err error

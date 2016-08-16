@@ -109,7 +109,7 @@ func NewVsphereConfig() (_ config.Vsphere, err error) {
 	}
 
 	return config.Vsphere{
-		Name:            "TEST-VBOX-CONFIG",
+		Name:            "TEST-VSPHERE-CONFIG",
 		VsphereUser:     vsphereUser,
 		VspherePassword: vspherePassword,
 		VsphereURL:      vsphereUrl,
@@ -121,30 +121,22 @@ func NewVsphereConfig() (_ config.Vsphere, err error) {
 
 func NewQemuConfig() (_ config.Qemu, err error) {
 	return config.Qemu{
-		Name:         "TEST-VBOX-CONFIG",
+		Name:         "TEST-QEMU-CONFIG",
 		NoGraphic:    true,
 		DebuggerPort: 3001,
 	}, nil
 }
 
-func ConfigWithAws(config config.DaemonConfig, aws config.Aws) config.DaemonConfig {
-	config.Providers.Aws = append(config.Providers.Aws, aws)
-	return config
-}
-
-func ConfigWithVirtualbox(config config.DaemonConfig, virtualbox config.Virtualbox) config.DaemonConfig {
-	config.Providers.Virtualbox = append(config.Providers.Virtualbox, virtualbox)
-	return config
-}
-
-func ConfigWithVsphere(config config.DaemonConfig, vsphere config.Vsphere) config.DaemonConfig {
-	config.Providers.Vsphere = append(config.Providers.Vsphere, vsphere)
-	return config
-}
-
-func ConfigWithQemu(config config.DaemonConfig, qemu config.Qemu) config.DaemonConfig {
-	config.Providers.Qemu = append(config.Providers.Qemu, qemu)
-	return config
+func NewXenConfig() (_ config.Qemu, err error) {
+	pvGrubKernel, err := requireEnvVar("PV_KERNEL")
+	if err != nil {
+		return
+	}
+	return config.Xen{
+		Name:       "TEST-XEN-CONFIG",
+		XenBridge:  "xenbr0",
+		KernelPath: pvGrubKernel,
+	}, nil
 }
 
 func NewTestConfig() (cfg config.DaemonConfig) {
@@ -154,7 +146,7 @@ func NewTestConfig() (cfg config.DaemonConfig) {
 		if err != nil {
 			logrus.Panic(err)
 		}
-		cfg = ConfigWithAws(cfg, awsConfig)
+		cfg.Providers.Aws = append(cfg.Providers.Aws, awsConfig)
 		noConfig = false
 	}
 	if os.Getenv("TEST_VIRTUALBOX") != "" && os.Getenv("TEST_VIRTUALBOX") != "0" {
@@ -162,7 +154,7 @@ func NewTestConfig() (cfg config.DaemonConfig) {
 		if err != nil {
 			logrus.Panic(err)
 		}
-		cfg = ConfigWithVirtualbox(cfg, vboxConfig)
+		cfg.Providers.Virtualbox = append(cfg.Providers.Virtualbox, vboxConfig)
 		noConfig = false
 	}
 	if os.Getenv("TEST_VSPHERE") != "" && os.Getenv("TEST_VSPHERE") != "0" {
@@ -170,7 +162,7 @@ func NewTestConfig() (cfg config.DaemonConfig) {
 		if err != nil {
 			logrus.Panic(err)
 		}
-		cfg = ConfigWithVsphere(cfg, vsphereConfig)
+		cfg.Providers.Vsphere = append(cfg.Providers.Vsphere, vsphereConfig)
 		noConfig = false
 	}
 	if os.Getenv("TEST_QEMU") != "" && os.Getenv("TEST_QEMU") != "0" {
@@ -178,7 +170,15 @@ func NewTestConfig() (cfg config.DaemonConfig) {
 		if err != nil {
 			logrus.Panic(err)
 		}
-		cfg = ConfigWithQemu(cfg, qemuConfig)
+		cfg.Providers.Qemu = append(cfg.Providers.Qemu, qemuConfig)
+		noConfig = false
+	}
+	if os.Getenv("TEST_XEN") != "" && os.Getenv("TEST_XEN") != "0" {
+		xenConfig, err := NewXenConfig()
+		if err != nil {
+			logrus.Panic(err)
+		}
+		cfg.Providers.Xen = append(cfg.Providers.Xen, xenConfig)
 		noConfig = false
 	}
 	if noConfig {
