@@ -53,5 +53,5 @@ func getHubConfig() (config.HubConfig, error) {
 
 func init() {
 	RootCmd.AddCommand(pushCmd)
-	runCmd.Flags().StringVar(&imageName, "imageName", "", "<string,required> image to push")
+	pushCmd.Flags().StringVar(&imageName, "imageName", "", "<string,required> image to push")
 }

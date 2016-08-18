@@ -33,7 +33,7 @@ with the global flag --client-config=<path>`,
 
 func init() {
 	RootCmd.PersistentFlags().StringVar(&clientConfigFile, "client-config", os.Getenv("HOME")+"/.unik/client-config.yaml", "client config file")
-	RootCmd.PersistentFlags().StringVar(&hubConfigFile, "client-config", os.Getenv("HOME")+"/.unik/hub-config.yaml", "hub config file")
+	RootCmd.PersistentFlags().StringVar(&hubConfigFile, "hub-config", os.Getenv("HOME")+"/.unik/hub-config.yaml", "hub config file")
 	RootCmd.PersistentFlags().StringVar(&host, "host", "", "<string, optional>: host/ip address of the host running the unik daemon")
 	targetCmd.Flags().IntVar(&port, "port", 3000, "<int, optional>: port the daemon is running on (default: 3000)")
 }

@@ -9,8 +9,8 @@ import (
 
 // pushCmd represents the push command
 var pullCmd = &cobra.Command{
-	Use:   "push",
-	Short: "Push an image to a Unik Image Repository",
+	Use:   "pull",
+	Short: "Pull an image from a Unik Image Repository",
 	Long: `
 Example usage:
 unik pull --imageName theirImage

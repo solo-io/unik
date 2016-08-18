@@ -57,5 +57,5 @@ Requires that you first authenticate to a unik image repository with 'unik login
 
 func init() {
 	RootCmd.AddCommand(searchCmd)
-	pullCmd.Flags().StringVar(&imageName, "imageName", "", "<string,optional> search images by names containing this string")
+	searchCmd.Flags().StringVar(&imageName, "imageName", "", "<string,optional> search images by names containing this string")
 }
