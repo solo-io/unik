@@ -51,7 +51,7 @@ Requires that you first authenticate to a unik image repository with 'unik login
 		} else {
 			filteredImages = images
 		}
-		printImages(filteredImages)
+		printImages(filteredImages...)
 	},
 }
 

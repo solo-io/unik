@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/djannot/aws-sdk-go/aws"
 	"github.com/djannot/aws-sdk-go/aws/session"
@@ -19,10 +20,10 @@ const (
 	unik_image_info = "Unik-Image-Info"
 )
 
-func PullImage(config config.HubConfig, imageName string, writeTo io.WriterAt) (*types.Image, error) {
+func PullImage(config config.HubConfig, imageName string, writer io.Writer) (*types.Image, error) {
 	//to trigger modified djannot/aws-sdk
 	os.Setenv("S3_AUTH_PROXY_URL", config.URL)
-	metadata, err := download(imageKey(config, imageName), config.Password, writeTo)
+	metadata, err := download(imageKey(config, imageName), config.Password, writer)
 	if err != nil {
 		return nil, errors.New("downloading image", err)
 	}
@@ -73,11 +74,14 @@ func download(key, password string, writer io.Writer) (string, error) {
 		return "", errors.New("copying image bytes", err)
 	}
 	logrus.Infof("downloaded %v bytes", n)
-	return result.Metadata[unik_image_info], nil
+	if result.Metadata[unik_image_info] == nil {
+		return "", errors.New(fmt.Sprintf(unik_image_info+" was empty. full metadata: %+v", result.Metadata), nil)
+	}
+	return *result.Metadata[unik_image_info], nil
 }
 
 func upload(config config.HubConfig, key, metadata string, body io.ReadSeeker, length int64) error {
-	params := s3.PutObjectInput{
+	params := &s3.PutObjectInput{
 		Body:   body,
 		Bucket: aws.String(unik_hub_bucket),
 		Key:    aws.String(key),

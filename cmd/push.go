@@ -40,13 +40,13 @@ Requires that you first authenticate to a unik image repository with 'unik login
 }
 
 func getHubConfig() (config.HubConfig, error) {
+	var c config.HubConfig
 	data, err := ioutil.ReadFile(hubConfigFile)
 	if err != nil {
-		return nil, errors.New("reading "+hubConfigFile, err)
+		return c, errors.New("reading "+hubConfigFile, err)
 	}
-	var c config.HubConfig
 	if err := yaml.Unmarshal(data, &c); err != nil {
-		return nil, errors.New("failed to convert config from yaml", err)
+		return c, errors.New("failed to convert config from yaml", err)
 	}
 	return c, nil
 }
