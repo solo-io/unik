@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"net/http"
@@ -67,6 +68,29 @@ func (i *images) Delete(id string, force bool) error {
 		return errors.New("request failed", err)
 	}
 	if resp.StatusCode != http.StatusNoContent {
+		return errors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	}
+	return nil
+}
+
+func (i *images) Push(c config.HubConfig, imageName string) error {
+	resp, body, err := lxhttpclient.Post(i.unikIP, "/images/push/"+imageName, nil, c)
+	if err != nil {
+		return errors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusAccepted {
+		return errors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	}
+	return nil
+}
+
+func (i *images) Pull(c config.HubConfig, imageName, provider string, force bool) error {
+	query := fmt.Sprintf("?force=%v&provider=%v", force, provider)
+	resp, body, err := lxhttpclient.Post(i.unikIP, "/images/pull/"+imageName+query, nil, c)
+	if err != nil {
+		return errors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusAccepted {
 		return errors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
 	}
 	return nil

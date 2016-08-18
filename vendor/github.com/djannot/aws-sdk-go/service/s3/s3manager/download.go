@@ -139,7 +139,6 @@ type downloader struct {
 	written    int64
 	err        error
 
-
 	//Optional processing on GetObjectRequest
 	requestOption func(req *request.Request) *request.Request
 }

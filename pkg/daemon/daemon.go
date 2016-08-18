@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"os/exec"
 	"path/filepath"
 	"runtime"
 
@@ -255,7 +254,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		compilers: _compilers,
 	}
 
-	d.addEndpoints()
+	d.initialize()
 
 	return d, nil
 }
@@ -268,7 +267,7 @@ func (d *UnikDaemon) Stop() error {
 	return d.server.Close()
 }
 
-func (d *UnikDaemon) addEndpoints() {
+func (d *UnikDaemon) initialize() {
 	handle := func(res http.ResponseWriter, req *http.Request, action func() (interface{}, int, error)) {
 		jsonObject, statusCode, err := action()
 		res.WriteHeader(statusCode)
@@ -355,25 +354,25 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 			compilerType := req.FormValue("compiler")
 			args := req.FormValue("args")
-			providerType := req.FormValue("provider")
-			if _, ok := d.providers[providerType]; !ok {
-				return nil, http.StatusBadRequest, errors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
+			providerName := req.FormValue("provider")
+			if _, ok := d.providers[providerName]; !ok {
+				return nil, http.StatusBadRequest, errors.New(providerName+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
 			}
 
 			compilerSupported := false
-			for _, supportedCompiler := range d.providers[providerType].GetConfig().SupportedCompilers {
+			for _, supportedCompiler := range d.providers[providerName].GetConfig().SupportedCompilers {
 				if supportedCompiler == compilerType {
 					compilerSupported = true
 				}
 			}
 
 			if !compilerSupported {
-				return nil, http.StatusBadRequest, errors.New("provider "+providerType+" does not support compiler "+compilerType+"; supported compilers: "+strings.Join(d.providers[providerType].GetConfig().SupportedCompilers, "|"), nil)
+				return nil, http.StatusBadRequest, errors.New("provider "+providerName+" does not support compiler "+compilerType+"; supported compilers: "+strings.Join(d.providers[providerName].GetConfig().SupportedCompilers, "|"), nil)
 			}
 
 			compiler, ok := d.compilers[compilerType]
 			if !ok {
-				return nil, http.StatusBadRequest, errors.New("unikernel type "+compilerType+" not available for "+providerType+"infrastructure", nil)
+				return nil, http.StatusBadRequest, errors.New("unikernel type "+compilerType+" not available for "+providerName+"infrastructure", nil)
 			}
 			mntStr := req.FormValue("mounts")
 
@@ -394,7 +393,7 @@ func (d *UnikDaemon) addEndpoints() {
 				"name":         name,
 				"args":         args,
 				"compiler":     compilerType,
-				"provider":     providerType,
+				"provider":     providerName,
 				"noCleanup":    noCleanup,
 			}).Debugf("compiling raw image")
 
@@ -422,7 +421,7 @@ func (d *UnikDaemon) addEndpoints() {
 				NoCleanup: noCleanup,
 			}
 
-			image, err := d.providers[providerType].Stage(stageParams)
+			image, err := d.providers[providerName].Stage(stageParams)
 			if err != nil {
 				return nil, http.StatusInternalServerError, errors.New("failed staging image", err)
 			}
@@ -440,7 +439,7 @@ func (d *UnikDaemon) addEndpoints() {
 			}
 			logrus.WithFields(logrus.Fields{
 				"request": req,
-			}).Infof("deleting instance " + imageName)
+			}).Infof("deleting image " + imageName)
 			forceStr := req.URL.Query().Get("force")
 			force := false
 			if strings.ToLower(forceStr) == "true" {
@@ -455,6 +454,81 @@ func (d *UnikDaemon) addEndpoints() {
 				return nil, http.StatusInternalServerError, err
 			}
 			return nil, http.StatusNoContent, nil
+		})
+	})
+	d.server.Post("/push/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+		handle(res, req, func() (interface{}, int, error) {
+			imageName := params["image_name"]
+			if imageName == "" {
+				logrus.WithFields(logrus.Fields{
+					"request": fmt.Sprintf("%v", req),
+				}).Errorf("image must be named")
+				return nil, http.StatusBadRequest, errors.New("image must be named", nil)
+			}
+			var c config.HubConfig
+			body, err := ioutil.ReadAll(req.Body)
+			if err != nil {
+				return nil, http.StatusBadRequest, errors.New("could not read request body", err)
+			}
+			if err := json.Unmarshal(body, &c); err != nil {
+				return nil, http.StatusBadRequest, errors.New("failed to parse request json", err)
+			}
+			logrus.WithFields(logrus.Fields{
+				"request": req,
+			}).Infof("pushing image " + imageName + " to " + c.URL)
+			provider, err := d.providers.ProviderForImage(imageName)
+			if err != nil {
+				return nil, http.StatusInternalServerError, err
+			}
+			err = provider.PushImage(types.PushImagePararms{
+				ImageName: imageName,
+				Config:    c,
+			})
+			if err != nil {
+				return nil, http.StatusInternalServerError, err
+			}
+			return nil, http.StatusAccepted, nil
+		})
+	})
+	d.server.Post("/pull/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+		handle(res, req, func() (interface{}, int, error) {
+			imageName := params["image_name"]
+			if imageName == "" {
+				logrus.WithFields(logrus.Fields{
+					"request": fmt.Sprintf("%v", req),
+				}).Errorf("image must be named")
+				return nil, http.StatusBadRequest, errors.New("image must be named", nil)
+			}
+			var c config.HubConfig
+			body, err := ioutil.ReadAll(req.Body)
+			if err != nil {
+				return nil, http.StatusBadRequest, errors.New("could not read request body", err)
+			}
+			if err := json.Unmarshal(body, &c); err != nil {
+				return nil, http.StatusBadRequest, errors.New("failed to parse request json", err)
+			}
+			logrus.WithFields(logrus.Fields{
+				"request": req,
+			}).Infof("pushing image " + imageName + " to " + c.URL)
+			providerName := req.URL.Query().Get("provider")
+			provider, ok := d.providers[providerName]
+			if !ok {
+				return nil, http.StatusBadRequest, errors.New(providerName+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
+			}
+			forceStr := req.URL.Query().Get("force")
+			force := false
+			if strings.ToLower(forceStr) == "true" {
+				force = true
+			}
+			err = provider.PullImage(types.PullImagePararms{
+				ImageName: imageName,
+				Config:    c,
+				Force:     force,
+			})
+			if err != nil {
+				return nil, http.StatusInternalServerError, err
+			}
+			return nil, http.StatusAccepted, nil
 		})
 	})
 
@@ -558,6 +632,7 @@ func (d *UnikDaemon) addEndpoints() {
 			if err != nil {
 				return nil, http.StatusBadRequest, errors.New("could not read request body", err)
 			}
+			defer req.Body.Close()
 			var runInstanceRequest RunInstanceRequest
 			if err := json.Unmarshal(body, &runInstanceRequest); err != nil {
 				return nil, http.StatusBadRequest, errors.New("failed to parse request json", err)
@@ -590,8 +665,6 @@ func (d *UnikDaemon) addEndpoints() {
 			if err != nil {
 				return nil, http.StatusInternalServerError, err
 			}
-			cmd := exec.Command("foo")
-			cmd.Stdin = req.Body
 			return instance, http.StatusCreated, nil
 		})
 	})
@@ -686,11 +759,11 @@ func (d *UnikDaemon) addEndpoints() {
 					return nil, http.StatusInternalServerError, errors.New("failed to retrieve form-data for tarfe", err)
 				}
 				defer dataTar.Close()
-				providerType := req.FormValue("provider")
-				if _, ok := d.providers[providerType]; !ok {
-					return nil, http.StatusBadRequest, errors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
+				providerName := req.FormValue("provider")
+				if _, ok := d.providers[providerName]; !ok {
+					return nil, http.StatusBadRequest, errors.New(providerName+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
 				}
-				provider = d.providers[providerType]
+				provider = d.providers[providerName]
 
 				logrus.WithFields(logrus.Fields{
 					"form": req.Form,
@@ -698,7 +771,7 @@ func (d *UnikDaemon) addEndpoints() {
 				logrus.WithFields(logrus.Fields{
 					"tarred-data": header.Filename,
 					"name":        volumeName,
-					"provider":    providerType,
+					"provider":    providerName,
 				}).Debugf("creating volume started")
 
 				sizeStr := req.URL.Query().Get("size")
@@ -733,11 +806,11 @@ func (d *UnikDaemon) addEndpoints() {
 				if err != nil {
 					return nil, http.StatusInternalServerError, errors.New("failed building raw image", err)
 				}
-				providerType := req.URL.Query().Get("provider")
-				if _, ok := d.providers[providerType]; !ok {
-					return nil, http.StatusBadRequest, errors.New(providerType+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
+				providerName := req.URL.Query().Get("provider")
+				if _, ok := d.providers[providerName]; !ok {
+					return nil, http.StatusBadRequest, errors.New(providerName+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
 				}
-				provider = d.providers[providerType]
+				provider = d.providers[providerName]
 				logrus.WithFields(logrus.Fields{
 					"image": imagePath,
 				}).Infof("raw image created")

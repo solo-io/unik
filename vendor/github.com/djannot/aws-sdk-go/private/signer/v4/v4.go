@@ -192,7 +192,7 @@ func (v4 *signer) sign() error {
 	if s3AuthProxyUrl != "" {
 		err := v4.validateRequest(s3AuthProxyUrl)
 		if err != nil {
-				return err
+			return err
 		}
 	}
 

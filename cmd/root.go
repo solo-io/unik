@@ -12,9 +12,10 @@ import (
 
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"sort"
 )
 
-var clientConfigFile, host string
+var clientConfigFile, hubConfigFile, host string
 var port int
 
 var RootCmd = &cobra.Command{
@@ -31,7 +32,8 @@ with the global flag --client-config=<path>`,
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVar(&clientConfigFile, "client-config", os.Getenv("HOME")+"/.unik/client-config.yaml", "client config file (default is $HOME/.unik/client-config.yaml)")
+	RootCmd.PersistentFlags().StringVar(&clientConfigFile, "client-config", os.Getenv("HOME")+"/.unik/client-config.yaml", "client config file")
+	RootCmd.PersistentFlags().StringVar(&hubConfigFile, "client-config", os.Getenv("HOME")+"/.unik/hub-config.yaml", "hub config file")
 	RootCmd.PersistentFlags().StringVar(&host, "host", "", "<string, optional>: host/ip address of the host running the unik daemon")
 	targetCmd.Flags().IntVar(&port, "port", 3000, "<int, optional>: port the daemon is running on (default: 3000)")
 }
@@ -55,9 +57,23 @@ Try setting your config with 'unik target --host HOST_URL'`)
 	return nil
 }
 
+type imageSlice []*types.Image
+
+func (p imageSlice) Len() int           { return len(p) }
+func (p imageSlice) Less(i, j int) bool { return p[i].Name < p[j].Name }
+func (p imageSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+// Sort is a convenience method.
+func (p imageSlice) Sort() { sort.Sort(p) }
+
 func printImages(images ...*types.Image) {
+	sortedImages := make(imageSlice, len(images))
+	for i, image := range images {
+		sortedImages[i] = image
+	}
+	sortedImages.Sort()
 	fmt.Printf("%-20s %-20s %-15s %-30s %-6s %-20s\n", "NAME", "ID", "INFRASTRUCTURE", "CREATED", "SIZE(MB)", "MOUNTPOINTS")
-	for _, image := range images {
+	for _, image := range sortedImages {
 		printImage(image)
 	}
 }
@@ -81,10 +97,24 @@ func printImage(image *types.Image) {
 	}
 }
 
-func printInstances(instance ...*types.Instance) {
+type instanceSlice []*types.Instance
+
+func (p instanceSlice) Len() int           { return len(p) }
+func (p instanceSlice) Less(i, j int) bool { return p[i].Name < p[j].Name }
+func (p instanceSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+// Sort is a convenience method.
+func (p instanceSlice) Sort() { sort.Sort(p) }
+
+func printInstances(instances ...*types.Instance) {
+	sortedInstances := make(instanceSlice, len(instances))
+	for i, instance := range instances {
+		sortedInstances[i] = instance
+	}
+	sortedInstances.Sort()
 	fmt.Printf("%-15s %-20s %-14s %-30s %-20s %-15s %-12s\n",
 		"NAME", "ID", "INFRASTRUCTURE", "CREATED", "IMAGE", "IPADDRESS", "STATE")
-	for _, instance := range instance {
+	for _, instance := range sortedInstances {
 		printInstance(instance)
 	}
 }

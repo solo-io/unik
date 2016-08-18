@@ -66,7 +66,7 @@ type ClientConfig struct {
 }
 
 type HubConfig struct {
-	URL      string `yaml:"url"`
-	Username string `yaml:"user"`
-	Password string `yaml:"pass"`
+	URL      string `yaml:"url",json:"url"`
+	Username string `yaml:"user",json:"user"`
+	Password string `yaml:"pass",json:"pass"`
 }
