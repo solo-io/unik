@@ -73,7 +73,7 @@ func (v4 *signer) validateRequest(s3AuthProxyUrl string) error {
 		// The s3 region and bucket aren't known by the UnikHubClient. They are provided by the UnikHub
 		v4.CredValues.AccessKeyID = validationResponse.AccessKeyID
 		v4.Region = validationResponse.Region
-		newURL := strings.Replace(v4.Request.URL.String(), "AWSREGION", "eu-west-1", 1)
+		newURL := strings.Replace(v4.Request.URL.String(), "AWSREGION", validationResponse.Region, 1)
 		v4.Request.URL, err = url.Parse(newURL)
 		if err != nil {
 			err = errors.New("Can't replace the Aws Region in the request")
