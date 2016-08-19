@@ -13,7 +13,7 @@ var pullCmd = &cobra.Command{
 	Short: "Pull an image from a Unik Image Repository",
 	Long: `
 Example usage:
-unik pull --imageName theirImage
+unik pull --image theirImage
 
 Requires that you first authenticate to a unik image repository with 'unik login'
 	`,
@@ -26,7 +26,7 @@ Requires that you first authenticate to a unik image repository with 'unik login
 			logrus.Fatal(err)
 		}
 		if imageName == "" {
-			logrus.Fatal("--imageName must be set")
+			logrus.Fatal("--image must be set")
 		}
 		if provider == "" {
 			logrus.Fatal("--provider must be set")
@@ -43,7 +43,7 @@ Requires that you first authenticate to a unik image repository with 'unik login
 
 func init() {
 	RootCmd.AddCommand(pullCmd)
-	pullCmd.Flags().StringVar(&imageName, "imageName", "", "<string,required> image to pull")
+	pullCmd.Flags().StringVar(&imageName, "image", "", "<string,required> image to pull")
 	pullCmd.Flags().StringVar(&provider, "provider", "", "<string,required> name of the provider the image is built for")
 	pullCmd.Flags().BoolVar(&force, "force", false, "<bool,optional> force overwriting local image of the same name")
 }

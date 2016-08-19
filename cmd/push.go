@@ -30,7 +30,7 @@ Requires that you first authenticate to a unik image repository with 'unik login
 			logrus.Fatal(err)
 		}
 		if imageName == "" {
-			logrus.Fatal("--imageName must be set")
+			logrus.Fatal("--image must be set")
 		}
 		if host == "" {
 			host = clientConfig.Host
@@ -56,5 +56,5 @@ func getHubConfig() (config.HubConfig, error) {
 
 func init() {
 	RootCmd.AddCommand(pushCmd)
-	pushCmd.Flags().StringVar(&imageName, "imageName", "", "<string,required> image to push")
+	pushCmd.Flags().StringVar(&imageName, "image", "", "<string,required> image to push")
 }
