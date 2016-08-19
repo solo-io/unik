@@ -310,15 +310,15 @@
 		},
 		{
 			"ImportPath": "github.com/layer-x/layerx-commons/lxerrors",
-			"Rev": "13e4c78938243a282ae9e124233736ae7db22b4f"
+			"Rev": "73d6f908e2f6b3247c56c3c7044dbfd019857d0f"
 		},
 		{
 			"ImportPath": "github.com/layer-x/layerx-commons/lxhttpclient",
-			"Rev": "13e4c78938243a282ae9e124233736ae7db22b4f"
+			"Rev": "73d6f908e2f6b3247c56c3c7044dbfd019857d0f"
 		},
 		{
 			"ImportPath": "github.com/layer-x/layerx-commons/lxmartini",
-			"Rev": "13e4c78938243a282ae9e124233736ae7db22b4f"
+			"Rev": "73d6f908e2f6b3247c56c3c7044dbfd019857d0f"
 		},
 		{
 			"ImportPath": "github.com/manucorporat/sse",

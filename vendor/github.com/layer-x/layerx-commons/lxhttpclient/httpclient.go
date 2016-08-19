@@ -16,6 +16,21 @@ import (
 
 var DefaultRetries = 5
 
+var auth *struct {
+	username string
+	password string
+}
+
+func UseBasicAuth(username, password string) {
+	auth = &struct {
+		username string
+		password string
+	}{
+		username: username,
+		password: password,
+	}
+}
+
 type client struct {
 	c *http.Client
 }
@@ -63,6 +78,10 @@ func getWithRetries(url string, path string, headers map[string]string, retries 
 		if err != nil {
 			return nil, emptyBytes, lxerrors.New("error generating get request", err)
 		}
+		if auth != nil {
+			request.SetBasicAuth(auth.username, auth.password)
+			auth = nil
+		}
 		for key, value := range headers {
 			request.Header.Add(key, value)
 		}
@@ -97,6 +116,10 @@ func getAsyncWithRetries(url string, path string, headers map[string]string, ret
 		if err != nil {
 			return nil, lxerrors.New("error generating get request", err)
 		}
+		if auth != nil {
+			request.SetBasicAuth(auth.username, auth.password)
+			auth = nil
+		}
 		for key, value := range headers {
 			request.Header.Add(key, value)
 		}
@@ -122,6 +145,10 @@ func deleteWithRetries(url string, path string, headers map[string]string, retri
 		request, err := http.NewRequest("DELETE", completeURL, nil)
 		if err != nil {
 			return nil, emptyBytes, lxerrors.New("error generating delete request", err)
+		}
+		if auth != nil {
+			request.SetBasicAuth(auth.username, auth.password)
+			auth = nil
 		}
 		for key, value := range headers {
 			request.Header.Add(key, value)
@@ -156,6 +183,10 @@ func deleteAsyncWithRetries(url string, path string, headers map[string]string, 
 		request, err := http.NewRequest("DELETE", completeURL, nil)
 		if err != nil {
 			return nil, lxerrors.New("error generating delete request", err)
+		}
+		if auth != nil {
+			request.SetBasicAuth(auth.username, auth.password)
+			auth = nil
 		}
 		for key, value := range headers {
 			request.Header.Add(key, value)
@@ -212,6 +243,10 @@ func postBuffer(url string, path string, headers map[string]string, buffer *byte
 	if err != nil {
 		return nil, emptyBytes, lxerrors.New("error generating post request", err)
 	}
+	if auth != nil {
+		request.SetBasicAuth(auth.username, auth.password)
+		auth = nil
+	}
 	for key, value := range headers {
 		request.Header.Add(key, value)
 	}
@@ -241,6 +276,10 @@ func postData(url string, path string, headers map[string]string, data []byte) (
 	request, err := http.NewRequest("POST", completeURL, bytes.NewReader(data))
 	if err != nil {
 		return nil, emptyBytes, lxerrors.New("error generating post request", err)
+	}
+	if auth != nil {
+		request.SetBasicAuth(auth.username, auth.password)
+		auth = nil
 	}
 	for key, value := range headers {
 		request.Header.Add(key, value)
@@ -286,9 +325,18 @@ func PostFile(url, path, fileKey, pathToFile string) (*http.Response, []byte, er
 	contentType := bodyWriter.FormDataContentType()
 	bodyWriter.Close()
 
-	resp, err := http.Post(completeURL, contentType, bodyBuf)
+	request, err := http.NewRequest("POST", completeURL, bodyBuf)
 	if err != nil {
-		return resp, emptyBytes, lxerrors.New("error performing post", err)
+		return nil, emptyBytes, lxerrors.New("error generating post request", err)
+	}
+	if auth != nil {
+		request.SetBasicAuth(auth.username, auth.password)
+		auth = nil
+	}
+	request.Header.Set("Content-type", contentType)
+	resp, err := newClient().c.Do(request)
+	if err != nil {
+		return resp, emptyBytes, lxerrors.New("error performing post request", err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
@@ -341,6 +389,10 @@ func postAsyncBuffer(url string, path string, headers map[string]string, buffer 
 	for key, value := range headers {
 		request.Header.Add(key, value)
 	}
+	if auth != nil {
+		request.SetBasicAuth(auth.username, auth.password)
+		auth = nil
+	}
 	resp, err := newClient().c.Do(request)
 	if err != nil {
 		return resp, lxerrors.New("error performing post request", err)
@@ -360,6 +412,10 @@ func postAsyncData(url string, path string, headers map[string]string, data []by
 	request, err := http.NewRequest("POST", completeURL, bytes.NewReader(data))
 	if err != nil {
 		return nil, lxerrors.New("error generating post request", err)
+	}
+	if auth != nil {
+		request.SetBasicAuth(auth.username, auth.password)
+		auth = nil
 	}
 	for key, value := range headers {
 		request.Header.Add(key, value)
@@ -407,7 +463,7 @@ func PostAsyncFile(url, path, fileKey, pathToFile string) (*http.Response, error
 }
 
 func parseURL(url string, path string) string {
-	if !strings.HasPrefix(url, "http://") || !strings.HasPrefix(url, "https://") {
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
 		url = fmt.Sprintf("http://%s", url)
 	}
 	if strings.HasSuffix(url, "/") {
