@@ -7,6 +7,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 func (p *VirtualboxProvider) PullImage(params types.PullImagePararms) error {
@@ -37,6 +38,7 @@ func (p *VirtualboxProvider) PullImage(params types.PullImagePararms) error {
 		return errors.New("pulling image", err)
 	}
 	imagePath := getImagePath(image.Name)
+	os.MkdirAll(filepath.Dir(imagePath), 0755)
 	if err := os.Rename(tmpImage.Name(), imagePath); err != nil {
 		return errors.New("renaming tmp image to "+imagePath, err)
 	}

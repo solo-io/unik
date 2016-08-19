@@ -18,6 +18,9 @@ unik pull --imageName theirImage
 Requires that you first authenticate to a unik image repository with 'unik login'
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if err := readClientConfig(); err != nil {
+			logrus.Fatal(err)
+		}
 		c, err := getHubConfig()
 		if err != nil {
 			logrus.Fatal(err)

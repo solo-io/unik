@@ -456,7 +456,7 @@ func (d *UnikDaemon) initialize() {
 			return nil, http.StatusNoContent, nil
 		})
 	})
-	d.server.Post("/push/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+	d.server.Post("/images/push/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		handle(res, req, func() (interface{}, int, error) {
 			imageName := params["image_name"]
 			if imageName == "" {
@@ -490,7 +490,7 @@ func (d *UnikDaemon) initialize() {
 			return nil, http.StatusAccepted, nil
 		})
 	})
-	d.server.Post("/pull/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+	d.server.Post("/images/pull/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
 		handle(res, req, func() (interface{}, int, error) {
 			imageName := params["image_name"]
 			if imageName == "" {
