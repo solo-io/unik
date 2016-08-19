@@ -1,8 +1,5 @@
 package main
 
-//TODO: make sure to always binpack this file to bindata/instance_listener_data on recompile
-//add a make target
-
 import (
 	"encoding/json"
 	"errors"
