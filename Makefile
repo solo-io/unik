@@ -240,7 +240,7 @@ localbuild: instance-listener/bindata/instance_listener_data.go containers/versi
 containers/version-data.go: containers/versions.json
 	$(call update_version_bindata)
 
-instance-listener/bindata/instance_listener_data.go:
+instance-listener/bindata/instance_listener_data.go: instance-listener/main.go
 	go-bindata -pkg bindata -o instance-listener/bindata/instance_listener_data.go --ignore=instance-listener/bindata/ instance-listener/...
 
 #clean up
