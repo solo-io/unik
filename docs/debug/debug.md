@@ -40,6 +40,17 @@ On vmware the network card is behind PCI bridge:
     -device e1000,netdev=mynet0,mac=54:54:00:55:55:55,bus=pci.1,addr=1 \
     -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9 
 
+qemu-system-x86_64 -device virtio-scsi-pci,id=scsi \
+                   -device scsi-hd,drive=hd1 \
+                   -drive file=/Users/pivotal/.unik/virtualbox/instances/VboxUnikInstanceListener/boot.vmdk,format=vmdk,if=none,id=hd1 \
+                   -device scsi-hd,drive=hd2 \
+                   -drive file=/Users/pivotal/.unik/virtualbox/volumes/InstanceListenerData/data.vmdk,format=vmdk,if=none,id=hd2 \
+                   -device virtio-net-pci,netdev=mynet0,mac=54:54:00:55:55:55 \
+                   -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9 \
+                   -device virtio-net-pci,netdev=mynet1,mac=54:54:00:55:55:51 \
+                   -netdev user,id=mynet1,net=192.168.76.0/24,dhcpstart=192.168.76.9 \
+                   -m 512
+
 For hard drivers, use the scsi drive like in the virtualbox example.
 
 # To debug using gdb
