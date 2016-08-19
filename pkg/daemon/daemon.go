@@ -531,6 +531,40 @@ func (d *UnikDaemon) initialize() {
 			return nil, http.StatusAccepted, nil
 		})
 	})
+	d.server.Post("/images/remote-delete/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
+		handle(res, req, func() (interface{}, int, error) {
+			imageName := params["image_name"]
+			if imageName == "" {
+				logrus.WithFields(logrus.Fields{
+					"request": fmt.Sprintf("%v", req),
+				}).Errorf("image must be named")
+				return nil, http.StatusBadRequest, errors.New("image must be named", nil)
+			}
+			var c config.HubConfig
+			body, err := ioutil.ReadAll(req.Body)
+			if err != nil {
+				return nil, http.StatusBadRequest, errors.New("could not read request body", err)
+			}
+			if err := json.Unmarshal(body, &c); err != nil {
+				return nil, http.StatusBadRequest, errors.New("failed to parse request json", err)
+			}
+			logrus.WithFields(logrus.Fields{
+				"request": req,
+			}).Infof("deleting image " + imageName + " to " + c.URL)
+			provider, err := d.providers.ProviderForImage(imageName)
+			if err != nil {
+				return nil, http.StatusInternalServerError, err
+			}
+			err = provider.PushImage(types.PushImagePararms{
+				ImageName: imageName,
+				Config:    c,
+			})
+			if err != nil {
+				return nil, http.StatusInternalServerError, err
+			}
+			return nil, http.StatusAccepted, nil
+		})
+	})
 
 	//Instances
 	d.server.Get("/instances", func(res http.ResponseWriter, req *http.Request) {

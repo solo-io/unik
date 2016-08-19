@@ -10,6 +10,7 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"io"
 	"os"
 )
@@ -23,7 +24,7 @@ const (
 func PullImage(config config.HubConfig, imageName string, writer io.Writer) (*types.Image, error) {
 	//to trigger modified djannot/aws-sdk
 	os.Setenv("S3_AUTH_PROXY_URL", config.URL)
-	metadata, err := download(imageKey(config, imageName), config.Password, writer)
+	metadata, err := s3Download(imageKey(config, imageName), config.Password, writer)
 	if err != nil {
 		return nil, errors.New("downloading image", err)
 	}
@@ -52,14 +53,24 @@ func PushImage(config config.HubConfig, image *types.Image, imagePath string) er
 	if err != nil {
 		return errors.New("getting file info", err)
 	}
-	if err := upload(config, imageKey(config, image.Name), string(metadata), reader, fileInfo.Size()); err != nil {
+	if err := s3Upload(config, imageKey(config, image.Name), string(metadata), reader, fileInfo.Size()); err != nil {
 		return errors.New("uploading image file", err)
 	}
 	logrus.Infof("Image %v pushed to %s", image, config.URL)
 	return nil
 }
 
-func download(key, password string, writer io.Writer) (string, error) {
+func RemoteDeleteImage(config config.HubConfig, imageName string) error {
+	//to trigger modified djannot/aws-sdk
+	os.Setenv("S3_AUTH_PROXY_URL", config.URL)
+	if err := s3Delete(config, imageKey(config, imageName)); err != nil {
+		return errors.New("deleting image file", err)
+	}
+	logrus.Infof("Image %v deleted from %s", imageName, config.URL)
+	return nil
+}
+
+func s3Download(key, password string, writer io.Writer) (string, error) {
 	params := &s3.GetObjectInput{
 		Bucket:   aws.String(unik_hub_bucket),
 		Key:      aws.String(key),
@@ -80,7 +91,7 @@ func download(key, password string, writer io.Writer) (string, error) {
 	return *result.Metadata[unik_image_info], nil
 }
 
-func upload(config config.HubConfig, key, metadata string, body io.ReadSeeker, length int64) error {
+func s3Upload(config config.HubConfig, key, metadata string, body io.ReadSeeker, length int64) error {
 	params := &s3.PutObjectInput{
 		Body:   body,
 		Bucket: aws.String(unik_hub_bucket),
@@ -97,6 +108,27 @@ func upload(config config.HubConfig, key, metadata string, body io.ReadSeeker, l
 		return errors.New("uploading image to s3 backend", err)
 	}
 	logrus.Infof("uploaded %v bytes: %v", length, result)
+	return nil
+}
+
+// unik hub has to do it itself to validate user
+func s3Delete(config config.HubConfig, key string) error {
+	deleteMessage := struct {
+		Username string `json:"user"`
+		Password string `json:"pass"`
+		Key      string `json:"key"`
+	}{
+		Username: config.Username,
+		Password: config.Password,
+		Key:      key,
+	}
+	resp, body, err := lxhttpclient.Post(config.URL, "/delete_image", nil, deleteMessage)
+	if err != nil {
+		return errors.New("failed to perform delete request", err)
+	}
+	if resp.StatusCode != 204 {
+		return errors.New(fmt.Sprintf("expected status code 204, got %v: %s", resp.StatusCode, string(body)), nil)
+	}
 	return nil
 }
 

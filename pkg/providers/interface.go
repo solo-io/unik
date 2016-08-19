@@ -30,6 +30,7 @@ type Provider interface {
 	//Hub
 	PullImage(params types.PullImagePararms) error
 	PushImage(params types.PushImagePararms) error
+	RemoteDeleteImage(params types.RemoteDeleteImagePararms) error
 }
 
 type ProviderConfig struct {

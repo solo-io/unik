@@ -42,3 +42,8 @@ type PushImagePararms struct {
 	Config    config.HubConfig
 	ImageName string
 }
+
+type RemoteDeleteImagePararms struct {
+	Config    config.HubConfig
+	ImageName string
+}

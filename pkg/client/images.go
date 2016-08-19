@@ -95,3 +95,14 @@ func (i *images) Pull(c config.HubConfig, imageName, provider string, force bool
 	}
 	return nil
 }
+
+func (i *images) RemoteDelete(c config.HubConfig, imageName string) error {
+	resp, body, err := lxhttpclient.Post(i.unikIP, "/images/remote-delete/"+imageName, nil, c)
+	if err != nil {
+		return errors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusAccepted {
+		return errors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	}
+	return nil
+}
