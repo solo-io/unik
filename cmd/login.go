@@ -17,7 +17,7 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Log in to a Unik Repository to pull & push images",
 	Run: func(cmd *cobra.Command, args []string) {
-		defaultUrl := "http://hub.projectunik.io"
+		defaultUrl := "http://hub.project-unik.io"
 		reader := bufio.NewReader(os.Stdin)
 		if err := func() error {
 			fmt.Printf("Unik Hub Repository URL [%v]: ", defaultUrl)
