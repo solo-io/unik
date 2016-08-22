@@ -1,9 +1,9 @@
 # Getting Started
 
 In this tutorial we'll be:
-  1. [installing UniK](getting_started.md#installing-unik)
-  2. [writing a simple HTTP Daemon in Go](getting_started.md#write-a-go-http-server)
-  3. [compiling to a unikernel and launching an instance on Virtualbox](getting_started.md#compile-an-image-and-run-on-virtualbox)
+  1. [installing UniK](getting_started_pull.md#installing-unik)
+  2. [pull a pre-compiled unikernel image from hub.project-unik.io](getting_started_pull.md#pull)
+  3. [launching an instance on Virtualbox](getting_started_pull.md#installing-unik#run-on-virtualbox)
 
 ### Installing UniK
 #### Prerequisites
@@ -18,7 +18,7 @@ Ensure that each of the following are installed
   ```
   $ git clone https://github.com/emc-advanced-dev/unik.git
   $ cd unik
-  $ make binary
+  $ make
   ```
   note: `make` will take quite a few minutes the first time it runs. the UniK `Makefile` is pulling all of the Docker images that bundle UniK's dependencies.
 
@@ -63,72 +63,28 @@ Ensure that each of the following are installed
 
 ---
 
-#### Write a Go HTTP server
+#### Pull an existing Unik Unikernel from http://hub.project-unik.io
 
 0. Open a new terminal window, but leave the window with the daemon running. This window will be used for running UniK CLI commands.
 
-1. Create a file `httpd.go` using a text editor. Copy and paste the following code in that file:
-
-  ```go
-  package main
-
-  import (
-      "fmt"
-      "net/http"
-  )
-
-  func main() {
-      http.HandleFunc("/", handler)
-      http.ListenAndServe(":8080", nil)
-  }
-
-  func handler(w http.ResponseWriter, r *http.Request) {
-      fmt.Fprintf(w, "my first unikernel!")
-  }
-  ```
-
-2. Try running this code with `go run http.go`. Visit [http://localhost:8080/](http://localhost:8080/) to see that the server is running.
-3. We need to create a dummy `Godeps` file. This is necessary to tell the Go compiler how Go projects and their dependencies are structured. Fortunately, with this example, our project has no dependencies, and we can just fill out a simple `Godeps` file without installing [`godep`](https://github.com/tools/godep). Note: for Go projects with imported dependencies, and nested packages, you will need to install Godeps and run `GO15VENDOREXPERIMENT=1 godep save ./...` in your project. See [Compiling Go Apps with UniK](compilers/rump.md#golang) for more information.
-  * To create the dummy Godeps file, create a folder named `Godeps` in the same directory as `httpd.go`. Inside, create a file named `Godeps.json` and paste the following inside:
-  ```json
-  {
-  	"ImportPath": "my_httpd",
-  	"GoVersion": "go1.6",
-  	"GodepVersion": "v63",
-  	"Packages": [
-  		"./.."
-  	],
-  	"Deps": [
-  		{
-  			"ImportPath": "github.com/emc-advanced-dev/unik/docs/examples",
-  			"Rev": "f8cc0dd435de36377eac060c93481cc9f3ae9688"
-  		}
-  	]
-  }
-  ```
-  * For the purposes of this example, that matters here is `my_httpd`. It instructs the go compiler that the project should be installed from `$GOPATH/src/my_httpd`.
-
-4. Great! Now we're ready to compile this code to a unikernel.
+1. Open another terminal window and type `unik login`
+* You will be asked to fill in a URL, Username, and Password. For URL, just hit Enter (this will tell Unik to use the default http://hub.project-unik.io). Pick any username/password you like.
+2. List available images with `unik search`
+3. Choose an image from the list (by name) and download it to your local storage with `unik pull --image PythonExample`
+4. Great! Now we're ready to run our first unikernel.
 
 ---
 
-#### Compile an image and run on Virtualbox
+#### Run an instance of the image on Virtualbox
 
-1. run the following command from the directory where your `httpd.go` is located:
-  ```
-  unik build --name myImage --path ./ --compiler rump-go-virtualbox --provider virtualbox
-  ```
-  This command will instruct UniK to compile the sources found in the working directory (`./`) using the `rump-go-virtualbox` compiler, and stage the image for running the `virtualbox` provider.
-2. You can watch the output of the `build` command in the terminal window running the daemon.
-3. When `build` finishes, the resulting disk image will reside at `$HOME/.unik/virtualbox/images/myImage/boot.vmdk`
 4. Run an instance of this image with
   ```
-  unik run --instanceName myInstance --imageName myImage
+  unik run --instanceName myInstance --imageName PythonExample
   ```
 5. When the instance finishes launching, let's check its IP and see that it is running our application.
 6. Run `unik instances`. The instance IP Address should be listed.
 7. Direct your browser to `http://instance-ip:8080` and see that your instance is running!
 8. To clean up your image and the instance you created
   ```
-  unik rmi --force --image myImage
+  unik rmi --force --image PythonExample
   ```
