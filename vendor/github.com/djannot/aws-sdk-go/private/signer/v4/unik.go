@@ -13,6 +13,7 @@ import (
 )
 
 type RequestToValidate struct {
+	Pass   string      `json:"pass"`
 	Method string      `json:"method"`
 	Path   string      `json:"path"`
 	Query  url.Values  `json:"query"`
@@ -26,30 +27,26 @@ type ValidationResponse struct {
 	Bucket      string `json:"bucket"`
 }
 
+type RequestToSign struct {
+	RequestToValidate  RequestToValidate `json:"request_to_validate"`
+	FormattedShortTime string            `json:"formatted_short_time"`
+	ServiceName        string            `json:"service_name"`
+	StringToSign       string            `json:"string_to_sign"`
+}
+
+type SignatureResponse struct {
+	Signature   []byte `json:"signature"`
+	Err   string `json:"err"`
+}
+
 // Validate the request with the UnikHub
 func (v4 *signer) validateRequest(s3AuthProxyUrl string) error {
-	// Get the URL and parse it (to get the Path)
-	u, err := url.Parse(v4.Request.URL.String())
-	if err != nil {
-		return err
-	}
-	// Prepare the data to send to the UnikHub
-	requestToValidate := RequestToValidate{
-		Method: v4.Request.Method,
-		Path:   u.Path,
-		Query:  u.Query(),
-		Header: v4.Request.Header,
-	}
-	j, err := json.Marshal(requestToValidate)
-	if err != nil {
-		return err
-	}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	httpClient := &http.Client{Transport: tr}
 	// Send the API request to the UnikHub
-	authReq, err := http.NewRequest("POST", s3AuthProxyUrl+"/validate", bytes.NewBuffer(j))
+	authReq, err := http.NewRequest("GET", s3AuthProxyUrl+"/aws_info", nil)
 	if err != nil {
 		return err
 	}
@@ -67,9 +64,6 @@ func (v4 *signer) validateRequest(s3AuthProxyUrl string) error {
 	}
 	// If the response code is 200, then the request is validated by the UnikHub
 	if resp.StatusCode == 200 {
-		// Remove the X-Amz-Meta-Unik-Password and X-Amz-Meta-Unik-Email headers because they shouldn't be stored with the /bucket/user/image/version object
-		v4.Request.Header.Del("X-Amz-Meta-Unik-Password")
-		v4.Request.Header.Del("X-Amz-Meta-Unik-Email")
 		// The s3 region and bucket aren't known by the UnikHubClient. They are provided by the UnikHub
 		v4.CredValues.AccessKeyID = validationResponse.AccessKeyID
 		v4.Region = validationResponse.Region
@@ -85,6 +79,10 @@ func (v4 *signer) validateRequest(s3AuthProxyUrl string) error {
 			err = errors.New("Can't replace the Aws Bucket in the request")
 			return err
 		}
+		v4.pass = v4.Request.Header.Get("X-Amz-Meta-Unik-Password")
+
+		// Remove the X-Amz-Meta-Unik-Password and X-Amz-Meta-Unik-Email headers because they shouldn't be stored with the /bucket/user/image/version object
+		v4.Request.Header.Del("X-Amz-Meta-Unik-Password")
 	} else {
 		err = errors.New(validationResponse.Message)
 		return err
@@ -92,22 +90,27 @@ func (v4 *signer) validateRequest(s3AuthProxyUrl string) error {
 	return nil
 }
 
-type RequestToSign struct {
-	FormattedShortTime string `json:"formatted_short_time"`
-	ServiceName        string `json:"service_name"`
-	StringToSign       string `json:"string_to_sign"`
-}
-
-type AWSCredentials struct {
-	AccessKeyID string `json:"access_key_id"`
-	Region      string `json:"region"`
-	Signature   []byte `json:"signature"`
-}
-
 // Get a signature from the UnikHub
 func (v4 *signer) getSignature(s3AuthProxyUrl string) error {
+	// Get the URL and parse it (to get the Path)
+	u, err := url.Parse(v4.Request.URL.String())
+	if err != nil {
+		return err
+	}
+	pass := v4.pass
+
+	// Prepare the data to send to the UnikHub
+	requestToValidate := RequestToValidate{
+		Pass:   pass,
+		Method: v4.Request.Method,
+		Path:   u.Path,
+		Query:  u.Query(),
+		Header: v4.Request.Header,
+	}
+
 	// Prepare the data to send to the UnikHub
 	requestToSign := RequestToSign{
+		RequestToValidate:  requestToValidate,
 		FormattedShortTime: v4.formattedShortTime,
 		ServiceName:        v4.ServiceName,
 		StringToSign:       v4.stringToSign,
@@ -131,13 +134,18 @@ func (v4 *signer) getSignature(s3AuthProxyUrl string) error {
 		return err
 	}
 	defer resp.Body.Close()
+
 	decoder := json.NewDecoder(resp.Body)
-	var awsCredentials AWSCredentials
-	err = decoder.Decode(&awsCredentials)
+	var signatureResponse SignatureResponse
+	err = decoder.Decode(&signatureResponse)
 	if err != nil {
 		return err
 	}
+	if resp.StatusCode != 200 {
+		err = errors.New(signatureResponse.Err)
+		return err
+	}
 	//v4.CredValues.AccessKeyID = awsCredentials.AccessKeyID
-	v4.signature = hex.EncodeToString(awsCredentials.Signature)
+	v4.signature = hex.EncodeToString(signatureResponse.Signature)
 	return nil
 }
