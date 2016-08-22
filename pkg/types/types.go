@@ -36,6 +36,12 @@ type Image struct {
 	RunSpec        RunSpec        `json:"RunSpec"`
 }
 
+// For Unik Hub
+type UserImage struct {
+	*Image `json:"image"`
+	Owner  string `json:"owner"`
+}
+
 // TODO: why not use the normal go by-value copy?
 func (image *Image) Copy() *Image {
 	return &Image{
