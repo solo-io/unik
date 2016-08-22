@@ -37,7 +37,7 @@ Requires that you first authenticate to a unik image repository with 'unik login
 		if resp.StatusCode != http.StatusOK {
 			logrus.Fatal(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)))
 		}
-		var images []*types.Image
+		var images []*types.UserImage
 		if err := json.Unmarshal(body, &images); err != nil {
 			logrus.Fatal(err)
 		}
@@ -51,7 +51,7 @@ Requires that you first authenticate to a unik image repository with 'unik login
 		} else {
 			filteredImages = images
 		}
-		printImages(filteredImages...)
+		printUserImages(filteredImages...)
 	},
 }
 

@@ -97,6 +97,46 @@ func printImage(image *types.Image) {
 	}
 }
 
+type userImageSlice []*types.UserImage
+
+func (p userImageSlice) Len() int           { return len(p) }
+func (p userImageSlice) Less(i, j int) bool { return p[i].Name < p[j].Name }
+func (p userImageSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+// Sort is a convenience method.
+func (p userImageSlice) Sort() { sort.Sort(p) }
+
+func printUserImages(images ...*types.UserImage) {
+	sortedImages := make(userImageSlice, len(images))
+	for i, image := range images {
+		sortedImages[i] = image
+	}
+	sortedImages.Sort()
+	fmt.Printf("%-20s %-20s %-15s %-30s %-6s %-20s\n", "NAME", "OWNER", "INFRASTRUCTURE", "CREATED", "SIZE(MB)", "MOUNTPOINTS")
+	for _, image := range sortedImages {
+		printUserImage(image)
+	}
+}
+
+func printUserImage(image *types.UserImage) {
+	for i, deviceMapping := range image.RunSpec.DeviceMappings {
+		//ignore root device mount point
+		if deviceMapping.MountPoint == "/" {
+			image.RunSpec.DeviceMappings = append(image.RunSpec.DeviceMappings[:i], image.RunSpec.DeviceMappings[i+1:]...)
+		}
+	}
+	if len(image.RunSpec.DeviceMappings) == 0 {
+		fmt.Printf("%-20.20s %-20.20s %-15.15s %-30.30s %-8.0d \n", image.Name, image.Owner, image.Infrastructure, image.Created.String(), image.SizeMb)
+	} else if len(image.RunSpec.DeviceMappings) > 0 {
+		fmt.Printf("%-20.20s %-20.20s %-15.15s %-30.30s %-8.0d %-20.20s\n", image.Name, image.Owner, image.Infrastructure, image.Created.String(), image.SizeMb, image.RunSpec.DeviceMappings[0].MountPoint)
+		if len(image.RunSpec.DeviceMappings) > 1 {
+			for i := 1; i < len(image.RunSpec.DeviceMappings); i++ {
+				fmt.Printf("%102s\n", image.RunSpec.DeviceMappings[i].MountPoint)
+			}
+		}
+	}
+}
+
 type instanceSlice []*types.Instance
 
 func (p instanceSlice) Len() int           { return len(p) }
