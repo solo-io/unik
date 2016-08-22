@@ -13,7 +13,7 @@ var pullCmd = &cobra.Command{
 	Short: "Pull an image from a Unik Image Repository",
 	Long: `
 Example usage:
-unik pull --image theirImage
+unik pull --image theirImage --provider virtualbox|qemu|xen
 
 Requires that you first authenticate to a unik image repository with 'unik login'
 	`,

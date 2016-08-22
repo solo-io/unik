@@ -1,5 +1,8 @@
 # UniK Changelog
 
+## Mon Aug 22 2016
+* Configure http://hub.project-unik.io as a public repository for uploadable UniK unikernels. Providers that use local storage (Xen, Virtualbox, QEMU) now support `unik pull` & `unik push` as command-line options allowing users to store and share unikernel images in public (or private) repositories. Source for deploying a private hub can be found here: https://github.com/emc-advanced-dev/unik-hub
+
 ## Tue Aug 16 2016
 * Add support for local Xen provider. Supports Rump and OSv unikernels at current time. Persistent (data) volumes are still a TODO on Xen.
 * Add support for VMware Photon API as an additional means of running unikernels on ESXi. Support is still a work-in-progress and not well-documented at this time.

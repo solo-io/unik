@@ -26,6 +26,11 @@ The UniK cli wraps calls to UniK's [REST API](api.md) to make using UniK easy.
   * [`unik attach-volume`](cli.md#attach-a-volume)
   * [`unik detach-volume`](cli.md#detach-a-volume)
   * [`unik delete-volume`](cli.md#delete-a-volume)
+* Unik Hub
+  * [`unik login`](cli.md#login)
+  * [`unik push`](cli.md#push)
+  * [`unik pull`](cli.md#pull)
+  * [`unik search`](cli.md#search)
 
 #### Running the daemon
 The cli is used to start the UniK daemon. To start the daemon:
@@ -390,3 +395,44 @@ unik delete-volume --volume VOLUME_NAME [--force]
 ```
 
 * `--force` forces detaching the volume before deletion if it is currently attached.
+
+---
+
+##### Login
+
+```
+unik login
+```
+
+* Log in to a Unik Repository to pull & push images
+* This does not actually authenticate (as Unik Hubs are stateless), but sets client configuration at `~/.unik/hub-config.yaml`
+
+---
+
+##### Push
+
+```
+unik push --image myImage
+```
+
+* Pushes a compiled image from local provider (Xen, Virtualbox, or QEMU) to an S3-backed Hub Repository
+
+---
+
+##### Pull
+
+```
+unik pull --image myImage --provider virtualbox|qemu|xen
+```
+
+* Pull a compiled image from an S3-backed Hub Repository to local provider (Xen, Virtualbox, or QEMU) to an S3-backed Hub Repository
+* Provider specifies the architecture the image is specified for.
+---
+
+##### Search
+
+```
+unik search [image_name]
+```
+
+* Searches available images. Optional filter by `image_name`
