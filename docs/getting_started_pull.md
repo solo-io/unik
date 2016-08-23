@@ -2,8 +2,8 @@
 
 In this tutorial we'll be:
   1. [installing UniK](getting_started_pull.md#installing-unik)
-  2. [pull a pre-compiled unikernel image from hub.project-unik.io](getting_started_pull.md#pull)
-  3. [launching an instance on Virtualbox](getting_started_pull.md#installing-unik#run-on-virtualbox)
+  2. [pull a pre-compiled unikernel image from hub.project-unik.io](getting_started_pull.md#pull-an-existing-unik-unikernel-from-httphubproject-unikio)
+  3. [launching an instance on Virtualbox](getting_started_pull.md#run-an-instance-of-the-image-on-virtualbox)
 
 ### Installing UniK
 #### Prerequisites
