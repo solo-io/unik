@@ -53,6 +53,7 @@ all: pull ${SOURCES} binary
 .PHONY: compilers-rump-base-common
 .PHONY: compilers-rump-base-hw
 .PHONY: compilers-rump-base-xen
+.PHONY: compilers-rump-java-hw
 .PHONY: compilers-rump-go-hw
 .PHONY: compilers-rump-go-hw-no-stub
 .PHONY: compilers-rump-go-xen-no-stub
@@ -83,6 +84,8 @@ pull:
 	$(call pull_container,qemu-util)
 	#$(call pull_container,compilers-includeos-cpp-hw)
 	$(call pull_container,compilers-osv-java)
+	$(call pull_container,compilers-rump-java-hw)
+	$(call pull_container,compilers-rump-java-xen)
 	$(call pull_container,compilers-rump-go-hw)
 	$(call pull_container,compilers-rump-go-hw-no-stub)
 	$(call pull_container,compilers-rump-go-xen-no-stub)
@@ -106,6 +109,8 @@ containers: compilers utils
 
 #compilers
 compilers: compilers-includeos-cpp-hw \
+           compilers-rump-java-hw \
+           compilers-rump-java-xen \
            compilers-rump-go-hw \
            compilers-rump-go-hw-no-stub \
            compilers-rump-go-hw-xen-stub \
@@ -135,6 +140,14 @@ compilers-rump-base-xen: compilers-rump-base-common
 
 compilers-rump-go-hw: compilers-rump-base-hw
 	$(call build_container,compilers/rump/go,$@,.hw)
+
+compilers-rump-java-hw: #todo: put dep here
+	cd containers/compilers/rump/java/java-wrapper && mvn package
+	$(call build_container,compilers/rump/java,$@,.hw)
+
+compilers-rump-java-xen: #todo: put dep here
+	cd containers/compilers/rump/java/java-wrapper && mvn package
+	$(call build_container,compilers/rump/java,$@,.xen)
 
 rump-debugger-qemu: compilers-rump-base-hw
 	$(call build_container,debuggers/rump/base,$@,.hw)
@@ -228,7 +241,7 @@ endif
 	@echo Building for platform $(UNAME)
 	docker build -t projectunik/$@ -f Dockerfile .
 	mkdir -p ./_build
-	docker run --rm -v $(shell pwd)/_build:/opt/build -e TARGET_OS=$(TARGET_OS) -e CONTAINERVER=$(CONTAINERVER) projectunik/$@
+	docker run --rm -v $(shell pwd)/_build:/opt/build -e TARGET_OS=$(TARGET_OS) projectunik/$@
 	#docker rmi -f projectunik/$@
 	@echo "Install finished! UniK binary can be found at $(shell pwd)/_build/unik"
 #----
