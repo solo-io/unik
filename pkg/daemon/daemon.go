@@ -232,6 +232,8 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_PYTHON_VMWARE] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVmwareAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_QEMU] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.BootstrapTypeUDP)
 
+	_compilers[compilers.RUMP_JAVA_QEMU] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageQemu, rump.NoStub)
+
 	_compilers[compilers.OSV_JAVA_XEN] = &osv.OsvAwsCompiler{
 		OSvCompilerBase: osv.OSvCompilerBase{
 			CreateImage: osv.CreateImageJava,

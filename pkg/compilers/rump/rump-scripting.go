@@ -20,6 +20,7 @@ import (
 const (
 	BootstrapTypeEC2 = "ec2"
 	BootstrapTypeUDP = "udp"
+	NoStub           = "no-stub"
 )
 
 //compiler for building images from interpreted/scripting languages (python, javascript)
@@ -32,11 +33,11 @@ type RumpScriptCompiler struct {
 }
 
 type scriptProjectConfig struct {
-	MainFile string `yaml:"main_file"`
+	MainFile    string `yaml:"main_file"`
+	RuntimeArgs string `yaml:"runtime_args"`
 }
 
 func (r *RumpScriptCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
-	args := r.RunScriptArgs + params.Args
 	sourcesDir := params.SourcesDir
 	var config scriptProjectConfig
 	data, err := ioutil.ReadFile(filepath.Join(sourcesDir, "manifest.yaml"))
@@ -62,10 +63,18 @@ func (r *RumpScriptCompiler) CompileRawImage(params types.CompileImageParams) (*
 		return nil, err
 	}
 
-	// now we should program.bin
 	resultFile := path.Join(sourcesDir, "program.bin")
 
-	return r.CreateImage(resultFile, args, params.MntPoints, r.ScriptEnv, params.NoCleanup)
+	//build args string
+	args := r.RunScriptArgs
+	if config.RuntimeArgs != "" {
+		args = config.RuntimeArgs + " " + args
+	}
+	if params.Args != "" {
+		args = args + " " + params.Args
+	}
+
+	return r.CreateImage(resultFile, args, params.MntPoints, append(r.ScriptEnv, fmt.Sprintf("MAIN_FILE=%s", config.MainFile), fmt.Sprintf("BOOTSTRAP_TYPE=%s", r.BootstrapType)), params.NoCleanup)
 }
 
 func NewRumpPythonCompiler(dockerImage string, createImage func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error), bootStrapType string) *RumpScriptCompiler {
@@ -79,6 +88,21 @@ func NewRumpPythonCompiler(dockerImage string, createImage func(kernel, args str
 		ScriptEnv: []string{
 			"PYTHONHOME=/bootpart/python",
 			"PYTHONPATH=/bootpart/lib/python3.5/site-packages/:/bootpart/bin/",
+		},
+	}
+}
+
+func NewRumpJavaCompiler(dockerImage string, createImage func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error), bootStrapType string) *RumpScriptCompiler {
+	return &RumpScriptCompiler{
+		RumCompilerBase: RumCompilerBase{
+			DockerImage: dockerImage,
+			CreateImage: createImage,
+		},
+		BootstrapType: bootStrapType,
+		RunScriptArgs: "-jar /bootpart/program.jar",
+		ScriptEnv: []string{
+			"CLASSPATH=/jar/jetty:/bootpart/jdk/jre/lib",
+			"JAVA_HOME=/bootpart/jdk/",
 		},
 	}
 }

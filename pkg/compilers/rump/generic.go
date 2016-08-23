@@ -20,7 +20,7 @@ import (
 func BuildBootableImage(kernel, cmdline string, usePartitionTables, noCleanup bool) (string, error) {
 	directory, err := ioutil.TempDir("", "bootable-image-directory.")
 	if err != nil {
-		return "", err
+		return "", errors.New("creating tmpdir", err)
 	}
 	if !noCleanup {
 		defer os.RemoveAll(directory)
@@ -28,11 +28,11 @@ func BuildBootableImage(kernel, cmdline string, usePartitionTables, noCleanup bo
 	kernelBaseName := "program.bin"
 
 	if err := unikos.CopyDir(filepath.Dir(kernel), directory); err != nil {
-		return "", err
+		return "", errors.New("copying dir "+filepath.Dir(kernel)+" to "+directory, err)
 	}
 
 	if err := unikos.CopyFile(kernel, path.Join(directory, kernelBaseName)); err != nil {
-		return "", err
+		return "", errors.New("copying kernel "+kernel+" to "+kernelBaseName, err)
 	}
 
 	const contextDir = "/opt/vol/"
@@ -55,7 +55,7 @@ func BuildBootableImage(kernel, cmdline string, usePartitionTables, noCleanup bo
 	resultFile.Close()
 
 	if err := os.Rename(path.Join(directory, "vol.img"), resultFile.Name()); err != nil {
-		return "", err
+		return "", errors.New("renaming "+directory+" to vol.image", err)
 	}
 
 	return resultFile.Name(), nil
