@@ -1,4 +1,6 @@
 {
+  "compilers-rump-java-hw": "7be5a87d5b1dfe6e",
+  "compilers-rump-java-xen": "Aaaa",
   "compilers-rump-python3-hw": "293127e05e9876db",
   "compilers-rump-nodejs-xen": "8dbf03d3f699d2fd",
   "boot-creator": "d4a725cc81d51b3d",
