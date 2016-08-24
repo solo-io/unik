@@ -44,7 +44,9 @@ func (v *volumes) Get(id string) (*types.Volume, error) {
 }
 
 func (v *volumes) Delete(id string, force bool) error {
-	query := fmt.Sprintf("?force=%v", force)
+	query := buildQuery(map[string]interface{}{
+		"force": force,
+	})
 	resp, body, err := lxhttpclient.Delete(v.unikIP, "/volumes/"+id+query, nil)
 	if err != nil {
 		return errors.New("request failed", err)
@@ -56,7 +58,11 @@ func (v *volumes) Delete(id string, force bool) error {
 }
 
 func (v *volumes) Create(name, dataTar, provider string, size int, noCleanup bool) (*types.Volume, error) {
-	query := fmt.Sprintf("?size=%v&provider=%v&no_cleanup=%v", size, provider, noCleanup)
+	query := buildQuery(map[string]interface{}{
+		"size":       size,
+		"provider":   provider,
+		"no_cleanup": noCleanup,
+	})
 	//no data provided
 	var (
 		resp *http.Response
@@ -88,7 +94,9 @@ func (v *volumes) Create(name, dataTar, provider string, size int, noCleanup boo
 }
 
 func (v *volumes) Attach(id, instanceId, mountPoint string) error {
-	query := fmt.Sprintf("?mount=%v", mountPoint)
+	query := buildQuery(map[string]interface{}{
+		"mount": mountPoint,
+	})
 	resp, body, err := lxhttpclient.Post(v.unikIP, "/volumes/"+id+"/attach/"+instanceId+query, nil, nil)
 	if err != nil {
 		return errors.New("request failed", err)

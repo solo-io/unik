@@ -6,6 +6,8 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 type client struct {
@@ -56,4 +58,13 @@ func (c *client) AvailableProviders() ([]string, error) {
 		return nil, errors.New(fmt.Sprintf("response body %s did not unmarshal to type *types.Image", string(body)), err)
 	}
 	return compilers, nil
+}
+
+func buildQuery(params map[string]interface{}) string {
+	queryArray := []string{}
+	for key, val := range params {
+		queryArray = append(queryArray, url.QueryEscape(fmt.Sprintf("%s", key))+"="+url.QueryEscape(fmt.Sprintf("%v", val)))
+	}
+	queryString := "?" + strings.Join(queryArray, "&")
+	return queryString
 }

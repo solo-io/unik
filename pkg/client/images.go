@@ -46,7 +46,14 @@ func (i *images) Get(id string) (*types.Image, error) {
 }
 
 func (i *images) Build(name, sourceTar, compiler, provider, args string, mounts []string, force, noCleanup bool) (*types.Image, error) {
-	query := fmt.Sprintf("?compiler=%s&provider=%s&args=%s&mounts=%s&force=%v&no_cleanup=%v", compiler, provider, args, strings.Join(mounts, ","), force, noCleanup)
+	query := buildQuery(map[string]interface{}{
+		"compiler":   compiler,
+		"provider":   provider,
+		"args":       args,
+		"mounts":     strings.Join(mounts, ","),
+		"force":      force,
+		"no_cleanup": noCleanup,
+	})
 	resp, body, err := lxhttpclient.PostFile(i.unikIP, "/images/"+name+"/create"+query, "tarfile", sourceTar)
 	if err != nil {
 		return nil, errors.New("request failed", err)
@@ -62,7 +69,9 @@ func (i *images) Build(name, sourceTar, compiler, provider, args string, mounts 
 }
 
 func (i *images) Delete(id string, force bool) error {
-	query := fmt.Sprintf("?force=%v", force)
+	query := buildQuery(map[string]interface{}{
+		"force": force,
+	})
 	resp, body, err := lxhttpclient.Delete(i.unikIP, "/images/"+id+query, nil)
 	if err != nil {
 		return errors.New("request failed", err)
@@ -85,7 +94,10 @@ func (i *images) Push(c config.HubConfig, imageName string) error {
 }
 
 func (i *images) Pull(c config.HubConfig, imageName, provider string, force bool) error {
-	query := fmt.Sprintf("?force=%v&provider=%v", force, provider)
+	query := buildQuery(map[string]interface{}{
+		"provider": provider,
+		"force":    force,
+	})
 	resp, body, err := lxhttpclient.Post(i.unikIP, "/images/pull/"+imageName+query, nil, c)
 	if err != nil {
 		return errors.New("request failed", err)

@@ -46,7 +46,9 @@ func (i *instances) Get(id string) (*types.Instance, error) {
 }
 
 func (i *instances) Delete(id string, force bool) error {
-	query := fmt.Sprintf("?force=%v", force)
+	query := buildQuery(map[string]interface{}{
+		"force": force,
+	})
 	resp, body, err := lxhttpclient.Delete(i.unikIP, "/instances/"+id+query, nil)
 	if err != nil {
 		return errors.New("request failed", err)
@@ -69,7 +71,10 @@ func (i *instances) GetLogs(id string) (string, error) {
 }
 
 func (i *instances) AttachLogs(id string, deleteOnDisconnect bool) (io.ReadCloser, error) {
-	query := fmt.Sprintf("?follow=%v&delete=%v", true, deleteOnDisconnect)
+	query := buildQuery(map[string]interface{}{
+		"follow": true,
+		"delete": deleteOnDisconnect,
+	})
 	resp, err := lxhttpclient.GetAsync(i.unikIP, "/instances/"+id+"/logs"+query, nil)
 	if err != nil {
 		return nil, errors.New("request failed", err)
