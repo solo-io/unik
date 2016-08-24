@@ -12,6 +12,7 @@ func (p *VsphereProvider) GetConfig() providers.ProviderConfig {
 			compilers.RUMP_GO_VMWARE,
 			compilers.RUMP_NODEJS_VMWARE,
 			compilers.RUMP_PYTHON_VMWARE,
+			compilers.RUMP_JAVA_VMWARE,
 			compilers.OSV_JAVA_VMAWRE,
 		},
 	}

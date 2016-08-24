@@ -12,6 +12,7 @@ func (p *XenProvider) GetConfig() providers.ProviderConfig {
 			compilers.RUMP_GO_XEN,
 			compilers.RUMP_NODEJS_XEN,
 			compilers.RUMP_PYTHON_XEN,
+			compilers.RUMP_JAVA_XEN,
 			compilers.OSV_JAVA_XEN,
 		},
 	}

@@ -19,7 +19,10 @@ const (
 	RUMP_PYTHON_VMWARE     = "rump-python-vmware"
 	RUMP_PYTHON_QEMU       = "rump-python-qemu"
 
-	RUMP_JAVA_QEMU = "rump-java-qemu"
+	RUMP_JAVA_XEN        = "rump-java-xen"
+	RUMP_JAVA_VIRTUALBOX = "rump-java-virtualbox"
+	RUMP_JAVA_VMWARE     = "rump-java-vmware"
+	RUMP_JAVA_QEMU       = "rump-java-qemu"
 
 	OSV_JAVA_XEN        = "osv-java-xen"
 	OSV_JAVA_VIRTUALBOX = "osv-java-virtualbox"
