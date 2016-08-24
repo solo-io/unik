@@ -14,13 +14,13 @@ import (
 )
 
 const (
-	example_cpp_includeos  = "example-cpp-includeos"
-	example_go_httpd       = "example_go_httpd"
-	example_godeps_go_app  = "example_godeps_go_app"
-	example_go_nontrivial  = "example-go-nontrivial"
-	example_nodejs_app     = "example-nodejs-app"
-	example_java_project   = "example_java_project"
-	example_python_project = "example-python3-httpd"
+	example_cpp_includeos    = "example-cpp-includeos"
+	example_go_httpd         = "example_go_httpd"
+	example_godeps_go_app    = "example_godeps_go_app"
+	example_go_nontrivial    = "example-go-nontrivial"
+	example_nodejs_app       = "example-nodejs-app"
+	example_osv_java_project = "example_osv_java_project"
+	example_python_project   = "example-python3-httpd"
 )
 
 var _ = Describe("Instances", func() {
@@ -44,7 +44,7 @@ var _ = Describe("Instances", func() {
 						example_nodejs_app,
 						example_go_httpd,
 						example_godeps_go_app,
-						example_java_project,
+						example_osv_java_project,
 						example_python_project,
 						example_go_nontrivial,
 					}
