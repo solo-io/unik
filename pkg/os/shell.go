@@ -8,7 +8,6 @@ import (
 	"path"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"path/filepath"
 )
 
@@ -63,8 +62,6 @@ func listDir(path string) ([]os.FileInfo, error) {
 // https://www.socketloop.com/tutorials/golang-copy-directory-including-sub-directories-files
 
 func CopyDir(source string, dest string) (err error) {
-	log.Debugf("copying dir %v to %v", source, dest)
-
 	// get properties of source dir
 	sourceinfo, err := os.Stat(source)
 	if err != nil {
@@ -119,7 +116,6 @@ func CopyDir(source string, dest string) (err error) {
 // the same, then return success. Otherise, attempt to create a hard link
 // between the two files. If that fail, copy the file contents from src to dst.
 func CopyFile(src, dst string) error {
-	log.Debugf("copying file %v to %v", src, dst)
 	sfi, err := os.Stat(src)
 	if err != nil {
 		return err
