@@ -101,7 +101,7 @@ func NewRumpJavaCompiler(dockerImage string, createImage func(kernel, args strin
 		BootstrapType: bootStrapType,
 		RunScriptArgs: "-jar /bootpart/program.jar",
 		ScriptEnv: []string{
-			"CLASSPATH=/jar/jetty:/bootpart/jdk/jre/lib",
+			"CLASSPATH=/bootpart/jetty:/bootpart/jdk/jre/lib",
 			"JAVA_HOME=/bootpart/jdk/",
 		},
 	}

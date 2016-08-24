@@ -12,6 +12,19 @@ import java.util.zip.ZipException;
 
 public class Wrapper {
     public static void main(String[] args) throws Exception {
+        String bootstrapType = System.getenv().get("BOOTSTRAP_TYPE");
+        if (bootstrapType == null) {
+            System.out.println("Must provide env var BOOTSTRAP_TYPE");
+            System.exit(-1);
+        }
+        if (bootstrapType.contains("no-stub")) {
+            System.out.println("skipping stub");
+        } else if (bootstrapType.contains("ec2")) {
+            new EC2Bootstrap().bootstrap();
+        } else {
+            new UDPBootstrap().bootstrap();
+        }
+
         String jarName = System.getenv().get("MAIN_FILE");
         if (jarName == null) {
             System.out.println("Must provide env var MAIN_FILE");
@@ -28,7 +41,10 @@ public class Wrapper {
             System.out.println("succesfully loaded "+c.getName());
 
             Method main = c.getMethod("main", String[].class);
+
+            System.out.println("calling "+c.getName()+".main("+args+")");
             main.invoke(null, new Object[]{args});
+            System.out.println("main finished");
         } else {
             //Jetty Bootstrap
             System.getProperties().put("java.io.tmpdir", "/bootpart/");
@@ -39,25 +55,21 @@ public class Wrapper {
                 port = "8080";
             }
             String jettyJar = "/bootpart/jetty/start.jar";
-            Class<?> klass = Thread.currentThread().getContextClassLoader().loadClass(jettyJar);
-            Method main = klass.getMethod("main", String[].class);
+            String mainClass = getMainClass(jettyJar);
+            URLClassLoader loader = (URLClassLoader)ClassLoader.getSystemClassLoader();
+            MyClassLoader l = new MyClassLoader(loader.getURLs());
+            l.addURL(new URL("file:"+jettyJar));
+            Class<?> c = l.loadClass(mainClass);
+            System.out.println("succesfully loaded "+c.getName());
+
+            Method main = c.getMethod("main", String[].class);
             args = new String[3];
-            args[0] = "jetty.home=/bootpart/jetty";
-            args[1] = "jetty.base=/bootpart/jetty/demo-base";
+            args[0] = "jetty.home=/bootpart/jetty/";
+            args[1] = "jetty.base=/bootpart/jetty/";
             args[2] = "jetty.http.port=" + port;
+            System.out.println("calling "+c.getName()+".main("+args+")");
             main.invoke(null, new Object[]{args});
-        }
-        String bootstrapType = System.getenv().get("BOOTSTRAP_TYPE");
-        if (bootstrapType == null) {
-            System.out.println("Must provide env var BOOTSTRAP_TYPE");
-            System.exit(-1);
-        }
-        if (bootstrapType.contains("no-stub")) {
-            System.out.println("skipping stub");
-        } else if (bootstrapType.contains("ec2")) {
-            new EC2Bootstrap().bootstrap();
-        } else {
-            new UDPBootstrap().bootstrap();
+            System.out.println("main finished");
         }
     }
 
