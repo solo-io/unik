@@ -7,6 +7,7 @@ import (
 
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere/vsphereclient"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 )
@@ -22,9 +23,10 @@ const VsphereUnikInstanceListener = "VsphereUnikInstanceListener"
 const instanceListenerPrefix = "unik_vsphere"
 
 type VsphereProvider struct {
-	config config.Vsphere
-	state  state.State
-	u      *url.URL
+	config             config.Vsphere
+	state              state.State
+	u                  *url.URL
+	instanceListenerIp string
 }
 
 func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
@@ -48,6 +50,13 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 	if err := p.deployInstanceListener(); err != nil {
 		return nil, errors.New("deploing virtualbox instance listener", err)
 	}
+
+	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout)
+	if err != nil {
+		return nil, errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
+	}
+
+	p.instanceListenerIp = instanceListenerIp
 
 	return p, nil
 }

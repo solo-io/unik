@@ -49,8 +49,8 @@ func (s *basicState) GetImages() map[string]*types.Image {
 	defer s.imagesLock.RUnlock()
 	imagesCopy := make(map[string]*types.Image)
 	for id, image := range s.Images {
-		imageCopy := image.Copy()
-		imagesCopy[id] = imageCopy
+		imageCopy := *image
+		imagesCopy[id] = &imageCopy
 	}
 	return imagesCopy
 }
@@ -60,8 +60,8 @@ func (s *basicState) GetInstances() map[string]*types.Instance {
 	defer s.instancesLock.RUnlock()
 	instancesCopy := make(map[string]*types.Instance)
 	for id, instance := range s.Instances {
-		instanceCopy := instance.Copy()
-		instancesCopy[id] = instanceCopy
+		instanceCopy := *instance
+		instancesCopy[id] = &instanceCopy
 	}
 	return instancesCopy
 }
@@ -71,8 +71,8 @@ func (s *basicState) GetVolumes() map[string]*types.Volume {
 	defer s.volumesLock.RUnlock()
 	volumesCopy := make(map[string]*types.Volume)
 	for id, volume := range s.Volumes {
-		volumeCopy := volume.Copy()
-		volumesCopy[id] = volumeCopy
+		volumeCopy := *volume
+		volumesCopy[id] = &volumeCopy
 	}
 	return volumesCopy
 }

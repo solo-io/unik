@@ -42,19 +42,6 @@ type UserImage struct {
 	Owner  string `json:"owner"`
 }
 
-// TODO: why not use the normal go by-value copy?
-func (image *Image) Copy() *Image {
-	return &Image{
-		Id:             image.Id,
-		Name:           image.Name,
-		SizeMb:         image.SizeMb,
-		Infrastructure: image.Infrastructure,
-		Created:        image.Created,
-		StageSpec:      image.StageSpec,
-		RunSpec:        image.RunSpec,
-	}
-}
-
 func (image *Image) String() string {
 	if image == nil {
 		return "<nil>"
@@ -72,17 +59,6 @@ type Instance struct {
 	Created        time.Time      `json:"Created"`
 }
 
-func (instance *Instance) Copy() *Instance {
-	return &Instance{
-		Id:             instance.Id,
-		ImageId:        instance.ImageId,
-		Infrastructure: instance.Infrastructure,
-		Name:           instance.Name,
-		State:          instance.State,
-		Created:        instance.Created,
-	}
-}
-
 func (instance *Instance) String() string {
 	if instance == nil {
 		return "<nil>"
@@ -97,17 +73,6 @@ type Volume struct {
 	Attachment     string         `json:"Attachment"` //instanceId
 	Infrastructure Infrastructure `json:"Infrastructure"`
 	Created        time.Time      `json:"Created"`
-}
-
-func (volume *Volume) Copy() *Volume {
-	return &Volume{
-		Id:             volume.Id,
-		Name:           volume.Name,
-		SizeMb:         volume.SizeMb,
-		Attachment:     volume.Attachment,
-		Infrastructure: volume.Infrastructure,
-		Created:        volume.Created,
-	}
 }
 
 func (volume *Volume) String() string {

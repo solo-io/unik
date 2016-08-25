@@ -4,15 +4,15 @@ import (
 	"os"
 	"time"
 
+	"path/filepath"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
-	"path/filepath"
 )
 
 func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
@@ -121,24 +121,11 @@ func (p *VirtualboxProvider) RunInstance(params types.RunInstanceParams) (_ *typ
 		return nil, errors.New("powering on vm", err)
 	}
 
-	var instanceIp string
-
-	if err := unikutil.Retry(5, time.Duration(2000*time.Millisecond), func() error {
-		logrus.Debugf("getting instance ip")
-		instanceIp, err = common.GetInstanceIp(instanceListenerIp, 3000, macAddr)
-		if err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		logrus.Warnf("failed to retrieve ip for instance %s. instance may be running but has not responded to udp broadcast", instanceId)
-	}
-
 	instance := &types.Instance{
 		Id:             instanceId,
 		Name:           params.Name,
 		State:          types.InstanceState_Pending,
-		IpAddress:      instanceIp,
+		IpAddress:      "",
 		Infrastructure: types.Infrastructure_VIRTUALBOX,
 		ImageId:        image.Id,
 		Created:        time.Now(),

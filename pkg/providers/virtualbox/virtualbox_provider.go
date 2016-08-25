@@ -7,6 +7,7 @@ import (
 
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
+	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 )
 
@@ -27,8 +28,9 @@ const VboxUnikInstanceListener = "VboxUnikInstanceListener"
 const instanceListenerPrefix = "unik_virtualbox"
 
 type VirtualboxProvider struct {
-	config config.Virtualbox
-	state  state.State
+	config             config.Virtualbox
+	state              state.State
+	instanceListenerIp string
 }
 
 func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error) {
@@ -44,6 +46,13 @@ func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error
 	if err := p.deployInstanceListener(config); err != nil && !strings.Contains(err.Error(), "already exists") {
 		return nil, errors.New("deploing virtualbox instance listener", err)
 	}
+
+	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout)
+	if err != nil {
+		return nil, errors.New("failed to retrieve instance listener ip. is unik instance listener running?", err)
+	}
+
+	p.instanceListenerIp = instanceListenerIp
 
 	return p, nil
 }

@@ -5,7 +5,6 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"strings"
 	"time"
@@ -133,25 +132,13 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 		return nil, errors.New("powering on vm", err)
 	}
 
-	var instanceIp string
 	instanceId := vm.Config.UUID
-
-	if err := unikutil.Retry(5, time.Duration(2000*time.Millisecond), func() error {
-		logrus.Debugf("getting instance ip")
-		instanceIp, err = common.GetInstanceIp(instanceListenerIp, 3000, macAddr)
-		if err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		logrus.Warnf("failed to retrieve ip for instance %s. instance may be running but has not responded to udp broadcast", instanceId)
-	}
 
 	instance := &types.Instance{
 		Id:             instanceId,
 		Name:           params.Name,
 		State:          types.InstanceState_Pending,
-		IpAddress:      instanceIp,
+		IpAddress:      "",
 		Infrastructure: types.Infrastructure_VSPHERE,
 		ImageId:        image.Id,
 		Created:        time.Now(),
