@@ -7,6 +7,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
+	"strings"
 	"time"
 )
 
@@ -92,8 +93,11 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 
 	logrus.Debugf("copying base boot vmdk to instance dir")
 	instanceBootImagePath := instanceDir + "/boot.vmdk"
-	if err := c.CopyVmdk(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
-		return nil, errors.New("copying base boot image", err)
+	if err := c.CopyFile(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
+		return nil, errors.New("copying base boot.vmdk", err)
+	}
+	if err := c.CopyFile(strings.TrimSuffix(getImageDatastorePath(image.Name), ".vmdk") + "-flat.vmdk", strings.TrimSuffix(instanceBootImagePath, ".vmdk") + "-flat.vmdk"); err != nil {
+		return nil, errors.New("copying base boot-flat.vmdk", err)
 	}
 	if err := c.AttachDisk(params.Name, instanceBootImagePath, 0, image.RunSpec.StorageDriver); err != nil {
 		return nil, errors.New("attaching boot vol to instance", err)
