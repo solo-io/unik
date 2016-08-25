@@ -95,7 +95,7 @@ func (p *VsphereProvider) RunInstance(params types.RunInstanceParams) (_ *types.
 	if err := c.CopyFile(getImageDatastorePath(image.Name), instanceBootImagePath); err != nil {
 		return nil, errors.New("copying base boot.vmdk", err)
 	}
-	if err := c.CopyFile(strings.TrimSuffix(getImageDatastorePath(image.Name), ".vmdk") + "-flat.vmdk", strings.TrimSuffix(instanceBootImagePath, ".vmdk") + "-flat.vmdk"); err != nil {
+	if err := c.CopyFile(strings.TrimSuffix(getImageDatastorePath(image.Name), ".vmdk")+"-flat.vmdk", strings.TrimSuffix(instanceBootImagePath, ".vmdk")+"-flat.vmdk"); err != nil {
 		return nil, errors.New("copying base boot-flat.vmdk", err)
 	}
 	if err := c.AttachDisk(params.Name, instanceBootImagePath, 0, image.RunSpec.StorageDriver); err != nil {
