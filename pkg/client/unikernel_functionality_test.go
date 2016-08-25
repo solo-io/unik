@@ -15,11 +15,12 @@ import (
 )
 
 const (
-	test_go_app      = "test_go_app"
-	test_java_app    = "test_java_app"
-	test_jar_app     = "test_jar_app"
-	test_nodejs_app  = "test_nodejs_app"
-	test_python3_app = "test_python3_app"
+	test_go_app        = "test_go_app"
+	test_rump_java_app = "test_rump_java_app"
+	test_java_app      = "test_java_app"
+	test_jar_app       = "test_jar_app"
+	test_nodejs_app    = "test_nodejs_app"
+	test_python3_app   = "test_python3_app"
 )
 
 var ipTimeout = time.Second * 180

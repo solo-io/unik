@@ -127,7 +127,7 @@ func NewQemuConfig() (_ config.Qemu, err error) {
 	}, nil
 }
 
-func NewXenConfig() (_ config.Qemu, err error) {
+func NewXenConfig() (_ config.Xen, err error) {
 	pvGrubKernel, err := requireEnvVar("PV_KERNEL")
 	if err != nil {
 		return
