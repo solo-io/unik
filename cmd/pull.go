@@ -37,7 +37,7 @@ Requires that you first authenticate to a unik image repository with 'unik login
 		if err := client.UnikClient(host).Images().Pull(c, imageName, provider, force); err != nil {
 			logrus.Fatal(err)
 		}
-		fmt.Println(imageName + " pushed")
+		fmt.Println(imageName + " pulled")
 	},
 }
 

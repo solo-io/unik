@@ -12,6 +12,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"io"
+	"net/http"
 	"os"
 )
 
@@ -24,7 +25,31 @@ const (
 func PullImage(config config.HubConfig, imageName string, writer io.Writer) (*types.Image, error) {
 	//to trigger modified djannot/aws-sdk
 	os.Setenv("S3_AUTH_PROXY_URL", config.URL)
-	metadata, err := s3Download(imageKey(config, imageName), config.Password, writer)
+
+	//search available images, get user for image name
+	resp, body, err := lxhttpclient.Get(config.URL, "/images", nil)
+	if err != nil {
+		return nil, errors.New("performing GET request", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(fmt.Sprintf("failed GETting image list status %v: %s", resp.StatusCode, string(body)), nil)
+	}
+	var images []*types.UserImage
+	if err := json.Unmarshal(body, &images); err != nil {
+		logrus.Fatal(err)
+	}
+	var user string
+	for _, image := range images {
+		if image.Name == imageName {
+			user = image.Owner
+			break
+		}
+	}
+	if user == "" {
+		return nil, errors.New("could not find image "+imageName, nil)
+	}
+
+	metadata, err := s3Download(imageKey(user, imageName), config.Password, writer)
 	if err != nil {
 		return nil, errors.New("downloading image", err)
 	}
@@ -53,7 +78,7 @@ func PushImage(config config.HubConfig, image *types.Image, imagePath string) er
 	if err != nil {
 		return errors.New("getting file info", err)
 	}
-	if err := s3Upload(config, imageKey(config, image.Name), string(metadata), reader, fileInfo.Size()); err != nil {
+	if err := s3Upload(config, imageKey(config.Username, image.Name), string(metadata), reader, fileInfo.Size()); err != nil {
 		return errors.New("uploading image file", err)
 	}
 	logrus.Infof("Image %v pushed to %s", image, config.URL)
@@ -63,7 +88,7 @@ func PushImage(config config.HubConfig, image *types.Image, imagePath string) er
 func RemoteDeleteImage(config config.HubConfig, imageName string) error {
 	//to trigger modified djannot/aws-sdk
 	os.Setenv("S3_AUTH_PROXY_URL", config.URL)
-	if err := s3Delete(config, imageKey(config, imageName)); err != nil {
+	if err := s3Delete(config, imageKey(config.Username, imageName)); err != nil {
 		return errors.New("deleting image file", err)
 	}
 	logrus.Infof("Image %v deleted from %s", imageName, config.URL)
@@ -132,6 +157,6 @@ func s3Delete(config config.HubConfig, key string) error {
 	return nil
 }
 
-func imageKey(config config.HubConfig, imageName string) string {
-	return "/" + config.Username + "/" + imageName + "/latest" //TODO: support image versioning
+func imageKey(username, imageName string) string {
+	return "/" + username + "/" + imageName + "/latest" //TODO: support image versioning
 }
