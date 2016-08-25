@@ -55,7 +55,9 @@ func (p *VirtualboxProvider) updateInstance(instance types.Instance, macAddr str
 	}
 
 	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
-		instances[instance.Id].IpAddress = ipAddress
+		if _, ok := instances[instance.Id]; ok {
+			instances[instance.Id].IpAddress = ipAddress
+		}
 		return nil
 	}); err != nil {
 		return err

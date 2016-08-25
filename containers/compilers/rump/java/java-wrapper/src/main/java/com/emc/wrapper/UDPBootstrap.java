@@ -117,7 +117,7 @@ public class UDPBootstrap extends Bootstrap {
         while (ifaces.hasMoreElements()) {
             NetworkInterface network = ifaces.nextElement();
             System.out.println("Interface name: " + network.getName());
-            if (!network.getDisplayName().contains("eth0")) {
+            if (!network.getDisplayName().contains("eth0") && !network.getDisplayName().contains("vioif0")) {
                 System.out.println("Seeking first network card, skipping interface " + network.getName());
                 continue;
             }
