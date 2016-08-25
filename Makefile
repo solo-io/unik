@@ -141,11 +141,11 @@ compilers-rump-base-xen: compilers-rump-base-common
 compilers-rump-go-hw: compilers-rump-base-hw
 	$(call build_container,compilers/rump/go,$@,.hw)
 
-compilers-rump-java-hw: #todo: put dep here
+compilers-rump-java-hw: compilers-rump-base-hw
 	cd containers/compilers/rump/java/java-wrapper && mvn package
 	$(call build_container,compilers/rump/java,$@,.hw)
 
-compilers-rump-java-xen: #todo: put dep here
+compilers-rump-java-xen: compilers-rump-base-xen
 	cd containers/compilers/rump/java/java-wrapper && mvn package
 	$(call build_container,compilers/rump/java,$@,.xen)
 
