@@ -22,6 +22,7 @@ Compiling Nodejs applications on rumprun requires the following parameters be me
   * the `manifest.yaml` file should contain a single line of text like so:
     ```yaml
     main_file: YOUR_MAIN_FILE.js
+    runtime_args: "optional string of node arguments"
     ```
     where you replace `YOUR_MAIN_FILE.js` with the relative path to your main file from the root directory of your project.
 
@@ -57,6 +58,8 @@ Compiling Nodejs applications on rumprun requires the following parameters be me
     main_file: ./server.js
     ```
 
+    and runtime_args is an optional string of options to pass to the node interpreter
+
     See [example node project](../examples/example-nodejs-app) for an example of what a Node.js project should look like.
 
 ---
@@ -75,6 +78,7 @@ Compiling Python applications on rumprun requires the following parameters be me
   * the `manifest.yaml` file should contain a single line of text like so:
     ```yaml
     main_file: YOUR_MAIN_FILE.py
+  runtime_args: "optional string of python runtime arguments"
     ```
     where you replace `YOUR_MAIN_FILE.py` with the relative path to your main file from the root directory of your project.
 
@@ -108,7 +112,25 @@ Compiling Python applications on rumprun requires the following parameters be me
     main_file: ./server.py
     ```
 
+    and runtime_args is an optional string of options to pass to the python interpreter
+
     See [example python project](../examples/example-python3-httpd) for an example of what a Python3 project should look like.
+
+---
+
+### Java
+
+Compiling Java applications on rumprun requires the following parameters to be met:
+* Application compiled to a fat `.jar` or `.war` file
+* A configuration file named `manifest.yaml` in the root directory of your project.
+  * the `manifest.yaml` file should contain a single line of text like so:
+  ```yaml
+  main_file: PATH_TO_MAIN_JAR.jar
+  runtime_args: "optional string of JVM arguments"
+  ```
+  where PATH_TO_MAIN_JAR.jar is the path to your main .jar or .war file relative to the project directory
+
+  and runtime_args is an optional string of arguments to pass to the JVM at runtime. Useful for setting properties and other language-level arguments.
 
 ---
 

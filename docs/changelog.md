@@ -1,5 +1,9 @@
 # UniK Changelog
 
+## Thu Aug 25 2016
+* Added support for Java running on Rumprun. I will buy a 10$ Steam gift card for anyone who can get Minecraft (or Glowstone) running on it. See the [updated rump documentation](compilers/rump.md#java)
+* Added optional Runtime Args to Rump compilers based on Nodejs, Python, and Java; these are for arguments passed to the interpreter/runtime for a language before the application is run; i.e. inserting the `-Dsome.property=value` running `java -Dsome.property=value -jar myapp.jar` is now supported
+
 ## Mon Aug 22 2016
 * Configure http://hub.project-unik.io as a public repository for uploadable UniK unikernels. Providers that use local storage (Xen, Virtualbox, QEMU) now support `unik pull` & `unik push` as command-line options allowing users to store and share unikernel images in public (or private) repositories. Source for deploying a private hub can be found here: https://github.com/emc-advanced-dev/unik-hub
 
