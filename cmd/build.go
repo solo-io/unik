@@ -12,7 +12,7 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 )
 
-var name, sourcePath, compiler, provider, runArgs string
+var name, sourcePath, base, lang, provider, runArgs string
 var mountPoints []string
 var force, noCleanup bool
 
@@ -38,10 +38,10 @@ Image names must be unique. If an image exists with the same name, you can force
 --force flag
 
 Example usage:
-	unik build --name myUnikernel --path ./myApp/src --compiler rump-go-xen --provider aws --mountpoint /foo --mountpoint /bar --args '-myParameter MYVALUE' --force
+	unik build --name myUnikernel --path ./myApp/src --base rump --language go --provider aws --mountpoint /foo --mountpoint /bar --args '-myParameter MYVALUE' --force
 
 	# will create a unikernel named myUnikernel using the sources found in ./myApp/src,
-	# compiled using rumprun for the xen hypervisor, targeting AWS infrastructure,
+	# compiled using golang for rumprun targeting AWS infrastructure,
 	# expecting a volume to be mounted at /foo at runtime,
 	# expecting another volume to be mounted at /bar at runtime,
 	# passing '-myParameter MYVALUE' as arguments to the application when it is run,
@@ -58,8 +58,11 @@ Another example (using only the required parameters):
 			if sourcePath == "" {
 				return errors.New("--path must be set", nil)
 			}
-			if compiler == "" {
-				return errors.New("--compiler must be set", nil)
+			if base == "" {
+				return errors.New("--base must be set", nil)
+			}
+			if lang == "" {
+				return errors.New("--language must be set", nil)
 			}
 			if provider == "" {
 				return errors.New("--provider must be set", nil)
@@ -73,7 +76,8 @@ Another example (using only the required parameters):
 			logrus.WithFields(logrus.Fields{
 				"name":        name,
 				"path":        sourcePath,
-				"compiler":    compiler,
+				"base":        base,
+				"language":    lang,
 				"provider":    provider,
 				"args":        runArgs,
 				"mountPoints": mountPoints,
@@ -89,7 +93,7 @@ Another example (using only the required parameters):
 				return errors.New("failed to tar sources", err)
 			}
 			logrus.Infof("App packaged as tarball: %s\n", sourceTar.Name())
-			image, err := client.UnikClient(host).Images().Build(name, sourceTar.Name(), compiler, provider, runArgs, mountPoints, force, noCleanup)
+			image, err := client.UnikClient(host).Images().Build(name, sourceTar.Name(), base, lang, provider, runArgs, mountPoints, force, noCleanup)
 			if err != nil {
 				return errors.New("building image failed", err)
 			}
@@ -106,7 +110,8 @@ func init() {
 	RootCmd.AddCommand(buildCmd)
 	buildCmd.Flags().StringVar(&name, "name", "", "<string,required> name to give the unikernel. must be unique")
 	buildCmd.Flags().StringVar(&sourcePath, "path", "", "<string,required> path to root application sources folder")
-	buildCmd.Flags().StringVar(&compiler, "compiler", "", "<string,required> name of the unikernel compiler to use")
+	buildCmd.Flags().StringVar(&base, "base", "", "<string,required> name of the unikernel base to use")
+	buildCmd.Flags().StringVar(&lang, "language", "", "<string,required> language the unikernel source is written in")
 	buildCmd.Flags().StringVar(&provider, "provider", "", "<string,required> name of the target infrastructure to compile for")
 	buildCmd.Flags().StringVar(&runArgs, "args", "", "<string,optional> to be passed to the unikernel at runtime")
 	buildCmd.Flags().StringSliceVar(&mountPoints, "mountpoint", []string{}, "<string,repeated> specify up to 8 mount points for volumes")

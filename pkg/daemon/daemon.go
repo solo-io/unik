@@ -165,12 +165,14 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		break
 	}
 
-	_compilers[compilers.RUMP_GO_XEN] = &rump.RumpGoCompiler{
+	rumpGoXenCompiler := &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-go-xen",
 			CreateImage: rump.CreateImageXen,
 		},
 	}
+	_compilers[compilers.RUMP_GO_XEN] = rumpGoXenCompiler
+	_compilers[compilers.RUMP_GO_AWS] = rumpGoXenCompiler
 	_compilers[compilers.RUMP_GO_VMWARE] = &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 
@@ -196,6 +198,14 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.INCLUDEOS_CPP_VIRTUALBOX] = &includeos.IncludeosVirtualboxCompiler{}
 
 	_compilers[compilers.RUMP_NODEJS_XEN] = &rump.RumpScriptCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-nodejs-xen",
+			CreateImage: rump.CreateImageXen,
+		},
+		BootstrapType: rump.BootstrapTypeUDP,
+		RunScriptArgs: "/bootpart/node-wrapper.js",
+	}
+	_compilers[compilers.RUMP_NODEJS_AWS] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-nodejs-xen",
 			CreateImage: rump.CreateImageXen,
@@ -227,21 +237,26 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
 
-	_compilers[compilers.RUMP_PYTHON_XEN] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeEC2)
+	_compilers[compilers.RUMP_PYTHON_XEN] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeUDP)
+	_compilers[compilers.RUMP_PYTHON_AWS] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeEC2)
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVirtualBoxAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_VMWARE] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVmwareAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_QEMU] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.NoStub)
 
-	_compilers[compilers.RUMP_JAVA_XEN] = rump.NewRumpJavaCompiler("compilers-rump-java-xen", rump.CreateImageXen, rump.BootstrapTypeEC2)
+	_compilers[compilers.RUMP_JAVA_XEN] = rump.NewRumpJavaCompiler("compilers-rump-java-xen", rump.CreateImageXen, rump.BootstrapTypeUDP)
+	_compilers[compilers.RUMP_JAVA_AWS] = rump.NewRumpJavaCompiler("compilers-rump-java-xen", rump.CreateImageXen, rump.BootstrapTypeEC2)
 	_compilers[compilers.RUMP_JAVA_VIRTUALBOX] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageVirtualBox, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_JAVA_VMWARE] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageVmware, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_JAVA_QEMU] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageQemu, rump.NoStub)
 
-	_compilers[compilers.OSV_JAVA_XEN] = &osv.OsvAwsCompiler{
+	osvJavaXenCompiler := &osv.OsvAwsCompiler{
 		OSvCompilerBase: osv.OSvCompilerBase{
 			CreateImage: osv.CreateImageJava,
 		},
 	}
+
+	_compilers[compilers.OSV_JAVA_XEN] = osvJavaXenCompiler
+	_compilers[compilers.OSV_JAVA_AWS] = osvJavaXenCompiler
 	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{
 		OSvCompilerBase: osv.OSvCompilerBase{
 			CreateImage: osv.CreateImageJava,
@@ -357,27 +372,28 @@ func (d *UnikDaemon) initialize() {
 			if strings.ToLower(forceStr) == "true" {
 				force = true
 			}
-			compilerType := req.FormValue("compiler")
 			args := req.FormValue("args")
 			providerName := req.FormValue("provider")
 			if _, ok := d.providers[providerName]; !ok {
 				return nil, http.StatusBadRequest, errors.New(providerName+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
 			}
 
-			compilerSupported := false
-			for _, supportedCompiler := range d.providers[providerName].GetConfig().SupportedCompilers {
-				if supportedCompiler == compilerType {
-					compilerSupported = true
-				}
+			base := req.FormValue("base")
+			if base == "" {
+				return nil, http.StatusBadRequest, errors.New("must provide 'base' parameter", nil)
+			}
+			lang := req.FormValue("lang")
+			if lang == "" {
+				return nil, http.StatusBadRequest, errors.New("must provide 'lang' parameter", nil)
+			}
+			compilerName, err := compilers.ValidateCompiler(base, lang, providerName)
+			if err != nil {
+				return nil, http.StatusBadRequest, errors.New("invalid base - lang - provider match", err)
 			}
 
-			if !compilerSupported {
-				return nil, http.StatusBadRequest, errors.New("provider "+providerName+" does not support compiler "+compilerType+"; supported compilers: "+strings.Join(d.providers[providerName].GetConfig().SupportedCompilers, "|"), nil)
-			}
-
-			compiler, ok := d.compilers[compilerType]
+			compiler, ok := d.compilers[compilerName]
 			if !ok {
-				return nil, http.StatusBadRequest, errors.New("unikernel type "+compilerType+" not available for "+providerName+"infrastructure", nil)
+				return nil, http.StatusBadRequest, errors.New("unikernel type "+compilerName+" not available for "+providerName+"infrastructure", nil)
 			}
 			mntStr := req.FormValue("mounts")
 
@@ -397,7 +413,7 @@ func (d *UnikDaemon) initialize() {
 				"mount-points": mountPoints,
 				"name":         name,
 				"args":         args,
-				"compiler":     compilerType,
+				"compiler":     compilerName,
 				"provider":     providerName,
 				"noCleanup":    noCleanup,
 			}).Debugf("compiling raw image")

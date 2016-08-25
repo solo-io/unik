@@ -45,9 +45,10 @@ func (i *images) Get(id string) (*types.Image, error) {
 	return &image, nil
 }
 
-func (i *images) Build(name, sourceTar, compiler, provider, args string, mounts []string, force, noCleanup bool) (*types.Image, error) {
+func (i *images) Build(name, sourceTar, base, lang, provider, args string, mounts []string, force, noCleanup bool) (*types.Image, error) {
 	query := buildQuery(map[string]interface{}{
-		"compiler":   compiler,
+		"base":       base,
+		"lang":       lang,
 		"provider":   provider,
 		"args":       args,
 		"mounts":     strings.Join(mounts, ","),
