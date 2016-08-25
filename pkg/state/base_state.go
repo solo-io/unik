@@ -80,22 +80,31 @@ func (s *basicState) GetVolumes() map[string]*types.Volume {
 func (s *basicState) ModifyImages(modify func(images map[string]*types.Image) error) error {
 	s.imagesLock.Lock()
 	defer s.imagesLock.Unlock()
-	return modify(s.Images)
+	if err := modify(s.Images); err != nil {
+		return errors.New("modifying Images", err)
+	}
+	return s.save()
 }
 
 func (s *basicState) ModifyInstances(modify func(instances map[string]*types.Instance) error) error {
 	s.instancesLock.Lock()
 	defer s.instancesLock.Unlock()
-	return modify(s.Instances)
+	if err := modify(s.Instances); err != nil {
+		return errors.New("modifying Instances", err)
+	}
+	return s.save()
 }
 
 func (s *basicState) ModifyVolumes(modify func(volumes map[string]*types.Volume) error) error {
 	s.volumesLock.Lock()
 	defer s.volumesLock.Unlock()
-	return modify(s.Volumes)
+	if err := modify(s.Volumes); err != nil {
+		return errors.New("modifying Volumes", err)
+	}
+	return s.save()
 }
 
-func (s *basicState) Save() error {
+func (s *basicState) save() error {
 	s.saveLock.Lock()
 	defer s.saveLock.Unlock()
 	data, err := json.Marshal(s)

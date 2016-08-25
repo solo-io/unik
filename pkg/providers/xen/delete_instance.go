@@ -48,9 +48,5 @@ func (p *XenProvider) DeleteInstance(id string, force bool) error {
 			return errors.New("modifying volume map in state", err)
 		}
 	}
-	err = p.state.Save()
-	if err != nil {
-		return errors.New("saving image map to state", err)
-	}
 	return nil
 }

@@ -33,8 +33,7 @@ func (p *AwsProvider) CreateVolume(params types.CreateVolumeParams) (*types.Volu
 			},
 		},
 	}
-	_, err = ec2svc.CreateTags(tagVolumeInput)
-	if err != nil {
+	if _, err := ec2svc.CreateTags(tagVolumeInput); err != nil {
 		return nil, errors.New("tagging volume", err)
 	}
 
@@ -53,16 +52,11 @@ func (p *AwsProvider) CreateVolume(params types.CreateVolumeParams) (*types.Volu
 		Created:        time.Now(),
 	}
 
-	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volumes[volume.Id] = volume
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return nil, errors.New("modifying volume map in state", err)
-	}
-	err = p.state.Save()
-	if err != nil {
-		return nil, errors.New("saving volume map to state", err)
 	}
 
 	return nil, nil

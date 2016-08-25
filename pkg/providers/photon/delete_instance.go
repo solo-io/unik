@@ -27,16 +27,11 @@ func (p *PhotonProvider) DeleteInstance(id string, force bool) error {
 	if err != nil {
 		return errors.New("Delete vm", err)
 	}
-	err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
+	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 		delete(instances, instance.Id)
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return errors.New("modifying image map in state", err)
-	}
-	err = p.state.Save()
-	if err != nil {
-		return errors.New("saving image map to state", err)
 	}
 	return nil
 }

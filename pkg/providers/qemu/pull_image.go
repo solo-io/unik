@@ -49,9 +49,6 @@ func (p *QemuProvider) PullImage(params types.PullImagePararms) error {
 	}); err != nil {
 		return errors.New("modifying image map in state", err)
 	}
-	if err := p.state.Save(); err != nil {
-		return errors.New("saving image map to state", err)
-	}
 	logrus.Infof("image %v pulled successfully from %v", err)
 	return nil
 }

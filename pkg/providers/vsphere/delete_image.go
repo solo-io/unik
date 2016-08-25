@@ -41,8 +41,5 @@ func (p *VsphereProvider) DeleteImage(id string, force bool) error {
 	}); err != nil {
 		return errors.New("modifying image map in state", err)
 	}
-	if err := p.state.Save(); err != nil {
-		return errors.New("saving modified image map to state", err)
-	}
 	return nil
 }

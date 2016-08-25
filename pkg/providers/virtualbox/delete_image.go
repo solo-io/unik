@@ -37,16 +37,11 @@ func (p *VirtualboxProvider) DeleteImage(id string, force bool) error {
 		return errors.New("deleing image file at "+imagePath, err)
 	}
 
-	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
+	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {
 		delete(images, image.Id)
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return errors.New("modifying image map in state", err)
-	}
-	err = p.state.Save()
-	if err != nil {
-		return errors.New("saving modified image map to state", err)
 	}
 	return nil
 }

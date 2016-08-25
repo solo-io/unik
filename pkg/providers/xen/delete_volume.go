@@ -33,9 +33,5 @@ func (p *XenProvider) DeleteVolume(id string, force bool) error {
 	if err != nil {
 		return errors.New("deleting volume path from state", err)
 	}
-	err = p.state.Save()
-	if err != nil {
-		return errors.New("saving image map to state", err)
-	}
 	return nil
 }

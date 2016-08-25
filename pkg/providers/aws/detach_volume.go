@@ -19,8 +19,7 @@ func (p *AwsProvider) DetachVolume(id string) error {
 		VolumeId: aws.String(volume.Id),
 		Force:    aws.Bool(true),
 	}
-	_, err = p.newEC2().DetachVolume(param)
-	if err != nil {
+	if _, err := p.newEC2().DetachVolume(param); err != nil {
 		return errors.New("failed to detach volume "+volume.Id, err)
 	}
 	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
@@ -32,9 +31,6 @@ func (p *AwsProvider) DetachVolume(id string) error {
 		return nil
 	}); err != nil {
 		return errors.New("modifying volume map in state", err)
-	}
-	if err := p.state.Save(); err != nil {
-		return errors.New("saving modified volume map to state", err)
 	}
 	return nil
 }

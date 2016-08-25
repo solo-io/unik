@@ -71,9 +71,6 @@ func (p *VirtualboxProvider) Stage(params types.StageImageParams) (_ *types.Imag
 	}); err != nil {
 		return nil, errors.New("modifying image map in state", err)
 	}
-	if err := p.state.Save(); err != nil {
-		return nil, errors.New("saving image map to state", err)
-	}
 
 	logrus.WithFields(logrus.Fields{"image": image}).Infof("image created succesfully")
 	return image, nil

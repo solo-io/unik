@@ -200,17 +200,11 @@ func (p *AwsProvider) Stage(params types.StageImageParams) (_ *types.Image, err 
 		Infrastructure: types.Infrastructure_AWS,
 		Created:        time.Now(),
 	}
-
-	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
+	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {
 		images[imageId] = image
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return nil, errors.New("modifying image map in state", err)
-	}
-	err = p.state.Save()
-	if err != nil {
-		return nil, errors.New("saving image map to state", err)
 	}
 
 	logrus.WithFields(logrus.Fields{"image": image}).Infof("image created succesfully")

@@ -38,24 +38,18 @@ func (p *AwsProvider) AttachVolume(id, instanceId, mntPoint string) error {
 		InstanceId: aws.String(instance.Id),
 		Device:     aws.String(deviceName),
 	}
-	_, err = p.newEC2().AttachVolume(param)
-	if err != nil {
+	if _, err := p.newEC2().AttachVolume(param); err != nil {
 		return errors.New("failed to attach volume "+volume.Id, err)
 	}
-	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
 		volume, ok := volumes[volume.Id]
 		if !ok {
 			return errors.New("no record of "+volume.Id+" in the state", nil)
 		}
 		volume.Attachment = instance.Id
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return errors.New("modifying volume map in state", err)
-	}
-	err = p.state.Save()
-	if err != nil {
-		return errors.New("saving volume to state", err)
 	}
 	return nil
 }

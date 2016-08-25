@@ -35,16 +35,11 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 					InstanceIds: []*string{aws.String(instanceId)},
 				}
 				ec2svc.TerminateInstances(terminateInstanceInput)
-				cleanupErr := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
+				if cleanupErr := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 					delete(instances, instanceId)
 					return nil
-				})
-				if cleanupErr != nil {
+				}); cleanupErr != nil {
 					logrus.Error(errors.New("modifying instance map in state", cleanupErr))
-				}
-				cleanupErr = p.state.Save()
-				if cleanupErr != nil {
-					logrus.Error(errors.New("saving instance volume map to state", cleanupErr))
 				}
 			}
 		}
@@ -118,9 +113,6 @@ func (p *AwsProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		return nil
 	}); err != nil {
 		return nil, errors.New("modifying instance map in state", err)
-	}
-	if err := p.state.Save(); err != nil {
-		return nil, errors.New("saving instance volume map to state", err)
 	}
 
 	if len(params.MntPointsToVolumeIds) > 0 {

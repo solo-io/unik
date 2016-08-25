@@ -43,16 +43,11 @@ func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 			}
 			if instanceState == types.InstanceState_Terminated {
 				logrus.Warnf("instance %s state is terminated, removing it from state", instanceId)
-				err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
+				if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 					delete(instances, instanceId)
 					return nil
-				})
-				if err != nil {
+				}); err != nil {
 					return nil, errors.New("modifying instance map in state", err)
-				}
-				err = p.state.Save()
-				if err != nil {
-					return nil, errors.New("saving modified instance map to state", err)
 				}
 				continue
 			}
@@ -65,16 +60,11 @@ func (p *AwsProvider) ListInstances() ([]*types.Instance, error) {
 			if ec2Instance.PublicIpAddress != nil {
 				instance.IpAddress = *ec2Instance.PublicIpAddress
 			}
-			err = p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
+			if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 				instances[instance.Id] = instance
 				return nil
-			})
-			if err != nil {
+			}); err != nil {
 				return nil, errors.New("modifying instance map in state", err)
-			}
-			err = p.state.Save()
-			if err != nil {
-				return nil, errors.New("saving modified instance map to state", err)
 			}
 			updatedInstances = append(updatedInstances, instance)
 		}

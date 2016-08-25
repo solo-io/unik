@@ -38,8 +38,5 @@ func (p *VsphereProvider) AttachVolume(id, instanceId, mntPoint string) error {
 	}); err != nil {
 		return errors.New("modifying volumes in state", err)
 	}
-	if err := p.state.Save(); err != nil {
-		return errors.New("saving instance volume map to state", err)
-	}
 	return nil
 }

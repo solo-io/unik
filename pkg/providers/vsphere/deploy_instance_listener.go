@@ -139,9 +139,6 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 	}); err != nil {
 		return errors.New("modifying volumes in state", err)
 	}
-	if err := p.state.Save(); err != nil {
-		return errors.New("saving instance volume map to state", err)
-	}
 
 	logrus.Debugf("powering on vm")
 	if err := c.PowerOnVm(VsphereUnikInstanceListener); err != nil {
@@ -174,9 +171,6 @@ func (p *VsphereProvider) runInstanceListener(image *types.Image) (err error) {
 		return nil
 	}); err != nil {
 		return errors.New("modifying instance map in state", err)
-	}
-	if err := p.state.Save(); err != nil {
-		return errors.New("saving instance volume map to state", err)
 	}
 	logrus.WithField("instance", instance).Infof("instance created successfully")
 

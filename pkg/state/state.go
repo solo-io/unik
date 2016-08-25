@@ -11,5 +11,4 @@ type State interface {
 	ModifyImages(modify func(images map[string]*types.Image) error) error
 	ModifyInstances(modify func(instances map[string]*types.Instance) error) error
 	ModifyVolumes(modify func(volumes map[string]*types.Volume) error) error
-	Save() error
 }

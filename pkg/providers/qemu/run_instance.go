@@ -108,9 +108,6 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	}); err != nil {
 		return nil, errors.New("modifying instance map in state", err)
 	}
-	if err := p.state.Save(); err != nil {
-		return nil, errors.New("saving instance volume map to state", err)
-	}
 
 	logrus.WithField("instance", instance).Infof("instance created successfully")
 

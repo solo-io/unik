@@ -45,28 +45,21 @@ func (p *AwsProvider) DeleteImage(id string, force bool) error {
 	deleteSnapshotParam := &ec2.DeleteSnapshotInput{
 		SnapshotId: aws.String(*snap.SnapshotId),
 	}
-	_, err = ec2svc.DeleteSnapshot(deleteSnapshotParam)
-	if err != nil {
+	if _, err := ec2svc.DeleteSnapshot(deleteSnapshotParam); err != nil {
 		return errors.New("failed deleting snapshot "+*snap.SnapshotId, err)
 	}
 	deleteVolumeParam := &ec2.DeleteVolumeInput{
 		VolumeId: aws.String(*snap.VolumeId),
 	}
-	_, err = ec2svc.DeleteVolume(deleteVolumeParam)
-	if err != nil {
+	if _, err := ec2svc.DeleteVolume(deleteVolumeParam); err != nil {
 		return errors.New("failed deleting volumme "+*snap.VolumeId, err)
 	}
 
-	err = p.state.ModifyImages(func(images map[string]*types.Image) error {
+	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {
 		delete(images, image.Id)
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return errors.New("modifying image map in state", err)
-	}
-	err = p.state.Save()
-	if err != nil {
-		return errors.New("saving image map to state", err)
 	}
 	return nil
 }

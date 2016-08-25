@@ -56,10 +56,6 @@ func (p *XenProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.Vo
 	if err != nil {
 		return nil, errors.New("modifying volume map in state", err)
 	}
-	err = p.state.Save()
-	if err != nil {
-		return nil, errors.New("saving volume map to state", err)
-	}
 	return volume, nil
 
 }

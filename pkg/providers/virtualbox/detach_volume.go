@@ -60,9 +60,5 @@ func (p *VirtualboxProvider) DetachVolume(id string) error {
 	}); err != nil {
 		return errors.New("modifying volume map in state", err)
 	}
-	err = p.state.Save()
-	if err != nil {
-		return errors.New("saving modified volume map to state", err)
-	}
 	return nil
 }
