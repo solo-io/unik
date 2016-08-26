@@ -106,9 +106,9 @@ Ensure that each of the following are installed
 
 1. run the following command from the directory where your `server.js` is located:
   ```
-  unik build --name myImage --path ./ --compiler rump-nodejs-virtualbox --provider virtualbox
+  unik build --name myImage --path ./ --base rump --language nodejs --provider virtualbox
   ```
-  this command will instruct UniK to compile the sources found in the working directory (`./`) using the `rump-nodejs-virtualbox` compiler, and stage the image for running the `virtualbox` provider.
+  this command will instruct UniK to compile the sources found in the working directory (`./`) using the `rump-nodejs-virtualbox` compiler.
 
 2. You can watch the output of the `build` command in the terminal window running the daemon.
 

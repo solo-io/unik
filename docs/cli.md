@@ -93,11 +93,21 @@ Returns a list of compilers available to the targeted unik backend.
 #### Building an image
 Compiles source files into a runnable unikernel image.
 
+Images must be compiled using a specific compiler. Compilers are composed of 3 elements:
+* **Base**: The Unikernel Base to build the image on. These include different unikernel implementations, such as [rumprun](https://github.com/rumpkernel/rumprun), [IncludeOS](https://gitter.im/hioa-cs/IncludeOS), etc.
+* **Language**: The language/runtime the image should be built with. E.g. for a golang project, specify `-language go`. Languages supported depend on the unikernel base. 
+* **Provider**: The (cloud/hypervisor) provider the image should be built for. Supported providers depend on the unikernel base.
+
+In order to see a list of all supported base/language/provider combinations, run `unik compilers`
+
 Images must be compiled for a specific provider, specified with the `--provider` flag
 To see a list of available providers, run `unik providers`
 
-A unikernel compiler that is compatible with the provider must be specified with the `--compiler` flag
-To see a list of available compilers, run `unik compilers`
+A unikernel base that is compatible with the provider must be specified with the `--base` flag.
+
+A language runtime that is compatible with the base must be specified with the `--language` flag. 
+
+To see a table of all compatible base-language-provider combinations, run `unik compilers`
 
 If you wish to attach volumes to instances of an image, the image must be compiled in advance
 with a list of the expected mount points. e.g. for an application that reads from a '/data' folder,
@@ -112,10 +122,10 @@ Image names must be unique. If an image exists with the same name, you can force
 Example usage:
 
 ```
-unik build --name myUnikernel --path ./myApp/src --compiler rump-go-xen --provider aws --mountpoint /foo --mountpoint /bar --args 'arg1 arg2 arg3' --force
+unik build --name myUnikernel --path ./myApp/src --base rump --language go --provider aws --mountpoint /foo --mountpoint /bar --args 'arg1 arg2 arg3' --force
 ```
   * will create a Go unikernel named myUnikernel using the sources found in ./myApp/src,
-  * compiled using rumprun for the xen hypervisor, targeting AWS infrastructure,
+  * compiled using rumprun targeting AWS infrastructure,
   * expecting a volume to be mounted at /foo at runtime,
   * expecting another volume to be mounted at /bar at runtime,
   * passing 'arg1 arg2 arg3' as arguments to the application when it is run,
@@ -123,7 +133,7 @@ unik build --name myUnikernel --path ./myApp/src --compiler rump-go-xen --provid
 
 Another example (using only the required parameters):
 ```
-unik build -name anotherUnikernel -path ./anotherApp/src -compiler rump-vmware -provider vsphere
+unik build -name anotherUnikernel -path ./anotherApp/src --base includeos --language cpp --provider virtualbox
 ```
 
 Usage:
@@ -131,8 +141,9 @@ Usage:
 
 Flags:
   *  `--args string`        (string,optional) to be passed to the unikernel at runtime
-  *  `--compiler string`    (string,required) name of the unikernel compiler to use
+  *  `--base string`        (string,required) name of the unikernel base to use
   *  `--force`              (bool, optional) force overwriting a previously existing image with this name
+  *  `--language string`    (string,required) target language to build the sources for
   *  `--mountpoint value`   (string,repeated) specify up to 8 mount points for volumes (default [])
   *  `--name string`        (string,required) name to give the unikernel. must be unique
   *  `--path string`        (string,required) path to root application sources folder
@@ -319,7 +330,7 @@ unik create-volume -name anotherVolume --size 500 -provider vsphere
 where it can be attached to a vsphere instance
 
 Flags:
-*  `--compiler int`      (int,special) size to create volume in MB. optional if --data is provided
+*  `--size int`      (int,special) size to create volume in MB. optional if --data is provided
 *  `--data string`       (string,special) path to data folder. optional if --size is provided
 *  `--name string`       (string,required) name to give the unikernel. must be unique
 *  `--provider string`   (string,required) name of the target infrastructure to compile for

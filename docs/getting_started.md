@@ -116,9 +116,9 @@ Ensure that each of the following are installed
 
 1. run the following command from the directory where your `httpd.go` is located:
   ```
-  unik build --name myImage --path ./ --compiler rump-go-virtualbox --provider virtualbox
+  unik build --name myImage --path ./ --base rump --language go --provider virtualbox
   ```
-  This command will instruct UniK to compile the sources found in the working directory (`./`) using the `rump-go-virtualbox` compiler, and stage the image for running the `virtualbox` provider.
+  This command will instruct UniK to compile the sources found in the working directory (`./`) using the `rump-go-virtualbox` compiler.
 2. You can watch the output of the `build` command in the terminal window running the daemon.
 3. When `build` finishes, the resulting disk image will reside at `$HOME/.unik/virtualbox/images/myImage/boot.vmdk`
 4. Run an instance of this image with

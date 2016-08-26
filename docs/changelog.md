@@ -1,5 +1,8 @@
 # UniK Changelog
 
+## Fri Aug 26 2016
+* Changed CLI / REST API for building images. `--compiler` flag was removed in favor of `--base` and `--language` flags, which combine with the existing `--provider` flag to look up the relevant compiler. The cli still exposes the `unik compilers` command in order to list all available combinations.
+
 ## Thu Aug 25 2016
 * Added support for Java running on Rumprun. I will buy a 10$ Steam gift card for anyone who can get Minecraft (or Glowstone) running on it. See the [updated rump documentation](compilers/rump.md#java)
 * Added optional Runtime Args to Rump compilers based on Nodejs, Python, and Java; these are for arguments passed to the interpreter/runtime for a language before the application is run; i.e. inserting the `-Dsome.property=value` running `java -Dsome.property=value -jar myapp.jar` is now supported

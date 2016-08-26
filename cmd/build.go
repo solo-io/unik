@@ -21,34 +21,41 @@ var buildCmd = &cobra.Command{
 	Short: "Build a unikernel image from source code files",
 	Long: `Compiles source files into a runnable unikernel image.
 
-Images must be compiled for a specific provider, specified with the --provider flag
+Images must be compiled using a specific compiler. Compilers are composed of 3 elements:
+ **Base**: The Unikernel Base to build the image on. These include different unikernel implementations, such as [rumprun](https://github.com/rumpkernel/rumprun), [IncludeOS](https://gitter.im/hioa-cs/IncludeOS), etc.
+ **Language**: The language/runtime the image should be built with. E.g. for a golang project, specify '-language go'. Languages supported depend on the unikernel base.
+ **Provider**: The (cloud/hypervisor) provider the image should be built for. Supported providers depend on the unikernel base.
+
+In order to see a list of all supported base/language/provider combinations, run 'unik compilers'
+
+Images must be compiled for a specific provider, specified with the '--provider' flag
 To see a list of available providers, run 'unik providers'
 
-A unikernel compiler that is compatible with the provider must be specified with the --compiler flag
-To see a list of available compilers, run 'unik compilers'
+A unikernel base that is compatible with the provider must be specified with the '--base' flag.
+A language runtime that is compatible with the base must be specified with the '--language' flag.
+To see a table of all compatible base-language-provider combinations, run 'unik compilers'
 
 If you wish to attach volumes to instances of an image, the image must be compiled in advance
 with a list of the expected mount points. e.g. for an application that reads from a '/data' folder,
-the unikernel should be compiled with the flag -mount /data
+the unikernel should be compiled with the flag '--mount /data'
 
 Runtime arguments to be passed to your unikernel must also be specified at compile time.
-You can specify arguments as a single string passed to the --args flag
+You can specify arguments as a single string passed to the '--args' flag
 
-Image names must be unique. If an image exists with the same name, you can force overwriting with the
---force flag
+Image names must be unique. If an image exists with the same name, you can force overwriting with the --force flag
 
 Example usage:
-	unik build --name myUnikernel --path ./myApp/src --base rump --language go --provider aws --mountpoint /foo --mountpoint /bar --args '-myParameter MYVALUE' --force
+	unik build --name myUnikernel --path ./myApp/src --base rump --language go --provider aws --mountpoint /foo --mountpoint /bar --args 'arg1 arg2 arg3' --force
 
-	# will create a unikernel named myUnikernel using the sources found in ./myApp/src,
-	# compiled using golang for rumprun targeting AWS infrastructure,
-	# expecting a volume to be mounted at /foo at runtime,
-	# expecting another volume to be mounted at /bar at runtime,
-	# passing '-myParameter MYVALUE' as arguments to the application when it is run,
-	# and deleting any previous existing instances and image for the name myUnikernel before compiling
+	* will create a Go unikernel named myUnikernel using the sources found in ./myApp/src,
+	* compiled using rumprun targeting AWS infrastructure,
+	* expecting a volume to be mounted at /foo at runtime,
+	* expecting another volume to be mounted at /bar at runtime,
+	* passing 'arg1 arg2 arg3' as arguments to the application when it is run,
+	* and deleting any previous existing instances and image for the name myUnikernel before compiling
 
 Another example (using only the required parameters):
-	unik build --name anotherUnikernel --path ./anotherApp/src --compiler rump-go-vmware --provider vsphere
+	unik build -name anotherUnikernel -path ./anotherApp/src --base includeos --language cpp --provider virtualbox
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
