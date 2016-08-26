@@ -2,6 +2,7 @@ package openstack
 
 import (
 	"fmt"
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/rackspace/gophercloud"
 	"github.com/rackspace/gophercloud/openstack"
@@ -87,7 +88,7 @@ func getHandle(conf config.Openstack) (*openstackHandle, error) {
 		DomainName:       conf.DomainName,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to get OpenStack API client", err)
 	}
 
 	region := conf.RegionId

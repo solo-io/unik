@@ -13,6 +13,9 @@ const (
 	InstanceState_Pending    InstanceState = "pending"
 	InstanceState_Unknown    InstanceState = "unknown"
 	InstanceState_Terminated InstanceState = "terminated"
+	InstanceState_Error      InstanceState = "error"
+	InstanceState_Paused     InstanceState = "paused"
+	InstanceState_Suspended  InstanceState = "suspended"
 )
 
 type Infrastructure string
@@ -129,6 +132,7 @@ type RunSpec struct {
 	DeviceMappings []DeviceMapping `json:"DeviceMappings"` //required for all compilers
 	// DefaultInstanceMemory is in MB
 	DefaultInstanceMemory int                `json:"DefaultInstanceMemory"` //required for all compilers
+	MinInstanceDiskMB     int                `json:"MinInstanceDiskMB"`
 	StorageDriver         StorageDriver      `json:"StorageDriver,omitempty"`
 	VsphereNetworkType    VsphereNetworkType `json:"VsphereNetworkType"`
 	Compiler              string             `json:"Compiler,omitempty"`

@@ -49,6 +49,7 @@ var (
 	OSV_JAVA_VIRTUALBOX = compilerName("osv", "java", "virtualbox")
 	OSV_JAVA_VMAWRE     = compilerName("osv", "java", "vmware")
 	OSV_JAVA_QEMU       = compilerName("osv", "java", "qemu")
+	OSV_JAVA_OPENSTACK  = compilerName("osv", "java", "openstack")
 
 	INCLUDEOS_CPP_QEMU       = compilerName("includeos", "cpp", "qemu")
 	INCLUDEOS_CPP_XEN        = compilerName("includeos", "cpp", "xen")
@@ -93,6 +94,7 @@ var compilers = []string{
 	OSV_JAVA_VIRTUALBOX,
 	OSV_JAVA_VMAWRE,
 	OSV_JAVA_QEMU,
+	OSV_JAVA_OPENSTACK,
 
 	INCLUDEOS_CPP_QEMU,
 	INCLUDEOS_CPP_XEN,

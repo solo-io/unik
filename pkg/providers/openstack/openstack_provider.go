@@ -2,11 +2,11 @@ package openstack
 
 import (
 	"github.com/Sirupsen/logrus"
-	"path/filepath"
-
+	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/state"
 	"github.com/rackspace/gophercloud"
+	"path/filepath"
 )
 
 type OpenstackProvider struct {
@@ -36,11 +36,11 @@ func (p *OpenstackProvider) WithState(state state.State) *OpenstackProvider {
 func (p *OpenstackProvider) newClientNova() (*gophercloud.ServiceClient, error) {
 	handle, err := getHandle(p.config)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to get OpenStack handle", err)
 	}
 	client, err := getNovaClient(handle)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to get Nova API client", err)
 	}
 	return client, nil
 }
@@ -48,11 +48,11 @@ func (p *OpenstackProvider) newClientNova() (*gophercloud.ServiceClient, error) 
 func (p *OpenstackProvider) newClientGlance() (*gophercloud.ServiceClient, error) {
 	handle, err := getHandle(p.config)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to get OpenStack handle", err)
 	}
 	client, err := getGlanceClient(handle)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to get Glance API client", err)
 	}
 	return client, nil
 }

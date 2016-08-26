@@ -299,6 +299,9 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		},
 	}
 
+	// At the moment OpenStack provider borrows Xen's compiler.
+	_compilers[compilers.OSV_JAVA_OPENSTACK] = osvJavaXenCompiler
+
 	d := &UnikDaemon{
 		server:    lxmartini.QuietMartini(),
 		providers: _providers,
