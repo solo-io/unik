@@ -109,29 +109,41 @@ func ValidateCompiler(base, language, provider string) (string, error) {
 }
 
 func bases() []string {
-	bases := []string{}
+	uniqueBases := make(map[string]interface{})
 	for _, compiler := range compilers {
-		bases = append(bases, strings.Split(compiler, "-")[0])
+		uniqueBases[strings.Split(compiler, "-")[0]] = struct{}{}
+	}
+	bases := []string{}
+	for base := range uniqueBases {
+		bases = append(bases, base)
 	}
 	return bases
 }
 
 func langsForBase(base string) []string {
-	langs := []string{}
+	uniqueLangs := make(map[string]interface{})
 	for _, compiler := range compilers {
 		if strings.HasPrefix(compiler, base) {
-			langs = append(langs, strings.Split(compiler, "-")[1])
+			uniqueLangs[strings.Split(compiler, "-")[1]] = struct{}{}
 		}
+	}
+	langs := []string{}
+	for lang := range uniqueLangs {
+		langs = append(langs, lang)
 	}
 	return langs
 }
 
 func providersForBaseLang(base, language string) []string {
-	providers := []string{}
+	uniqueProviders := make(map[string]interface{})
 	for _, compiler := range compilers {
 		if strings.HasPrefix(compiler, base+"-"+language) {
-			providers = append(providers, strings.Split(compiler, "-")[2])
+			uniqueProviders[strings.Split(compiler, "-")[2]] = struct{}{}
 		}
+	}
+	providers := []string{}
+	for provider := range uniqueProviders {
+		providers = append(providers, provider)
 	}
 	return providers
 }
