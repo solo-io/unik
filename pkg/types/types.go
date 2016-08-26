@@ -24,6 +24,7 @@ const (
 	Infrastructure_QEMU       Infrastructure = "QEMU"
 	Infrastructure_PHOTON     Infrastructure = "PHOTON"
 	Infrastructure_XEN        Infrastructure = "XEN"
+	Infrastructure_OPENSTACK  Infrastructure = "OPENSTACK"
 )
 
 type Image struct {

@@ -26,6 +26,7 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers"
 	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
+	"github.com/emc-advanced-dev/unik/pkg/providers/openstack"
 	"github.com/emc-advanced-dev/unik/pkg/providers/photon"
 	"github.com/emc-advanced-dev/unik/pkg/providers/qemu"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
@@ -52,6 +53,7 @@ const (
 	qemu_provider       = "qemu"
 	photon_provider     = "photon"
 	xen_provider        = "xen"
+	openstack_provider  = "openstack"
 )
 
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
@@ -139,6 +141,29 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		}
 		p = p.WithState(s)
 		_providers[photon_provider] = p
+		break
+	}
+
+	for _, openstackConfig := range config.Providers.Openstack {
+		openstack.MergeConfWithEnv(&openstackConfig)
+
+		// Mask password prior logging to console.
+		orig_pass := openstackConfig.Password
+		openstackConfig.Password = "<password>"
+		logrus.Infof("Bootstrapping provider %s with config %v", openstack_provider, openstackConfig)
+		openstackConfig.Password = orig_pass
+
+		p, err := openstack.NewOpenstackProvider(openstackConfig)
+		if err != nil {
+			return nil, errors.New("initializing openstack provider", err)
+		}
+		s, err := state.BasicStateFromFile(openstack.OpenstackStateFile())
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read openstack state file at %s, creating blank openstack state", openstack.OpenstackStateFile())
+			s = state.NewBasicState(openstack.OpenstackStateFile())
+		}
+		p = p.WithState(s)
+		_providers[openstack_provider] = p
 		break
 	}
 

@@ -12,6 +12,7 @@ type Providers struct {
 	Qemu       []Qemu       `yaml:"qemu"`
 	Photon     []Photon     `yaml:"photon"`
 	Xen        []Xen        `yaml:"xen"`
+	Openstack  []Openstack  `yaml:"openstack"`
 }
 
 type Aws struct {
@@ -52,6 +53,23 @@ type Xen struct {
 	Name       string `yaml:"name"`
 	KernelPath string `yaml:"pv_kernel"`
 	XenBridge  string `yaml:"xen_bridge"`
+}
+
+type Openstack struct {
+	Name string `yaml:"name"`
+
+	UserName   string `yaml:"username"`
+	UserId     string `yaml:"userid"`
+	Password   string `yaml:"password"`
+	AuthUrl    string `yaml:"auth_url"`
+	TenantId   string `yaml:"tenant_id"`
+	TenantName string `yaml:"tenant_name"`
+	DomainId   string `yaml:"domain_id"`
+	DomainName string `yaml:"domain_name"`
+
+	ProjectName string `yaml:"project_name"`
+	RegionId    string `yaml:"region_id"`
+	RegionName  string `yaml:"region_name"`
 }
 
 type VirtualboxAdapterType string
