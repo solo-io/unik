@@ -160,7 +160,7 @@ compilers-rump-go-hw-no-stub: compilers-rump-base-hw
 	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-stub .
 
 compilers-rump-go-xen-no-stub: compilers-rump-base-xen
-	$(call build_container,compilers/rump/go,$@,.hw.no-stub)
+	$(call build_container,compilers/rump/go,$@,.xen.no-stub)
 	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen.no-stub .
 
 compilers-rump-go-xen: compilers-rump-base-xen
