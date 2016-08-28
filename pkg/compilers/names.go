@@ -12,6 +12,13 @@ const (
 
 var (
 	//available compilers
+	RUMP_C_XEN        = compilerName("rump", "c", "xen")
+	RUMP_C_AWS        = compilerName("rump", "c", "aws")
+	RUMP_C_VIRTUALBOX = compilerName("rump", "c", "virtualbox")
+	RUMP_C_VMWARE     = compilerName("rump", "c", "vmware")
+	RUMP_C_QEMU       = compilerName("rump", "c", "qemu")
+	RUMP_C_PHOTON     = compilerName("rump", "c", "photon")
+
 	RUMP_GO_XEN        = compilerName("rump", "go", "xen")
 	RUMP_GO_AWS        = compilerName("rump", "go", "aws")
 	RUMP_GO_VIRTUALBOX = compilerName("rump", "go", "virtualbox")
@@ -49,6 +56,13 @@ var (
 )
 
 var compilers = []string{
+	RUMP_C_XEN,
+	RUMP_C_AWS,
+	RUMP_C_VIRTUALBOX,
+	RUMP_C_VMWARE,
+	RUMP_C_QEMU,
+	RUMP_C_PHOTON,
+
 	RUMP_GO_XEN,
 	RUMP_GO_AWS,
 	RUMP_GO_VIRTUALBOX,

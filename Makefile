@@ -61,6 +61,8 @@ all: pull ${SOURCES} binary
 .PHONY: compilers-rump-nodejs-hw
 .PHONY: compilers-rump-nodejs-hw-no-stub
 .PHONY: compilers-rump-nodejs-xen
+.PHONY: compilers-rump-c-hw
+.PHONY: compilers-rump-c-xen
 .PHONY: compilers-rump-python3-hw
 .PHONY: compilers-rump-python3-hw-no-stub
 .PHONY: compilers-rump-python3-xen
@@ -93,6 +95,8 @@ pull:
 	$(call pull_container,compilers-rump-nodejs-hw)
 	$(call pull_container,compilers-rump-nodejs-hw-no-stub)
 	$(call pull_container,compilers-rump-nodejs-xen)
+	$(call pull_container,compilers-rump-c-hw)
+	$(call pull_container,compilers-rump-c-xen)
 	$(call pull_container,compilers-rump-python3-hw)
 	$(call pull_container,compilers-rump-python3-hw-no-stub)
 	$(call pull_container,compilers-rump-python3-xen)
@@ -118,6 +122,8 @@ compilers: compilers-includeos-cpp-hw \
            compilers-rump-nodejs-hw \
            compilers-rump-nodejs-hw-no-stub \
            compilers-rump-nodejs-xen \
+           compilers-rump-c-hw \
+           compilers-rump-c-xen \
            compilers-rump-python3-hw \
            compilers-rump-python3-hw-no-stub \
            compilers-rump-python3-xen \
@@ -138,9 +144,6 @@ compilers-rump-base-hw: compilers-rump-base-common
 compilers-rump-base-xen: compilers-rump-base-common
 	$(call build_container,compilers/rump/base,$@,.xen)
 
-compilers-rump-go-hw: compilers-rump-base-hw
-	$(call build_container,compilers/rump/go,$@,.hw)
-
 compilers-rump-java-hw: compilers-rump-base-hw
 	cd containers/compilers/rump/java/java-wrapper && mvn package
 	$(call build_container,compilers/rump/java,$@,.hw)
@@ -155,6 +158,12 @@ rump-debugger-qemu: compilers-rump-base-hw
 rump-debugger-xen: compilers-rump-base-xen
 	$(call build_container,debuggers/rump/base,$@,.xen)
 
+compilers-rump-go-hw: compilers-rump-base-hw
+	$(call build_container,compilers/rump/go,$@,.hw)
+
+compilers-rump-go-xen: compilers-rump-base-xen
+	$(call build_container,compilers/rump/go,$@,.xen)
+
 compilers-rump-go-hw-no-stub: compilers-rump-base-hw
 	$(call build_container,compilers/rump/go,$@,.hw.no-stub)
 	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-stub .
@@ -162,9 +171,6 @@ compilers-rump-go-hw-no-stub: compilers-rump-base-hw
 compilers-rump-go-xen-no-stub: compilers-rump-base-xen
 	$(call build_container,compilers/rump/go,$@,.xen.no-stub)
 	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen.no-stub .
-
-compilers-rump-go-xen: compilers-rump-base-xen
-	$(call build_container,compilers/rump/go,$@,.xen)
 
 compilers-rump-nodejs-hw: compilers-rump-base-hw
 	$(call build_container,compilers/rump/nodejs,$@,.hw)
@@ -175,13 +181,19 @@ compilers-rump-nodejs-hw-no-stub: compilers-rump-base-hw
 compilers-rump-nodejs-xen: compilers-rump-base-xen
 	$(call build_container,compilers/rump/nodejs,$@,.xen)
 
-compilers-rump-python3-hw: compilers-rump-base-hw
+compilers-rump-c-hw: compilers-rump-go-hw
+	$(call build_container,compilers/rump/c,$@,.hw)
+
+compilers-rump-c-xen: compilers-rump-go-xen
+	$(call build_container,compilers/rump/c,$@,.xen)
+
+compilers-rump-python3-hw: compilers-rump-go-hw
 	$(call build_container,compilers/rump/python3,$@,.hw)
 
 compilers-rump-python3-hw-no-stub: compilers-rump-base-hw
 	$(call build_container,compilers/rump/python3,$@,.hw.no-stub)
 
-compilers-rump-python3-xen: compilers-rump-base-xen
+compilers-rump-python3-xen: compilers-rump-go-xen
 	$(call build_container,compilers/rump/python3,$@,.xen)
 
 compilers-osv-java:
@@ -250,6 +262,10 @@ endif
 localbuild: instance-listener/bindata/instance_listener_data.go containers/version-data.go submodules ${SOURCES}
 	GOOS=${TARGET_OS} go build -v .
 
+# local install - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
+localinstall: instance-listener/bindata/instance_listener_data.go containers/version-data.go submodules ${SOURCES}
+	GOOS=${TARGET_OS} go install -v .
+
 containers/version-data.go: containers/versions.json
 	$(call update_version_bindata)
 
@@ -276,6 +292,8 @@ remove-containers:
 	-$(call remove_container,compilers-rump-nodejs-hw)
 	-$(call remove_container,compilers-rump-nodejs-hw-no-stub)
 	-$(call remove_container,compilers-rump-nodejs-xen)
+	-$(call remove_container,compilers-rump-c-hw)
+	-$(call remove_container,compilers-rump-c-xen)
 	-$(call remove_container,compilers-rump-python3-hw)
 	-$(call remove_container,compilers-rump-python3-hw-no-stub)
 	-$(call remove_container,compilers-rump-python3-xen)

@@ -6,6 +6,8 @@
   "boot-creator": "d4a725cc81d51b3d",
   "qemu-util": "db3c009fc72c4172",
   "compilers-osv-java": "9fa0b230b928a006",
+  "compilers-rump-c-hw": "052b4f29bb50e41e",
+  "compilers-rump-c-xen": "e88c8112689a1b39",
   "compilers-rump-go-xen": "220f8e0c0f64463a",
   "compilers-rump-go-hw": "da2e08c1c3698056",
   "compilers-rump-go-hw-no-stub": "0d52121b41e3a005",
