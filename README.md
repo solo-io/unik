@@ -57,6 +57,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 * [vSphere](docs/providers/vsphere.md)
 * [QEMU](docs/providers/qemu.md)
 * [Xen](docs/providers/xen.md)
+* [Photon Controller](docs/providers/photon.md)
 
 ### Roadmap:
 * additional provider support including [OpenStack](https://www.openstack.org/)
