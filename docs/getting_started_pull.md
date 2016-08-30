@@ -70,7 +70,7 @@ Ensure that each of the following are installed
 1. Open another terminal window and type `unik login`
 * You will be asked to fill in a URL, Username, and Password. For URL, just hit Enter (this will tell Unik to use the default http://hub.project-unik.io). Pick any username/password you like.
 2. List available images with `unik search`
-3. Choose an image from the list (by name) and download it to your local storage with `unik pull --image PythonExample`
+3. Choose an image from the list (by name) and download it to your local storage with `unik pull --image PythonExample --provider virtualbox`
 4. Great! Now we're ready to run our first unikernel.
 
 ---
