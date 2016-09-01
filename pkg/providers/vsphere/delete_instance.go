@@ -48,8 +48,5 @@ func (p *VsphereProvider) DeleteInstance(id string, force bool) error {
 	if err != nil {
 		return errors.New("failed to terminate instance "+instance.Id, err)
 	}
-	return p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
-		delete(instances, instance.Id)
-		return nil
-	})
+	return p.state.RemoveInstance(instance)
 }

@@ -36,17 +36,5 @@ func (p *XenProvider) DeleteInstance(id string, force bool) error {
 	}); err != nil {
 		return errors.New("modifying image map in state", err)
 	}
-	for _, volume := range volumesToDetach {
-		if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
-			volume, ok := volumes[volume.Id]
-			if !ok {
-				return errors.New("no record of "+volume.Id+" in the state", nil)
-			}
-			volume.Attachment = ""
-			return nil
-		}); err != nil {
-			return errors.New("modifying volume map in state", err)
-		}
-	}
-	return nil
+	return p.state.RemoveInstance(instance)
 }

@@ -24,11 +24,5 @@ func (p *AwsProvider) DeleteInstance(id string, force bool) error {
 	if err != nil {
 		return errors.New("failed to terminate instance "+instance.Id, err)
 	}
-	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
-		delete(instances, instance.Id)
-		return nil
-	}); err != nil {
-		return errors.New("modifying image map in state", err)
-	}
-	return nil
+	return p.state.RemoveInstance(instance)
 }
