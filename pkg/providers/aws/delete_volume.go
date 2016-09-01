@@ -4,7 +4,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 func (p *AwsProvider) DeleteVolume(id string, force bool) error {
@@ -28,11 +27,5 @@ func (p *AwsProvider) DeleteVolume(id string, force bool) error {
 	if err != nil {
 		return errors.New("failed to terminate volume "+volume.Id, err)
 	}
-	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
-		delete(volumes, volume.Id)
-		return nil
-	}); err != nil {
-		return errors.New("modifying volume map in state", err)
-	}
-	return nil
+	return p.state.RemoveVolume(volume)
 }

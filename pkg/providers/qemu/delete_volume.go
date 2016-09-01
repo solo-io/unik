@@ -1,10 +1,8 @@
 package qemu
 
 import (
-	"os"
-
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"os"
 )
 
 func (p *QemuProvider) DeleteVolume(id string, force bool) error {
@@ -26,11 +24,5 @@ func (p *QemuProvider) DeleteVolume(id string, force bool) error {
 	if err != nil {
 		return errors.New("could not delete volume at path "+volumePath, err)
 	}
-	if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
-		delete(volumes, volume.Id)
-		return nil
-	}); err != nil {
-		return errors.New("deleting volume path from state", err)
-	}
-	return nil
+	return p.state.RemoveVolume(volume)
 }

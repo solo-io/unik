@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 func (p *XenProvider) DeleteVolume(id string, force bool) error {
@@ -26,12 +25,5 @@ func (p *XenProvider) DeleteVolume(id string, force bool) error {
 	if err != nil {
 		return errors.New("could not delete volume at path "+volumePath, err)
 	}
-	err = p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
-		delete(volumes, volume.Id)
-		return nil
-	})
-	if err != nil {
-		return errors.New("deleting volume path from state", err)
-	}
-	return nil
+	return p.state.RemoveVolume(volume)
 }
