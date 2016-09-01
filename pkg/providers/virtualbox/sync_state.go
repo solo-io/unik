@@ -7,6 +7,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"os"
 	"strings"
 	"time"
 )
@@ -20,6 +21,7 @@ func (p *VirtualboxProvider) syncState() error {
 		if err != nil {
 			if strings.Contains(err.Error(), "Could not find a registered machine") {
 				logrus.Warnf("instance found in state that is no longer registered to Virtualbox")
+				os.RemoveAll(getInstanceDir(instance.Name))
 				p.state.RemoveInstance(instance)
 				continue
 			}
