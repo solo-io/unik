@@ -1,7 +1,7 @@
 {
   "compilers-rump-java-hw": "44625b1818b0706f",
   "compilers-rump-java-xen": "72fe6e21376020e6",
-  "compilers-rump-python3-hw": "293127e05e9876db",
+  "compilers-rump-python3-hw": "b4d7839ac675dab3",
   "compilers-rump-nodejs-xen": "8dbf03d3f699d2fd",
   "boot-creator": "d4a725cc81d51b3d",
   "qemu-util": "db3c009fc72c4172",
@@ -13,7 +13,7 @@
   "compilers-rump-go-hw-no-stub": "0d52121b41e3a005",
   "compilers-rump-go-xen-no-stub": "f656de58ab6716e0",
   "compilers-rump-python3-hw-no-stub": "4fd20fd8d3536750",
-  "compilers-rump-python3-xen": "1995cd437e302d45",
+  "compilers-rump-python3-xen": "a1088c9cef821113",
   "compilers-rump-base-xen": "e8117ef5dddcdabe",
   "compilers-rump-base-hw": "d6f5c541f38f74bd",
   "compilers-includeos-cpp-common": "df9c830467f8b120",
