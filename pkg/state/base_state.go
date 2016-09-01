@@ -118,3 +118,52 @@ func (s *basicState) save() error {
 	}
 	return nil
 }
+
+func (s *basicState) RemoveImage(image *types.Image) error {
+	if err := s.ModifyImages(func(images map[string]*types.Image) error {
+		delete(images, image.Id)
+		return nil
+	}); err != nil {
+		return errors.New("modifying image map in state", err)
+	}
+	return nil
+}
+
+func (s *basicState) RemoveInstance(instance *types.Instance) error {
+	if err := s.ModifyInstances(func(instances map[string]*types.Instance) error {
+		delete(instances, instance.Id)
+		return nil
+	}); err != nil {
+		return errors.New("modifying image map in state", err)
+	}
+	volumesToDetach := []*types.Volume{}
+	volumes := s.GetVolumes()
+	for _, volume := range volumes {
+		if volume.Attachment == instance.Id {
+			volumesToDetach = append(volumesToDetach, volume)
+		}
+	}
+	for _, volume := range volumesToDetach {
+		if err := s.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+			volume, ok := volumes[volume.Id]
+			if !ok {
+				return errors.New("no record of "+volume.Id+" in the state", nil)
+			}
+			volume.Attachment = ""
+			return nil
+		}); err != nil {
+			return errors.New("modifying volume map in state", err)
+		}
+	}
+	return nil
+}
+
+func (s *basicState) RemoveVolume(volume *types.Volume) error {
+	if err := s.ModifyVolumes(func(volumes map[string]*types.Volume) error {
+		delete(volumes, volume.Id)
+		return nil
+	}); err != nil {
+		return errors.New("modifying volume map in state", err)
+	}
+	return nil
+}

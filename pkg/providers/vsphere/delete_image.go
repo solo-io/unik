@@ -3,7 +3,6 @@ package vsphere
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 func (p *VsphereProvider) DeleteImage(id string, force bool) error {
@@ -34,12 +33,5 @@ func (p *VsphereProvider) DeleteImage(id string, force bool) error {
 	if err := p.getClient().Rmdir(imageDir); err != nil {
 		return errors.New("deleting image file at "+imageDir, err)
 	}
-
-	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {
-		delete(images, image.Id)
-		return nil
-	}); err != nil {
-		return errors.New("modifying image map in state", err)
-	}
-	return nil
+	return p.state.RemoveImage(image)
 }

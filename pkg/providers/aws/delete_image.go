@@ -4,7 +4,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 func (p *AwsProvider) DeleteImage(id string, force bool) error {
@@ -54,14 +53,7 @@ func (p *AwsProvider) DeleteImage(id string, force bool) error {
 	if _, err := ec2svc.DeleteVolume(deleteVolumeParam); err != nil {
 		return errors.New("failed deleting volumme "+*snap.VolumeId, err)
 	}
-
-	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {
-		delete(images, image.Id)
-		return nil
-	}); err != nil {
-		return errors.New("modifying image map in state", err)
-	}
-	return nil
+	return p.state.RemoveImage(image)
 }
 
 func getSnapshotForImage(ec2svc *ec2.EC2, imageId string) (*ec2.Snapshot, error) {

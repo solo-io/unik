@@ -20,7 +20,7 @@ func (p *VirtualboxProvider) syncState() error {
 		if err != nil {
 			if strings.Contains(err.Error(), "Could not find a registered machine") {
 				logrus.Warnf("instance found in state that is no longer registered to Virtualbox")
-				p.deleteInstanceFromState(instance)
+				p.state.RemoveInstance(instance)
 				continue
 			}
 			return errors.New("retrieving vm for instance id "+instance.Name, err)

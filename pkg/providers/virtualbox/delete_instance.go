@@ -37,34 +37,5 @@ func (p *VirtualboxProvider) DeleteInstance(id string, force bool) error {
 	if err := virtualboxclient.DestroyVm(instance.Id); err != nil {
 		return errors.New("destroying vm", err)
 	}
-	return p.deleteInstanceFromState(instance)
-}
-
-func (p *VirtualboxProvider) deleteInstanceFromState(instance *types.Instance) error {
-	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
-		delete(instances, instance.Id)
-		return nil
-	}); err != nil {
-		return errors.New("modifying image map in state", err)
-	}
-	volumesToDetach := []*types.Volume{}
-	volumes := p.state.GetVolumes()
-	for _, volume := range volumes {
-		if volume.Attachment == instance.Id {
-			volumesToDetach = append(volumesToDetach, volume)
-		}
-	}
-	for _, volume := range volumesToDetach {
-		if err := p.state.ModifyVolumes(func(volumes map[string]*types.Volume) error {
-			volume, ok := volumes[volume.Id]
-			if !ok {
-				return errors.New("no record of "+volume.Id+" in the state", nil)
-			}
-			volume.Attachment = ""
-			return nil
-		}); err != nil {
-			return errors.New("modifying volume map in state", err)
-		}
-	}
-	return nil
+	return p.state.RemoveInstance(instance)
 }

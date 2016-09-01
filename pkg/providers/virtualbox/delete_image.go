@@ -3,7 +3,6 @@ package virtualbox
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"os"
 	"path/filepath"
 )
@@ -37,11 +36,5 @@ func (p *VirtualboxProvider) DeleteImage(id string, force bool) error {
 		return errors.New("deleing image file at "+imagePath, err)
 	}
 
-	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {
-		delete(images, image.Id)
-		return nil
-	}); err != nil {
-		return errors.New("modifying image map in state", err)
-	}
-	return nil
+	return p.state.RemoveImage(image)
 }
