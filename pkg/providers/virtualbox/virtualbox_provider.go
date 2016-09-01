@@ -5,10 +5,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/state"
+	"time"
 )
 
 func VirtualboxStateFile() string {
@@ -53,6 +55,16 @@ func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error
 	}
 
 	p.instanceListenerIp = instanceListenerIp
+
+	// begin update instances cycle
+	go func() {
+		for {
+			if err := p.syncState(); err != nil {
+				logrus.Error("error updatin virtualbox state:", err)
+			}
+			time.Sleep(time.Second)
+		}
+	}()
 
 	return p, nil
 }

@@ -35,7 +35,7 @@ func (vm *VboxVm) String() string {
 
 func vboxManage(args ...string) ([]byte, error) {
 	cmd := exec.Command("VBoxManage", args...)
-	logrus.WithField("command", cmd.Args).Debugf("running VBoxManage command")
+	//logrus.WithField("command", cmd.Args).Debugf("running VBoxManage command")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("%s", string(out))
@@ -74,7 +74,7 @@ func parseVmInfo(vmInfo string) (*VboxVm, error) {
 				return nil, errors.New("compiling regex", err)
 			}
 			macAddr = formatMac(string(rLineBegin.ReplaceAll(rLineEnd.ReplaceAll([]byte(line), []byte("")), []byte(""))))
-			logrus.Debugf("mac address found for vm: %s", macAddr)
+			//logrus.Debugf("mac address found for vm: %s", macAddr)
 		}
 		if strings.Contains(line, "SCSI (") {
 			device, err := parseDevice(line)
