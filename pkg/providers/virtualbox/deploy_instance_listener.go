@@ -14,7 +14,6 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
-	"path/filepath"
 )
 
 var timeout = time.Second * 10
