@@ -76,7 +76,7 @@ func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error)
 		if err != nil {
 			return errors.New("failed creating raw data volume", err)
 		}
-		defer os.RemoveAll(filepath.Dir(imagePath))
+		defer os.RemoveAll(imagePath)
 		createVolumeParams := types.CreateVolumeParams{
 			Name:      instanceListenerData,
 			ImagePath: imagePath,
