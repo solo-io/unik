@@ -71,26 +71,21 @@ Ensure that each of the following are installed
 
   ```cpp
   #include <os>
-  #include "unik_register_instance.hpp"
+  #include <net/inet4>
 
   constexpr int port {8080};
-  std::unique_ptr<net::Inet4<VirtioNet>> inet;
 
-  void Service::start() {
+  void Service::start(const std::string&) {
     using namespace std::string_literals;
-    auto& eth0 = hw::Dev::eth<0, VirtioNet>();
-    inet = std::make_unique<net::Inet4<VirtioNet>>(eth0);
-    unik::register_instance();
 
-    auto& server = inet->tcp().bind(port);
-    server.onAccept([] (auto conn) -> bool {
-        return true; // allow all connections
-      })
-      .onConnect([] (auto conn) {
+    auto& server = net::Inet4::stack().tcp().bind(port);
+    server.on_connect([] (auto conn) {
+      conn->on_read(1024, [conn] (auto buf, size_t n) {
         auto response {"My first unikernel!\n"s};
-        conn->write(response.data(), response.size());
+        conn->write(response);
         conn->close();
       });
+    });
   }
   ```
 
@@ -107,8 +102,13 @@ Ensure that each of the following are installed
   # Your disk image
   DISK=
 
+  # Add networking driver
+  DRIVERS=virtionet
+
   # Your own include-path
   LOCAL_INCLUDES=
+
+  PLATFORM=unik
 
   # IncludeOS location
   ifndef INCLUDEOS_INSTALL
@@ -119,9 +119,7 @@ Ensure that each of the following are installed
   include $(INCLUDEOS_INSTALL)/Makeseed
   ```
 
-3. (In the very near future, this step will not be necessary, but since you are an early adopter, you will have to add an extra file. [Download the file from GitHub here](https://gist.githubusercontent.com/ingve/ae745418261c8871edf52e8dbdb29099/raw/86783f194f5b31556d242127d18f69b30b6c8c93/unik_register_instance.hpp) and add it to the same folder as `service.cpp`.)
-
-4. Great! Now we're ready to compile this code to a unikernel.
+3. Great! Now we're ready to compile this code to a unikernel.
 
 ---
 
