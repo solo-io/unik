@@ -3,7 +3,9 @@ MAINTAINER includeos.org
 RUN \
   apt-get update && \
   apt-get install -y bc git lsb-release sudo
-RUN useradd -m includeos && echo "includeos:includeos" | chpasswd && adduser includeos sudo
-RUN git clone https://github.com/hioa-cs/IncludeOS.git
-WORKDIR IncludeOS
-RUN /bin/bash install.sh
+RUN cd ~ && pwd && \
+  git clone https://github.com/hioa-cs/IncludeOS.git && \
+  cd IncludeOS && \
+  git checkout 8dfa8b661355fd79b68ae2396d8df99c07f7c9e3 && \
+  git fetch --tags && \
+  /bin/bash ./install.sh
