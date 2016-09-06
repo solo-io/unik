@@ -1,43 +1,64 @@
-package virtualbox
+package vsphere
 
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
+	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere/vsphereclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"os"
-	"strings"
 	"time"
 )
 
-func (p *VirtualboxProvider) syncState() error {
+func (p *VsphereProvider) syncState() error {
 	if len(p.state.GetInstances()) < 1 {
 		return nil
 	}
-	for _, instance := range p.state.GetInstances() {
-		vm, err := virtualboxclient.GetVm(instance.Name)
+	c := p.getClient()
+	vms := []*vsphereclient.VirtualMachine{}
+	for instanceId := range p.state.GetInstances() {
+		vm, err := c.GetVmByUuid(instanceId)
 		if err != nil {
-			if strings.Contains(err.Error(), "Could not find a registered machine") {
-				logrus.Warnf("instance found in state that is no longer registered to Virtualbox")
-				os.RemoveAll(getInstanceDir(instance.Name))
-				p.state.RemoveInstance(instance)
-				continue
-			}
-			return errors.New("retrieving vm for instance id "+instance.Name, err)
+			return errors.New("getting vm info for "+instanceId, err)
 		}
-		macAddr := vm.MACAddr
+		vms = append(vms, vm)
+	}
+	for _, vm := range vms {
+		//we use mac address as the vm id
+		macAddr := ""
+		for _, device := range vm.Config.Hardware.Device {
+			if len(device.MacAddress) > 0 {
+				macAddr = device.MacAddress
+				break
+			}
+		}
+		if macAddr == "" {
+			logrus.WithFields(logrus.Fields{"vm": vm}).Warnf("vm found, cannot identify mac addr")
+			continue
+		}
 
-		if vm.Running {
+		instanceId := vm.Config.UUID
+		instance, ok := p.state.GetInstances()[instanceId]
+		if !ok {
+			continue
+		}
+
+		switch vm.Summary.Runtime.PowerState {
+		case "poweredOn":
 			instance.State = types.InstanceState_Running
-		} else {
+			break
+		case "poweredOff":
+		case "suspended":
 			instance.State = types.InstanceState_Stopped
+			break
+		default:
+			instance.State = types.InstanceState_Unknown
+			break
 		}
 
 		var ipAddress string
 		if err := unikutil.Retry(3, time.Duration(500*time.Millisecond), func() error {
-			if instance.Name == VboxUnikInstanceListener {
+			if instance.Name == VsphereUnikInstanceListener {
 				ipAddress = p.instanceListenerIp
 			} else {
 				var err error
