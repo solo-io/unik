@@ -84,7 +84,7 @@ pull:
 	$(call pull_container,vsphere-client)
 	$(call pull_container,boot-creator)
 	$(call pull_container,qemu-util)
-	#$(call pull_container,compilers-includeos-cpp-hw)
+	$(call pull_container,compilers-includeos-cpp-hw)
 	$(call pull_container,compilers-osv-java)
 	$(call pull_container,compilers-rump-java-hw)
 	$(call pull_container,compilers-rump-java-xen)
