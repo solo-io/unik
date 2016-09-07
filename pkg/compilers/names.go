@@ -107,7 +107,7 @@ func ValidateCompiler(base, language, provider string) (string, error) {
 			baseMatch = true
 		}
 		if strings.HasPrefix(compiler, base+"-"+language) {
-			baseMatch = true
+			languageMatch = true
 		}
 		if compiler == compilerName(base, language, provider) {
 			return compiler, nil
