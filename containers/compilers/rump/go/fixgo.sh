@@ -15,7 +15,7 @@ func findnull(s *byte) int {
 	}
 	p := (*[_MaxMem/2 - 1]byte)(unsafe.Pointer(s))
 	l := 0
-  for l < len(p)/1000 && p[l] != 0 {
+  for p[l] != 0 {
           l++
   }
   if l == len(p) {
