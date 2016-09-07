@@ -36,7 +36,7 @@ func (p *VirtualboxProvider) syncState() error {
 		}
 
 		var ipAddress string
-		if err := unikutil.Retry(3, time.Duration(500*time.Millisecond), func() error {
+		unikutil.Retry(3, time.Duration(500*time.Millisecond), func() error {
 			if instance.Name == VboxUnikInstanceListener {
 				ipAddress = p.instanceListenerIp
 			} else {
@@ -47,9 +47,7 @@ func (p *VirtualboxProvider) syncState() error {
 				}
 			}
 			return nil
-		}); err != nil {
-			logrus.Warnf("failed to retrieve ip for instance %s. instance may be running but has not responded to udp broadcast", instance.Id)
-		}
+		})
 
 		if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 			if _, ok := instances[instance.Id]; ok {
