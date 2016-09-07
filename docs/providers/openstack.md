@@ -15,7 +15,7 @@ providers:
       tenant_id: 3dfe7bf545ff4885a3912a92a4a5f8e0
       tenant_name: admin
       project_name: admin
-      region: RegionOne
+      region_name: RegionOne
 ```
 You can override any of the settings above using environment variables, e.g.
 ```bash
