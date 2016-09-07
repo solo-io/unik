@@ -117,7 +117,7 @@ compilers: compilers-includeos-cpp-hw \
            compilers-rump-java-xen \
            compilers-rump-go-hw \
            compilers-rump-go-hw-no-stub \
-           compilers-rump-go-hw-xen-stub \
+           compilers-rump-go-xen-no-stub \
            compilers-rump-go-xen \
            compilers-rump-nodejs-hw \
            compilers-rump-nodejs-hw-no-stub \
