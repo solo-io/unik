@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-base-xen:e8117ef5dddcdabe
+FROM projectunik/compilers-rump-base-xen:fefc8b9d62f08590
 
 RUN apt-get update
 RUN apt-get install -y pkg-config
