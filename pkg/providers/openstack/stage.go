@@ -38,11 +38,11 @@ func (p *OpenstackProvider) Stage(params types.StageImageParams) (_ *types.Image
 
 	clientGlance, err := p.newClientGlance()
 	if err != nil {
-		return nil, err
+		return nil, errors.New("creating new glance client session", err)
 	}
 	clientNova, err := p.newClientNova()
 	if err != nil {
-		return nil, err
+		return nil, errors.New("creating new nova client session", err)
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -60,17 +60,20 @@ func (p *OpenstackProvider) Stage(params types.StageImageParams) (_ *types.Image
 
 	// Pick flavor.
 	flavor, err := pickFlavor(clientNova, imageSizeMB, 0)
+	if err != nil {
+		return nil, errors.New("picking a flavor", err)
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"imageSizeB":  imageSizeB,
 		"imageSizeMB": imageSizeMB,
 		"flavor":      flavor,
-	}).Debug("picking flavor")
+	}).Debug("pushing image to openstack")
 
 	// Push image to OpenStack.
 	createdImage, err := pushImage(clientGlance, params.Name, params.RawImage.LocalImagePath, flavor)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("pushing image", err)
 	}
 
 	image := &types.Image{
@@ -102,10 +105,13 @@ func pickFlavor(clientNova *gophercloud.ServiceClient, diskMB int, memoryMB int)
 		return nil, errors.New("Please specify disk size.", nil)
 	}
 
-	var flavs []flavors.Flavor = listFlavors(clientNova, int(math.Ceil(float64(diskMB)/1024)), memoryMB)
+	flavs, err := listFlavors(clientNova, int(math.Ceil(float64(diskMB)/1024)), memoryMB)
+	if err != nil {
+		return nil, errors.New("listing flavors", err)
+	}
 
 	// Find smallest flavor for given conditions.
-	logrus.Infof("Find smallest flavor for conditions: diskMB >= %d AND memoryMB >= %d\n", diskMB, memoryMB)
+	logrus.WithField("flavors", flavs).Infof("Find smallest flavor for conditions: diskMB >= %d AND memoryMB >= %d\n", diskMB, memoryMB)
 
 	var bestFlavor flavors.Flavor
 	var minDiffDisk int = -1
@@ -131,23 +137,26 @@ func pickFlavor(clientNova *gophercloud.ServiceClient, diskMB int, memoryMB int)
 }
 
 // listFlavors returns list of all flavors.
-func listFlavors(clientNova *gophercloud.ServiceClient, minDiskGB int, minMemoryMB int) []flavors.Flavor {
+func listFlavors(clientNova *gophercloud.ServiceClient, minDiskGB int, minMemoryMB int) ([]flavors.Flavor, error) {
 	var flavs []flavors.Flavor = make([]flavors.Flavor, 0)
 
 	pagerFlavors := flavors.ListDetail(clientNova, flavors.ListOpts{
 		MinDisk: minDiskGB,
 		MinRAM:  minMemoryMB,
 	})
-	pagerFlavors.EachPage(func(page pagination.Page) (bool, error) {
-		flavorList, _ := flavors.ExtractFlavors(page)
-
+	if err := pagerFlavors.EachPage(func(page pagination.Page) (bool, error) {
+		flavorList, err := flavors.ExtractFlavors(page)
+		if err != nil {
+			return false, errors.New(fmt.Sprintf("reading flavors from %+v", page), err)
+		}
 		for _, f := range flavorList {
 			flavs = append(flavs, f)
 		}
-
 		return true, nil
-	})
-	return flavs
+	}); err != nil {
+		return nil, errors.New("reading flavors from pages", err)
+	}
+	return flavs, nil
 }
 
 // pushImage first creates meta for image at OpenStack, then it sends binary data for it, the qcow2 image.
@@ -155,12 +164,12 @@ func pushImage(clientGlance *gophercloud.ServiceClient, imageName string, imageF
 	// Create metadata (on OpenStack).
 	createdImage, err := createImage(clientGlance, imageName, flavor)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("creating openstack image metadata", err)
 	}
 
 	// Send the image binary data to OpenStack
 	if err = uploadImage(clientGlance, createdImage.ID, imageFilepath); err != nil {
-		return nil, err
+		return nil, errors.New("uploading image", err)
 	}
 
 	return createdImage, nil
@@ -170,18 +179,17 @@ func pushImage(clientGlance *gophercloud.ServiceClient, imageName string, imageF
 func createImage(clientGlance *gophercloud.ServiceClient, name string, flavor *flavors.Flavor) (*images.Image, error) {
 	createdImage, err := images.Create(clientGlance, images.CreateOpts{
 		Name:             name,
-		Tags:             []string{"tagOSv", "tagCapstan"},
 		DiskFormat:       "qcow2",
 		ContainerFormat:  "bare",
 		MinDiskGigabytes: flavor.Disk,
 	}).Extract()
-
-	if err == nil {
-		logrus.WithFields(logrus.Fields{
-			"createdImage": createdImage,
-		}).Info("Created image")
+	if err != nil {
+		return nil, errors.New("creating image", err)
 	}
-	return createdImage, err
+	logrus.WithFields(logrus.Fields{
+		"createdImage": createdImage,
+	}).Info("Created image")
+	return createdImage, nil
 }
 
 // uploadImage uploads image binary data to existing OpenStack image metadata.
@@ -192,10 +200,13 @@ func uploadImage(clientGlance *gophercloud.ServiceClient, imageId string, filepa
 
 	f, err := os.Open(filepath)
 	if err != nil {
-		return err
+		return errors.New("opening file", err)
 	}
 	defer f.Close()
 
 	res := images.Upload(clientGlance, imageId, f)
-	return res.Err
+	if res.Err != nil {
+		return errors.New("uploading image api call", res.Err)
+	}
+	return nil
 }
