@@ -30,12 +30,11 @@ func BuildRawDataImage(dataTar io.ReadCloser, size unikos.MegaBytes, usePartitio
 	container := NewContainer("image-creator").Privileged(true).WithVolume("/dev/", "/dev/").
 		WithVolume(buildDir+"/", "/opt/vol")
 
-	resultFile, err := ioutil.TempFile("", "data.image.result.img.")
+	tmpResultFile, err := ioutil.TempFile(buildDir, "data.image.result.img.")
 	if err != nil {
 		return "", err
 	}
-	resultFile.Close()
-	args := []string{"-o", filepath.Base(resultFile.Name())}
+	args := []string{"-o", filepath.Base(tmpResultFile.Name())}
 
 	if size > 0 {
 		args = append(args, "-p", fmt.Sprintf("%v", usePartitionTables),
@@ -52,6 +51,15 @@ func BuildRawDataImage(dataTar io.ReadCloser, size unikos.MegaBytes, usePartitio
 
 	if err = container.Run(args...); err != nil {
 		return "", errors.New("failed running image-creator on "+dataFolder, err)
+	}
+
+	resultFile, err := ioutil.TempFile("", "boot-creator-result.img.")
+	if err != nil {
+		return "", err
+	}
+	resultFile.Close()
+	if err := os.Rename(tmpResultFile.Name(), resultFile.Name()); err != nil {
+		return "", errors.New("renaming "+tmpResultFile.Name()+" to "+resultFile.Name(), err)
 	}
 
 	return resultFile.Name(), nil
@@ -72,18 +80,26 @@ func BuildEmptyDataVolume(size unikos.MegaBytes) (string, error) {
 	container := NewContainer("image-creator").Privileged(true).WithVolume("/dev/", "/dev/").
 		WithVolume(buildDir+"/", "/opt/vol")
 
-	resultFile, err := ioutil.TempFile("", "data.image.result.img.")
+	tmpResultFile, err := ioutil.TempFile(buildDir, "data.image.result.img.")
 	if err != nil {
 		return "", err
 	}
-	resultFile.Close()
-	args := []string{"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes()), "-o", filepath.Base(resultFile.Name())}
+	args := []string{"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes()), "-o", filepath.Base(tmpResultFile.Name())}
 
 	logrus.WithFields(logrus.Fields{
 		"command": args,
 	}).Debugf("running image-creator container")
 	if err := container.Run(args...); err != nil {
 		return "", errors.New("failed running image-creator on "+dataFolder, err)
+	}
+
+	resultFile, err := ioutil.TempFile("", "boot-creator-result.img.")
+	if err != nil {
+		return "", err
+	}
+	resultFile.Close()
+	if err := os.Rename(tmpResultFile.Name(), resultFile.Name()); err != nil {
+		return "", errors.New("renaming "+tmpResultFile.Name()+" to "+resultFile.Name(), err)
 	}
 
 	return resultFile.Name(), nil
