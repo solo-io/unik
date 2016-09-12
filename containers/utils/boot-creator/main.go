@@ -7,6 +7,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/pborman/uuid"
+	"io"
 	"os"
 )
 
@@ -17,13 +19,14 @@ func main() {
 	buildcontextdir := flag.String("d", "/opt/vol", "build context. relative volume names are relative to that")
 	kernelInContext := flag.String("p", "program.bin", "kernel binary name.")
 	usePartitionTables := flag.Bool("part", true, "indicates whether or not to use partition tables and install grub")
-	strictMode := flag.Bool("strict", false, "disable automatic chmod a+rw on output file (fixes issue #40)")
 	args := flag.String("a", "", "arguments to kernel")
+	out := flag.String("o", "", "base name of output file")
 
 	flag.Parse()
 
 	kernelFile := path.Join(*buildcontextdir, *kernelInContext)
-	imgFile := path.Join(*buildcontextdir, "vol.img")
+	imgFile := path.Join(*buildcontextdir, "tmp.boot.image."+uuid.New())
+	defer os.Remove(imgFile)
 
 	log.WithFields(log.Fields{"kernelFile": kernelFile, "args": *args, "imgFile": imgFile, "usePartitionTables": *usePartitionTables}).Debug("calling CreateBootImageWithSize")
 
@@ -45,14 +48,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if !*strictMode {
-		log.Warnf("adding global read/write permissons to " + imgFile)
-		info, err := os.Stat(imgFile)
-		if err != nil {
-			log.Fatal("could not stat image file "+imgFile, err)
-		}
-		if err := os.Chmod(imgFile, info.Mode()|0666); err != nil {
-			log.Fatal("adding rw permission to image file", err)
-		}
+	src, err := os.Open(imgFile)
+	if err != nil {
+		log.Fatal("failed to open produced image file "+imgFile, err)
 	}
+	outFile := path.Join(*buildcontextdir, *out)
+	dst, err := os.Open(outFile)
+	if err != nil {
+		log.Fatal("failed to open target output file "+outFile, err)
+	}
+	n, err := io.Copy(dst, src)
+	if err != nil {
+		log.Fatal("failed copying produced image file to target output file", err)
+	}
+	log.Info("wrote %d bytes to disk", n)
 }

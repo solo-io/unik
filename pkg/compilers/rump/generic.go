@@ -35,11 +35,18 @@ func BuildBootableImage(kernel, cmdline string, usePartitionTables, noCleanup bo
 		return "", errors.New("copying kernel "+kernel+" to "+kernelBaseName, err)
 	}
 
+	resultFile, err := ioutil.TempFile("", "boot-creator-result.img.")
+	if err != nil {
+		return "", err
+	}
+	resultFile.Close()
+
 	const contextDir = "/opt/vol/"
 	cmds := []string{
 		"-d", contextDir,
 		"-p", kernelBaseName,
 		"-a", cmdline,
+		"-o", filepath.Base(resultFile.Name()),
 		fmt.Sprintf("-part=%v", usePartitionTables),
 	}
 	binds := map[string]string{directory: contextDir, "/dev/": "/dev/"}
@@ -47,12 +54,6 @@ func BuildBootableImage(kernel, cmdline string, usePartitionTables, noCleanup bo
 	if err := execContainer("boot-creator", cmds, binds, true, nil); err != nil {
 		return "", err
 	}
-
-	resultFile, err := ioutil.TempFile("", "boot-creator-result.img.")
-	if err != nil {
-		return "", err
-	}
-	resultFile.Close()
 
 	if err := os.Rename(path.Join(directory, "vol.img"), resultFile.Name()); err != nil {
 		return "", errors.New("renaming "+directory+" to vol.image", err)

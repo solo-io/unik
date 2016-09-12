@@ -13,7 +13,7 @@
   "compilers-includeos-cpp-hw": "6f4738d445af5f58",
   "rump-debugger-qemu": "49f1796b79f46203",
   "compilers-rump-base-common": "2d715328af4015f1",
-  "image-creator": "0512150a211ba875",
+  "image-creator": "a981f7db9cd9d37c",
   "vsphere-client": "06797414abf53eeb",
   "compilers-rump-nodejs-hw": "64d354f6f23d87a9",
   "compilers-rump-base-xen": "fefc8b9d62f08590",
@@ -21,7 +21,7 @@
   "compilers-rump-c-hw": "100a6f4cb64fdf97",
   "compilers-osv-java": "61475537ff563b8f",
   "qemu-util": "6f5922561bbb86e3",
-  "boot-creator": "cc0e45ba4e4f5781",
+  "boot-creator": "6a8de1152ed4cc32",
   "compilers-rump-nodejs-xen": "61f70f30e58699db",
   "compilers-rump-python3-hw": "3f7d1f5f6aa47155"
 }

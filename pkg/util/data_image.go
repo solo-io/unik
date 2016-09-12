@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/Sirupsen/logrus"
@@ -31,7 +30,13 @@ func BuildRawDataImage(dataTar io.ReadCloser, size unikos.MegaBytes, usePartitio
 	container := NewContainer("image-creator").Privileged(true).WithVolume("/dev/", "/dev/").
 		WithVolume(buildDir+"/", "/opt/vol")
 
-	var args []string
+	resultFile, err := ioutil.TempFile("", "data.image.result.img.")
+	if err != nil {
+		return "", err
+	}
+	resultFile.Close()
+	args := []string{"-o", filepath.Base(resultFile.Name())}
+
 	if size > 0 {
 		args = append(args, "-p", fmt.Sprintf("%v", usePartitionTables),
 			"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes()))
@@ -49,16 +54,6 @@ func BuildRawDataImage(dataTar io.ReadCloser, size unikos.MegaBytes, usePartitio
 		return "", errors.New("failed running image-creator on "+dataFolder, err)
 	}
 
-	resultFile, err := ioutil.TempFile("", "rawdata.img")
-	if err != nil {
-		return "", err
-	}
-	resultFile.Close()
-
-	if err := os.Rename(path.Join(buildDir, "vol.img"), resultFile.Name()); err != nil {
-		return "", err
-	}
-
 	return resultFile.Name(), nil
 }
 
@@ -66,7 +61,7 @@ func BuildEmptyDataVolume(size unikos.MegaBytes) (string, error) {
 	if size < 1 {
 		return "", errors.New("must specify size > 0", nil)
 	}
-	dataFolder, err := ioutil.TempDir("", "data.folder.")
+	dataFolder, err := ioutil.TempDir("", "empty.data.folder.")
 	if err != nil {
 		return "", errors.New("creating tmp build folder", err)
 	}
@@ -77,23 +72,18 @@ func BuildEmptyDataVolume(size unikos.MegaBytes) (string, error) {
 	container := NewContainer("image-creator").Privileged(true).WithVolume("/dev/", "/dev/").
 		WithVolume(buildDir+"/", "/opt/vol")
 
-	args := []string{"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes())}
+	resultFile, err := ioutil.TempFile("", "data.image.result.img.")
+	if err != nil {
+		return "", err
+	}
+	resultFile.Close()
+	args := []string{"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes()), "-o", filepath.Base(resultFile.Name())}
 
 	logrus.WithFields(logrus.Fields{
 		"command": args,
 	}).Debugf("running image-creator container")
 	if err := container.Run(args...); err != nil {
 		return "", errors.New("failed running image-creator on "+dataFolder, err)
-	}
-
-	resultFile, err := ioutil.TempFile("", "data.image.result.img.")
-	if err != nil {
-		return "", err
-	}
-	resultFile.Close()
-
-	if err := os.Rename(path.Join(buildDir, "vol.img"), resultFile.Name()); err != nil {
-		return "", err
 	}
 
 	return resultFile.Name(), nil
