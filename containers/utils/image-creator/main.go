@@ -94,7 +94,8 @@ func main() {
 		}
 	}
 
-	if !*strictMode {
+	if !(*strictMode) {
+		log.Warnf("adding global read/write permissons to " + imgFile)
 		info, err := os.Stat(imgFile)
 		if err != nil {
 			log.Fatal("could not stat image file "+imgFile, err)
