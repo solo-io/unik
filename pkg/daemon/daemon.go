@@ -294,7 +294,7 @@ func (d *UnikDaemon) Stop() error {
 }
 
 func (d *UnikDaemon) initialize() {
-	handle := func(res http.ResponseWriter, req *http.Request, action func() (interface{}, int, error)) {
+	handle := func(res http.ResponseWriter, action func() (interface{}, int, error)) {
 		jsonObject, statusCode, err := action()
 		res.WriteHeader(statusCode)
 		if err != nil {
@@ -314,7 +314,7 @@ func (d *UnikDaemon) initialize() {
 
 	//images
 	d.server.Get("/images", func(res http.ResponseWriter, req *http.Request) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			allImages := []*types.Image{}
 			for _, provider := range d.providers {
 				images, err := provider.ListImages()
@@ -330,7 +330,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Get("/images/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			imageName := params["image_name"]
 			provider, err := d.providers.ProviderForImage(imageName)
 			if err != nil {
@@ -344,7 +344,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Post("/images/:name/create", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			name := params["name"]
 			if name == "" {
 				return nil, http.StatusBadRequest, errors.New("image must be named", nil)
@@ -456,7 +456,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Delete("/images/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			imageName := params["image_name"]
 			if imageName == "" {
 				logrus.WithFields(logrus.Fields{
@@ -484,7 +484,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Post("/images/push/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			imageName := params["image_name"]
 			if imageName == "" {
 				logrus.WithFields(logrus.Fields{
@@ -518,7 +518,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Post("/images/pull/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			imageName := params["image_name"]
 			if imageName == "" {
 				logrus.WithFields(logrus.Fields{
@@ -559,7 +559,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Post("/images/remote-delete/:image_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			imageName := params["image_name"]
 			if imageName == "" {
 				logrus.WithFields(logrus.Fields{
@@ -595,7 +595,7 @@ func (d *UnikDaemon) initialize() {
 
 	//Instances
 	d.server.Get("/instances", func(res http.ResponseWriter, req *http.Request) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			allInstances := []*types.Instance{}
 			for _, provider := range d.providers {
 				instances, err := provider.ListInstances()
@@ -611,7 +611,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Get("/instances/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			instanceId := params["instance_id"]
 			provider, err := d.providers.ProviderForInstance(instanceId)
 			if err != nil {
@@ -625,7 +625,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Delete("/instances/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			instanceId := params["instance_id"]
 			logrus.WithFields(logrus.Fields{
 				"request": req,
@@ -647,7 +647,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Get("/instances/:instance_id/logs", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			instanceId := params["instance_id"]
 			follow := req.URL.Query().Get("follow")
 			res.Write([]byte("getting logs for " + instanceId + "...\n"))
@@ -688,7 +688,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Post("/instances/run", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			body, err := ioutil.ReadAll(req.Body)
 			if err != nil {
 				return nil, http.StatusBadRequest, errors.New("could not read request body", err)
@@ -730,7 +730,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Post("/instances/:instance_id/start", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			instanceId := params["instance_id"]
 			logrus.WithFields(logrus.Fields{
 				"request": req,
@@ -747,7 +747,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Post("/instances/:instance_id/stop", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			instanceId := params["instance_id"]
 			logrus.WithFields(logrus.Fields{
 				"request": req,
@@ -766,7 +766,7 @@ func (d *UnikDaemon) initialize() {
 
 	//Volumes
 	d.server.Get("/volumes", func(res http.ResponseWriter, req *http.Request) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			logrus.Debugf("listing volumes started")
 			allVolumes := []*types.Volume{}
 			for _, provider := range d.providers {
@@ -783,7 +783,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Get("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			volumeName := params["volume_name"]
 			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {
@@ -800,7 +800,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Post("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			volumeName := params["volume_name"]
 			var imagePath string
 			var provider providers.Provider
@@ -903,7 +903,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Delete("/volumes/:volume_name", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			volumeName := params["volume_name"]
 			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {
@@ -929,7 +929,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Post("/volumes/:volume_name/attach/:instance_id", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			volumeName := params["volume_name"]
 			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {
@@ -958,7 +958,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Post("/volumes/:volume_name/detach", func(res http.ResponseWriter, req *http.Request, params martini.Params) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			volumeName := params["volume_name"]
 			provider, err := d.providers.ProviderForVolume(volumeName)
 			if err != nil {
@@ -980,7 +980,7 @@ func (d *UnikDaemon) initialize() {
 
 	//info
 	d.server.Get("/available_compilers", func(res http.ResponseWriter, req *http.Request) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			logrus.Debugf("listing available compilers")
 			availableCompilers := sort.StringSlice{}
 			for compilerName := range d.compilers {
@@ -994,7 +994,7 @@ func (d *UnikDaemon) initialize() {
 		})
 	})
 	d.server.Get("/available_providers", func(res http.ResponseWriter, req *http.Request) {
-		handle(res, req, func() (interface{}, int, error) {
+		handle(res, func() (interface{}, int, error) {
 			logrus.Debugf("listing available providers")
 			availableProviders := sort.StringSlice{}
 			for compilerName := range d.providers {
