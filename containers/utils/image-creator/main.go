@@ -54,6 +54,7 @@ func main() {
 	partitionTable := flag.String("p", "true", "create partition table")
 	buildcontextdir := flag.String("d", "/opt/vol", "build context. relative volume names are relative to that")
 	flag.Var(&volumes, "v", "volumes folder[,size]")
+	strictMode := flag.Bool("strict", false, "disable automatic chmod a+rw on output file (fixes issue #40)")
 
 	flag.Parse()
 
@@ -93,4 +94,13 @@ func main() {
 		}
 	}
 
+	if !*strictMode {
+		info, err := os.Stat(imgFile)
+		if err != nil {
+			log.Fatal("could not stat image file "+imgFile, err)
+		}
+		if err := os.Chmod(imgFile, info.Mode()|0666); err != nil {
+			log.Fatal("adding rw permission to image file", err)
+		}
+	}
 }
