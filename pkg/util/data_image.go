@@ -54,7 +54,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size unikos.MegaBytes, usePartitio
 		return "", errors.New("failed running image-creator on "+dataFolder, err)
 	}
 
-	resultFile, err := ioutil.TempFile("", "boot-creator-result.img.")
+	resultFile, err := ioutil.TempFile("", "data-volume-creator-result.img.")
 	if err != nil {
 		return "", err
 	}
@@ -95,7 +95,7 @@ func BuildEmptyDataVolume(size unikos.MegaBytes) (string, error) {
 		return "", errors.New("failed running image-creator on "+dataFolder, err)
 	}
 
-	resultFile, err := ioutil.TempFile("", "boot-creator-result.img.")
+	resultFile, err := ioutil.TempFile("", "empty-data-volume-creator-result.img.")
 	if err != nil {
 		return "", err
 	}

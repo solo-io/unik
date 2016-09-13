@@ -46,7 +46,7 @@ func NewVirtualboxProvider(config config.Virtualbox) (*VirtualboxProvider, error
 	}
 
 	if err := p.deployInstanceListener(config); err != nil && !strings.Contains(err.Error(), "already exists") {
-		return nil, errors.New("deploing virtualbox instance listener", err)
+		return nil, errors.New("deploying virtualbox instance listener", err)
 	}
 
 	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout)

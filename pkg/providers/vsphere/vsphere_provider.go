@@ -50,7 +50,7 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 	p.getClient().Mkdir("unik/vsphere/volumes")
 
 	if err := p.deployInstanceListener(); err != nil {
-		return nil, errors.New("deploing virtualbox instance listener", err)
+		return nil, errors.New("deploying virtualbox instance listener", err)
 	}
 
 	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout)

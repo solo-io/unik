@@ -33,14 +33,25 @@ func (vm *VboxVm) String() string {
 	return fmt.Sprintf("%-v", *vm)
 }
 
-func vboxManage(args ...string) ([]byte, error) {
+func vboxManageQuiet(args ...string) ([]byte, error) {
 	cmd := exec.Command("VBoxManage", args...)
-	//logrus.WithField("command", cmd.Args).Debugf("running VBoxManage command")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("%s", string(out))
 	}
-	//logrus.WithField("vbox-manage-command-result", string(out)).Debugf("VBoxManage result")
+	return out, nil
+}
+
+func vboxManage(args ...string) ([]byte, error) {
+	cmd := exec.Command("VBoxManage", args...)
+	logrus.WithField("command", cmd.Args).Debugf("running VBoxManage command")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("%s", string(out))
+	}
+	if len(out) > 0 {
+		logrus.WithField("result", string(out)).Debugf("VBoxManage result")
+	}
 	return out, nil
 }
 
@@ -118,7 +129,7 @@ func parseDevice(deviceLine string) (*VboxDevice, error) {
 }
 
 func Vms() ([]*VboxVm, error) {
-	out, err := vboxManage("list", "vms")
+	out, err := vboxManageQuiet("list", "vms")
 	if err != nil {
 		return nil, errors.New("getting vm list from virtualbox", err)
 	}
@@ -156,7 +167,7 @@ func Vms() ([]*VboxVm, error) {
 }
 
 func GetVm(vmNameOrId string) (*VboxVm, error) {
-	vmInfo, err := vboxManage("showvminfo", vmNameOrId)
+	vmInfo, err := vboxManageQuiet("showvminfo", vmNameOrId)
 	if err != nil {
 		return nil, errors.New("getting vm info for "+vmNameOrId, err)
 	}

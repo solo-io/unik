@@ -56,7 +56,7 @@ func NewPhotonProvider(config config.Photon) (*PhotonProvider, error) {
 	}
 
 	if err := p.DeployInstanceListener(config); err != nil /*&& !strings.Contains(err.Error(), "already exists")*/ {
-		return nil, errors.New("deploing photon instance listener", err)
+		return nil, errors.New("deploying photon instance listener", err)
 	}
 
 	return p, nil
