@@ -103,7 +103,7 @@ func main() {
 		log.Fatal("failed to open produced image file "+imgFile, err)
 	}
 	outFile := path.Join(*buildcontextdir, *out)
-	dst, err := os.Open(outFile)
+	dst, err := os.OpenFile(outFile, os.O_RDWR, 0)
 	if err != nil {
 		log.Fatal("failed to open target output file "+outFile, err)
 	}

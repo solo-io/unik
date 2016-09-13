@@ -34,6 +34,7 @@ func BuildRawDataImage(dataTar io.ReadCloser, size unikos.MegaBytes, usePartitio
 	if err != nil {
 		return "", err
 	}
+	tmpResultFile.Close()
 	args := []string{"-o", filepath.Base(tmpResultFile.Name())}
 
 	if size > 0 {
@@ -84,6 +85,7 @@ func BuildEmptyDataVolume(size unikos.MegaBytes) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	tmpResultFile.Close()
 	args := []string{"-v", fmt.Sprintf("%s,%v", filepath.Base(dataFolder), size.ToBytes()), "-o", filepath.Base(tmpResultFile.Name())}
 
 	logrus.WithFields(logrus.Fields{

@@ -39,6 +39,7 @@ func BuildBootableImage(kernel, cmdline string, usePartitionTables, noCleanup bo
 	if err != nil {
 		return "", err
 	}
+	tmpResultFile.Close()
 
 	const contextDir = "/opt/vol/"
 	cmds := []string{
