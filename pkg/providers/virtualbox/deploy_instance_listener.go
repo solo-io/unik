@@ -94,7 +94,7 @@ func (p *VirtualboxProvider) runInstanceListener(image *types.Image) (err error)
 
 	instanceDir := getInstanceDir(VboxUnikInstanceListener)
 	defer func() {
-		if err != nil {
+		if err != nil && os.Getenv("NOCLEANUP") != "1" {
 			logrus.WithError(err).Warnf("error encountered, ensuring vm and disks are destroyed")
 			virtualboxclient.PowerOffVm(VboxUnikInstanceListener)
 			p.DetachVolume(instanceListenerVol.Id)

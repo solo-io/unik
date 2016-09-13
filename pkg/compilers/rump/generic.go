@@ -35,7 +35,7 @@ func BuildBootableImage(kernel, cmdline string, usePartitionTables, noCleanup bo
 		return "", errors.New("copying kernel "+kernel+" to "+kernelBaseName, err)
 	}
 
-	tmpResultFile, err := ioutil.TempFile(directory, "tmp.boot-creator-result.img.")
+	tmpResultFile, err := ioutil.TempFile(directory, "boot-creator-result.img.")
 	if err != nil {
 		return "", err
 	}

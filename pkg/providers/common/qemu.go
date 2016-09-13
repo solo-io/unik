@@ -8,8 +8,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"io/ioutil"
 )
 
 func ConvertRawImage(sourceFormat, targetFormat types.ImageFormat, inputFile, outputFile string) error {
@@ -28,12 +30,25 @@ func ConvertRawImage(sourceFormat, targetFormat types.ImageFormat, inputFile, ou
 		args = append(args, "-o", "compat6")
 	}
 
-	args = append(args, inputFile, outputFile)
+	//this needs to be done because docker produces files as root. argh!!!
+	tmpOutputFile, err := ioutil.TempFile(outDir, "convert.image.result.")
+	if err != nil {
+		return errors.New("temp file for root user", err)
+	}
+	tmpOutputFile.Close()
+	defer os.Remove(tmpOutputFile.Name())
+
+	args = append(args, inputFile, tmpOutputFile.Name())
 
 	logrus.WithField("command", args).Debugf("running command")
 	if err := container.Run(args...); err != nil {
 		return errors.New("failed converting raw image to "+string(targetFormat), err)
 	}
+
+	if err := unikos.CopyFile(tmpOutputFile.Name(), outputFile); err != nil {
+		return errors.New("copying tmp result to final result", err)
+	}
+
 	return nil
 }
 

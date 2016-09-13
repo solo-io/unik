@@ -64,7 +64,7 @@ func main() {
 		log.Fatal("No volumes provided")
 	}
 
-	imgFile := path.Join(*buildcontextdir, "tmp.boot.image."+uuid.New())
+	imgFile := path.Join(*buildcontextdir, "data.image."+uuid.New())
 	defer os.Remove(imgFile)
 
 	for i := range volumes {

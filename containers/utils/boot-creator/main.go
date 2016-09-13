@@ -25,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	kernelFile := path.Join(*buildcontextdir, *kernelInContext)
-	imgFile := path.Join(*buildcontextdir, "tmp.boot.image."+uuid.New())
+	imgFile := path.Join(*buildcontextdir, "boot.image."+uuid.New())
 	defer os.Remove(imgFile)
 
 	log.WithFields(log.Fields{"kernelFile": kernelFile, "args": *args, "imgFile": imgFile, "usePartitionTables": *usePartitionTables}).Debug("calling CreateBootImageWithSize")
