@@ -40,6 +40,15 @@ func BasicStateFromFile(saveFile string) (*basicState, error) {
 	if err != nil {
 		return nil, errors.New("failed to unmarshal data "+string(data)+" to memory state", err)
 	}
+	if s.Images == nil {
+		s.Images = make(map[string]*types.Image)
+	}
+	if s.Instances == nil {
+		s.Instances = make(map[string]*types.Instance)
+	}
+	if s.Volumes == nil {
+		s.Volumes = make(map[string]*types.Volume)
+	}
 	s.saveFile = saveFile
 	return &s, nil
 }
