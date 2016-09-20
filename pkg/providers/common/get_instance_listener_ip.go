@@ -11,7 +11,7 @@ import (
 
 var socket *net.UDPConn
 
-const BROADCAST_PORT = 9876
+const BROADCAST_PORT = 9967
 
 func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, error) {
 	errc := make(chan error)

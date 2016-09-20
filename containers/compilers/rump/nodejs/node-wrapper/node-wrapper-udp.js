@@ -16,7 +16,7 @@ stdErrFixture.capture( function onWrite (string, encoding, fd) {
   return true;
 });
 
-const PORT=9876;
+const PORT=9967;
 var http = require('http');
 function serveLogs(request, response){
     response.end(_log.join(""));
