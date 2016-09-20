@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"strings"
 
+	"io/ioutil"
+	"path/filepath"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"io/ioutil"
-	"path/filepath"
 )
 
 func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {
@@ -67,7 +68,7 @@ func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string, n
 
 	logrus.Debugf("writing rump json config: %s", cmdline)
 
-	imgFile, err := BuildBootableImage(kernel, cmdline, true, noCleanup)
+	imgFile, err := compilers.BuildBootableImage(kernel, cmdline, true, noCleanup)
 	if err != nil {
 		return nil, err
 	}

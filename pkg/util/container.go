@@ -5,12 +5,13 @@ package util
 import (
 	"encoding/json"
 	"fmt"
+	"os/exec"
+	"strings"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/containers"
 	"github.com/pborman/uuid"
-	"os/exec"
-	"strings"
 )
 
 var containerVersions map[string]string
@@ -35,6 +36,7 @@ type Container struct {
 	network       string
 	containerName string
 	name          string
+	entrypoint    string
 }
 
 func NewContainer(imageName string) *Container {
@@ -44,6 +46,11 @@ func NewContainer(imageName string) *Container {
 	c.env = make(map[string]string)
 	c.volumes = make(map[string]string)
 
+	return c
+}
+
+func (c *Container) WithEntrypoint(entrypoint string) *Container {
+	c.entrypoint = entrypoint
 	return c
 }
 
@@ -133,6 +140,10 @@ func (c *Container) BuildCmd(arguments ...string) *exec.Cmd {
 		args = append(args, "-v", fmt.Sprintf("%s:%s", key, val))
 	}
 
+	if c.entrypoint != "" {
+		args = append(args, "--entrypoint", c.entrypoint)
+	}
+
 	args = append(args, fmt.Sprintf("--name=%s", c.containerName))
 
 	containerVer, ok := containerVersions[c.name]
@@ -145,10 +156,11 @@ func (c *Container) BuildCmd(arguments ...string) *exec.Cmd {
 	if !strings.Contains(finalName, "/") { /*projectunik container*/
 		finalName = "projectunik/" + finalName
 	}
-	logrus.Info("Starting container ", finalName)
 
 	args = append(args, finalName)
 	args = append(args, arguments...)
+
+	logrus.WithField("args", args).Info("Build cmd for container ", finalName)
 
 	cmd := exec.Command("docker", args...)
 

@@ -3,10 +3,11 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
-	"net/http"
 )
 
 type volumes struct {
@@ -57,11 +58,13 @@ func (v *volumes) Delete(id string, force bool) error {
 	return nil
 }
 
-func (v *volumes) Create(name, dataTar, provider string, size int, noCleanup bool) (*types.Volume, error) {
+func (v *volumes) Create(name, dataTar, provider string, raw bool, size int, volType string, noCleanup bool) (*types.Volume, error) {
 	query := buildQuery(map[string]interface{}{
 		"size":       size,
 		"provider":   provider,
+		"type":       volType,
 		"no_cleanup": noCleanup,
+		"raw":        raw,
 	})
 	//no data provided
 	var (

@@ -67,6 +67,8 @@ all: pull ${SOURCES} binary
 .PHONY: compilers-rump-python3-hw-no-stub
 .PHONY: compilers-rump-python3-xen
 .PHONY: compilers-osv-java
+.PHONY: compilers-mirage-ocaml-xen
+.PHONY: compilers-mirage-ocaml-ukvm
 
 .PHONY: compilers
 .PHONY: boot-creator
@@ -198,21 +200,27 @@ compilers-rump-python3-xen: compilers-rump-go-xen
 
 compilers-osv-java:
 	cd containers/compilers/osv/java-compiler/java-main-caller && mvn package
-	cd containers/compilers/osv/java-compiler && GOOS=linux go build -tags container-binary
+	cd containers/compilers/osv/java-compiler && GOOS=linux go build
 	$(call build_container,compilers/osv/java-compiler,$@,)
 	cd containers/compilers/osv/java-compiler && rm java-compiler
 	cd containers/compilers/osv/java-compiler/java-main-caller && rm -rf target
+
+compilers-mirage-ocaml-xen:
+	$(call build_container,compilers/mirage/ocaml,$@,.xen)
+
+compilers-mirage-ocaml-ukvm:
+	$(call build_container,compilers/mirage/ocaml,$@,.ukvm)
 
 #utils
 utils: boot-creator image-creator vsphere-client qemu-util
 
 boot-creator:
-	cd containers/utils/boot-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build -tags container-binary
+	cd containers/utils/boot-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build
 	$(call build_container,utils/boot-creator,$@,)
 	cd containers/utils/boot-creator && rm boot-creator
 
 image-creator:
-	cd containers/utils/image-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build -tags container-binary
+	cd containers/utils/image-creator && GO15VENDOREXPERIMENT=1 GOOS=linux go build
 	$(call build_container,utils/image-creator,$@,)
 	cd containers/utils/image-creator && rm image-creator
 

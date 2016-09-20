@@ -1,10 +1,11 @@
 package os
 
 import (
-	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"path"
 	"text/template"
+
+	"github.com/emc-advanced-dev/pkg/errors"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -272,8 +273,19 @@ func writeBootTemplate(fname, rootDrive, commandline string) error {
 
 }
 
-func formatDeviceAndCopyContents(folder string, dev BlockDevice) error {
-	err := RunLogCommand("mkfs", "-I", "128", "-t", "ext2", dev.Name())
+func formatDeviceAndCopyContents(folder string, volType string, dev BlockDevice) error {
+	var err error
+	switch volType {
+	case "fat":
+		err = RunLogCommand("mkfs.fat", dev.Name())
+	case "ext2":
+		fallthrough
+	case "":
+		err = RunLogCommand("mkfs", "-I", "128", "-t", "ext2", dev.Name())
+	default:
+		return errors.New("Unknown fs type", nil)
+	}
+
 	if err != nil {
 		return err
 	}
@@ -290,7 +302,7 @@ func formatDeviceAndCopyContents(folder string, dev BlockDevice) error {
 	return nil
 }
 
-func CreateSingleVolume(rootFile string, folder RawVolume) error {
+func CreateSingleVolume(rootFile string, volType string, folder RawVolume) error {
 	ext2Overhead := MegaBytes(2).ToBytes()
 
 	size := folder.Size
@@ -317,10 +329,10 @@ func CreateSingleVolume(rootFile string, folder RawVolume) error {
 		return err
 	}
 
-	return CopyToImgFile(folder.Path, rootFile)
+	return CopyToImgFile(folder.Path, volType, rootFile)
 }
 
-func CopyToImgFile(folder, imgfile string) error {
+func CopyToImgFile(folder, volType string, imgfile string) error {
 	imgLo := NewLoDevice(imgfile)
 	imgLodName, err := imgLo.Acquire()
 	if err != nil {
@@ -328,20 +340,20 @@ func CopyToImgFile(folder, imgfile string) error {
 	}
 	defer imgLo.Release()
 
-	return formatDeviceAndCopyContents(folder, imgLodName)
+	return formatDeviceAndCopyContents(folder, volType, imgLodName)
 
 }
 
-func copyToPart(folder string, part Resource) error {
+func copyToPart(folder string, volType string, part Resource) error {
 	imgLodName, err := part.Acquire()
 	if err != nil {
 		return err
 	}
 	defer part.Release()
-	return formatDeviceAndCopyContents(folder, imgLodName)
+	return formatDeviceAndCopyContents(folder, volType, imgLodName)
 }
 
-func CreateVolumes(imgFile string, volumes []RawVolume, newPartitioner func(device string) Partitioner) error {
+func CreateVolumes(imgFile string, volType string, volumes []RawVolume, newPartitioner func(device string) Partitioner) error {
 	if len(volumes) == 0 {
 		return nil
 	}
@@ -389,7 +401,8 @@ func CreateVolumes(imgFile string, volumes []RawVolume, newPartitioner func(devi
 	for _, curSize := range sizes {
 		end := start + curSize
 		log.WithFields(log.Fields{"start": start, "end": end}).Debug("Creating partition")
-		err := p.MakePart("ext2", start, end)
+
+		err := p.MakePart(toPartedVolType(volType), start, end)
 		if err != nil {
 			return err
 		}
@@ -409,10 +422,19 @@ func CreateVolumes(imgFile string, volumes []RawVolume, newPartitioner func(devi
 	log.WithFields(log.Fields{"parts": parts, "volsize": sizes}).Debug("Creating volumes")
 	for i, v := range volumes {
 
-		if err := copyToPart(v.Path, parts[i]); err != nil {
+		if err := copyToPart(v.Path, volType, parts[i]); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func toPartedVolType(volType string) string {
+	switch volType {
+	case "fat":
+		return "fat32"
+	default:
+		return volType
+	}
 }

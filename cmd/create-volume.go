@@ -3,6 +3,7 @@ package cmd
 import (
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -14,6 +15,12 @@ import (
 
 var data string
 var size int
+var volumeType string
+var rawVolume bool
+
+const (
+	VolTypeExt2 = "ext2"
+)
 
 var cvCmd = &cobra.Command{
 	Use:   "create-volume",
@@ -69,6 +76,12 @@ Another example (empty volume):
 			if provider == "" {
 				return errors.New("--provider must be set", nil)
 			}
+			if volumeType == "" {
+				volumeType = VolTypeExt2
+			} else {
+				volumeType = strings.ToLower(volumeType)
+			}
+
 			if err := readClientConfig(); err != nil {
 				return err
 			}
@@ -76,11 +89,12 @@ Another example (empty volume):
 				host = clientConfig.Host
 			}
 			logrus.WithFields(logrus.Fields{
-				"name":     name,
-				"data":     data,
-				"size":     size,
-				"provider": provider,
-				"host":     host,
+				"name":       name,
+				"data":       data,
+				"size":       size,
+				"provider":   provider,
+				"host":       host,
+				"volumeType": volumeType,
 			}).Infof("creating volume")
 			if data != "" {
 				dataTar, err := ioutil.TempFile("", "data.tar.gz.")
@@ -96,7 +110,9 @@ Another example (empty volume):
 				data = dataTar.Name()
 				logrus.Infof("Data packaged as tarball: %s\n", dataTar.Name())
 			}
-			volume, err := client.UnikClient(host).Volumes().Create(name, data, provider, size, noCleanup)
+
+			volume, err := client.UnikClient(host).Volumes().Create(name, data, provider, rawVolume, size, volumeType, noCleanup)
+
 			if err != nil {
 				return errors.New("creatinv volume image failed", err)
 			}
@@ -111,9 +127,12 @@ Another example (empty volume):
 
 func init() {
 	RootCmd.AddCommand(cvCmd)
-	cvCmd.Flags().StringVar(&name, "name", "", "<string,required> name to give the unikernel. must be unique")
-	cvCmd.Flags().StringVar(&data, "data", "", "<string,special> path to data folder. optional if --size is provided")
+	cvCmd.Flags().StringVar(&name, "name", "", "<string,required> name to give the volume. must be unique")
+	cvCmd.Flags().StringVar(&data, "data", "", "<string,special> path to data folder (or file if --raw is provided). optional if --size is provided")
+	cvCmd.Flags().BoolVar(&rawVolume, "raw", false, "<bool,optional> if true then then data is expected to be a file that will be used as is. if false (default) data should point to a folder which will be turned into a volume.")
 	cvCmd.Flags().IntVar(&size, "size", 0, "<int,special> size to create volume in MB. optional if --data is provided")
 	cvCmd.Flags().StringVar(&provider, "provider", "", "<string,required> name of the target infrastructure to compile for")
+	cvCmd.Flags().StringVar(&volumeType, "type", "", "<string,optional> FS type of the volume. ext2 or FAT are supported. defaults to ext2")
+
 	cvCmd.Flags().BoolVar(&noCleanup, "no-cleanup", false, "<bool, optional> for debugging; do not clean up artifacts for volumes that fail to build")
 }

@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 const xenConfBase = `
@@ -32,7 +33,7 @@ vif = [ 'bridge=%s' ]
 # Disk Devices
 # A list of 'diskspec' entries as described in
 # docs/misc/xl-disk-configuration.txt
-disk = [ '%s,raw,sda1,rw'%s ]
+disk = [ '%s,raw,%s,rw'%s ]
 
 on_poweroff = "preserve"
 on_reboot = "preserve"
@@ -45,11 +46,12 @@ type XenClient struct {
 }
 
 type CreateVmParams struct {
-	Name        string
-	Memory      int
-	BootImage   string
-	VmDir       string
-	DataVolumes []VolumeConfig
+	Name           string
+	Memory         int
+	BootImage      string
+	BootDeviceName string
+	VmDir          string
+	DataVolumes    []VolumeConfig
 }
 
 type VolumeConfig struct {
@@ -62,7 +64,7 @@ func (c *XenClient) CreateVm(params CreateVmParams) error {
 	for _, vol := range params.DataVolumes {
 		volumes = fmt.Sprintf("%s, '%s,raw,%s,rw'", volumes, vol.ImagePath, vol.DeviceName)
 	}
-	xenConf := fmt.Sprintf(xenConfBase, params.Name, c.KernelPath, params.Memory, c.XenBridge, params.BootImage, volumes)
+	xenConf := fmt.Sprintf(xenConfBase, params.Name, c.KernelPath, params.Memory, c.XenBridge, params.BootImage, params.BootDeviceName, volumes)
 	confFile := filepath.Join(params.VmDir, "xen.conf")
 	if err := ioutil.WriteFile(confFile, []byte(xenConf), 0644); err != nil {
 		return errors.New("writing xen conf file for vm", err)

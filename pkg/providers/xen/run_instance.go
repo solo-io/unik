@@ -2,14 +2,16 @@ package xen
 
 import (
 	"fmt"
+	"strings"
 	"time"
+
+	"os"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/providers/xen/xenclient"
 	"github.com/emc-advanced-dev/unik/pkg/types"
-	"os"
 )
 
 func (p *XenProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
@@ -32,41 +34,58 @@ func (p *XenProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 		return nil, errors.New("invalid mapping for volume", err)
 	}
 
-	volumeIdInOrder := make([]string, len(params.MntPointsToVolumeIds))
+	volumeIdToDevice := make(map[string]string)
+
+	// till we support pv without boot device, we need a boot device..
+	bootmapping := "sda1"
+	for _, mapping := range image.RunSpec.DeviceMappings {
+		if mapping.MountPoint == "/" {
+			bootmapping = removeDevFromDeviceName(mapping.DeviceName)
+			break
+		}
+	}
 
 	for mntPoint, volumeId := range params.MntPointsToVolumeIds {
-		controllerPort, err := common.GetControllerPortForMnt(image, mntPoint)
-		if err != nil {
-			return nil, err
+		for _, mapping := range image.RunSpec.DeviceMappings {
+			if mntPoint == mapping.MountPoint {
+				volumeIdToDevice[volumeId] = mapping.DeviceName
+				break
+			}
 		}
-		volumeIdInOrder[controllerPort] = volumeId
 	}
 
 	logrus.Debugf("creating xen vm")
 
-	volImagesInOrder, err := p.getVolumeImages(volumeIdInOrder)
-	if err != nil {
-		return nil, errors.New("can't get volumes", err)
-	}
+	// TODO add support for boot drive mapping.
 
-	dataVolumes := make([]xenclient.VolumeConfig, len(volImagesInOrder))
-	for i, volPath := range volImagesInOrder {
-		dataVolumes[i] = xenclient.VolumeConfig{
-			ImagePath:  volPath,
-			DeviceName: fmt.Sprintf("sd%c1", 'a'+i+1),
+	var dataVolumes []xenclient.VolumeConfig
+	for volid, deviceName := range volumeIdToDevice {
+		volPath, err := p.getVolPath(volid)
+		if err != nil {
+			return nil, errors.New("failed to get volume path", err)
 		}
+		dataVolumes = append(dataVolumes, xenclient.VolumeConfig{
+			ImagePath:  volPath,
+			DeviceName: removeDevFromDeviceName(deviceName),
+		})
 	}
 
 	if err := os.MkdirAll(getInstanceDir(params.Name), 0755); err != nil {
 		return nil, errors.New("failed to create instance dir", err)
 	}
 
+	//if not set, use default
+	if params.InstanceMemory <= 0 {
+		params.InstanceMemory = image.RunSpec.DefaultInstanceMemory
+	}
+
 	xenParams := xenclient.CreateVmParams{
-		Name:        params.Name,
-		Memory:      params.InstanceMemory,
-		BootImage:   getImagePath(image.Name),
-		VmDir:       getInstanceDir(params.Name),
-		DataVolumes: dataVolumes,
+		Name:           params.Name,
+		Memory:         params.InstanceMemory,
+		BootImage:      getImagePath(image.Name),
+		BootDeviceName: bootmapping,
+		VmDir:          getInstanceDir(params.Name),
+		DataVolumes:    dataVolumes,
 	}
 
 	if err := p.client.CreateVm(xenParams); err != nil {
@@ -107,14 +126,23 @@ func (p *XenProvider) RunInstance(params types.RunInstanceParams) (_ *types.Inst
 	return instance, nil
 }
 
-func (p *XenProvider) getVolumeImages(volumeIdInOrder []string) ([]string, error) {
-	var volPath []string
-	for _, v := range volumeIdInOrder {
-		v, err := p.GetVolume(v)
-		if err != nil {
-			return nil, err
-		}
-		volPath = append(volPath, getVolumePath(v.Name))
+func (p *XenProvider) getVolPath(volId string) (string, error) {
+
+	v, err := p.GetVolume(volId)
+	if err != nil {
+		return "", err
 	}
-	return volPath, nil
+	return getVolumePath(v.Name), nil
+
+}
+
+func removeDevFromDeviceName(devName string) string {
+
+	const prefix = "/dev/"
+
+	if strings.HasPrefix(devName, prefix) {
+		devName = devName[len(prefix):]
+	}
+
+	return devName
 }

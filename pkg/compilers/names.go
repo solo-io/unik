@@ -2,8 +2,9 @@ package compilers
 
 import (
 	"fmt"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"strings"
+
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 const (
@@ -53,6 +54,7 @@ var (
 	INCLUDEOS_CPP_QEMU       = compilerName("includeos", "cpp", "qemu")
 	INCLUDEOS_CPP_XEN        = compilerName("includeos", "cpp", "xen")
 	INCLUDEOS_CPP_VIRTUALBOX = compilerName("includeos", "cpp", "virtualbox")
+	MIRAGE_OCAML_XEN         = compilerName("mirage", "ocaml", "xen")
 )
 
 var compilers = []string{
@@ -97,6 +99,8 @@ var compilers = []string{
 	INCLUDEOS_CPP_QEMU,
 	INCLUDEOS_CPP_XEN,
 	INCLUDEOS_CPP_VIRTUALBOX,
+
+	MIRAGE_OCAML_XEN,
 }
 
 func ValidateCompiler(base, language, provider string) (string, error) {

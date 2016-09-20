@@ -20,6 +20,7 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/includeos"
+	"github.com/emc-advanced-dev/unik/pkg/compilers/mirage"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/osv"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
 	"github.com/emc-advanced-dev/unik/pkg/config"
@@ -236,6 +237,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		},
 		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
+	_compilers[compilers.MIRAGE_OCAML_XEN] = &mirage.MirageCompiler{}
 
 	_compilers[compilers.RUMP_PYTHON_XEN] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_AWS] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeEC2)
@@ -364,11 +366,22 @@ func (d *UnikDaemon) initialize() {
 				return nil, http.StatusBadRequest, errors.New("parsing form file marked 'tarfile", err)
 			}
 			defer sourceTar.Close()
+
+			noCleanupStr := req.FormValue("no_cleanup")
+			var noCleanup bool
+			if strings.ToLower(noCleanupStr) == "true" {
+				noCleanup = true
+			}
+
 			sourcesDir, err := ioutil.TempDir("", "unpacked.sources.dir.")
 			if err != nil {
 				return nil, http.StatusInternalServerError, errors.New("creating tmp dir for src files", err)
 			}
-			defer os.RemoveAll(sourcesDir)
+
+			if !noCleanup {
+				defer os.RemoveAll(sourcesDir)
+			}
+
 			logrus.Debugf("extracting uploaded files to " + sourcesDir)
 			if err := unikos.ExtractTar(sourceTar, sourcesDir); err != nil {
 				return nil, http.StatusInternalServerError, errors.New("extracting sources", err)
@@ -406,12 +419,6 @@ func (d *UnikDaemon) initialize() {
 			var mountPoints []string
 			if len(mntStr) > 0 {
 				mountPoints = strings.Split(mntStr, ",")
-			}
-
-			noCleanupStr := req.FormValue("no_cleanup")
-			var noCleanup bool
-			if strings.ToLower(noCleanupStr) == "true" {
-				noCleanup = true
 			}
 
 			logrus.WithFields(logrus.Fields{
@@ -805,8 +812,22 @@ func (d *UnikDaemon) initialize() {
 			var imagePath string
 			var provider providers.Provider
 			var noCleanup bool
+			var raw bool
+
 			logrus.WithField("req", req).Info("received request to create volume")
+
+			typeStr := req.FormValue("type")
+			typeStr = strings.ToLower(typeStr)
+
 			if strings.Contains(req.Header.Get("Content-type"), "multipart/form-data") {
+
+				if strings.ToLower(req.FormValue("raw")) == "true" {
+					raw = true
+				}
+				if strings.ToLower(req.FormValue("no_cleanup")) == "true" {
+					noCleanup = true
+				}
+
 				logrus.Info("received request with form-data")
 				err := req.ParseMultipartForm(0)
 				if err != nil {
@@ -815,44 +836,64 @@ func (d *UnikDaemon) initialize() {
 				logrus.WithFields(logrus.Fields{
 					"req": req,
 				}).Debugf("parsing multipart form")
-				dataTar, header, err := req.FormFile("tarfile")
-				if err != nil {
-					return nil, http.StatusInternalServerError, errors.New("failed to retrieve form-data for tarfe", err)
-				}
-				defer dataTar.Close()
+
 				providerName := req.FormValue("provider")
 				if _, ok := d.providers[providerName]; !ok {
 					return nil, http.StatusBadRequest, errors.New(providerName+" is not a known provider. Available: "+strings.Join(d.providers.Keys(), "|"), nil)
 				}
 				provider = d.providers[providerName]
-
-				logrus.WithFields(logrus.Fields{
-					"form": req.Form,
-				}).Debugf("seeking form file marked 'tarfile'")
-				logrus.WithFields(logrus.Fields{
-					"tarred-data": header.Filename,
-					"name":        volumeName,
-					"provider":    providerName,
-				}).Debugf("creating volume started")
-
-				sizeStr := req.URL.Query().Get("size")
-				if sizeStr == "" {
-					sizeStr = "0"
-				}
-				size, err := strconv.Atoi(sizeStr)
+				dataTar, header, err := req.FormFile("tarfile")
 				if err != nil {
-					return nil, http.StatusBadRequest, errors.New("could not parse given size", err)
+					return nil, http.StatusInternalServerError, errors.New("failed to retrieve form-data for tarfe", err)
 				}
-				imagePath, err = util.BuildRawDataImage(dataTar, unikos.MegaBytes(size), provider.GetConfig().UsePartitionTables)
-				if err != nil {
-					return nil, http.StatusInternalServerError, errors.New("creating raw volume image", err)
+				defer dataTar.Close()
+
+				if !raw {
+					logrus.WithFields(logrus.Fields{
+						"form": req.Form,
+					}).Debugf("seeking form file marked 'tarfile'")
+					logrus.WithFields(logrus.Fields{
+						"tarred-data": header.Filename,
+						"name":        volumeName,
+						"provider":    providerName,
+					}).Debugf("creating volume started")
+
+					sizeStr := req.URL.Query().Get("size")
+					if sizeStr == "" {
+						sizeStr = "0"
+					}
+					size, err := strconv.Atoi(sizeStr)
+					if err != nil {
+						return nil, http.StatusBadRequest, errors.New("could not parse given size", err)
+					}
+					imagePath, err = util.BuildRawDataImageWithType(dataTar, unikos.MegaBytes(size), typeStr, provider.GetConfig().UsePartitionTables)
+					if err != nil {
+						return nil, http.StatusInternalServerError, errors.New("creating raw volume image", err)
+					}
+				} else {
+					imagePathFile, err := ioutil.TempFile("", "")
+					if err != nil {
+						return nil, http.StatusInternalServerError, errors.New("creating temp file for volume image", err)
+					}
+					_, err = io.Copy(imagePathFile, dataTar)
+					imagePathFile.Close()
+					if err != nil {
+						return nil, http.StatusInternalServerError, errors.New("creating temp file for volume image", err)
+					}
+					imagePath = imagePathFile.Name()
 				}
 
-				noCleanupStr := req.FormValue("no_cleanup")
-				if strings.ToLower(noCleanupStr) == "true" {
+			} else {
+				if strings.ToLower(req.URL.Query().Get("raw")) == "true" {
+					raw = true
+				}
+				if strings.ToLower(req.URL.Query().Get("no_cleanup")) == "true" {
 					noCleanup = true
 				}
-			} else {
+
+				if raw == true {
+					return nil, http.StatusBadRequest, errors.New("Raw volume was requested but no data provided", nil)
+				}
 				logrus.Info("received request for empty volume")
 				sizeStr := req.URL.Query().Get("size")
 				size, err := strconv.Atoi(sizeStr)
@@ -863,7 +904,7 @@ func (d *UnikDaemon) initialize() {
 					"size": size,
 					"name": volumeName,
 				}).Debugf("creating empty volume started")
-				imagePath, err = util.BuildEmptyDataVolume(unikos.MegaBytes(size))
+				imagePath, err = util.BuildEmptyDataVolumeWithType(unikos.MegaBytes(size), typeStr)
 				if err != nil {
 					return nil, http.StatusInternalServerError, errors.New("failed building raw image", err)
 				}
@@ -876,10 +917,6 @@ func (d *UnikDaemon) initialize() {
 					"image": imagePath,
 				}).Infof("raw image created")
 
-				noCleanupStr := req.URL.Query().Get("no_cleanup")
-				if strings.ToLower(noCleanupStr) == "true" {
-					noCleanup = true
-				}
 			}
 
 			if !noCleanup {

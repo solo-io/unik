@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
@@ -71,7 +72,7 @@ func createImageXen(kernel, args string, mntPoints, bakedEnv []string, noCleanup
 	if err != nil {
 		return nil, err
 	}
-	imgFile, err := BuildBootableImage(kernel, cmdline, false, noCleanup)
+	imgFile, err := compilers.BuildBootableImage(kernel, cmdline, false, noCleanup)
 
 	if err != nil {
 		return nil, err

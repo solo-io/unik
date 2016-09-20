@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"os"
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/emc-advanced-dev/pkg/errors"
 
 	log "github.com/Sirupsen/logrus"
 
@@ -49,12 +50,14 @@ func verifyPreConditions() {
 		log.Fatal("No loop device found. if running from docker use \"--privileged -v /dev/:/dev/\"")
 	}
 }
+
 func main() {
 	log.SetLevel(log.DebugLevel)
 
 	var volumes volumeslice
 	partitionTable := flag.String("p", "true", "create partition table")
 	buildcontextdir := flag.String("d", "/opt/vol", "build context. relative volume names are relative to that")
+	volType := flag.String("t", "ext2", "type of volume 'mirage-fat', 'fat' or 'ext2'")
 	flag.Var(&volumes, "v", "volumes folder[,size]")
 	out := flag.String("o", "", "base name of output file")
 
@@ -72,29 +75,66 @@ func main() {
 	}
 
 	verifyPreConditions()
-
-	if *partitionTable == "true" {
-		log.Info("Creating volume with partition table")
-
-		diskLabelGen := func(device string) unikos.Partitioner { return &unikos.DiskLabelPartioner{device} }
-
-		// rump so we use disklabel
-		err := unikos.CreateVolumes(imgFile, []unikos.RawVolume(volumes), diskLabelGen)
-
-		if err != nil {
-			panic(err)
+	if *volType == "mirage-fat" {
+		if *partitionTable == "true" {
+			log.Fatal("Can't create mirage-fat volume with a partition table.")
 		}
-	} else {
-		log.Info("Creating volume with no partition table")
 
 		if len(volumes) != 1 {
 			log.Fatal("Can only create one volume with no partition table")
 		}
+		volume := volumes[0]
+		if volume.Size == 0 {
+			var err error
+			volume.Size, err = unikos.GetDirSize(volume.Path)
+			if err != nil {
+				log.Panic(err)
+			}
+		}
 
-		err := unikos.CreateSingleVolume(imgFile, volumes[0])
+		sizeKb := volume.Size >> 10
+		// add 8 kb to handle edge cases
+		sizeKb += 8
 
+		log.WithFields(log.Fields{"sizeKb": sizeKb, "size": volume.Size}).Info("Creating mirage fat volume.")
+
+		err := unikos.RunLogCommand("fat", "create", imgFile, fmt.Sprintf("%d%s", sizeKb, "KiB"))
 		if err != nil {
-			panic(err)
+			log.Panic(err)
+		}
+
+		if volume.Path != "" {
+			err := unikos.RunLogCommand("/bin/bash", "-c", fmt.Sprintf("cd \"%s\" && fat add %s *", volume.Path, imgFile))
+			if err != nil {
+				log.Panic(err)
+			}
+		}
+
+	} else {
+
+		if *partitionTable == "true" {
+			log.Info("Creating volume with partition table")
+
+			diskLabelGen := func(device string) unikos.Partitioner { return &unikos.DiskLabelPartioner{device} }
+
+			// rump so we use disklabel
+			err := unikos.CreateVolumes(imgFile, *volType, []unikos.RawVolume(volumes), diskLabelGen)
+
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			log.Info("Creating volume with no partition table")
+
+			if len(volumes) != 1 {
+				log.Fatal("Can only create one volume with no partition table")
+			}
+
+			err := unikos.CreateSingleVolume(imgFile, *volType, volumes[0])
+
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 

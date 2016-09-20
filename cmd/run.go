@@ -9,9 +9,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"bufio"
+	"net"
+
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/client"
-	"net"
 )
 
 var instanceName, imageName string
@@ -65,7 +66,7 @@ Example usage:
 
 			mountPointsToVols := make(map[string]string)
 			for _, vol := range volumes {
-				pair := strings.Split(vol, ":")
+				pair := strings.SplitN(vol, ":", 2)
 				if len(pair) != 2 {
 					return errors.New(fmt.Sprintf("invalid format for vol flag: %s", vol), nil)
 				}
