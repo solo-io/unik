@@ -11,6 +11,8 @@ import (
 
 var socket *net.UDPConn
 
+const BROADCAST_PORT = 9876
+
 func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, error) {
 	errc := make(chan error)
 	go func() {
@@ -20,11 +22,13 @@ func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, er
 	logrus.Infof("listening for udp heartbeat...")
 	var err error
 	//only initialize socket once
+	logrus.Debug("ARE WE LISTENING ON THE SOCKET YET?", socket)
 	if socket == nil {
 		socket, err = net.ListenUDP("udp4", &net.UDPAddr{
 			IP:   net.IPv4(0, 0, 0, 0),
-			Port: 9876,
+			Port: BROADCAST_PORT,
 		})
+		logrus.Debug("socket was", socket, "err was", err)
 		if err != nil {
 			return "", errors.New("opening udp socket", err)
 		}
@@ -32,7 +36,7 @@ func GetInstanceListenerIp(dataPrefix string, timeout time.Duration) (string, er
 	resultc := make(chan string)
 	var stopLoop bool
 	go func() {
-		logrus.Infof("UDP Server listening on %s:%v", "0.0.0.0", 9876)
+		logrus.Infof("UDP Server listening on %s:%v", "0.0.0.0", BROADCAST_PORT)
 		for !stopLoop {
 			data := make([]byte, 4096)
 			_, remoteAddr, err := socket.ReadFromUDP(data)

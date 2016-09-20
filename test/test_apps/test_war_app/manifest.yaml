@@ -1,4 +1,4 @@
-artifact_filename: sample.war
-properties:
+main_file: sample.war
+runtime_args:
   - property1=foo
   - property2=bar

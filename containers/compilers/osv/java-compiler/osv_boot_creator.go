@@ -23,9 +23,9 @@ var buildImageTimeout = time.Minute * 10
 
 func main() {
 	useEc2Bootstrap := flag.Bool("ec2", false, "indicates whether to compile using the wrapper for ec2")
-	artifactName := flag.String("artifactName", "", "name of jar or war file (not path)")
+	mainFile := flag.String("main_file", "", "name of jar or war file (not path)")
 	buildCmd := flag.String("buildCmd", "", "optional build command to build project (if not a jar)")
-	properties := flag.String("properties", "", "-D properties passed to jar apps")
+	runtimeArgs := flag.String("runtime", "", "args to pass to java runtime")
 	args := flag.String("args", "", "arguments to kernel")
 	flag.Parse()
 
@@ -47,22 +47,15 @@ func main() {
 		}
 	}
 
-	artifactFile := filepath.Join(project_directory, *artifactName)
+	artifactFile := filepath.Join(project_directory, *mainFile)
 	if _, err := os.Stat(artifactFile); err != nil {
-		logrus.WithError(err).Error("failed to stat " + filepath.Join(project_directory, *artifactName) + "; is artifact_file set correctly?")
+		logrus.WithError(err).Error("failed to stat " + filepath.Join(project_directory, *mainFile) + "; is main_file set correctly?")
 		logrus.Info("listing project files for debug purposes:")
 		listProjectFiles := exec.Command("find", project_directory)
 		listProjectFiles.Stdout = os.Stdout
 		listProjectFiles.Stderr = os.Stderr
 		listProjectFiles.Run()
 		os.Exit(-1)
-	}
-
-	propertyArr := strings.Split(*properties, " ")
-	proprtiesStr := ""
-	for _, prop := range propertyArr {
-		//format key=val
-		proprtiesStr = fmt.Sprintf("-D%s %s", prop, proprtiesStr)
 	}
 	argsStr := ""
 	if *useEc2Bootstrap {
@@ -74,26 +67,27 @@ func main() {
 		argsStr += fmt.Sprintf("-appArgs=%s ", strings.Join(strings.Split(*args, " "), ",,"))
 	}
 
-	if strings.HasSuffix(*artifactName, ".war") {
+	if strings.HasSuffix(*mainFile, ".war") {
 		logrus.Infof(".war file detected. Using Apache Tomcat to deploy")
 		argsStr += "-tomcat "
 		tomcatCapstanFileContents := fmt.Sprintf(`
-base: unik-tomcat
+		base: unik-tomcat
 
-cmdline: /java.so %s -cp /usr/tomcat/bin/bootstrap.jar:usr/tomcat/bin/tomcat-juli.jar -jar /program.jar %s
+		cmdline: /java.so %s -cp /usr/tomcat/bin/bootstrap.jar:usr/tomcat/bin/tomcat-juli.jar -jar /program.jar %s
 
-#
-# List of files that are included in the generated image.
-#
-files:
-  /usr/tomcat/webapps/%s: %s`, proprtiesStr,
+		#
+		# List of files that are included in the generated image.
+		#
+		files:
+		/usr/tomcat/webapps/%s: %s`,
+			*runtimeArgs,
 			argsStr,
 			filepath.Base(artifactFile), artifactFile)
 		if err := ioutil.WriteFile(filepath.Join(project_directory, "Capstanfile"), []byte(tomcatCapstanFileContents), 0644); err != nil {
 			logrus.WithError(err).Error("failed writing capstanfile")
 			os.Exit(-1)
 		}
-	} else if strings.HasSuffix(*artifactName, ".jar") {
+	} else if strings.HasSuffix(*mainFile, ".jar") {
 		logrus.Infof("building Java unikernel from .jar file")
 		argsStr += fmt.Sprintf("-jarName=/%s", filepath.Base(artifactFile))
 		jarRunnerCapstanFileContents := fmt.Sprintf(`
@@ -105,7 +99,8 @@ cmdline: /java.so %s -cp /%s -jar /program.jar %s
 # List of files that are included in the generated image.
 #
 files:
-  /%s: %s`, proprtiesStr,
+  /%s: %s`,
+			*runtimeArgs,
 			filepath.Base(artifactFile),
 			argsStr,
 			filepath.Base(artifactFile), artifactFile)
@@ -114,7 +109,7 @@ files:
 			os.Exit(-1)
 		}
 	} else {
-		logrus.Errorf("%s is not of type .war or .jar, exiting!", *artifactName)
+		logrus.Errorf("%s is not of type .war or .jar, exiting!", *mainFile)
 		os.Exit(-1)
 	}
 
