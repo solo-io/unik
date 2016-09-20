@@ -1,5 +1,3 @@
-artifact_filename: target/testapp-1.0-SNAPSHOT-jar-with-dependencies.jar
+main_file: target/testapp-1.0-SNAPSHOT-jar-with-dependencies.jar
 build_command: mvn package
-properties:
-  - property1=foo
-  - property2=bar
+runtime_args: "-Dproperty1=foo -Dproperty2=bar"

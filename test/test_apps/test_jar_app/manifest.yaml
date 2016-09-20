@@ -1,4 +1,2 @@
-artifact_filename: testapp-1.0-SNAPSHOT-jar-with-dependencies.jar
-properties:
-  - property1=foo
-  - property2=bar
+main_file: testapp-1.0-SNAPSHOT-jar-with-dependencies.jar
+runtime_args: "-Dproperty1=foo -Dproperty2=bar"

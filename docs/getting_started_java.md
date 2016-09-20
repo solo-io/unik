@@ -146,7 +146,7 @@ Ensure that each of the following are installed
 
 3. We have to add a manifest file to tell unik how to build our application into a unikernel. Create a file named `manifest.yaml` in the same directory as the `pom.xml` (the java project root) and paste the following inside:
   ```yaml
-artifact_filename: target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar
+main_file: target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar
 build_command: mvn package
   ```
   This will tell UniK to build our project with the `mvn package` commmand, and that the resulting jar file will be located at `target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar`.

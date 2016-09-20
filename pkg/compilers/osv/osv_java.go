@@ -2,7 +2,6 @@ package osv
 
 import (
 	"os"
-	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
@@ -15,9 +14,9 @@ import (
 
 // javaProjectConfig defines available inputs
 type javaProjectConfig struct {
-	ArtifactFilename string   `yaml:"artifact_filename"`
-	BuildCmd         string   `yaml:"build_command"`
-	Properties       []string `yaml:"properties"`
+	MainFile    string `yaml:"main_file"`
+	RuntimeArgs string `yaml:"runtime_args"`
+	BuildCmd    string `yaml:"build_command"`
 }
 
 // CreateImageJava creates OSv image from project source code and returns filepath of it.
@@ -39,13 +38,13 @@ func CreateImageJava(params types.CompileImageParams, useEc2Bootstrap bool) (str
 		args = append(args, "-ec2")
 	}
 
-	args = append(args, "-artifactName", config.ArtifactFilename)
+	args = append(args, "-main_file", config.MainFile)
 	args = append(args, "-args", params.Args)
 	if config.BuildCmd != "" {
 		args = append(args, "-buildCmd", config.BuildCmd)
 	}
-	if len(config.Properties) > 0 {
-		args = append(args, "-properties", strings.Join(config.Properties, " "))
+	if len(config.RuntimeArgs) > 0 {
+		args = append(args, "-runtime", config.RuntimeArgs)
 	}
 
 	logrus.WithFields(logrus.Fields{
