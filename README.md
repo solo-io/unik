@@ -48,7 +48,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 * **rump**: UniK supports compiling [Python](docs/compilers/rump.md#python-3), [Node.js](docs/compilers/rump.md#nodejs) and [Go](docs/compilers/rump.md#golang) code into [rumprun](docs/compilers/rump.md) unikernels
 * **OSv**: UniK supports compiling Java code into [OSv](http://osv.io/) unikernels
 * **IncludeOS**: UniK supports compiling C++ code into [IncludeOS](https://github.com/hioa-cs/IncludeOS) unikernels
-* **Mirage**: UniK supports compiling [OCaml](docs/compilers/mirage.md), code into [Mirage](https://mirage.io) unikernels
+* **MirageOS**: UniK supports compiling [OCaml](docs/compilers/mirage.md), code into [MirageOS](https://mirage.io) unikernels
 
 *We are looking for community help to add support for more unikernel types and languages.*
 

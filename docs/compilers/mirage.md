@@ -1,4 +1,4 @@
-# Mirage Unikernels
+# MirageOS Unikernels
 
 Compile Mirage Ocaml unikernels with unik.
 
