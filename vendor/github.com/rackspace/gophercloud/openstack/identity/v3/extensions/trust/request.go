@@ -7,34 +7,34 @@ import (
 )
 
 type AuthOptionsExt struct {
-  token3.AuthOptions
-  TrustID string
+	token3.AuthOptions
+	TrustID string
 }
 
 func (ao AuthOptionsExt) ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scope *token3.Scope) (map[string]interface{}, error) {
 	//Passing scope value to nil to add scope later in this function.
 	authMap, err := ao.AuthOptions.ToAuthOptionsV3Map(c, nil)
-        if err != nil {
-                return nil, err
-        }
+	if err != nil {
+		return nil, err
+	}
 
 	// Add a "scope" element if a Scope has been provided.
 	if ao.TrustID != "" {
-			// TrustID provided.
-			authMap["scope"] = map[string]interface{}{
-				"OS-TRUST:trust": map[string]interface{}{
-					"id" : ao.TrustID,
-					},
-				}
-		} else {
-			return nil, token3.ErrScopeEmpty
+		// TrustID provided.
+		authMap["scope"] = map[string]interface{}{
+			"OS-TRUST:trust": map[string]interface{}{
+				"id": ao.TrustID,
+			},
+		}
+	} else {
+		return nil, token3.ErrScopeEmpty
 	}
-  return authMap, nil
+	return authMap, nil
 }
 
 // AuthenticateV3 explicitly authenticates against the identity v3 service.
 func AuthenticateV3Trust(client *gophercloud.ProviderClient, options AuthOptionsExt) error {
-		return trustv3auth(client, "", options)
+	return trustv3auth(client, "", options)
 }
 
 func trustv3auth(client *gophercloud.ProviderClient, endpoint string, options AuthOptionsExt) error {

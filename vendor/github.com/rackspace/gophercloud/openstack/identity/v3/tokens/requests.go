@@ -23,15 +23,15 @@ func subjectTokenHeaders(c *gophercloud.ServiceClient, subjectToken string) map[
 // AuthOptionsV3er describes any argument that may be passed to the Create call.
 type AuthOptionsV3er interface {
 
-        // ToTokenCreateMap assembles the Create request body, returning an error if parameters are
-        // missing or inconsistent.
-        ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scope *Scope) (map[string]interface{}, error)
+	// ToTokenCreateMap assembles the Create request body, returning an error if parameters are
+	// missing or inconsistent.
+	ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scope *Scope) (map[string]interface{}, error)
 }
 
 // AuthOptions wraps a gophercloud AuthOptions in order to adhere to the AuthOptionsV3er
 // interface.
 type AuthOptions struct {
-        gophercloud.AuthOptions
+	gophercloud.AuthOptions
 }
 
 func (options AuthOptions) ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scope *Scope) (map[string]interface{}, error) {
@@ -67,10 +67,10 @@ func (options AuthOptions) ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scop
 			}
 
 			// Configure the request for Token authentication.
-                        authMap["identity"] = map[string]interface{}{
-                                "methods": []string{"token"},
-                                "token": map[string]interface{}{
-                                        "id": c.TokenID,
+			authMap["identity"] = map[string]interface{}{
+				"methods": []string{"token"},
+				"token": map[string]interface{}{
+					"id": c.TokenID,
 				},
 			}
 
@@ -103,16 +103,16 @@ func (options AuthOptions) ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scop
 				}
 
 				// Configure the request for Username and Password authentication with a DomainID.
-                                authMap["identity"] = map[string]interface{}{
+				authMap["identity"] = map[string]interface{}{
 					"methods": []string{"password"},
-                                	"password" : map[string]interface{}{
-                                                "user": map[string]interface{}{
-                                                        "name": &options.Username,
-                                                        "password": options.Password,
-                                                        "domain": map[string]interface{}{
-                                                                "id": &options.DomainID,
-                                                        },
-                                                },
+					"password": map[string]interface{}{
+						"user": map[string]interface{}{
+							"name":     &options.Username,
+							"password": options.Password,
+							"domain": map[string]interface{}{
+								"id": &options.DomainID,
+							},
+						},
 					},
 				}
 
@@ -120,18 +120,18 @@ func (options AuthOptions) ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scop
 
 			if options.DomainName != "" {
 				// Configure the request for Username and Password authentication with a DomainName.
-                                authMap["identity"] = map[string]interface{}{
+				authMap["identity"] = map[string]interface{}{
 					"methods": []string{"password"},
-                                        "password": map[string]interface{}{
-                                                 "user": map[string]interface{}{
-                                                         "name": &options.Username,
-                                                         "password": options.Password,
-                                                         "domain": map[string]interface{}{
-                                                                 "name": &options.DomainName,
-                                                         },
-                                                },
-                                         },
-                                 }
+					"password": map[string]interface{}{
+						"user": map[string]interface{}{
+							"name":     &options.Username,
+							"password": options.Password,
+							"domain": map[string]interface{}{
+								"name": &options.DomainName,
+							},
+						},
+					},
+				}
 
 			}
 		}
@@ -146,14 +146,14 @@ func (options AuthOptions) ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scop
 			}
 
 			// Configure the request for UserID and Password authentication.
-                        authMap["identity"] = map[string]interface{}{
+			authMap["identity"] = map[string]interface{}{
 				"methods": []string{"password"},
-                                "password" : map[string]interface{}{
-                                        "user": map[string]interface{}{
-                                                "id": &options.UserID,
-                                                "password": options.Password,
-                                        },
-                                },
+				"password": map[string]interface{}{
+					"user": map[string]interface{}{
+						"id":       &options.UserID,
+						"password": options.Password,
+					},
+				},
 			}
 
 		}
@@ -173,25 +173,25 @@ func (options AuthOptions) ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scop
 
 			if scope.DomainID != "" {
 				// ProjectName + DomainID
-                                authMap["scope"] = map[string]interface{}{
-                                        "project": map[string]interface{}{
-                                                "domain": map[string]interface{}{
-                                                        "id": &scope.DomainID,
-                                                        },
-                                                "name": &scope.ProjectName,
-                                        },
+				authMap["scope"] = map[string]interface{}{
+					"project": map[string]interface{}{
+						"domain": map[string]interface{}{
+							"id": &scope.DomainID,
+						},
+						"name": &scope.ProjectName,
+					},
 				}
 			}
 
 			if scope.DomainName != "" {
 				// ProjectName + DomainName
-                                authMap["scope"] = map[string]interface{}{
-                                        "project": map[string]interface{}{
-                                                "domain": map[string]interface{}{
-                                                        "name": &scope.DomainName,
-                                                        },
-                                                "name": &scope.ProjectName,
-                                        },
+				authMap["scope"] = map[string]interface{}{
+					"project": map[string]interface{}{
+						"domain": map[string]interface{}{
+							"name": &scope.DomainName,
+						},
+						"name": &scope.ProjectName,
+					},
 				}
 			}
 		} else if scope.ProjectID != "" {
@@ -204,10 +204,10 @@ func (options AuthOptions) ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scop
 			}
 
 			// ProjectID
-                        authMap["scope"] = map[string]interface{}{
-                                "project": map[string]interface{}{
-                                        "id": &scope.ProjectID,
-                                        },
+			authMap["scope"] = map[string]interface{}{
+				"project": map[string]interface{}{
+					"id": &scope.ProjectID,
+				},
 			}
 		} else if scope.DomainID != "" {
 			// DomainID provided. ProjectID, ProjectName, and DomainName may not be provided.
@@ -216,10 +216,10 @@ func (options AuthOptions) ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scop
 			}
 
 			// DomainID
-                        authMap["scope"] = map[string]interface{}{
-                                 "domain": map[string]interface{}{
-                                         "id": &scope.DomainID,
-                                         },
+			authMap["scope"] = map[string]interface{}{
+				"domain": map[string]interface{}{
+					"id": &scope.DomainID,
+				},
 			}
 		} else if scope.DomainName != "" {
 			return nil, ErrScopeDomainName
@@ -232,10 +232,10 @@ func (options AuthOptions) ToAuthOptionsV3Map(c *gophercloud.ServiceClient, scop
 
 // Create authenticates and either generates a new token, or changes the Scope of an existing token.
 func Create(c *gophercloud.ServiceClient, options AuthOptionsV3er, scope *Scope) CreateResult {
-        request, err := options.ToAuthOptionsV3Map(c, scope)
-        if err != nil {
-                return CreateResult{commonResult{gophercloud.Result{Err: err}}}
-        }
+	request, err := options.ToAuthOptionsV3Map(c, scope)
+	if err != nil {
+		return CreateResult{commonResult{gophercloud.Result{Err: err}}}
+	}
 
 	var result CreateResult
 	var response *http.Response
