@@ -4,7 +4,7 @@
   "compilers-rump-nodejs-xen": "2fbc447253ba19b8",
   "boot-creator": "f58960291f1bf839",
   "qemu-util": "6f5922561bbb86e3",
-  "compilers-osv-java": "a5dad3a9e794db7d",
+  "compilers-osv-java": "ba6904a56350caf7",
   "compilers-rump-c-hw": "c41f0b550e49b349",
   "compilers-rump-base-hw": "3e0e31ac24ba649f",
   "compilers-rump-nodejs-hw-no-stub": "baebfe68f3283190",

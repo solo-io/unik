@@ -83,6 +83,7 @@ func main() {
 			*runtimeArgs,
 			argsStr,
 			filepath.Base(artifactFile), artifactFile)
+		logrus.Info("writing capstanfile\n", tomcatCapstanFileContents)
 		if err := ioutil.WriteFile(filepath.Join(project_directory, "Capstanfile"), []byte(tomcatCapstanFileContents), 0644); err != nil {
 			logrus.WithError(err).Error("failed writing capstanfile")
 			os.Exit(-1)
@@ -95,15 +96,12 @@ base: unik-jar-runner
 
 cmdline: /java.so %s -cp /%s -jar /program.jar %s
 
-#
-# List of files that are included in the generated image.
-#
-files:
-  /%s: %s`,
+rootfs: %s`,
 			*runtimeArgs,
 			filepath.Base(artifactFile),
 			argsStr,
-			filepath.Base(artifactFile), artifactFile)
+			project_directory)
+		logrus.Info("writing capstanfile\n", jarRunnerCapstanFileContents)
 		if err := ioutil.WriteFile(filepath.Join(project_directory, "Capstanfile"), []byte(jarRunnerCapstanFileContents), 0644); err != nil {
 			logrus.WithError(err).Error("failed writing capstanfile")
 			os.Exit(-1)

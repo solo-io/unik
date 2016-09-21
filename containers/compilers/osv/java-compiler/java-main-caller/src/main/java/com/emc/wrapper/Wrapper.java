@@ -9,7 +9,22 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipException;
 
 public class Wrapper {
+    public static void listFiles(String directory) {
+        File folder = new File(directory);
+        File[] listOfFiles = folder.listFiles();
+        System.out.println("Directory " + folder.getAbsolutePath());
+
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+                System.out.println("File " + listOfFiles[i].getAbsolutePath());
+            } else if (listOfFiles[i].isDirectory()) {
+                listFiles(listOfFiles[i].getAbsolutePath());
+            }
+        }
+    }
+
     public static void main(String[] args) throws Exception {
+        listFiles("/");
         String appArgs[] = new String[1];
         for (String arg : args) {
             if (arg.startsWith("-bootstrapType")) {
