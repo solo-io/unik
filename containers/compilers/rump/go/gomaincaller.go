@@ -30,7 +30,7 @@ func gomaincaller(argc C.int, argv unsafe.Pointer) {
 	main()
 }
 
-const BROADCAST_LISTENING_PORT = 9876
+const BROADCAST_LISTENING_PORT = 9967
 
 var timeout = time.Duration(2 * time.Second)
 
@@ -173,13 +173,13 @@ func getListenerIp(closeChan <-chan struct{}) (string, error) {
 	log.Printf("listening for udp heartbeat...")
 	socket, err := net.ListenUDP("udp4", &net.UDPAddr{
 		IP:   net.IPv4(0, 0, 0, 0),
-		Port: 9876,
+		Port: 9967,
 	})
 	if err != nil {
 		return "", err
 	}
 	for {
-		log.Printf("UDP Server listening on %s:%v", "0.0.0.0", 9876)
+		log.Printf("UDP Server listening on %s:%v", "0.0.0.0", 9967)
 		data := make([]byte, 4096)
 		_, remoteAddr, err := socket.ReadFromUDP(data)
 		if err != nil {

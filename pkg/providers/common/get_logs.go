@@ -8,7 +8,7 @@ import (
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 )
 
-const UnikLogsPort = 9876
+const UnikLogsPort = 9967
 
 func GetInstanceLogs(instance *types.Instance) (string, error) {
 	if instance.IpAddress == "" {

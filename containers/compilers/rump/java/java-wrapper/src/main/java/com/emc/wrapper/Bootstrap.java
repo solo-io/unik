@@ -17,7 +17,7 @@ public abstract class Bootstrap {
     protected void listenForLogs() {
         //listen to requests for logs
         try {
-            HttpServer server = HttpServer.create(new InetSocketAddress(9876), 0);
+            HttpServer server = HttpServer.create(new InetSocketAddress(9967), 0);
             server.createContext("/logs", new Bootstrap.ServeLogs());
             server.setExecutor(null); // creates a default executor
             server.start();

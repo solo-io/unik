@@ -81,7 +81,7 @@ public class UDPBootstrap extends Bootstrap {
 
     private static String getListenerIp() throws IOException {
         System.out.println("listening for udp heartbeat...");
-        DatagramSocket serverSocket = new DatagramSocket(9876);
+        DatagramSocket serverSocket = new DatagramSocket(9967);
         byte[] receiveData = new byte[1024];
         while (true) {
             System.out.println("creating datagram receive packet...");

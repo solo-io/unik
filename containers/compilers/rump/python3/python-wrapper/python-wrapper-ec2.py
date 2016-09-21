@@ -72,7 +72,7 @@ class Capturing(list):
         sys.stdout = self._stdout
         sys.stderr = self._stderr
 
-CONST_PORT=9876
+CONST_PORT=9967
 
 # HTTPRequestHandler class
 class LogServer(BaseHTTPRequestHandler):

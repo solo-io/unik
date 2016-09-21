@@ -133,7 +133,7 @@ func getListenerIp(closeChan <-chan struct{}) (string, error) {
 	log.Printf("listening for udp heartbeat...")
 	socket, err := net.ListenUDP("udp4", &net.UDPAddr{
 		IP:   net.IPv4(0, 0, 0, 0),
-		Port: 9876,
+		Port: 9967,
 	})
 	if err != nil {
 		return "", err

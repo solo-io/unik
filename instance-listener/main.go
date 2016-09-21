@@ -77,7 +77,7 @@ func main() {
 	}
 	socket, err := net.DialUDP("udp4", nil, &net.UDPAddr{
 		IP:   BROADCAST_IPv4,
-		Port: 9876,
+		Port: 9967,
 	})
 	if err != nil {
 		log.Printf(fmt.Sprintf("ERROR: broadcast-ip: %v; failed to dial udp broadcast connection", BROADCAST_IPv4))
