@@ -65,11 +65,9 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 * dynamic volume and application arguments configuration at instance runtime (rather than at compile time)
 * expanding test coverage
 * better code documentation
-* `unik pull` & `unik push` && unikhub for sharing unikernel images
 * multi-account support per provider (i.e. multiple AWS accounts/regions, etc.)
 * migrate from [martini](https://github.com/go-martini/martini) to [echo](https://github.com/labstack/echo)
 * self-healing state (i.e. unik can identify when instances/images/volumes no longer exist and self-correct rather than throwing errors)
-* ocaml support using [MirageOs](https://mirage.io/)
 
 UniK is still experimental! APIs and compatibility are subject to change. We are looking for community support to help identify potential bugs and compatibility issues. Please open a Github issue for any problems you may experience, and join us on our [slack channel](http://project-unik.io)
 
