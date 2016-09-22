@@ -65,7 +65,7 @@ public class Wrapper {
                 args[0] = "start";
                 main.invoke(null, new Object[]{args});
             } else {
-                System.err.println("Neet to provide either 'tomcat' or 'jarName' to run!");
+                System.err.println("Need to provide either 'tomcat' or 'jarName' to run!");
                 System.out.println("args provided: "+String.join(",", args));
             }
         }
