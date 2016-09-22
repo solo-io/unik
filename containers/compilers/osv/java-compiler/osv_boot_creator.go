@@ -90,7 +90,7 @@ func main() {
 		}
 	} else if strings.HasSuffix(*mainFile, ".jar") {
 		logrus.Infof("building Java unikernel from .jar file")
-		argsStr += fmt.Sprintf("-jarName=/%s", filepath.Base(artifactFile))
+		argsStr += fmt.Sprintf("-jarName=/%s", *mainFile)
 		jarRunnerCapstanFileContents := fmt.Sprintf(`
 base: unik-jar-runner
 
@@ -98,7 +98,7 @@ cmdline: /java.so %s -cp /%s -jar /program.jar %s
 
 rootfs: %s`,
 			*runtimeArgs,
-			filepath.Base(artifactFile),
+			*mainFile,
 			argsStr,
 			project_directory)
 		logrus.Info("writing capstanfile\n", jarRunnerCapstanFileContents)

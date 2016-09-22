@@ -3,6 +3,7 @@ package os
 import (
 	"fmt"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"math"
 	"os"
 )
 
@@ -19,6 +20,11 @@ func (s Bytes) ToPartedFormat() string {
 
 func (s Bytes) ToBytes() Bytes {
 	return s
+}
+
+// ToMegaBytes returns lowest whole number of size_MB so that size_MB >= (size_B / 1024^2)
+func (s Bytes) ToMegaBytes() MegaBytes {
+	return MegaBytes(int(math.Ceil(float64(s) / float64(MegaBytes(1).ToBytes()))))
 }
 
 type MegaBytes int64
