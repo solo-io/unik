@@ -1,5 +1,8 @@
 # UniK Changelog
 
+## Fri Sep 23 2016
+* Thanks to contributions from the folks at [Project Mikelangelo](https://www.mikelangelo-project.eu/), Openstack is now supported as a UniK provider. Currently we're configured to support Openstack installations which are running on top of QEMU as their hypervisor. Other hypervisor support is possible, but not a priority at this time. Openstack+QEMU supports all of UniK's currently supported unikernels (except for Mirage, which currently runs exclusively on Xen).
+
 ## Fri Aug 26 2016
 * Changed CLI / REST API for building images. `--compiler` flag was removed in favor of `--base` and `--language` flags, which combine with the existing `--provider` flag to look up the relevant compiler. The cli still exposes the `unik compilers` command in order to list all available combinations.
 
