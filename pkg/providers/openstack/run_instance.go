@@ -51,7 +51,7 @@ func (p *OpenstackProvider) RunInstance(params types.RunInstanceParams) (_ *type
 	}
 
 	// Run instance.
-	serverId, err := launchServer(clientNova, params.Name, flavor.Name, image.Name)
+	serverId, err := launchServer(clientNova, params.Name, flavor.Name, image.Name, p.config.NetworkUUID)
 	if err != nil {
 		return nil, errors.New("failed to run instance", err)
 	}
@@ -79,11 +79,14 @@ func (p *OpenstackProvider) RunInstance(params types.RunInstanceParams) (_ *type
 }
 
 // launchServer launches single server of given image and returns it's id.
-func launchServer(clientNova *gophercloud.ServiceClient, name string, flavorName string, imageName string) (string, error) {
+func launchServer(clientNova *gophercloud.ServiceClient, name, flavorName, imageName, networkUUID string) (string, error) {
 	resp := servers.Create(clientNova, servers.CreateOpts{
 		Name:       name,
 		FlavorName: flavorName,
 		ImageName:  imageName,
+		Networks: []servers.Network{
+			servers.Network{UUID: networkUUID},
+		},
 	})
 
 	if resp.Err != nil {

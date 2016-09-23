@@ -70,6 +70,8 @@ type Openstack struct {
 	ProjectName string `yaml:"project_name"`
 	RegionId    string `yaml:"region_id"`
 	RegionName  string `yaml:"region_name"`
+
+	NetworkUUID string `yaml:"network_uuid"`
 }
 
 type VirtualboxAdapterType string

@@ -168,13 +168,6 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		break
 	}
 
-	_compilers[compilers.RUMP_GO_PHOTON] = &rump.RumpGoCompiler{
-		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage: "compilers-rump-go-hw",
-			CreateImage: rump.CreateImageVmware,
-		},
-	}
-
 	for _, xenConfig := range config.Providers.Xen {
 		logrus.Infof("Bootstrapping provider %s with config %v", xen_provider, xenConfig)
 		p, err := xen.NewXenProvider(xenConfig)
@@ -191,6 +184,13 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		break
 	}
 
+	//rump-go
+	_compilers[compilers.RUMP_GO_PHOTON] = &rump.RumpGoCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-go-hw",
+			CreateImage: rump.CreateImageVmware,
+		},
+	}
 	rumpGoXenCompiler := &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-go-xen",
@@ -219,10 +219,19 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			CreateImage: rump.CreateImageQemu,
 		},
 	}
+	_compilers[compilers.RUMP_GO_OPENSTACK] = &rump.RumpGoCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-go-hw-no-stub",
+			CreateImage: rump.CreateImageQemu,
+		},
+	}
 
+	//includeos-cpp
 	_compilers[compilers.INCLUDEOS_CPP_QEMU] = &includeos.IncludeosQemuCompiler{}
 	_compilers[compilers.INCLUDEOS_CPP_VIRTUALBOX] = &includeos.IncludeosVirtualboxCompiler{}
+	_compilers[compilers.INCLUDEOS_CPP_OPENSTACK] = &includeos.IncludeosQemuCompiler{}
 
+	//rump nodejs
 	_compilers[compilers.RUMP_NODEJS_XEN] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-nodejs-xen",
@@ -262,32 +271,47 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		},
 		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
+	_compilers[compilers.RUMP_NODEJS_OPENSTACK] = &rump.RumpScriptCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-nodejs-hw-no-stub",
+			CreateImage: rump.CreateImageQemu,
+		},
+		RunScriptArgs: "/bootpart/node-wrapper.js",
+	}
+
+	//mirage ocaml
 	_compilers[compilers.MIRAGE_OCAML_XEN] = &mirage.MirageCompiler{}
 
+	//rump python
 	_compilers[compilers.RUMP_PYTHON_XEN] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_AWS] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeEC2)
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVirtualBoxAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_VMWARE] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVmwareAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_QEMU] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.NoStub)
+	_compilers[compilers.RUMP_PYTHON_OPENSTACK] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.NoStub)
 
+	//rump java
 	_compilers[compilers.RUMP_JAVA_XEN] = rump.NewRumpJavaCompiler("compilers-rump-java-xen", rump.CreateImageXen, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_JAVA_AWS] = rump.NewRumpJavaCompiler("compilers-rump-java-xen", rump.CreateImageXen, rump.BootstrapTypeEC2)
 	_compilers[compilers.RUMP_JAVA_VIRTUALBOX] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageVirtualBox, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_JAVA_VMWARE] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageVmware, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_JAVA_QEMU] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageQemu, rump.NoStub)
+	_compilers[compilers.RUMP_JAVA_OPENSTACK] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageQemu, rump.NoStub)
 
+	//rump c
 	_compilers[compilers.RUMP_C_XEN] = rump.NewRumpCCompiler("compilers-rump-c-xen", rump.CreateImageXenAddStub)
 	_compilers[compilers.RUMP_C_AWS] = rump.NewRumpCCompiler("compilers-rump-c-xen", rump.CreateImageXenAddStub)
 	_compilers[compilers.RUMP_C_VIRTUALBOX] = rump.NewRumpCCompiler("compilers-rump-c-hw", rump.CreateImageVirtualBoxAddStub)
 	_compilers[compilers.RUMP_C_VMWARE] = rump.NewRumpCCompiler("compilers-rump-c-hw", rump.CreateImageVmwareAddStub)
 	_compilers[compilers.RUMP_C_QEMU] = rump.NewRumpCCompiler("compilers-rump-c-hw", rump.CreateImageQemu)
+	_compilers[compilers.RUMP_C_OPENSTACK] = rump.NewRumpCCompiler("compilers-rump-c-hw", rump.CreateImageQemu)
 
+	//osv java
 	osvJavaXenCompiler := &osv.OsvAwsCompiler{
 		OSvCompilerBase: osv.OSvCompilerBase{
 			CreateImage: osv.CreateImageJava,
 		},
 	}
-
 	_compilers[compilers.OSV_JAVA_XEN] = osvJavaXenCompiler
 	_compilers[compilers.OSV_JAVA_AWS] = osvJavaXenCompiler
 	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{
@@ -300,7 +324,6 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			CreateImage: osv.CreateImageJava,
 		},
 	}
-
 	// At the moment OpenStack provider borrows Xen's compiler.
 	_compilers[compilers.OSV_JAVA_OPENSTACK] = osvJavaXenCompiler
 

@@ -2,7 +2,7 @@
 
 **DISCLAIMER: OpenStack provider is under active development, please don't use it in production yet. **
 
-UniK supports running OSv unikernels on OpenStack.
+UniK supports running OSv, IncludeOS, and Rumprun unikernels on OpenStack (using the QEMU hypervisor).
 The OpenStack stub of your `daemon-config.yaml` file should look something like the following:
 ```yaml
 providers:
@@ -16,6 +16,7 @@ providers:
       tenant_name: admin
       project_name: admin
       region_name: RegionOne
+      network_uuid: 73954b5b-7292-487d-9e22-1a63c8b5799e
 ```
 You can override any of the settings above using environment variables, e.g.
 ```bash
@@ -32,5 +33,8 @@ UniK picks the most suitable flavor to run instance with, where most suitable me
 ## Misc
 UniK stores OpenStack data in the following paths:
 * JSON representation of the state: `$HOME/.unik/openstack/state.json`
+
+## Network
+You must specify a network (by uuid) to attach unikernels to.
 
 If UniK gets into a bad state (i.e. you manually remove a state file or OpenStack VM), you should manually edit the `$HOME/.unik/openstack/state.json` file to remove the instance that no longer exists. UniK will eventually become self-correcting to deal with disruptions in the state.
