@@ -6,6 +6,6 @@ RUN \
 RUN cd ~ && pwd && \
   git clone https://github.com/hioa-cs/IncludeOS.git && \
   cd IncludeOS && \
-  git checkout 8dfa8b661355fd79b68ae2396d8df99c07f7c9e3 && \
+  git checkout 724f28ec31fa465c2eb9047c77f128d38baac5f0 && \
   git fetch --tags && \
   /bin/bash ./install.sh
