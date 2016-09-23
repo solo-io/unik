@@ -58,10 +58,10 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 * [vSphere](docs/providers/vsphere.md)
 * [QEMU](docs/providers/qemu.md)
 * [Xen](docs/providers/xen.md)
+* [OpenStack](docs/providers/openstack.md)
 * [Photon Controller](docs/providers/photon.md)
 
 ### Roadmap:
-* additional provider support including [OpenStack](https://www.openstack.org/)
 * dynamic volume and application arguments configuration at instance runtime (rather than at compile time)
 * expanding test coverage
 * better code documentation
