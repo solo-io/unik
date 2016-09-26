@@ -28,6 +28,7 @@ const (
 	Infrastructure_PHOTON     Infrastructure = "PHOTON"
 	Infrastructure_XEN        Infrastructure = "XEN"
 	Infrastructure_OPENSTACK  Infrastructure = "OPENSTACK"
+	Infrastructure_UKVM       Infrastructure = "UKVM"
 )
 
 type Image struct {
@@ -95,10 +96,11 @@ type RawImage struct {
 type ImageFormat string
 
 const (
-	ImageFormat_RAW   ImageFormat = "raw"
-	ImageFormat_QCOW2 ImageFormat = "qcow2"
-	ImageFormat_VHD   ImageFormat = "vhd"
-	ImageFormat_VMDK  ImageFormat = "vmdk"
+	ImageFormat_RAW    ImageFormat = "raw"
+	ImageFormat_QCOW2  ImageFormat = "qcow2"
+	ImageFormat_VHD    ImageFormat = "vhd"
+	ImageFormat_VMDK   ImageFormat = "vmdk"
+	ImageFormat_Folder ImageFormat = "folder"
 )
 
 type XenVirtualizationType string

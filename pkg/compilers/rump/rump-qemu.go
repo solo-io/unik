@@ -38,6 +38,8 @@ func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string, n
 	c.Blk = append(c.Blk, bootBlk)
 
 	res := &types.RawImage{}
+	res.RunSpec.Compiler = compilers.Rump
+
 	for i, mntPoint := range mntPoints {
 		deviceMapped := fmt.Sprintf("ld%ca", '1'+i)
 		blk := blk{
@@ -51,7 +53,6 @@ func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string, n
 		logrus.Debugf("adding mount point to image: %s:%s", mntPoint, deviceMapped)
 		res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings,
 			types.DeviceMapping{MountPoint: mntPoint, DeviceName: deviceMapped})
-		res.RunSpec.Compiler = compilers.Rump
 	}
 
 	// virtualbox network

@@ -30,6 +30,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/providers/openstack"
 	"github.com/emc-advanced-dev/unik/pkg/providers/photon"
 	"github.com/emc-advanced-dev/unik/pkg/providers/qemu"
+	"github.com/emc-advanced-dev/unik/pkg/providers/ukvm"
 	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox"
 	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere"
 	"github.com/emc-advanced-dev/unik/pkg/providers/xen"
@@ -54,6 +55,7 @@ const (
 	qemu_provider       = "qemu"
 	photon_provider     = "photon"
 	xen_provider        = "xen"
+	ukvm_provider       = "ukvm"
 	openstack_provider  = "openstack"
 )
 
@@ -172,7 +174,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		logrus.Infof("Bootstrapping provider %s with config %v", xen_provider, xenConfig)
 		p, err := xen.NewXenProvider(xenConfig)
 		if err != nil {
-			return nil, errors.New("initializing qemu provider", err)
+			return nil, errors.New("initializing xen provider", err)
 		}
 		s, err := state.BasicStateFromFile(xen.XenStateFile())
 		if err != nil {
@@ -181,6 +183,22 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		}
 		p = p.WithState(s)
 		_providers[xen_provider] = p
+		break
+	}
+
+	for _, ukvmConfig := range config.Providers.Ukvm {
+		logrus.Infof("Bootstrapping provider %s with config %v", ukvm_provider, ukvmConfig)
+		p, err := ukvm.NewUkvmProvider(ukvmConfig)
+		if err != nil {
+			return nil, errors.New("initializing ukvm provider", err)
+		}
+		s, err := state.BasicStateFromFile(ukvm.UkvmStateFile())
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read ukvm state file at %s, creating blank state", ukvm.UkvmStateFile())
+			s = state.NewBasicState(ukvm.UkvmStateFile())
+		}
+		p = p.WithState(s)
+		_providers[ukvm_provider] = p
 		break
 	}
 
@@ -280,7 +298,8 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	}
 
 	//mirage ocaml
-	_compilers[compilers.MIRAGE_OCAML_XEN] = &mirage.MirageCompiler{}
+	_compilers[compilers.MIRAGE_OCAML_XEN] = &mirage.MirageCompiler{IsUkvm: false}
+	_compilers[compilers.MIRAGE_OCAML_UKVM] = &mirage.MirageCompiler{IsUkvm: true}
 
 	//rump python
 	_compilers[compilers.RUMP_PYTHON_XEN] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeUDP)

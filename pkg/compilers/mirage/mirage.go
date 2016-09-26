@@ -2,6 +2,7 @@ package mirage
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 
 	"github.com/emc-advanced-dev/unik/pkg/compilers"
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"gopkg.in/yaml.v2"
@@ -27,6 +29,7 @@ plan:
 
 */
 type MirageCompiler struct {
+	IsUkvm bool
 }
 
 func (c *MirageCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
@@ -37,27 +40,40 @@ func (c *MirageCompiler) CompileRawImage(params types.CompileImageParams) (*type
 		return nil, err
 	}
 
-	args, err := parseMirageManifest(sourcesDir)
-	if err != nil {
-		args, err = introspectArguments(sourcesDir)
+	var args []string
+	if !c.IsUkvm {
+		var err error
+		args, err = parseMirageManifest(sourcesDir)
 		if err != nil {
-			return nil, err
+			args, err = introspectArguments(sourcesDir)
+			if err != nil {
+				return nil, err
+			}
 		}
+	} else {
+		// nothing for ukvm..
 	}
 
-	args = append([]string{"configure", "-t", "xen"}, args...)
-	if err := unikutil.NewContainer("compilers-mirage-ocaml-xen").WithEntrypoint("mirage").WithVolume(sourcesDir, "/opt/code").Run(args...); err != nil {
+	var containerToUse string
+	if !c.IsUkvm {
+		containerToUse = "compilers-mirage-ocaml-xen"
+		args = append([]string{"configure", "-t", "xen"}, args...)
+	} else {
+		containerToUse = "compilers-mirage-ocaml-ukvm"
+		args = append([]string{"configure", "-t", "ukvm"}, args...)
+	}
+
+	if err := unikutil.NewContainer(containerToUse).WithEntrypoint("mirage").WithVolume(sourcesDir, "/opt/code").Run(args...); err != nil {
 		return nil, err
 	}
 
-	if err := unikutil.NewContainer("compilers-mirage-ocaml-xen").WithEntrypoint("/usr/bin/make").WithVolume(sourcesDir, "/opt/code").Run(); err != nil {
+	if err := unikutil.NewContainer(containerToUse).WithEntrypoint("/usr/bin/make").WithVolume(sourcesDir, "/opt/code").Run(); err != nil {
 		return nil, err
 	}
 
 	// Extract volume info
 
 	// read xl template file, and see what disks are needed
-
 	matches, err := filepath.Glob(filepath.Join(params.SourcesDir, "*.xl.in"))
 	if err != nil {
 		return nil, err
@@ -74,7 +90,18 @@ func (c *MirageCompiler) CompileRawImage(params types.CompileImageParams) (*type
 		return nil, err
 	}
 
+	if !c.IsUkvm {
+		return c.packageForXen(sourcesDir, disks, params.NoCleanup)
+	} else {
+		return c.packageForUkvm(sourcesDir, disks, params.NoCleanup)
+	}
+}
+
+func (c *MirageCompiler) packageForXen(sourcesDir string, disks []string, cleanup bool) (*types.RawImage, error) {
+	// TODO: ukvm package zipfile for ukvm
 	var res types.RawImage
+	res.RunSpec.Compiler = compilers.MIRAGE_OCAML_XEN
+
 	unikernelfile, err := getUnikernelFile(sourcesDir)
 	if err != nil {
 		return nil, err
@@ -85,7 +112,8 @@ func (c *MirageCompiler) CompileRawImage(params types.CompileImageParams) (*type
 		res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings, types.DeviceMapping{MountPoint: "xen:" + disk, DeviceName: disk})
 	}
 
-	imgFile, err := compilers.BuildBootableImage(unikernelfile, "", false, params.NoCleanup)
+	// TODO: ukvm package zipfile for ukvm
+	imgFile, err := compilers.BuildBootableImage(unikernelfile, "", false, cleanup)
 
 	if err != nil {
 		return nil, err
@@ -101,13 +129,67 @@ func (c *MirageCompiler) CompileRawImage(params types.CompileImageParams) (*type
 	return &res, nil
 }
 
+func (c *MirageCompiler) packageForUkvm(sourcesDir string, disks []string, cleanup bool) (*types.RawImage, error) {
+	// find ukvm-bin -> the monitor
+	// find *.ukvm -> the unikernel
+
+	matches, err := filepath.Glob(filepath.Join(sourcesDir, "*.ukvm"))
+	if err != nil {
+		return nil, err
+	}
+
+	// filter non relevant Makefile.ukvm
+	var potentialMatches []string
+	for _, m := range matches {
+		if !strings.HasSuffix(m, "Makefile.ukvm") {
+			potentialMatches = append(potentialMatches, m)
+		}
+	}
+
+	if len(potentialMatches) != 1 {
+		return nil, errors.New(fmt.Sprintf("Ukvm kernel file count is wrong: %v", potentialMatches), nil)
+	}
+
+	kernel := potentialMatches[0]
+
+	monitor := filepath.Join(sourcesDir, "ukvm-bin")
+
+	// place them in the image directory
+
+	tmpImageDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := unikos.CopyFile(kernel, filepath.Join(tmpImageDir, "program.bin")); err != nil {
+		return nil, errors.New("copying bootable image to image dir", err)
+	}
+
+	if err := unikos.CopyFile(monitor, filepath.Join(tmpImageDir, "ukvm-bin")); err != nil {
+		return nil, errors.New("copying bootable image to image dir", err)
+	}
+	res := &types.RawImage{}
+	for _, disk := range disks {
+		res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings, types.DeviceMapping{MountPoint: "ukvm:" + disk, DeviceName: disk})
+	}
+	res.RunSpec.Compiler = compilers.MIRAGE_OCAML_UKVM
+
+	res.LocalImagePath = tmpImageDir
+	res.StageSpec = types.StageSpec{
+		ImageFormat: types.ImageFormat_Folder,
+	}
+	res.RunSpec.DefaultInstanceMemory = 256
+
+	return res, nil
+}
+
 var parseRegEx = regexp.MustCompile(`vdev=(\S+),\s.+?target=@\S+?:(\S+?)@`)
 
 func getUnikernelFile(sourcesDir string) (string, error) {
 
 	matches, err := filepath.Glob(filepath.Join(sourcesDir, "*.xen"))
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	if len(matches) != 1 {

@@ -13,6 +13,7 @@ type Providers struct {
 	Photon     []Photon     `yaml:"photon"`
 	Xen        []Xen        `yaml:"xen"`
 	Openstack  []Openstack  `yaml:"openstack"`
+	Ukvm       []Ukvm       `yaml:"ukvm"`
 }
 
 type Aws struct {
@@ -47,6 +48,11 @@ type Qemu struct {
 	Name         string `yaml:"name"`
 	NoGraphic    bool   `yaml:"no_graphic"`
 	DebuggerPort int    `yaml:"debugger_port"`
+}
+
+type Ukvm struct {
+	Name string `yaml:"name"`
+	Tap  string `yaml:"tap_device"`
 }
 
 type Xen struct {

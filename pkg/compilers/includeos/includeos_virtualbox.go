@@ -2,13 +2,14 @@ package includeos
 
 import (
 	goerrors "errors"
+	"os"
+	"path"
+	"path/filepath"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"os"
-	"path"
-	"path/filepath"
 )
 
 type IncludeosVirtualboxCompiler struct{}
@@ -19,6 +20,7 @@ func (i *IncludeosVirtualboxCompiler) CompileRawImage(params types.CompileImageP
 	if err := unikutil.NewContainer("compilers-includeos-cpp-hw").WithVolume(sourcesDir, "/opt/code").WithEnvs(env).Run(); err != nil {
 		return nil, err
 	}
+
 	res := &types.RawImage{}
 	localImageFile, err := i.findFirstImageFile(sourcesDir)
 	if err != nil {

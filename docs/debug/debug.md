@@ -71,7 +71,7 @@ For hard drivers, use the scsi drive like in the virtualbox example.
 
 Use our debugging container:
 
-    docker run --rm -ti --net="host" -v $PWD/:/opt/code projectunik/debuggers-rump-base-hw
+    docker run --rm -ti --net="host" -v $PWD/:/opt/code:ro projectunik/debuggers-rump-base-hw
 
 and then from inside the container:
 

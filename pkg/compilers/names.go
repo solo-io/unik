@@ -62,7 +62,8 @@ var (
 	INCLUDEOS_CPP_VIRTUALBOX = compilerName("includeos", "cpp", "virtualbox")
 	INCLUDEOS_CPP_OPENSTACK  = compilerName("includeos", "cpp", "openstack")
 
-	MIRAGE_OCAML_XEN = compilerName("mirage", "ocaml", "xen")
+	MIRAGE_OCAML_XEN  = compilerName("mirage", "ocaml", "xen")
+	MIRAGE_OCAML_UKVM = compilerName("mirage", "ocaml", "ukvm")
 )
 
 var compilers = []string{
@@ -116,6 +117,7 @@ var compilers = []string{
 	INCLUDEOS_CPP_OPENSTACK,
 
 	MIRAGE_OCAML_XEN,
+	MIRAGE_OCAML_UKVM,
 }
 
 func ValidateCompiler(base, language, provider string) (string, error) {
