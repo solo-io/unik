@@ -46,7 +46,7 @@ func (p *UkvmProvider) Stage(params types.StageImageParams) (_ *types.Image, err
 
 	}
 	ukvmPath := filepath.Join(params.RawImage.LocalImagePath, "ukvm-bin")
-	if err := unikos.CopyFile(kernelPath, getUkvmPath(imageName)); err != nil {
+	if err := unikos.CopyFile(ukvmPath, getUkvmPath(imageName)); err != nil {
 		return nil, errors.New("ukvm-bin cannot be copied", err)
 	}
 
