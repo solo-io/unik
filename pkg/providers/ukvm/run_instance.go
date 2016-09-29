@@ -2,6 +2,8 @@ package ukvm
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"os/exec"
 	"time"
 
@@ -68,11 +70,30 @@ func (p *UkvmProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	ukvmArgs = append(ukvmArgs, getKernelPath(image.Name))
 	cmd := exec.Command(getUkvmPath(image.Name), ukvmArgs...)
 
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		logrus.WithError(err).Warning("Can't get stdout for logs")
+	}
+
+	instanceLogName := getInstanceLogName(params.Name)
+
+	go func() {
+		f, err := os.Create(instanceLogName)
+		if err != nil {
+			logrus.WithError(err).Warning("Failed to create stdout log for instance " + params.Name)
+		}
+		defer f.Close()
+		io.Copy(f, stdout)
+
+	}()
+
 	util.LogCommand(cmd, true)
 
 	if err := cmd.Start(); err != nil {
-		return nil, errors.New("can't start ukvm - make sure it's in your path.", nil)
+		return nil, errors.New("can't start ukvm.", nil)
 	}
+	// close command resources
+	go cmd.Wait()
 
 	var instanceIp string
 

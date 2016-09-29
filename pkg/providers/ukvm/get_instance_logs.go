@@ -1,7 +1,13 @@
 package ukvm
 
-import "github.com/emc-advanced-dev/pkg/errors"
+import "io/ioutil"
 
 func (p *UkvmProvider) GetInstanceLogs(id string) (string, error) {
-	return "", errors.New("not supported", nil)
+	instanceLogName := getInstanceLogName(id)
+	logdata, err := ioutil.ReadFile(instanceLogName)
+	if err != nil {
+		return "", err
+	}
+
+	return string(logdata), nil
 }

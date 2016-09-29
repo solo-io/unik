@@ -57,6 +57,14 @@ func getUkvmPath(imageName string) string {
 	return filepath.Join(ukvmImagesDirectory(), imageName, "ukvm-bin")
 }
 
+func getInstanceDir(instanceName string) string {
+	return filepath.Join(ukvmInstancesDirectory(), instanceName)
+}
+
+func getInstanceLogName(instanceName string) string {
+	return filepath.Join(ukvmInstancesDirectory(), instanceName, "stdout")
+}
+
 func getVolumePath(volumeName string) string {
 	return filepath.Join(ukvmVolumesDirectory(), volumeName, "data.img")
 }
