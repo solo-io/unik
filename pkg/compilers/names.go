@@ -11,6 +11,21 @@ const (
 	Rump = "rump"
 )
 
+type CompilerType string
+
+func (c CompilerType) Base() string {
+	return strings.Split(string(c), "-")[0]
+}
+func (c CompilerType) Language() string {
+	return strings.Split(string(c), "-")[1]
+}
+func (c CompilerType) Provider() string {
+	return strings.Split(string(c), "-")[2]
+}
+func (c CompilerType) String() string {
+	return string(c)
+}
+
 var (
 	//available compilers
 	RUMP_C_XEN        = compilerName("rump", "c", "xen")
@@ -64,9 +79,10 @@ var (
 
 	MIRAGE_OCAML_XEN  = compilerName("mirage", "ocaml", "xen")
 	MIRAGE_OCAML_UKVM = compilerName("mirage", "ocaml", "ukvm")
+	MIRAGE_OCAML_QEMU = compilerName("mirage", "ocaml", "qemu")
 )
 
-var compilers = []string{
+var compilers = []CompilerType{
 	RUMP_C_XEN,
 	RUMP_C_AWS,
 	RUMP_C_VIRTUALBOX,
@@ -118,19 +134,20 @@ var compilers = []string{
 
 	MIRAGE_OCAML_XEN,
 	MIRAGE_OCAML_UKVM,
+	MIRAGE_OCAML_QEMU,
 }
 
-func ValidateCompiler(base, language, provider string) (string, error) {
+func ValidateCompiler(base, language, provider string) (CompilerType, error) {
 	baseMatch := false
 	languageMatch := false
 	for _, compiler := range compilers {
-		if strings.HasPrefix(compiler, base) {
+		if compiler.Base() == base {
 			baseMatch = true
 		}
-		if strings.HasPrefix(compiler, base+"-"+language) {
+		if compiler.Base() == base && compiler.Language() == language {
 			languageMatch = true
 		}
-		if compiler == compilerName(base, language, provider) {
+		if compiler.Base() == base && compiler.Language() == language && compiler.Provider() == provider {
 			return compiler, nil
 		}
 	}
@@ -146,7 +163,7 @@ func ValidateCompiler(base, language, provider string) (string, error) {
 func bases() []string {
 	uniqueBases := make(map[string]interface{})
 	for _, compiler := range compilers {
-		uniqueBases[strings.Split(compiler, "-")[0]] = struct{}{}
+		uniqueBases[compiler.Base()] = struct{}{}
 	}
 	bases := []string{}
 	for base := range uniqueBases {
@@ -158,8 +175,8 @@ func bases() []string {
 func langsForBase(base string) []string {
 	uniqueLangs := make(map[string]interface{})
 	for _, compiler := range compilers {
-		if strings.HasPrefix(compiler, base) {
-			uniqueLangs[strings.Split(compiler, "-")[1]] = struct{}{}
+		if compiler.Base() == base {
+			uniqueLangs[compiler.Language()] = struct{}{}
 		}
 	}
 	langs := []string{}
@@ -172,8 +189,8 @@ func langsForBase(base string) []string {
 func providersForBaseLang(base, language string) []string {
 	uniqueProviders := make(map[string]interface{})
 	for _, compiler := range compilers {
-		if strings.HasPrefix(compiler, base+"-"+language) {
-			uniqueProviders[strings.Split(compiler, "-")[2]] = struct{}{}
+		if (compiler.Base() == base) && (compiler.Language() == language) {
+			uniqueProviders[compiler.Provider()] = struct{}{}
 		}
 	}
 	providers := []string{}
@@ -183,6 +200,6 @@ func providersForBaseLang(base, language string) []string {
 	return providers
 }
 
-func compilerName(base, language, provider string) string {
-	return fmt.Sprintf("%s-%s-%s", base, language, provider)
+func compilerName(base, language, provider string) CompilerType {
+	return CompilerType(fmt.Sprintf("%s-%s-%s", base, language, provider))
 }

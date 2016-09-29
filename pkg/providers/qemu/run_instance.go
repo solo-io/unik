@@ -2,16 +2,19 @@ package qemu
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
 
+	"io/ioutil"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"github.com/emc-advanced-dev/unik/pkg/util"
-	"io/ioutil"
 )
 
 func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
@@ -63,10 +66,20 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 		logrus.Debugf("cmdLine not found, assuming classic bootloader")
 		qemuArgs = append(qemuArgs, "-drive", fmt.Sprintf("file=%s,format=raw,if=ide", getImagePath(image.Name)))
 	} else {
-		cmdline := injectEnv(string(cmdlinedata), params.Env)
+		// inject env for rump:
+		cmdline := string(cmdlinedata)
+		if compilers.CompilerType(image.RunSpec.Compiler).Base() == compilers.Rump {
+			cmdline = injectEnv(cmdline, params.Env)
+		}
+
+		// qemu escape
 		cmdline = strings.Replace(cmdline, ",", ",,", -1)
-		qemuArgs = append(qemuArgs, "-device", "virtio-blk-pci,id=blk0,drive=hd0")
-		qemuArgs = append(qemuArgs, "-drive", fmt.Sprintf("file=%s,format=qcow2,if=none,id=hd0", getImagePath(image.Name)))
+
+		if _, err := os.Stat(getImagePath(image.Name)); err == nil {
+			qemuArgs = append(qemuArgs, "-device", "virtio-blk-pci,id=blk0,drive=hd0")
+			qemuArgs = append(qemuArgs, "-drive", fmt.Sprintf("file=%s,format=qcow2,if=none,id=hd0", getImagePath(image.Name)))
+		}
+
 		qemuArgs = append(qemuArgs, "-kernel", getKernelPath(image.Name))
 		qemuArgs = append(qemuArgs, "-append", cmdline)
 	}

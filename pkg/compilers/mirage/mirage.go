@@ -20,16 +20,16 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-/*
-plan:
-# pass args from manifest from parsed by unik
-# unik will then read back the xl file and parse it
-# will search for *img files and use them as volumes for the unikernel (mountpoints per say)
-# done!
+type Type int
 
-*/
+const (
+	XenType Type = iota
+	UKVMType
+	VirtioType
+)
+
 type MirageCompiler struct {
-	IsUkvm bool
+	Type Type
 }
 
 func (c *MirageCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
@@ -39,9 +39,10 @@ func (c *MirageCompiler) CompileRawImage(params types.CompileImageParams) (*type
 	if err := grantOpamPermissions(sourcesDir); err != nil {
 		return nil, err
 	}
-
+	var containerToUse string
 	var args []string
-	if !c.IsUkvm {
+	switch c.Type {
+	case XenType:
 		var err error
 		args, err = parseMirageManifest(sourcesDir)
 		if err != nil {
@@ -50,17 +51,18 @@ func (c *MirageCompiler) CompileRawImage(params types.CompileImageParams) (*type
 				return nil, err
 			}
 		}
-	} else {
-		// nothing for ukvm..
-	}
-
-	var containerToUse string
-	if !c.IsUkvm {
 		containerToUse = "compilers-mirage-ocaml-xen"
 		args = append([]string{"configure", "-t", "xen"}, args...)
-	} else {
+
+	case VirtioType:
+		containerToUse = "compilers-mirage-ocaml-ukvm"
+		args = append([]string{"configure", "-t", "virtio"}, args...)
+
+	case UKVMType:
 		containerToUse = "compilers-mirage-ocaml-ukvm"
 		args = append([]string{"configure", "-t", "ukvm"}, args...)
+	default:
+		return nil, errors.New("unknown type", nil)
 	}
 
 	if err := unikutil.NewContainer(containerToUse).WithEntrypoint("mirage").WithVolume(sourcesDir, "/opt/code").Run(args...); err != nil {
@@ -89,18 +91,22 @@ func (c *MirageCompiler) CompileRawImage(params types.CompileImageParams) (*type
 	if err != nil {
 		return nil, err
 	}
-
-	if !c.IsUkvm {
+	switch c.Type {
+	case XenType:
 		return c.packageForXen(sourcesDir, disks, params.NoCleanup)
-	} else {
+	case UKVMType:
 		return c.packageForUkvm(sourcesDir, disks, params.NoCleanup)
+	case VirtioType:
+		return c.packageForVirtio(sourcesDir, disks, params.NoCleanup)
+	default:
+		return nil, errors.New("unknown type", nil)
 	}
 }
 
 func (c *MirageCompiler) packageForXen(sourcesDir string, disks []string, cleanup bool) (*types.RawImage, error) {
 	// TODO: ukvm package zipfile for ukvm
 	var res types.RawImage
-	res.RunSpec.Compiler = compilers.MIRAGE_OCAML_XEN
+	res.RunSpec.Compiler = compilers.MIRAGE_OCAML_XEN.String()
 
 	unikernelfile, err := getUnikernelFile(sourcesDir)
 	if err != nil {
@@ -130,10 +136,22 @@ func (c *MirageCompiler) packageForXen(sourcesDir string, disks []string, cleanu
 }
 
 func (c *MirageCompiler) packageForUkvm(sourcesDir string, disks []string, cleanup bool) (*types.RawImage, error) {
+	return c.packageUnikernel(sourcesDir, disks, cleanup, "ukvm")
+}
+func (c *MirageCompiler) packageForVirtio(sourcesDir string, disks []string, cleanup bool) (*types.RawImage, error) {
+	// for qemu we create an empty cmdline file
+	r, err := c.packageUnikernel(sourcesDir, disks, cleanup, "virtio")
+	if err != nil {
+		return r, err
+	}
+	return r, err
+}
+
+func (c *MirageCompiler) packageUnikernel(sourcesDir string, disks []string, cleanup bool, unikernel string) (*types.RawImage, error) {
 	// find ukvm-bin -> the monitor
 	// find *.ukvm -> the unikernel
 
-	matches, err := filepath.Glob(filepath.Join(sourcesDir, "*.ukvm"))
+	matches, err := filepath.Glob(filepath.Join(sourcesDir, "*."+unikernel))
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +159,7 @@ func (c *MirageCompiler) packageForUkvm(sourcesDir string, disks []string, clean
 	// filter non relevant Makefile.ukvm
 	var potentialMatches []string
 	for _, m := range matches {
-		if !strings.HasSuffix(m, "Makefile.ukvm") {
+		if !strings.HasSuffix(m, "Makefile."+unikernel) {
 			potentialMatches = append(potentialMatches, m)
 		}
 	}
@@ -151,8 +169,6 @@ func (c *MirageCompiler) packageForUkvm(sourcesDir string, disks []string, clean
 	}
 
 	kernel := potentialMatches[0]
-
-	monitor := filepath.Join(sourcesDir, "ukvm-bin")
 
 	// place them in the image directory
 
@@ -165,15 +181,31 @@ func (c *MirageCompiler) packageForUkvm(sourcesDir string, disks []string, clean
 		return nil, errors.New("copying bootable image to image dir", err)
 	}
 
-	if err := unikos.CopyFile(monitor, filepath.Join(tmpImageDir, "ukvm-bin")); err != nil {
-		return nil, errors.New("copying bootable image to image dir", err)
+	if unikernel == "ukvm" {
+		monitor := filepath.Join(sourcesDir, "ukvm-bin")
+		if err := unikos.CopyFile(monitor, filepath.Join(tmpImageDir, "ukvm-bin")); err != nil {
+			return nil, errors.New("copying bootable image to image dir", err)
+		}
+	} else {
+		// it is virtio for qemu
+		// mirage doesn't have command line, so create an empty one
+		// this is the hint for qemu to use PV mode
+		f, err := os.Create(filepath.Join(tmpImageDir, "cmdline"))
+		if err != nil {
+			return nil, errors.New("creating empty cmdline for image", err)
+		}
+		f.Close()
 	}
+
 	res := &types.RawImage{}
 	for _, disk := range disks {
-		res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings, types.DeviceMapping{MountPoint: "ukvm:" + disk, DeviceName: disk})
+		res.RunSpec.DeviceMappings = append(res.RunSpec.DeviceMappings, types.DeviceMapping{MountPoint: unikernel + ":" + disk, DeviceName: disk})
 	}
-	res.RunSpec.Compiler = compilers.MIRAGE_OCAML_UKVM
-
+	if unikernel == "ukvm" {
+		res.RunSpec.Compiler = compilers.MIRAGE_OCAML_UKVM.String()
+	} else {
+		res.RunSpec.Compiler = compilers.MIRAGE_OCAML_QEMU.String()
+	}
 	res.LocalImagePath = tmpImageDir
 	res.StageSpec = types.StageSpec{
 		ImageFormat: types.ImageFormat_Folder,

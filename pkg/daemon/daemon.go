@@ -44,7 +44,7 @@ import (
 type UnikDaemon struct {
 	server    *martini.ClassicMartini
 	providers providers.Providers `json:"providers"`
-	compilers map[string]compilers.Compiler
+	compilers map[compilers.CompilerType]compilers.Compiler
 }
 
 const (
@@ -70,7 +70,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		os.MkdirAll(tmpDir, 0755)
 	}
 	_providers := make(providers.Providers)
-	_compilers := make(map[string]compilers.Compiler)
+	_compilers := make(map[compilers.CompilerType]compilers.Compiler)
 
 	for _, awsConfig := range config.Providers.Aws {
 		logrus.Infof("Bootstrapping provider %s with config %v", aws_provider, awsConfig)
@@ -298,8 +298,9 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	}
 
 	//mirage ocaml
-	_compilers[compilers.MIRAGE_OCAML_XEN] = &mirage.MirageCompiler{IsUkvm: false}
-	_compilers[compilers.MIRAGE_OCAML_UKVM] = &mirage.MirageCompiler{IsUkvm: true}
+	_compilers[compilers.MIRAGE_OCAML_XEN] = &mirage.MirageCompiler{Type: mirage.XenType}
+	_compilers[compilers.MIRAGE_OCAML_UKVM] = &mirage.MirageCompiler{Type: mirage.UKVMType}
+	_compilers[compilers.MIRAGE_OCAML_QEMU] = &mirage.MirageCompiler{Type: mirage.VirtioType}
 
 	//rump python
 	_compilers[compilers.RUMP_PYTHON_XEN] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeUDP)
@@ -482,7 +483,7 @@ func (d *UnikDaemon) initialize() {
 
 			compiler, ok := d.compilers[compilerName]
 			if !ok {
-				return nil, http.StatusBadRequest, errors.New("unikernel type "+compilerName+" not available for "+providerName+"infrastructure", nil)
+				return nil, http.StatusBadRequest, errors.New("unikernel type "+compilerName.String()+" not available for "+providerName+"infrastructure", nil)
 			}
 			mntStr := req.FormValue("mounts")
 
@@ -1091,7 +1092,7 @@ func (d *UnikDaemon) initialize() {
 			logrus.Debugf("listing available compilers")
 			availableCompilers := sort.StringSlice{}
 			for compilerName := range d.compilers {
-				availableCompilers = append(availableCompilers, compilerName)
+				availableCompilers = append(availableCompilers, compilerName.String())
 			}
 			availableCompilers.Sort()
 			logrus.WithFields(logrus.Fields{

@@ -31,7 +31,7 @@ func (p *UkvmProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 		return nil, errors.New("getting image", err)
 	}
 
-	if image.RunSpec.Compiler != compilers.MIRAGE_OCAML_UKVM {
+	if image.RunSpec.Compiler != compilers.MIRAGE_OCAML_UKVM.String() {
 		return nil, errors.New("ukvm only supports mirage / ukvm", nil)
 	}
 
