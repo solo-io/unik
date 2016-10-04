@@ -71,15 +71,15 @@ func main() {
 		logrus.Infof(".war file detected. Using Apache Tomcat to deploy")
 		argsStr += "-tomcat "
 		tomcatCapstanFileContents := fmt.Sprintf(`
-		base: unik-tomcat
+base: unik-tomcat
 
-		cmdline: /java.so %s -cp /usr/tomcat/bin/bootstrap.jar:usr/tomcat/bin/tomcat-juli.jar -jar /program.jar %s
+cmdline: /java.so %s -cp /usr/tomcat/bin/bootstrap.jar:usr/tomcat/bin/tomcat-juli.jar -jar /program.jar %s
 
-		#
-		# List of files that are included in the generated image.
-		#
-		files:
-		/usr/tomcat/webapps/%s: %s`,
+#
+# List of files that are included in the generated image.
+#
+files:
+  /usr/tomcat/webapps/%s: %s`,
 			*runtimeArgs,
 			argsStr,
 			filepath.Base(artifactFile), artifactFile)
