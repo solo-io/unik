@@ -299,8 +299,8 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 
 	//mirage ocaml
 	_compilers[compilers.MIRAGE_OCAML_XEN] = &mirage.MirageCompiler{Type: mirage.XenType}
-	_compilers[compilers.MIRAGE_OCAML_UKVM] = &mirage.MirageCompiler{Type: mirage.UKVMType}
-	_compilers[compilers.MIRAGE_OCAML_QEMU] = &mirage.MirageCompiler{Type: mirage.VirtioType}
+	_compilers-[compilers.MIRAGE_OCAML_UKVM] = &mirage.MirageCompiler{Type: mirage.UKVMType}
+	// _compilers[compilers.MIRAGE_OCAML_QEMU] = &mirage.MirageCompiler{Type: mirage.VirtioType}
 
 	//rump python
 	_compilers[compilers.RUMP_PYTHON_XEN] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeUDP)
