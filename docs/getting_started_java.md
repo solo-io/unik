@@ -159,7 +159,7 @@ build_command: mvn package
 
 1. Make sure that the UniK daemon is still running, and run the following:
   ```
-  unik build --name myJavaImage --path PATH_TO_JAVA_PROJECT --base osv --language java --provider virtaulbox
+  unik build --name myJavaImage --path PATH_TO_JAVA_PROJECT --base osv --language java --provider virtualbox
   ```
   Replacing `PATH_TO_JAVA_PROJECT` with the path to the root of the java project we created. (This will be the directory containing the `pom.xml` file).
 2. You can watch the output of the `build` command in the terminal window running the daemon.
