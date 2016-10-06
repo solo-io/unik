@@ -103,7 +103,7 @@ Ensure that each of the following are installed
             </execution>
           </executions>
        </plugin>
-<plugins>
+</plugins>
     ```
 
     * Now our application is UniK-ready. Let's add some code to our `App.java` source file. Open up `src/main/java/com/mycompany/app/App.java` and replace its contents with the following:
