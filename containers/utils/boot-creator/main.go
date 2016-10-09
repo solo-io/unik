@@ -6,10 +6,11 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	"github.com/pborman/uuid"
 	"io"
 	"os"
+
+	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/pborman/uuid"
 )
 
 const staticFileDir = "/tmp/staticfiles"
@@ -35,7 +36,7 @@ func main() {
 		log.Fatal(err)
 	}
 	s2 := float64(s1) * 1.1
-	size := ((int64(s2) >> 20) + 10)
+	size := ((int64(s2) >> 20) + 20)
 
 	if err := unikos.CopyDir(*buildcontextdir, staticFileDir); err != nil {
 		log.Fatal(err)

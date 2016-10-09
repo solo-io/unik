@@ -7,7 +7,7 @@
   "compilers-rump-nodejs-hw": "b5029ddcc8731a25",
   "vsphere-client": "a9538c7c242acbef",
   "image-creator": "a2d32477df4808ee",
-  "boot-creator": "c405a075346c3860",
+  "boot-creator": "f36ac67762823df4",
   "compilers-rump-nodejs-xen": "2fbc447253ba19b8",
   "compilers-rump-python3-hw": "22bc5378af6e099d",
   "compilers-mirage-ocaml-xen": "0cd46f5253c6ca8a",
