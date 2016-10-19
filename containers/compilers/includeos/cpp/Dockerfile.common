@@ -9,6 +9,8 @@ RUN cd ~ && pwd && \
   git checkout 65ffb9c080bd93c676b4c64c34129c62af6fd710 && \
   git fetch --tags
 COPY patches/install.sh /root/IncludeOS/install.sh
+COPY patches/unik.hpp /root/IncludeOS/api/platforms/unik.hpp
+COPY patches/unik.cpp /root/IncludeOS/src/platforms/unik.cpp
 RUN cd ~ && pwd && \
   cd IncludeOS && \
   /bin/bash ./install.sh
