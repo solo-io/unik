@@ -1,7 +1,7 @@
 # Installing UniK
 
 #### Prerequisites:
-- [Docker](http://www.docker.com/) installed and running with at least 8GB available space for building images
+- [Docker](http://www.docker.com/) installed and running with at least 8GB available space for building images. **Note: *Docker for Mac* will not work as it does not support Linux's device mapper. Until we find an alternative for building disk images, if you are running Unik on OS X, you will need to use `docker-machine` (part of the Docker Toolbox for Mac).**
 - [`jq`](https://stedolan.github.io/jq/)
 - [`make`](https://www.gnu.org/software/make/)
 - [Virtualbox](https://www.virtualbox.org/) (if using the [virtualbox provider](providers/virtualbox.md))
