@@ -18,9 +18,12 @@
 
 #include <os>
 #include <platforms/unik.hpp>
+#include <rapidjson/document.h>
 #include <net/inet4>
 #include <regex>
 #include <info>
+
+using namespace rapidjson;
 
 unik::Client::Registered_event unik::Client::on_registered_{nullptr};
 
@@ -88,6 +91,16 @@ void unik::Client::register_instance(net::Inet4& inet, const net::UDP::port_t po
 
               if (response.find("200 OK") != std::string::npos) {
                 registered_with_unik = true;
+
+                size_t json_start = response.find_first_of("{");
+                std::string json_data = response.substr(json_start);
+                INFO("Unik Client", "json data: %s \n", json_data.c_str());
+
+                Document document;
+                document.Parse(json_data.c_str());
+				for (Value::ConstMemberIterator itr = document.MemberBegin(); itr != document.MemberEnd(); ++itr) {
+				    printf("env %s=%s\n", itr->name.GetString(), itr->value.GetString());
+				}
 
                 // Call the optional user callback if any
                 if (on_registered_)
