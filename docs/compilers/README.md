@@ -20,7 +20,7 @@ The job of a compiler is to compile a directory source files to a raw boot disk 
  
 Providers must specify what compilers they are compatible with through their `GetConfig()` method. If you've added a compiler to UniK, you should add the compiler's name to the provider's `GetConfig()` method for each provider your compiler is intended to be used with.
 
-To add compiler support to UniK, you must the compiler to the `_compilers` map in the Unik API Server constructor function `func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error)` in [`daemon.go`](../pkg/daemon/daemon.go)
+To add compiler support to UniK, you must add the compiler to the `_compilers` map in the Unik API Server constructor function `func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error)` in [`daemon.go`](../pkg/daemon/daemon.go)
 
 Your change should look something like this:
 ```go
