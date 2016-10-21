@@ -263,7 +263,9 @@ endif
 	mkdir -p ./_build
 	docker run --rm -v $(shell pwd)/_build:/opt/build -e TARGET_OS=$(TARGET_OS) projectunik/$@
 	#docker rmi -f projectunik/$@
-	@echo "Install finished! UniK binary can be found at $(shell pwd)/_build/unik"
+	@cp $(shell pwd)/_build/unik $$GOPATH/bin/
+	@echo "Install finished! UniK binary can be found at $$GOPATH/bin/unik"
+	@rm -rf ./_build
 #----
 
 # local build - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
@@ -312,4 +314,5 @@ remove-containers:
 
 clean:
 	rm -rf ./_build
+	rm $$GOPATH/bin/unik
 #---

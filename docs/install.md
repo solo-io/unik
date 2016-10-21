@@ -12,14 +12,13 @@
 $ git clone https://github.com/emc-advanced-dev/unik.git
 $ cd unik
 $ make
-$ _build/unik
 Unik is a tool for compiling application source code
 into bootable disk images. Unik also runs and manages unikernel
 instances across infrastructures.
 ...
 ```
 
-This will place the `unik` executable at **unik/_build/unik**. Run UniK commands with `./_build/unik`, or move the binary to somewhere in your path, such as `/usr/local/bin` to run commands from anywhere with `unik [command]`
+This will place the `unik` executable at **$GOPATH/bin/unik**. Run UniK commands with `$GOPATH/bin/unik`, or add `$GOPATH/bin` to your `$PATH`.
 
 Continue to [configuration](configure.md) to learn how to configure your UniK setup
 ---
