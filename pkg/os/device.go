@@ -5,6 +5,8 @@ import (
 	"github.com/emc-advanced-dev/pkg/errors"
 	"math"
 	"os"
+	"regexp"
+	"strconv"
 )
 
 type DiskSize interface {
@@ -41,6 +43,10 @@ type GigaBytes int64
 
 func (s GigaBytes) ToPartedFormat() string {
 	return fmt.Sprintf("%dGiB", uint64(s))
+}
+
+func (s GigaBytes) ToMegaBytes() MegaBytes {
+	return MegaBytes(s << 10)
 }
 
 func (s GigaBytes) ToBytes() Bytes {
@@ -95,4 +101,24 @@ type Part interface {
 func IsExists(f string) bool {
 	_, err := os.Stat(f)
 	return !os.IsNotExist(err)
+}
+
+// ParseSize parses disk size string (e.g. "10GB" or "150MB") into MegaBytes
+// NOTE: sizeStr must contain both number and unit
+func ParseSize(sizeStr string) (MegaBytes, error) {
+	r, _ := regexp.Compile("^([0-9]+)(m|mb|M|MB|g|gb|G|GB)$")
+	match := r.FindStringSubmatch(sizeStr)
+	if len(match) != 3 {
+		return -1, fmt.Errorf("%s: unrecognized size", sizeStr)
+	}
+	size, _ := strconv.ParseInt(match[1], 10, 64)
+	unit := match[2]
+	switch unit {
+	case "g", "gb", "G", "GB":
+		size *= 1024
+	}
+	if size == 0 {
+		return -1, fmt.Errorf("%s: size must be larger than zero", sizeStr)
+	}
+	return MegaBytes(size), nil
 }
