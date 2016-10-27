@@ -42,7 +42,7 @@ define remove_container
 	docker rmi -f projectunik/$(1):$(shell cat containers/versions.json  | jq '.["$(1)"]')
 endef
 
-all: pull ${SOURCES} binary
+all: ${SOURCES} binary
 
 .PHONY: submodules
 .PHONY: pull
