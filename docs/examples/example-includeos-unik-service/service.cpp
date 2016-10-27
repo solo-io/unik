@@ -25,6 +25,13 @@ void Service::start(const std::string&) {
 
   printf("here we go!\n");
   printf("OS::ready_ is %d\n", OS::ready_);
+  printf("here are my env vars: %s\n", environ);
+
+  char** env = (char**) malloc(sizeof(char*)*2);
+  env[0] = "foo";
+  env[1] = "bar";
+
+  printf("env[0]: %s\nenv[1]: %s\nenv[2]: %s\n", env[0], env[1], env[2]);
 
   auto& server = net::Inet4::stack().tcp().bind(port);
   server.on_connect([] (auto conn) {

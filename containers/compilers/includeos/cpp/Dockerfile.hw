@@ -1,4 +1,4 @@
-FROM projectunik/compilers-includeos-cpp-common:ceddaf0593920e30
+FROM projectunik/compilers-includeos-cpp-common:4cc99777a91c9b76
 MAINTAINER includeos.org
 VOLUME /opt/code
 WORKDIR /opt/code
