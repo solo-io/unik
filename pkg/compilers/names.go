@@ -31,7 +31,7 @@ var (
 	RUMP_C_XEN        = compilerName("rump", "c", "xen")
 	RUMP_C_AWS        = compilerName("rump", "c", "aws")
 	RUMP_C_VIRTUALBOX = compilerName("rump", "c", "virtualbox")
-	RUMP_C_VMWARE     = compilerName("rump", "c", "vmware")
+	RUMP_C_VSPHERE    = compilerName("rump", "c", "vsphere")
 	RUMP_C_QEMU       = compilerName("rump", "c", "qemu")
 	RUMP_C_PHOTON     = compilerName("rump", "c", "photon")
 	RUMP_C_OPENSTACK  = compilerName("rump", "c", "openstack")
@@ -39,7 +39,7 @@ var (
 	RUMP_GO_XEN        = compilerName("rump", "go", "xen")
 	RUMP_GO_AWS        = compilerName("rump", "go", "aws")
 	RUMP_GO_VIRTUALBOX = compilerName("rump", "go", "virtualbox")
-	RUMP_GO_VMWARE     = compilerName("rump", "go", "vmware")
+	RUMP_GO_VSPHERE    = compilerName("rump", "go", "vsphere")
 	RUMP_GO_QEMU       = compilerName("rump", "go", "qemu")
 	RUMP_GO_PHOTON     = compilerName("rump", "go", "photon")
 	RUMP_GO_OPENSTACK  = compilerName("rump", "go", "openstack")
@@ -47,28 +47,28 @@ var (
 	RUMP_NODEJS_XEN        = compilerName("rump", "nodejs", "xen")
 	RUMP_NODEJS_AWS        = compilerName("rump", "nodejs", "aws")
 	RUMP_NODEJS_VIRTUALBOX = compilerName("rump", "nodejs", "virtualbox")
-	RUMP_NODEJS_VMWARE     = compilerName("rump", "nodejs", "vmware")
+	RUMP_NODEJS_VSPHERE    = compilerName("rump", "nodejs", "vsphere")
 	RUMP_NODEJS_QEMU       = compilerName("rump", "nodejs", "qemu")
 	RUMP_NODEJS_OPENSTACK  = compilerName("rump", "nodejs", "openstack")
 
 	RUMP_PYTHON_XEN        = compilerName("rump", "python", "xen")
 	RUMP_PYTHON_AWS        = compilerName("rump", "python", "aws")
 	RUMP_PYTHON_VIRTUALBOX = compilerName("rump", "python", "virtualbox")
-	RUMP_PYTHON_VMWARE     = compilerName("rump", "python", "vmware")
+	RUMP_PYTHON_VSPHERE    = compilerName("rump", "python", "vsphere")
 	RUMP_PYTHON_QEMU       = compilerName("rump", "python", "qemu")
 	RUMP_PYTHON_OPENSTACK  = compilerName("rump", "python", "openstack")
 
 	RUMP_JAVA_XEN        = compilerName("rump", "java", "xen")
 	RUMP_JAVA_AWS        = compilerName("rump", "java", "aws")
 	RUMP_JAVA_VIRTUALBOX = compilerName("rump", "java", "virtualbox")
-	RUMP_JAVA_VMWARE     = compilerName("rump", "java", "vmware")
+	RUMP_JAVA_VSPHERE    = compilerName("rump", "java", "vsphere")
 	RUMP_JAVA_QEMU       = compilerName("rump", "java", "qemu")
 	RUMP_JAVA_OPENSTACK  = compilerName("rump", "java", "openstack")
 
 	OSV_JAVA_XEN        = compilerName("osv", "java", "xen")
 	OSV_JAVA_AWS        = compilerName("osv", "java", "aws")
 	OSV_JAVA_VIRTUALBOX = compilerName("osv", "java", "virtualbox")
-	OSV_JAVA_VMAWRE     = compilerName("osv", "java", "vmware")
+	OSV_JAVA_VSPHERE    = compilerName("osv", "java", "vsphere")
 	OSV_JAVA_QEMU       = compilerName("osv", "java", "qemu")
 	OSV_JAVA_OPENSTACK  = compilerName("osv", "java", "openstack")
 
@@ -86,7 +86,7 @@ var compilers = []CompilerType{
 	RUMP_C_XEN,
 	RUMP_C_AWS,
 	RUMP_C_VIRTUALBOX,
-	RUMP_C_VMWARE,
+	RUMP_C_VSPHERE,
 	RUMP_C_QEMU,
 	RUMP_C_PHOTON,
 	RUMP_C_OPENSTACK,
@@ -94,7 +94,7 @@ var compilers = []CompilerType{
 	RUMP_GO_XEN,
 	RUMP_GO_AWS,
 	RUMP_GO_VIRTUALBOX,
-	RUMP_GO_VMWARE,
+	RUMP_GO_VSPHERE,
 	RUMP_GO_QEMU,
 	RUMP_GO_PHOTON,
 	RUMP_GO_OPENSTACK,
@@ -102,28 +102,28 @@ var compilers = []CompilerType{
 	RUMP_NODEJS_XEN,
 	RUMP_NODEJS_AWS,
 	RUMP_NODEJS_VIRTUALBOX,
-	RUMP_NODEJS_VMWARE,
+	RUMP_NODEJS_VSPHERE,
 	RUMP_NODEJS_QEMU,
 	RUMP_NODEJS_OPENSTACK,
 
 	RUMP_PYTHON_XEN,
 	RUMP_PYTHON_AWS,
 	RUMP_PYTHON_VIRTUALBOX,
-	RUMP_PYTHON_VMWARE,
+	RUMP_PYTHON_VSPHERE,
 	RUMP_PYTHON_QEMU,
 	RUMP_PYTHON_OPENSTACK,
 
 	RUMP_JAVA_XEN,
 	RUMP_JAVA_AWS,
 	RUMP_JAVA_VIRTUALBOX,
-	RUMP_JAVA_VMWARE,
+	RUMP_JAVA_VSPHERE,
 	RUMP_JAVA_QEMU,
 	RUMP_JAVA_OPENSTACK,
 
 	OSV_JAVA_XEN,
 	OSV_JAVA_AWS,
 	OSV_JAVA_VIRTUALBOX,
-	OSV_JAVA_VMAWRE,
+	OSV_JAVA_VSPHERE,
 	OSV_JAVA_QEMU,
 	OSV_JAVA_OPENSTACK,
 

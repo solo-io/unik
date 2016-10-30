@@ -217,7 +217,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	}
 	_compilers[compilers.RUMP_GO_XEN] = rumpGoXenCompiler
 	_compilers[compilers.RUMP_GO_AWS] = rumpGoXenCompiler
-	_compilers[compilers.RUMP_GO_VMWARE] = &rump.RumpGoCompiler{
+	_compilers[compilers.RUMP_GO_VSPHERE] = &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 
 			DockerImage: "compilers-rump-go-hw",
@@ -274,7 +274,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		BootstrapType: rump.BootstrapTypeUDP,
 		RunScriptArgs: "/bootpart/node-wrapper.js",
 	}
-	_compilers[compilers.RUMP_NODEJS_VMWARE] = &rump.RumpScriptCompiler{
+	_compilers[compilers.RUMP_NODEJS_VSPHERE] = &rump.RumpScriptCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-nodejs-hw",
 			CreateImage: rump.CreateImageVmware,
@@ -306,7 +306,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_PYTHON_XEN] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_AWS] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeEC2)
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVirtualBoxAddStub, rump.BootstrapTypeUDP)
-	_compilers[compilers.RUMP_PYTHON_VMWARE] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVmwareAddStub, rump.BootstrapTypeUDP)
+	_compilers[compilers.RUMP_PYTHON_VSPHERE] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVmwareAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_QEMU] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.NoStub)
 	_compilers[compilers.RUMP_PYTHON_OPENSTACK] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.NoStub)
 
@@ -314,7 +314,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_JAVA_XEN] = rump.NewRumpJavaCompiler("compilers-rump-java-xen", rump.CreateImageXen, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_JAVA_AWS] = rump.NewRumpJavaCompiler("compilers-rump-java-xen", rump.CreateImageXen, rump.BootstrapTypeEC2)
 	_compilers[compilers.RUMP_JAVA_VIRTUALBOX] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageVirtualBox, rump.BootstrapTypeUDP)
-	_compilers[compilers.RUMP_JAVA_VMWARE] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageVmware, rump.BootstrapTypeUDP)
+	_compilers[compilers.RUMP_JAVA_VSPHERE] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageVmware, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_JAVA_QEMU] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageQemu, rump.NoStub)
 	_compilers[compilers.RUMP_JAVA_OPENSTACK] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageQemu, rump.NoStub)
 
@@ -322,7 +322,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_C_XEN] = rump.NewRumpCCompiler("compilers-rump-c-xen", rump.CreateImageXenAddStub)
 	_compilers[compilers.RUMP_C_AWS] = rump.NewRumpCCompiler("compilers-rump-c-xen", rump.CreateImageXenAddStub)
 	_compilers[compilers.RUMP_C_VIRTUALBOX] = rump.NewRumpCCompiler("compilers-rump-c-hw", rump.CreateImageVirtualBoxAddStub)
-	_compilers[compilers.RUMP_C_VMWARE] = rump.NewRumpCCompiler("compilers-rump-c-hw", rump.CreateImageVmwareAddStub)
+	_compilers[compilers.RUMP_C_VSPHERE] = rump.NewRumpCCompiler("compilers-rump-c-hw", rump.CreateImageVmwareAddStub)
 	_compilers[compilers.RUMP_C_QEMU] = rump.NewRumpCCompiler("compilers-rump-c-hw", rump.CreateImageQemu)
 	_compilers[compilers.RUMP_C_OPENSTACK] = rump.NewRumpCCompiler("compilers-rump-c-hw", rump.CreateImageQemu)
 
@@ -339,7 +339,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			CreateImage: osv.CreateImageJava,
 		},
 	}
-	_compilers[compilers.OSV_JAVA_VMAWRE] = &osv.OsvVmwareCompiler{
+	_compilers[compilers.OSV_JAVA_VSPHERE] = &osv.OsvVmwareCompiler{
 		OSvCompilerBase: osv.OSvCompilerBase{
 			CreateImage: osv.CreateImageJava,
 		},
