@@ -43,6 +43,7 @@ var (
 	RUMP_GO_QEMU       = compilerName("rump", "go", "qemu")
 	RUMP_GO_PHOTON     = compilerName("rump", "go", "photon")
 	RUMP_GO_OPENSTACK  = compilerName("rump", "go", "openstack")
+	RUMP_GO_GCLOUD     = compilerName("rump", "go", "gcloud")
 
 	RUMP_NODEJS_XEN        = compilerName("rump", "nodejs", "xen")
 	RUMP_NODEJS_AWS        = compilerName("rump", "nodejs", "aws")
@@ -98,6 +99,7 @@ var compilers = []CompilerType{
 	RUMP_GO_QEMU,
 	RUMP_GO_PHOTON,
 	RUMP_GO_OPENSTACK,
+	RUMP_GO_GCLOUD,
 
 	RUMP_NODEJS_XEN,
 	RUMP_NODEJS_AWS,

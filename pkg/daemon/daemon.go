@@ -27,6 +27,7 @@ import (
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/emc-advanced-dev/unik/pkg/providers"
 	"github.com/emc-advanced-dev/unik/pkg/providers/aws"
+	"github.com/emc-advanced-dev/unik/pkg/providers/gcloud"
 	"github.com/emc-advanced-dev/unik/pkg/providers/openstack"
 	"github.com/emc-advanced-dev/unik/pkg/providers/photon"
 	"github.com/emc-advanced-dev/unik/pkg/providers/qemu"
@@ -56,6 +57,7 @@ const (
 	photon_provider     = "photon"
 	xen_provider        = "xen"
 	ukvm_provider       = "ukvm"
+	gcloud_provider     = "gcloud"
 	openstack_provider  = "openstack"
 )
 
@@ -202,6 +204,22 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		break
 	}
 
+	for _, gcloudConfig := range config.Providers.Gcloud {
+		logrus.Infof("Bootstrapping provider %s with config %v", gcloud_provider, gcloudConfig)
+		p, err := gcloud.NewGcloudProvier(gcloudConfig)
+		if err != nil {
+			return nil, errors.New("initializing gcloud provider", err)
+		}
+		s, err := state.BasicStateFromFile(gcloud.GcloudStateFile())
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read gcloud state file at %s, creating blank state", gcloud.GcloudStateFile())
+			s = state.NewBasicState(gcloud.GcloudStateFile())
+		}
+		p = p.WithState(s)
+		_providers[gcloud_provider] = p
+		break
+	}
+
 	//rump-go
 	_compilers[compilers.RUMP_GO_PHOTON] = &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
@@ -248,6 +266,13 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			CreateImage: rump.CreateImageQemu,
 		},
 		BootstrapType: rump.BootstrapTypeNoStub,
+	}
+	_compilers[compilers.RUMP_GO_GCLOUD] = &rump.RumpGoCompiler{
+		RumCompilerBase: rump.RumCompilerBase{
+			DockerImage: "compilers-rump-go-hw",
+			CreateImage: rump.CreateImageGCloud,
+		},
+		BootstrapType: rump.BootstrapTypeGCLOUD,
 	}
 
 	//includeos-cpp

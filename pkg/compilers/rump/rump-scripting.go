@@ -20,6 +20,7 @@ import (
 const (
 	BootstrapTypeEC2    = "ec2"
 	BootstrapTypeUDP    = "udp"
+	BootstrapTypeGCLOUD = "gcloud"
 	BootstrapTypeNoStub = "nostub"
 )
 

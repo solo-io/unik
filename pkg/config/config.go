@@ -7,6 +7,7 @@ type DaemonConfig struct {
 
 type Providers struct {
 	Aws        []Aws        `yaml:"aws"`
+	Gcloud     []Gcloud     `yaml:"gcloud"`
 	Vsphere    []Vsphere    `yaml:"vsphere"`
 	Virtualbox []Virtualbox `yaml:"virtualbox"`
 	Qemu       []Qemu       `yaml:"qemu"`
