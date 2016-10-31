@@ -17,7 +17,7 @@ public class Wrapper {
             System.out.println("Must provide env var BOOTSTRAP_TYPE");
             System.exit(-1);
         }
-        if (bootstrapType.contains("no-stub")) {
+        if (bootstrapType.contains("nostub")) {
             System.out.println("skipping stub");
         } else if (bootstrapType.contains("ec2")) {
             new EC2Bootstrap().bootstrap();

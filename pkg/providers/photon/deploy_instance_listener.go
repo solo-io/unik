@@ -49,7 +49,7 @@ func (p *PhotonProvider) DeployInstanceListener(config config.Photon) error {
 		return errors.New("creating temp dir for instance listener source", err)
 	}
 	defer os.RemoveAll(sourceDir)
-	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "compilers-rump-go-hw-no-stub", rump.CreateImageVmware, false)
+	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "compilers-rump-go-hw", rump.CreateImageVmware, false)
 	if err != nil {
 		return errors.New("compiling instance listener source to unikernel", err)
 	}

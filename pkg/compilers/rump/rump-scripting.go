@@ -18,9 +18,9 @@ import (
 // we need to take the program bin and combine with json config produce an image
 
 const (
-	BootstrapTypeEC2 = "ec2"
-	BootstrapTypeUDP = "udp"
-	NoStub           = "no-stub"
+	BootstrapTypeEC2    = "ec2"
+	BootstrapTypeUDP    = "udp"
+	BootstrapTypeNoStub = "nostub"
 )
 
 //compiler for building images from interpreted/scripting languages (python, javascript)

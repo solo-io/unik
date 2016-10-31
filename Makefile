@@ -55,8 +55,6 @@ all: ${SOURCES} binary
 .PHONY: compilers-rump-base-xen
 .PHONY: compilers-rump-java-hw
 .PHONY: compilers-rump-go-hw
-.PHONY: compilers-rump-go-hw-no-stub
-.PHONY: compilers-rump-go-xen-no-stub
 .PHONY: compilers-rump-go-xen
 .PHONY: compilers-rump-nodejs-hw
 .PHONY: compilers-rump-nodejs-hw-no-stub
@@ -91,8 +89,6 @@ pull:
 	$(call pull_container,compilers-rump-java-hw)
 	$(call pull_container,compilers-rump-java-xen)
 	$(call pull_container,compilers-rump-go-hw)
-	$(call pull_container,compilers-rump-go-hw-no-stub)
-	$(call pull_container,compilers-rump-go-xen-no-stub)
 	$(call pull_container,compilers-rump-go-xen)
 	$(call pull_container,compilers-rump-nodejs-hw)
 	$(call pull_container,compilers-rump-nodejs-hw-no-stub)
@@ -118,8 +114,6 @@ compilers: compilers-includeos-cpp-hw \
            compilers-rump-java-hw \
            compilers-rump-java-xen \
            compilers-rump-go-hw \
-           compilers-rump-go-hw-no-stub \
-           compilers-rump-go-xen-no-stub \
            compilers-rump-go-xen \
            compilers-rump-nodejs-hw \
            compilers-rump-nodejs-hw-no-stub \
@@ -165,14 +159,6 @@ compilers-rump-go-hw: compilers-rump-base-hw
 
 compilers-rump-go-xen: compilers-rump-base-xen
 	$(call build_container,compilers/rump/go,$@,.xen)
-
-compilers-rump-go-hw-no-stub: compilers-rump-base-hw
-	$(call build_container,compilers/rump/go,$@,.hw.no-stub)
-	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.hw.no-stub .
-
-compilers-rump-go-xen-no-stub: compilers-rump-base-xen
-	$(call build_container,compilers/rump/go,$@,.xen.no-stub)
-	cd containers/compilers/rump/go && docker build -t projectunik/$@$(CONTAINERTAG) -f Dockerfile.xen.no-stub .
 
 compilers-rump-nodejs-hw: compilers-rump-base-hw
 	$(call build_container,compilers/rump/nodejs,$@,.hw)
@@ -295,8 +281,6 @@ remove-containers:
 	-$(call remove_container,compilers-osv-java)
 	-$(call remove_container,compilers-rump-go-xen)
 	-$(call remove_container,compilers-rump-go-hw)
-	-$(call remove_container,compilers-rump-go-hw-no-stub)
-	-$(call remove_container,compilers-rump-go-xen-no-stub)
 	-$(call remove_container,compilers-rump-nodejs-hw)
 	-$(call remove_container,compilers-rump-nodejs-hw-no-stub)
 	-$(call remove_container,compilers-rump-nodejs-xen)

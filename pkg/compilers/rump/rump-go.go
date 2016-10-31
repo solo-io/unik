@@ -19,6 +19,7 @@ import (
 
 type RumpGoCompiler struct {
 	RumCompilerBase
+	BootstrapType string //ec2 | udp | nostub | gcloud
 }
 
 func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
@@ -38,6 +39,7 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 	}
 	containerEnv := []string{
 		fmt.Sprintf("ROOT_PATH=%s", g.ImportPath),
+		fmt.Sprintf("BOOTSTRAP_TYPE=%s", r.BootstrapType),
 	}
 
 	if err := r.runContainer(sourcesDir, containerEnv); err != nil {

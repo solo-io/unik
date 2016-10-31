@@ -208,12 +208,14 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			DockerImage: "compilers-rump-go-hw",
 			CreateImage: rump.CreateImageVmware,
 		},
+		BootstrapType: rump.BootstrapTypeUDP,
 	}
 	rumpGoXenCompiler := &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
 			DockerImage: "compilers-rump-go-xen",
 			CreateImage: rump.CreateImageXen,
 		},
+		BootstrapType: rump.BootstrapTypeUDP,
 	}
 	_compilers[compilers.RUMP_GO_XEN] = rumpGoXenCompiler
 	_compilers[compilers.RUMP_GO_AWS] = rumpGoXenCompiler
@@ -223,6 +225,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			DockerImage: "compilers-rump-go-hw",
 			CreateImage: rump.CreateImageVmware,
 		},
+		BootstrapType: rump.BootstrapTypeUDP,
 	}
 	_compilers[compilers.RUMP_GO_VIRTUALBOX] = &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
@@ -230,18 +233,21 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 			DockerImage: "compilers-rump-go-hw",
 			CreateImage: rump.CreateImageVirtualBox,
 		},
+		BootstrapType: rump.BootstrapTypeUDP,
 	}
 	_compilers[compilers.RUMP_GO_QEMU] = &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage: "compilers-rump-go-hw-no-stub",
+			DockerImage: "compilers-rump-go-hw",
 			CreateImage: rump.CreateImageQemu,
 		},
+		BootstrapType: rump.BootstrapTypeNoStub,
 	}
 	_compilers[compilers.RUMP_GO_OPENSTACK] = &rump.RumpGoCompiler{
 		RumCompilerBase: rump.RumCompilerBase{
-			DockerImage: "compilers-rump-go-hw-no-stub",
+			DockerImage: "compilers-rump-go-hw",
 			CreateImage: rump.CreateImageQemu,
 		},
+		BootstrapType: rump.BootstrapTypeNoStub,
 	}
 
 	//includeos-cpp
@@ -307,16 +313,16 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_PYTHON_AWS] = rump.NewRumpPythonCompiler("compilers-rump-python3-xen", rump.CreateImageXenAddStub, rump.BootstrapTypeEC2)
 	_compilers[compilers.RUMP_PYTHON_VIRTUALBOX] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVirtualBoxAddStub, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_PYTHON_VSPHERE] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw", rump.CreateImageVmwareAddStub, rump.BootstrapTypeUDP)
-	_compilers[compilers.RUMP_PYTHON_QEMU] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.NoStub)
-	_compilers[compilers.RUMP_PYTHON_OPENSTACK] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.NoStub)
+	_compilers[compilers.RUMP_PYTHON_QEMU] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.BootstrapTypeNoStub)
+	_compilers[compilers.RUMP_PYTHON_OPENSTACK] = rump.NewRumpPythonCompiler("compilers-rump-python3-hw-no-stub", rump.CreateImageQemu, rump.BootstrapTypeNoStub)
 
 	//rump java
 	_compilers[compilers.RUMP_JAVA_XEN] = rump.NewRumpJavaCompiler("compilers-rump-java-xen", rump.CreateImageXen, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_JAVA_AWS] = rump.NewRumpJavaCompiler("compilers-rump-java-xen", rump.CreateImageXen, rump.BootstrapTypeEC2)
 	_compilers[compilers.RUMP_JAVA_VIRTUALBOX] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageVirtualBox, rump.BootstrapTypeUDP)
 	_compilers[compilers.RUMP_JAVA_VSPHERE] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageVmware, rump.BootstrapTypeUDP)
-	_compilers[compilers.RUMP_JAVA_QEMU] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageQemu, rump.NoStub)
-	_compilers[compilers.RUMP_JAVA_OPENSTACK] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageQemu, rump.NoStub)
+	_compilers[compilers.RUMP_JAVA_QEMU] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageQemu, rump.BootstrapTypeNoStub)
+	_compilers[compilers.RUMP_JAVA_OPENSTACK] = rump.NewRumpJavaCompiler("compilers-rump-java-hw", rump.CreateImageQemu, rump.BootstrapTypeNoStub)
 
 	//rump c
 	_compilers[compilers.RUMP_C_XEN] = rump.NewRumpCCompiler("compilers-rump-c-xen", rump.CreateImageXenAddStub)

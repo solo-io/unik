@@ -34,7 +34,7 @@ func (p *VsphereProvider) deployInstanceListener() (err error) {
 		return errors.New("creating temp dir for instance listener source", err)
 	}
 	defer os.RemoveAll(sourceDir)
-	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "compilers-rump-go-hw-no-stub", rump.CreateImageVmware, true)
+	rawImage, err := common.CompileInstanceListener(sourceDir, instanceListenerPrefix, "compilers-rump-go-hw", rump.CreateImageVmware, true)
 	if err != nil {
 		return errors.New("compiling instance listener source to unikernel", err)
 	}

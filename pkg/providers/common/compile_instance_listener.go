@@ -49,6 +49,7 @@ func CompileInstanceListener(sourceDir, instanceListenerPrefix, dockerImage stri
 			DockerImage: dockerImage,
 			CreateImage: createImageFunc,
 		},
+		BootstrapType: rump.BootstrapTypeNoStub,
 	}
 	return rumpGoCompiler.CompileRawImage(params)
 }
