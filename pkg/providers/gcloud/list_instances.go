@@ -39,10 +39,7 @@ func (p *GcloudProvider) ListInstances() ([]*types.Instance, error) {
 		}
 		if !instanceFound {
 			logrus.Warnf("instance %v no longer found, cleaning it from state", instance.Name)
-			p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
-				delete(instances, instance.Id)
-				return nil
-			})
+			p.state.RemoveInstance(instance)
 		}
 	}
 

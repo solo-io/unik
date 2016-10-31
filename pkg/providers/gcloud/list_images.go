@@ -10,10 +10,7 @@ func (p *GcloudProvider) ListImages() ([]*types.Image, error) {
 		if p.verifyImage(image.Name) {
 			images = append(images, image)
 		} else {
-			p.state.ModifyImages(func(images map[string]*types.Image) error {
-				delete(images, image.Id)
-				return nil
-			})
+			p.state.RemoveImage(image)
 		}
 	}
 	return images, nil
