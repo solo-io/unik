@@ -25,6 +25,7 @@ type Aws struct {
 type Gcloud struct {
 	Name      string `yaml:"name"`
 	ProjectID string `yaml:"project_id"`
+	Zone      string `yaml:"zone"`
 }
 
 type Vsphere struct {
