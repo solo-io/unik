@@ -49,7 +49,7 @@ func NewGcloudProvier(config config.Gcloud) (*GcloudProvider, error) {
 		state:      state.NewBasicState(GcloudStateFile()),
 		computeSvc: computeService,
 		storageSvc: storageSevice,
-	}
+	}, nil
 }
 
 func (p *GcloudProvider) WithState(state state.State) *GcloudProvider {
