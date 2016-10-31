@@ -22,6 +22,7 @@ type Infrastructure string
 
 const (
 	Infrastructure_AWS        Infrastructure = "AWS"
+	Infrastructure_GCLOUD     Infrastructure = "GCLOUD"
 	Infrastructure_VSPHERE    Infrastructure = "VSPHERE"
 	Infrastructure_VIRTUALBOX Infrastructure = "VIRTUALBOX"
 	Infrastructure_QEMU       Infrastructure = "QEMU"
