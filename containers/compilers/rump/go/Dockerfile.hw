@@ -16,7 +16,7 @@ RUN cd /tmp/gorump/go1.5/src && \
 
 RUN mkdir /tmp/build/
 
-COPY build/ /tmp/build/
+COPY stub/ /tmp/build/
 
 ENV RUMP_BAKE=hw_generic
 
