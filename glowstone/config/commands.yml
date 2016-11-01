@@ -1,0 +1,13 @@
+# This is the commands configuration file for Bukkit.
+# For documentation on how to make use of this file, check out the Bukkit Wiki at
+# http://wiki.bukkit.org/Commands.yml
+#
+# Glowstone does not use command-block-overrides, since it does not offer the
+# Mojang commands or strong command block support.
+#
+# For help, join us on IRC: #glowstone @ esper.net
+
+aliases:
+  icanhasbukkit:
+  - version $1-
+  - plugins

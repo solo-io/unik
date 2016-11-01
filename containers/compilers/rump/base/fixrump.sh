@@ -47,6 +47,7 @@ fi
 cp /tmp/patches/rump/rumprun.c   /opt/rumprun/lib/librumprun_base/rumprun.c
 cp /tmp/patches/rump/rumprun-bake.in   /opt/rumprun/app-tools/rumprun-bake.in
 
+cp /tmp/patches/buildrump.sh/brlib/libnetconfig/dhcp_configure.c /opt/rumprun/buildrump.sh/brlib/libnetconfig/dhcp_configure.c
 
 ./build-rr.sh -d $DESTDIR -o ./obj $PLATFORM build -- $BUILDRUMP_EXTRA && \
 ./build-rr.sh -d $DESTDIR -o ./obj $PLATFORM install

@@ -1,0 +1,92 @@
+# glowstone.yml is the main configuration file for a Glowstone server
+# It contains everything from server.properties and bukkit.yml in a
+# normal CraftBukkit installation.
+# 
+# For help, join us on Discord: https://discord.gg/TFJqhsC
+server:
+    ip: ''
+    port: 25565
+    name: Glowstone Server
+    log-file: logs/log-%D.txt
+    online-mode: true
+    max-players: 20
+    whitelisted: false
+    motd: Glowstone server
+    shutdown-message: Server shutting down.
+    allow-client-mods: true
+    snooper-enabled: false
+console:
+    use-jline: true
+    prompt: '>'
+    date-format: HH:mm:ss
+    log-date-format: yyyy/MM/dd HH:mm:ss
+game:
+    gamemode: SURVIVAL
+    gamemode-force: 'false'
+    difficulty: NORMAL
+    hardcore: false
+    pvp: true
+    max-build-height: 256
+    announce-achievements: true
+    allow-flight: false
+    command-blocks: false
+    resource-pack: ''
+    resource-pack-hash: ''
+creatures:
+    enable:
+        monsters: true
+        animals: true
+        npcs: true
+    limit:
+        monsters: 70
+        animals: 15
+        water: 5
+        ambient: 15
+    ticks:
+        monsters: 1
+        animal: 400
+folders:
+    plugins: plugins
+    update: update
+    worlds: worlds
+files:
+    permissions: permissions.yml
+    commands: commands.yml
+    help: help.yml
+advanced:
+    connection-throttle: 4000
+    idle-timeout: 0
+    warn-on-overload: true
+    exact-login-location: false
+    plugin-profiling: false
+    deprecated-verbose: 'false'
+    compression-threshold: 256
+    proxy-support: false
+    player-sample-count: 12
+extras:
+    query-enabled: false
+    query-port: 25614
+    query-plugins: true
+    rcon-enabled: false
+    rcon-password: glowstone
+    rcon-port: 25575
+    rcon-colors: true
+world:
+    name: world
+    seed: ''
+    level-type: DEFAULT
+    spawn-radius: 16
+    view-distance: 8
+    gen-structures: true
+    gen-settings: ''
+    allow-nether: true
+    allow-end: true
+    keep-spawn-loaded: true
+    populate-anchored-chunks: true
+    classic-style-water: false
+database:
+    driver: org.sqlite.JDBC
+    url: jdbc:sqlite:config/database.db
+    username: glowstone
+    password: nether
+    isolation: SERIALIZABLE

@@ -23,11 +23,9 @@ Use a scsi driver for disks and two network cards (unik uses two network cards i
 
     qemu-system-x86_64 -device virtio-scsi-pci,id=scsi \
                    -device scsi-hd,drive=hd1 \
-                   -drive file=/Users/kohavy/.unik/virtualbox/images/testboot/boot.vmdk,format=vmdk,if=none,id=hd1 \
+                   -drive file=disk.raw,format=raw,if=none,id=hd1 \
                    -device virtio-net-pci,netdev=mynet0,mac=54:54:00:55:55:55 \
-                   -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9 \
-                   -device virtio-net-pci,netdev=mynet1,mac=54:54:00:55:55:51 \
-                   -netdev user,id=mynet1,net=192.168.76.0/24,dhcpstart=192.168.76.9
+                   -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9,dns=8.8.8.8
 
 To see the output of qemu in the console screen, add "-nographic -vga none"
 

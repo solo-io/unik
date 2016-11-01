@@ -1,12 +1,13 @@
 package main
 
+import "C"
 import (
-	"C"
 	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -14,14 +15,14 @@ import (
 )
 
 //export gomaincaller
-func gomaincaller(argc C.int, argv unsafe.Pointer) {
+func gomaincaller(kludge_dns_addr C.uint, argc C.int, argv unsafe.Pointer) {
 	os.Args = nil
 	argcint := int(argc)
 	argvarr := ((*[1 << 30]*C.char)(argv))
 	for i := 0; i < argcint; i += 1 {
 		os.Args = append(os.Args, C.GoString(argvarr[i]))
 	}
-	if err := stub(); err != nil {
+	if err := stub(uint32(kludge_dns_addr)); err != nil {
 		log.Printf("fatal: stub failed: %v", err)
 		return
 	}
@@ -30,7 +31,20 @@ func gomaincaller(argc C.int, argv unsafe.Pointer) {
 
 const BROADCAST_LISTENING_PORT = 9967
 
-func stub() error {
+func stub(dnsAddr uint32) error {
+	//load dns information from c kludge_dns_addr
+	b1 := (dnsAddr >> 0 * 8) & 0xFF
+	b2 := (dnsAddr >> 1 * 8) & 0xFF
+	b3 := (dnsAddr >> 2 * 8) & 0xFF
+	b4 := (dnsAddr >> 3 * 8) & 0xFF
+	nameserverString := fmt.Sprintf("nameserver %d.%d.%d.%d", b1, b2, b3, b4)
+
+	log.Printf("writing dns addr: %s", nameserverString)
+
+	if err := ioutil.WriteFile("/etc/resolv.conf", []byte(nameserverString), 0644); err != nil {
+		return errors.New("filling in dns address " + err.Error())
+	}
+
 	//make logs available via http request
 	logs := &bytes.Buffer{}
 	if err := teeStdout(logs); err != nil {

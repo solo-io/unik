@@ -1,7 +1,6 @@
 package gcloud
 
 import (
-	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
@@ -98,8 +97,14 @@ func (p *GcloudProvider) Stage(params types.StageImageParams) (_ *types.Image, e
 	bucketName := "unik-tmp-bucket-" + uuid.New()
 
 	if !params.NoCleanup {
-		defer p.storage().Objects.Delete(bucketName, objectName)
-		defer p.storage().Buckets.Delete(bucketName)
+		defer func() {
+			if err := p.storage().Objects.Delete(bucketName, objectName).Do(); err != nil {
+				logrus.Warnf("failed to clean up object %v: %v", objectName, err)
+			}
+			if err := p.storage().Buckets.Delete(bucketName).Do(); err != nil {
+				logrus.Warnf("failed to clean up buket %v: %v", bucketName, err)
+			}
+		}()
 	}
 
 	bucket, err := p.storage().Buckets.Insert(p.config.ProjectID, &storage.Bucket{Name: bucketName}).Do()
@@ -117,29 +122,37 @@ func (p *GcloudProvider) Stage(params types.StageImageParams) (_ *types.Image, e
 	if err != nil {
 		return nil, errors.New("uploading file "+imageTar, err)
 	}
-	logrus.Debug("uploaded object ", obj)
+	logrus.Debug("uploaded object ", obj.Bucket)
 
 	imageSpec := &compute.Image{
-		Name:       params.Name,
-		SourceDisk: "gs://" + bucketName + "/" + objectName,
+		Name: params.Name,
+		RawDisk: &compute.ImageRawDisk{
+			Source: obj.SelfLink,
+		},
 	}
 
-	gImage, err := p.compute().Images.Insert(p.config.ProjectID, imageSpec).Do()
+	logrus.Debugf("creating image from " + imageSpec.RawDisk.Source)
+
+	operation, err := p.compute().Images.Insert(p.config.ProjectID, imageSpec).Do()
 	if err != nil {
 		return nil, errors.New("creating gcloud image from storage", err)
 	}
 
-	logrus.Infof("created google image successfully: %+v", gImage)
+	if err := p.waitOperation(operation.Name, true); err != nil {
+		return nil, errors.New("waiting for image create operation to finish", err)
+	}
+
+	logrus.Infof("created google image successfully: %+v", operation)
 
 	sizeMb := imageSize >> 20
 
 	image := &types.Image{
-		Id:             fmt.Sprintf("%v", gImage.Id),
+		Id:             params.Name,
 		Name:           params.Name,
 		RunSpec:        params.RawImage.RunSpec,
 		StageSpec:      params.RawImage.StageSpec,
 		SizeMb:         sizeMb,
-		Infrastructure: types.Infrastructure_AWS,
+		Infrastructure: types.Infrastructure_GCLOUD,
 		Created:        time.Now(),
 	}
 	if err := p.state.ModifyImages(func(images map[string]*types.Image) error {

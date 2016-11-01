@@ -1,6 +1,6 @@
 {
   "compilers-rump-go-xen": "57d2f817dda96d9b",
-  "compilers-rump-go-hw": "2b1569337b20c4b2",
+  "compilers-rump-go-hw": "3616aa11cb65b18e",
   "compilers-rump-nodejs-hw-no-stub": "baebfe68f3283190",
   "compilers-rump-c-xen": "ffce37b99dbdb676",
   "compilers-rump-base-xen": "fefc8b9d62f08590",
@@ -20,7 +20,7 @@
   "compilers-rump-python3-hw-no-stub": "81a494acc94d7827",
   "compilers-rump-python3-xen": "7501ae7f62a42f6a",
   "compilers-rump-c-hw": "1954dce79e407724",
-  "compilers-rump-base-hw": "21e116de7fe2a193",
+  "compilers-rump-base-hw": "8cd85d4a7ee1009b",
   "qemu-util": "6f5922561bbb86e3",
   "compilers-osv-java": "14f2183e5cb49482",
   "compilers-mirage-ocaml-ukvm": "2c35c23771682e9a"

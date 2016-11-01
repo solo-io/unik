@@ -1,0 +1,10 @@
+# This is the help configuration file for Bukkit.
+# For documentation on how to make use of this file, check out the Bukkit Wiki at
+# http://wiki.bukkit.org/Commands.yml
+#
+# By default you do not need to modify this file. Help topics for all plugin commands are automatically provided by
+# or extracted from your installed plugins. You only need to modify this file if you wish to add new help pages to
+# your server or override the help pages of existing plugin commands. For more detailed information, visit the wiki
+# article linked above.
+#
+# For help, join us on IRC: #glowstone @ esper.net
