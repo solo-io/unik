@@ -1,6 +1,7 @@
 package gcloud
 
 import (
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
@@ -133,7 +134,7 @@ func (p *GcloudProvider) Stage(params types.StageImageParams) (_ *types.Image, e
 	sizeMb := imageSize >> 20
 
 	image := &types.Image{
-		Id:             gImage.Id,
+		Id:             fmt.Sprintf("%v", gImage.Id),
 		Name:           params.Name,
 		RunSpec:        params.RawImage.RunSpec,
 		StageSpec:      params.RawImage.StageSpec,

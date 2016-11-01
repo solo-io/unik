@@ -2,6 +2,7 @@ package gcloud
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
@@ -101,7 +102,7 @@ func (p *GcloudProvider) RunInstance(params types.RunInstanceParams) (_ *types.I
 	}
 	logrus.Infof("gcloud instance created: %+v", gInstance)
 
-	instanceId = gInstance.Id
+	instanceId = fmt.Sprintf("%v", gInstance.Id)
 
 	//must add instance to state before attaching volumes
 	instance := &types.Instance{

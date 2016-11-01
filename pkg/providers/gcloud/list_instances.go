@@ -1,6 +1,7 @@
 package gcloud
 
 import (
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
@@ -21,7 +22,7 @@ func (p *GcloudProvider) ListInstances() ([]*types.Instance, error) {
 		instanceFound := false
 		//find instance in list
 		for _, gInstance := range gInstances.Items {
-			if gInstance.Id == instanceId {
+			if fmt.Sprintf("%v", gInstance.Id) == instanceId {
 				instance.State = parseInstanceState(gInstance.Status)
 
 				//use first network interface, skip if unavailable
