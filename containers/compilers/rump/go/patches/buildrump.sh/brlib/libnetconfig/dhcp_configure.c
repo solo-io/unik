@@ -248,8 +248,6 @@ hack_google_cloud(struct rt *rt, const struct interface *iface)
 {
     struct rt *r;
 
-    printf("hacking the internet\n");
-
     for (r = rt; r; r = r->next) {
         printf("inspecting cidr %x ", r->net.s_addr);
         if (r->net.s_addr == INADDR_BROADCAST) {
@@ -444,8 +442,10 @@ configure(struct interface *iface)
 	struct rt *rt;
 	int error;
 
-    printf("hacking the lease\n");
-    lease->net.s_addr = 0x00ffFFff;
+    if (lease->net.s_addr == INADDR_BROADCAST) {
+        printf("hacking the lease\n");
+        lease->net.s_addr = 0x00ffFFff;
+    }
 
     kludge_dns_addr_count = 0;
 
