@@ -43,7 +43,9 @@
 
 static struct rt *routes;
 
-uint32_t kludge_dns_addr;
+//enough to hold 4 dns addrs
+uint8_t kludge_dns_addrs[16];
+unsigned int kludge_dns_addr_count;
 
 static struct rt *
 find_route(struct rt *rts, const struct rt *r, struct rt **lrt,
@@ -445,6 +447,8 @@ configure(struct interface *iface)
     printf("hacking the lease\n");
     lease->net.s_addr = 0x00ffFFff;
 
+    kludge_dns_addr_count = 0;
+
     for (int i=0; i < DHCP_OPTION_LEN-1; i++) {
         uint8_t message_type = dhcp->options[i];
         uint8_t message_len = dhcp->options[++i];
@@ -452,15 +456,28 @@ configure(struct interface *iface)
           i += message_len;
           continue;
         }
-        if (message_len != 4) {
-          printf("something got fucked up\n");
-          break;
-        }
-        int message[4] = {dhcp->options[i+1], dhcp->options[i+2], dhcp->options[i+3], dhcp->options[i+4]};
 
-        kludge_dns_addr = (message[0] << 24) | (message[1] << 16) | (message[2] << 8) | message[3];
-        printf("kludge_dns_addr: %x\n", kludge_dns_addr);
-        break;
+        if ((message_len == 0) || (message_len % 4 != 0)) {
+          printf("message_len should be a multiple of 4, but is %d\n", message_len);
+          continue;
+        }
+
+        for (int j=0; j < message_len / 4; j++) {
+            //don't store more than 4 addresses
+            if (kludge_dns_addr_count > 4)
+                break;
+
+            int offset =  j*4 + i;
+            int message[4] = {dhcp->options[offset+1], dhcp->options[offset+2], dhcp->options[offset+3], dhcp->options[offset+4]};
+
+            printf("adding dns addr: %d.%d.%d.%d\n", message[0], message[1], message[2], message[3]);
+
+            kludge_dns_addrs[j*4 + 0] = message[0];
+            kludge_dns_addrs[j*4 + 1] = message[1];
+            kludge_dns_addrs[j*4 + 2] = message[2];
+            kludge_dns_addrs[j*4 + 3] = message[3];
+            kludge_dns_addr_count++;
+        }
     }
 
 	/* This also changes netmask */

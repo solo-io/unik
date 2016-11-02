@@ -13,8 +13,6 @@ import (
 )
 
 func bootstrap() error {
-	ioutil.WriteFile()
-
 	log.Printf("bootstrapping using gcloud metadata service")
 	env, err := getEnvGcloud()
 	if err != nil {
