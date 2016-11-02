@@ -1,2 +1,0 @@
-main_file: minecraft.jar
-runtime_args: "-Xmx1024M -Xms1024M"
