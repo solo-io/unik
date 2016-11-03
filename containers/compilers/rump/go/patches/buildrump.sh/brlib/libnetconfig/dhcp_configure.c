@@ -243,24 +243,24 @@ get_routes(const struct interface *iface)
 	    iface->name, &iface->state->options->options);
 }
 
-static struct rt *
-hack_google_cloud(struct rt *rt, const struct interface *iface)
-{
-    struct rt *r;
-
-    for (r = rt; r; r = r->next) {
-        printf("inspecting cidr %x ", r->net.s_addr);
-        if (r->net.s_addr == INADDR_BROADCAST) {
-            r->net.s_addr = 0x00ffFFff;
-            printf("; changed to %x\n", r->net.s_addr);
-        } else {
-            printf("\n");
-        }
-
-    }
-
-    return rt;
-}
+//static struct rt *
+//hack_google_cloud(struct rt *rt, const struct interface *iface)
+//{
+//    struct rt *r;
+//
+//    for (r = rt; r; r = r->next) {
+//        printf("inspecting cidr %x ", r->net.s_addr);
+//        if (r->net.s_addr == INADDR_BROADCAST) {
+//            r->net.s_addr = 0x00ffFFff;
+//            printf("; changed to %x\n", r->net.s_addr);
+//        } else {
+//            printf("\n");
+//        }
+//
+//    }
+//
+//    return rt;
+//}
 
 /* Some DHCP servers add set host routes by setting the gateway
  * to the assinged IP address. This differs from our notion of a host route
@@ -368,7 +368,7 @@ build_routes(void)
 		dnr = add_subnet_route(dnr, ifp);
 		dnr = add_router_host_route(dnr, ifp);
 		dnr = add_destination_route(dnr, ifp);
-		dnr = hack_google_cloud(dnr, ifp);
+//		dnr = hack_google_cloud(dnr, ifp);
 		for (rt = dnr; rt && (rtn = rt->next, 1); lrt = rt, rt = rtn) {
 			rt->iface = ifp;
 			/* Is this route already in our table? */
