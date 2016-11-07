@@ -1047,7 +1047,7 @@ const (
 	_StackSystem = goos_windows*512*ptrSize + goos_plan9*512 + goos_darwin*goarch_arm*1024
 
 	// The minimum size of stack used by Go code
-	_StackMin = 4096
+	_StackMin = 2048
 
 	// The minimum stack size to allocate.
 	// The hackery here rounds FixedStack0 up to a power of 2.
@@ -1065,7 +1065,7 @@ const (
 	// in case SP - framesize wraps below zero.
 	// This value can be no bigger than the size of the unmapped
 	// space at zero.
-	_StackBig = 4096
+	_StackBig = 2048
 
 	// The stack guard is a pointer this many bytes above the
 	// bottom of the stack.
