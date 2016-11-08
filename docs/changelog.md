@@ -1,5 +1,8 @@
 # UniK Changelog
 
+## Tue Nov 8 2016
+* Added support for ruinning Go+Rumprun on Google Cloud
+
 ## Fri Sep 23 2016
 * Thanks to contributions from the folks at [Project Mikelangelo](https://www.mikelangelo-project.eu/), Openstack is now supported as a UniK provider. Currently we're configured to support Openstack installations which are running on top of QEMU as their hypervisor. Other hypervisor support is possible, but not a priority at this time. Openstack+QEMU supports all of UniK's currently supported unikernels (except for Mirage, which currently runs exclusively on Xen).
 

@@ -55,6 +55,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 ### Supported providers:
 * [Virtualbox](docs/providers/virtualbox.md)
 * [AWS](docs/providers/aws.md)
+* [Google Cloud](docs/providers/gcloud.md)
 * [vSphere](docs/providers/vsphere.md)
 * [QEMU](docs/providers/qemu.md)
 * [UKVM](docs/providers/ukvm.md)
@@ -68,7 +69,6 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 * better code documentation
 * multi-account support per provider (i.e. multiple AWS accounts/regions, etc.)
 * migrate from [martini](https://github.com/go-martini/martini) to [echo](https://github.com/labstack/echo)
-* self-healing state (i.e. unik can identify when instances/images/volumes no longer exist and self-correct rather than throwing errors)
 
 UniK is still experimental! APIs and compatibility are subject to change. We are looking for community support to help identify potential bugs and compatibility issues. Please open a Github issue for any problems you may experience, and join us on our [slack channel](http://project-unik.io)
 
