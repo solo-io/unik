@@ -94,7 +94,7 @@ func (p *GcloudProvider) RunInstance(params types.RunInstanceParams) (_ *types.I
 			},
 		},
 		Disks:       disks,
-		MachineType: fmt.Sprintf("zones/%s/machineTypes/%s", p.config.Zone, "f1-micro"),
+		MachineType: fmt.Sprintf("zones/%s/machineTypes/%s", p.config.Zone, "g1-small"),
 		NetworkInterfaces: []*compute.NetworkInterface{
 			&compute.NetworkInterface{
 				AccessConfigs: []*compute.AccessConfig{
