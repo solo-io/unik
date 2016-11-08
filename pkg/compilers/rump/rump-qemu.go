@@ -85,6 +85,7 @@ func CreateImageQemu(kernel string, args string, mntPoints, bakedEnv []string, n
 
 	res.LocalImagePath = imgFile
 	res.StageSpec.ImageFormat = types.ImageFormat_RAW
+	res.RunSpec.DefaultInstanceMemory = 512
 	return res, nil
 
 }

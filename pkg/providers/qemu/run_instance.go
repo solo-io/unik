@@ -57,6 +57,10 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 
 	volArgs := volPathToQemuArgs(volImagesInOrder)
 
+	if params.InstanceMemory == 0 {
+		params.InstanceMemory = image.RunSpec.DefaultInstanceMemory
+	}
+
 	qemuArgs := []string{"-m", fmt.Sprintf("%v", params.InstanceMemory), "-net",
 		"nic,model=virtio,netdev=mynet0", "-netdev", "user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9",
 	}
