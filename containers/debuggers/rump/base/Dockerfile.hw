@@ -1,6 +1,6 @@
-FROM projectunik/compilers-rump-base-hw:73dc1ffd2662db5e
+FROM projectunik/compilers-rump-base-hw:8cd85d4a7ee1009b
 
-RUN apt-get update
+RUN apt-get update -y
 RUN apt-get install -y --force-yes texinfo
 
 RUN curl http://ftp.gnu.org/gnu/gdb/gdb-7.11.tar.gz | tar xz -C /opt/
