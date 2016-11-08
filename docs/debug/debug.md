@@ -74,3 +74,10 @@ Use our debugging container:
 and then from inside the container:
 
     /opt/gdb-7.11/gdb/gdb -ex 'target remote 192.168.99.1:1234' /opt/code/program.bin
+
+qemu-system-x86_64 -m 512 -net nic,model=virtio,netdev=mynet0 -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=tcp:127.0.0.1:8081-:8080 -device virtio-blk-pci,id=blk0,drive=hd0 -drive file=/Users/pivotal/.unik/qemu/images/rump-go-website/boot.img,format=qcow2,if=none,id=hd0 -kernel /Users/pivotal/.unik/qemu/images/rump-go-website/program.bin -append '{"rc":[{"bin":"program",,"argv":[]}],,"net":{"if":"vioif0",,"type":"inet",,"method":"dhcp"},,"blk": {"source":"dev",,"path":"/dev/ld0e",,"fstype":"blk",,"mountpoint":"/bootpart",,}}'
+
+qemu-system-x86_64 -m 1712 -net nic,model=virtio,netdev=mynet0 -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=tcp:127.0.0.1:8081-:8080 -device virtio-blk-pci,id=blk0,drive=hd0 -drive file=~/.unik/tmp/gcloud.raw.image.dir.277863076/disk.raw,format=raw,if=none,id=hd0 
+
+sudo qemu-system-x86_64 -nographic -vga none -m 1700 -net nic,model=virtio,netdev=mynet0 -netdev tap,id=mynet0,script=ifup,downscript=ifdown -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd0 -drive file=~/.unik/tmp/gcloud.raw.image.dir.277863076/disk.raw,format=raw,if=none,id=hd0
+
