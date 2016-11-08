@@ -2,6 +2,7 @@ package gcloud
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/providers/common"
@@ -92,7 +93,19 @@ func (p *GcloudProvider) RunInstance(params types.RunInstanceParams) (_ *types.I
 				},
 			},
 		},
-		Disks: disks,
+		Disks:       disks,
+		MachineType: fmt.Sprintf("zones/%s/machineTypes/%s", p.config.Zone, "f1-micro"),
+		NetworkInterfaces: []*compute.NetworkInterface{
+			&compute.NetworkInterface{
+				AccessConfigs: []*compute.AccessConfig{
+					&compute.AccessConfig{
+						Type: "ONE_TO_ONE_NAT",
+						Name: "External NAT",
+					},
+				},
+				Network: "global/networks/default",
+			},
+		},
 	}
 
 	gInstance, err := p.compute().Instances.Insert(p.config.ProjectID, p.config.Zone, instanceSpec).Do()
