@@ -5,6 +5,9 @@ package os
 func Mount(device BlockDevice) (mntpoint string, err error) {
 	panic("Not supported")
 }
+func MountDevice(device string) (mntpoint string, err error) {
+	panic("Not supported")
+}
 
 func Umount(point string) error {
 	panic("Not supported")
@@ -23,6 +26,11 @@ func (m *MsDosPartioner) MakePart(partType string, start, size DiskSize) error {
 	return nil
 }
 func (m *MsDosPartioner) MakePartTillEnd(partType string, start DiskSize) error {
+	panic("Not supported")
+	return nil
+}
+
+func (m *MsDosPartioner) Makebootable(partnum int) error {
 	panic("Not supported")
 	return nil
 }

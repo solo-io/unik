@@ -35,6 +35,7 @@ define build_container
 	$(eval CONTAINER_TAG=$(shell echo '$$$$($(CONTAINER_TAG))' ))
 	docker tag projectunik/$(2):build projectunik/$(2):$(CONTAINER_TAG)
 	$(call update_container_version,$(2),$(CONTAINER_TAG))
+	@echo Built projectunik/$(2):$(CONTAINER_TAG)
 	docker rmi projectunik/$(2):build
 endef
 

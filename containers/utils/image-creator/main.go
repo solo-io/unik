@@ -12,9 +12,10 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
+	"io"
+
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
 	"github.com/pborman/uuid"
-	"io"
 )
 
 type volumeslice []unikos.RawVolume
@@ -151,5 +152,5 @@ func main() {
 	if err != nil {
 		log.Fatal("failed copying produced image file to target output file", err)
 	}
-	log.Info("wrote %d bytes to disk", n)
+	log.Infof("wrote %d bytes to disk", n)
 }
