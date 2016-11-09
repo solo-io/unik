@@ -4,17 +4,21 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 
+	"github.com/emc-advanced-dev/pkg/errors"
+
 	log "github.com/Sirupsen/logrus"
 )
 
 func Mount(device BlockDevice) (mntpoint string, err error) {
+	return MountDevice(device.Name())
+}
+func MountDevice(device string) (mntpoint string, err error) {
 	defer func() {
 		if err != nil {
 			os.Remove(mntpoint)
@@ -25,7 +29,7 @@ func Mount(device BlockDevice) (mntpoint string, err error) {
 	if err != nil {
 		return
 	}
-	err = RunLogCommand("mount", device.Name(), mntpoint)
+	err = RunLogCommand("mount", device, mntpoint)
 	return
 }
 
@@ -67,8 +71,14 @@ func (m *MsDosPartioner) MakePart(partType string, start, size DiskSize) error {
 	_, err := runParted(m.Device, "mkpart", partType, start.ToPartedFormat(), size.ToPartedFormat())
 	return err
 }
+
 func (m *MsDosPartioner) MakePartTillEnd(partType string, start DiskSize) error {
 	_, err := runParted(m.Device, "mkpart", partType, start.ToPartedFormat(), "100%")
+	return err
+}
+
+func (m *MsDosPartioner) Makebootable(partnum int) error {
+	_, err := runParted(m.Device, "set", fmt.Sprintf("%d", partnum), "boot", "on")
 	return err
 }
 
@@ -164,7 +174,7 @@ func ListParts(device BlockDevice) ([]Part, error) {
 			if err != nil {
 				return parts, err
 			}
-			part = NewDMPartedPart(sectorsStart, sectorsSize, device, partNum)
+			part = NewPartLoDevice(device.Name(), sectorsStart, sectorsSize)
 		} else {
 			// device exists
 			var release func(BlockDevice) error = nil
@@ -234,79 +244,39 @@ func (p *PartedPart) Get() BlockDevice {
 	return p.Device
 }
 
-type DeviceMapperDevice struct {
-	DeviceName string
-
-	start Sectors
-	size  Sectors
-
-	orginalDevice BlockDevice
-}
-
 func randomDeviceName() string {
 	return "dev" + RandStringBytes(4)
-}
-
-// Device device name is generated, user can chagne it..
-func NewDMPartedPart(start, size Sectors, device BlockDevice, partNum int64) Part {
-	name := randomDeviceName()
-	newDeviceName := fmt.Sprintf("%s%c", name, '0'+partNum)
-	return &DeviceMapperDevice{newDeviceName, start, size, device}
-}
-
-func NewDevice(start, size Sectors, origDevice BlockDevice, deivceName string) Resource {
-	return &DeviceMapperDevice{deivceName, start, size, origDevice}
-}
-
-func (p *DeviceMapperDevice) Size() DiskSize {
-	return p.size
-}
-func (p *DeviceMapperDevice) Offset() DiskSize {
-	return p.start
-}
-
-func (p *DeviceMapperDevice) Acquire() (BlockDevice, error) {
-	// dmsetup create partition${PARTI} --table "0 $SIZE linear $DEVICE $SECTOR"
-	table := fmt.Sprintf("0 %d linear %s %d", p.size, p.orginalDevice, p.start)
-
-	err := RunLogCommand("dmsetup", "create", p.DeviceName, "--table", table)
-
-	if err == nil && !IsExists(p.Get().Name()) {
-		err = RunLogCommand("dmsetup", "mknodes", p.DeviceName)
-	}
-
-	return p.Get(), err
-}
-
-func (p *DeviceMapperDevice) Release() error {
-	err := RunLogCommand("dmsetup", "remove", p.DeviceName)
-	if err == nil && IsExists(p.Get().Name()) {
-		err = os.Remove(p.Get().Name())
-	}
-	return err
-
-}
-
-func (p *DeviceMapperDevice) Get() BlockDevice {
-	newDevice := "/dev/mapper/" + p.DeviceName
-	return BlockDevice(newDevice)
 }
 
 // TODO: change this to api; like in here: https://www.versioneye.com/python/losetup/2.0.7 or here https://github.com/karelzak/util-linux/blob/master/sys-utils/losetup.c
 type LoDevice struct {
 	device        string
 	createdDevice BlockDevice
+	offset        DiskSize
+	size          DiskSize
 }
 
 func NewLoDevice(device string) Resource {
-	return &LoDevice{device, BlockDevice("")}
+	return &LoDevice{device, BlockDevice(""), nil, nil}
+}
+func NewPartLoDevice(device string, offset DiskSize, size DiskSize) Part {
+	return &LoDevice{device, BlockDevice(""), offset, size}
 }
 
 func (p *LoDevice) Acquire() (BlockDevice, error) {
-	// dmsetup create partition${PARTI} --table "0 $SIZE linear $DEVICE $SECTOR"
 	log.WithFields(log.Fields{"cmd": "losetup", "device": p.device}).Debug("running losetup -f")
 
-	out, err := exec.Command("losetup", "-f", "--show", p.device).CombinedOutput()
+	args := []string{"-f", "--show", p.device}
+
+	if p.size != nil {
+		args = append(args, "--sizelimit", fmt.Sprintf("%d", p.size.ToBytes()))
+	}
+
+	if p.offset != nil {
+		args = append(args, "--offset", fmt.Sprintf("%d", p.offset.ToBytes()))
+	}
+
+	out, err := exec.Command("losetup", args...).CombinedOutput()
 
 	if err != nil {
 		log.WithFields(log.Fields{"cmd": "losetup", "out": string(out), "device": p.device}).Debug("losetup -f failed")
@@ -317,6 +287,18 @@ func (p *LoDevice) Acquire() (BlockDevice, error) {
 	return p.createdDevice, nil
 }
 
+func (p *LoDevice) Get() BlockDevice {
+	return p.createdDevice
+}
+
 func (p *LoDevice) Release() error {
 	return RunLogCommand("losetup", "-d", p.createdDevice.Name())
+}
+
+func (p *LoDevice) Size() DiskSize {
+	return p.size
+}
+
+func (p *LoDevice) Offset() DiskSize {
+	return p.offset
 }

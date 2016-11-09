@@ -62,5 +62,5 @@ func main() {
 	if err != nil {
 		log.Fatal("failed copying produced image file to target output file", err)
 	}
-	log.Info("wrote %d bytes to disk", n)
+	log.Infof("wrote %d bytes to disk", n)
 }

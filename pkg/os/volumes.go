@@ -1,6 +1,7 @@
 package os
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
 	"text/template"
@@ -56,16 +57,12 @@ func CreateBootImageWithSize(rootFile string, size DiskSize, progPath, staticFil
 	log.WithFields(log.Fields{"imgFile": rootFile, "size": size.ToPartedFormat()}).Debug("created sparse file")
 
 	if usePartitionTables {
-		return CreateBootImageOnFile(rootFile, size, progPath, staticFilesDir, commandline)
+		return CreateBootImageOnFile(rootFile, progPath, staticFilesDir, commandline)
 	}
-	return CreateBootImageOnFilePvGrub(rootFile, size, progPath, staticFilesDir, commandline)
+	return CreateBootImageOnFilePvGrub(rootFile, progPath, staticFilesDir, commandline)
 }
 
-func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, staticFilesDir, commandline string) error {
-	sizeInSectors, err := ToSectors(sizeOfFile)
-	if err != nil {
-		return err
-	}
+func CreateBootImageOnFile(rootFile string, progPath, staticFilesDir, commandline string) error {
 
 	log.WithFields(log.Fields{"imgFile": rootFile}).Debug("attaching sparse file")
 	rootLo := NewLoDevice(rootFile)
@@ -80,23 +77,32 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, stati
 	// use device mapper to rename the lo device to something that grub likes more.
 	// like hda!
 	grubDiskName := "hda"
-	rootBlkDev := NewDevice(0, sizeInSectors, rootLodName, grubDiskName)
-	rootDevice, err := rootBlkDev.Acquire()
+
+	devTmp, err := ioutil.TempDir("/dev", "unik-tmp")
 	if err != nil {
 		return err
 	}
-	defer rootBlkDev.Release()
+	defer os.RemoveAll(devTmp)
+
+	rootDeviceName := path.Join(devTmp, grubDiskName)
+	if err := os.Link(rootLodName.Name(), rootDeviceName); err != nil {
+		return err
+	}
 
 	log.Debug("partitioning")
 
-	p := &MsDosPartioner{rootDevice.Name()}
+	p := &MsDosPartioner{rootLodName.Name()}
 	if err := p.MakeTable(); err != nil {
 		return err
 	}
 	if err := p.MakePartTillEnd("primary", MegaBytes(2)); err != nil {
 		return err
 	}
-	parts, err := ListParts(rootDevice)
+	// make the partition just created bootable
+	if err := p.Makebootable(1); err != nil {
+		return err
+	}
+	parts, err := ListParts(rootLodName)
 	if err != nil {
 		return err
 	}
@@ -106,10 +112,6 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, stati
 	}
 
 	part := parts[0]
-	if dmPart, ok := part.(*DeviceMapperDevice); ok {
-		// TODO: is this needed?
-		dmPart.DeviceName = grubDiskName + "1"
-	}
 
 	// get the block device
 	bootDevice, err := part.Acquire()
@@ -118,6 +120,11 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, stati
 	}
 	defer part.Release()
 
+	firstPart := rootDeviceName + "1"
+	if err := os.Link(bootDevice.Name(), firstPart); err != nil {
+		return err
+	}
+
 	bootLabel := "boot"
 	// format the device and mount and copy
 	err = RunLogCommand("mkfs", "-L", bootLabel, "-I", "128", "-t", "ext2", bootDevice.Name())
@@ -125,20 +132,21 @@ func CreateBootImageOnFile(rootFile string, sizeOfFile DiskSize, progPath, stati
 		return err
 	}
 
-	mntPoint, err := Mount(bootDevice)
+	mntPoint, err := MountDevice(firstPart)
 	if err != nil {
 		return err
 	}
 	defer Umount(mntPoint)
 
-	if err := PrepareGrub(mntPoint, rootDevice.Name(), progPath, staticFilesDir, commandline); err != nil {
+	if err := PrepareGrub(mntPoint, rootDeviceName, progPath, staticFilesDir, commandline); err != nil {
 		return err
 	}
 
-	err = RunLogCommand("grub-install", "--no-floppy", "--root-directory="+mntPoint, rootDevice.Name())
+	err = RunLogCommand("grub-install", "--no-floppy", "--root-directory="+mntPoint, rootDeviceName)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -173,7 +181,7 @@ func PrepareGrub(folder, rootDeviceName, kernel, staticFilesDir, commandline str
 	return nil
 }
 
-func CreateBootImageOnFilePvGrub(rootFile string, sizeOfFile DiskSize, progPath, staticFilesDir, commandline string) error {
+func CreateBootImageOnFilePvGrub(rootFile string, progPath, staticFilesDir, commandline string) error {
 	log.WithFields(log.Fields{"imgFile": rootFile}).Debug("attaching sparse file")
 	rootLo := NewLoDevice(rootFile)
 	bootDevice, err := rootLo.Acquire()

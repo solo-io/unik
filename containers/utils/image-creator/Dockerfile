@@ -8,6 +8,7 @@ RUN opam init -y && \
     cd /tmp/ && \
     git clone https://github.com/mirage/ocaml-fat && \
     cd /tmp/ocaml-fat && \
+    git checkout 7e417a321cdbbd271190f4ff08bc3804daad1279 && \
     opam pin add ocaml-fat . -n -y && \
     opam install ocaml-fat --verbose
 
