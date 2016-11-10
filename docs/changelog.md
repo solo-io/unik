@@ -2,6 +2,7 @@
 
 ## Tue Nov 10 2016
 * Added support for new docker for mac (removed device-mapper dependency for building images)
+* Temporary dropped supprot for mirage volumes (pending https://github.com/mirage/ocaml-fat/issues/54)
 
 ## Tue Nov 8 2016
 * Added support for ruinning Go+Rumprun on Google Cloud
