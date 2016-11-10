@@ -1,5 +1,8 @@
 # UniK Changelog
 
+## Tue Nov 10 2016
+* Added support for new docker for mac (removed device-mapper dependency for building images)
+
 ## Tue Nov 8 2016
 * Added support for ruinning Go+Rumprun on Google Cloud
 
