@@ -51,7 +51,7 @@ type Image struct {
 	Status   string
 
 	Updated string
-
+	
 	Metadata map[string]string
 }
 

@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"github.com/gogo/protobuf/proto"
 	"github.com/layer-x/layerx-commons/lxerrors"
-	"io"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
-	"os"
 	"strings"
+	"os"
+	"mime/multipart"
+	"io"
 )
 
 var DefaultRetries = 5
@@ -299,7 +299,7 @@ func postData(url string, path string, headers map[string]string, data []byte) (
 	return resp, respBytes, nil
 }
 
-func PostFile(url, path, fileKey, pathToFile string) (*http.Response, []byte, error) {
+func PostFile(url, path, fileKey, pathToFile string)  (*http.Response, []byte, error) {
 	completeURL := parseURL(url, path)
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
@@ -428,7 +428,7 @@ func postAsyncData(url string, path string, headers map[string]string, data []by
 	return resp, nil
 }
 
-func PostAsyncFile(url, path, fileKey, pathToFile string) (*http.Response, error) {
+func PostAsyncFile(url, path, fileKey, pathToFile string)  (*http.Response, error) {
 	completeURL := parseURL(url, path)
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)

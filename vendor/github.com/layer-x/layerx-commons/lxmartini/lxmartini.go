@@ -1,12 +1,12 @@
 package lxmartini
 
 import (
-	"encoding/json"
-	"github.com/Sirupsen/logrus"
 	"github.com/go-martini/martini"
-	"github.com/layer-x/layerx-commons/lxerrors"
+	"github.com/Sirupsen/logrus"
 	"net/http"
 	"time"
+	"github.com/layer-x/layerx-commons/lxerrors"
+	"encoding/json"
 )
 
 func QuietMartini() *martini.ClassicMartini {
@@ -41,7 +41,7 @@ func customLogger() martini.Handler {
 }
 
 func Respond(res http.ResponseWriter, message interface{}) error {
-	switch message.(type) {
+	switch message.(type){
 	case string:
 		messageString := message.(string)
 		data := []byte(messageString)

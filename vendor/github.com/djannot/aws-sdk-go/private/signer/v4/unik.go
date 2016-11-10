@@ -35,8 +35,8 @@ type RequestToSign struct {
 }
 
 type SignatureResponse struct {
-	Signature []byte `json:"signature"`
-	Err       string `json:"err"`
+	Signature   []byte `json:"signature"`
+	Err   string `json:"err"`
 }
 
 // Validate the request with the UnikHub

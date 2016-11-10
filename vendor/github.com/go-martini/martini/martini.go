@@ -23,9 +23,9 @@ import (
 	"os"
 	"reflect"
 
-	"errors"
 	"github.com/codegangsta/inject"
 	"net"
+	"errors"
 )
 
 // Martini represents the top level web application. inject.Injector methods can be invoked to map services on a global level.

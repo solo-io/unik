@@ -8,8 +8,8 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.10.0",
-			"Rev": "4b6ea7319e214d98c938f12692336f7ca9348d6b"
+			"Comment": "v0.10.0-38-g3ec0642",
+			"Rev": "3ec0642a7fb6488f65b06f9040adc67e3990296a"
 		},
 		{
 			"ImportPath": "github.com/aws/aws-sdk-go/aws",
@@ -253,17 +253,17 @@
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/ioutils",
-			"Comment": "v1.4.1-11538-g577adcc",
-			"Rev": "577adcc1eeb58ab29cfbcd50048576b9c8f64584"
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-2055-gc8e8be8",
+			"Rev": "c8e8be847850298e8d771c5b501c32f505a875b8"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/longpath",
-			"Comment": "v1.4.1-11538-g577adcc",
-			"Rev": "577adcc1eeb58ab29cfbcd50048576b9c8f64584"
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-2055-gc8e8be8",
+			"Rev": "c8e8be847850298e8d771c5b501c32f505a875b8"
 		},
 		{
 			"ImportPath": "github.com/emc-advanced-dev/pkg/errors",
-			"Rev": "209f5ccfc1d9df3494f7cff85c91ce80b12d59b8"
+			"Rev": "bb66dbd3628125f64907fba4905e47c8ead41436"
 		},
 		{
 			"ImportPath": "github.com/gin-gonic/gin",
@@ -287,8 +287,8 @@
 		},
 		{
 			"ImportPath": "github.com/go-martini/martini",
-			"Comment": "v1.0-186-g2dee962",
-			"Rev": "2dee96229221acce12ca070e72595f113296744a"
+			"Comment": "v1.0-187-g87bb2a4",
+			"Rev": "87bb2a44844454ee1aa630394e4135f52923ce0b"
 		},
 		{
 			"ImportPath": "github.com/gogo/protobuf/proto",
@@ -323,6 +323,10 @@
 		{
 			"ImportPath": "github.com/manucorporat/sse",
 			"Rev": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d"
+		},
+		{
+			"ImportPath": "github.com/mitchellh/mapstructure",
+			"Rev": "740c764bc6149d3f1806231418adb9f52c11bcbf"
 		},
 		{
 			"ImportPath": "github.com/onsi/ginkgo",
@@ -465,6 +469,71 @@
 			"Rev": "c55201b036063326c5b1b89ccfe45a184973d073"
 		},
 		{
+			"ImportPath": "github.com/rackspace/gophercloud",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/openstack",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/openstack/compute/v2/flavors",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/openstack/compute/v2/images",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/openstack/compute/v2/servers",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/openstack/identity/v2/tenants",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/openstack/identity/v2/tokens",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/openstack/identity/v3/tokens",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/openstack/imageservice/v2/images",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/openstack/utils",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/pagination",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/testhelper",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
+			"ImportPath": "github.com/rackspace/gophercloud/testhelper/client",
+			"Comment": "v1.0.0-1012-ge00690e",
+			"Rev": "e00690e87603abe613e9f02c816c7c4bef82e063"
+		},
+		{
 			"ImportPath": "github.com/russross/blackfriday",
 			"Comment": "v1.2-42-g77efab5",
 			"Rev": "77efab57b2f74dd3f9051c79752b2e8995c8b789"
@@ -568,11 +637,63 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "e45385e9b226f570b1f086bf287b25d3d4117776"
+			"Rev": "569280fa63be4e201b975e5411e30a92178f0118"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context/ctxhttp",
+			"Rev": "569280fa63be4e201b975e5411e30a92178f0118"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2",
+			"Rev": "b5adcc2dcdf009d0391547edc6ecbaff889f5bb9"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2/google",
+			"Rev": "b5adcc2dcdf009d0391547edc6ecbaff889f5bb9"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2/internal",
+			"Rev": "b5adcc2dcdf009d0391547edc6ecbaff889f5bb9"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2/jws",
+			"Rev": "b5adcc2dcdf009d0391547edc6ecbaff889f5bb9"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2/jwt",
+			"Rev": "b5adcc2dcdf009d0391547edc6ecbaff889f5bb9"
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
 			"Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
+		},
+		{
+			"ImportPath": "google.golang.org/api/compute/v1",
+			"Rev": "77e7d383beb96054547729f49c372b3d01e196ff"
+		},
+		{
+			"ImportPath": "google.golang.org/api/gensupport",
+			"Rev": "77e7d383beb96054547729f49c372b3d01e196ff"
+		},
+		{
+			"ImportPath": "google.golang.org/api/googleapi",
+			"Rev": "77e7d383beb96054547729f49c372b3d01e196ff"
+		},
+		{
+			"ImportPath": "google.golang.org/api/googleapi/internal/uritemplates",
+			"Rev": "77e7d383beb96054547729f49c372b3d01e196ff"
+		},
+		{
+			"ImportPath": "google.golang.org/api/storage/v1",
+			"Rev": "77e7d383beb96054547729f49c372b3d01e196ff"
+		},
+		{
+			"ImportPath": "google.golang.org/cloud/compute/metadata",
+			"Rev": "2e43671e4ad874a7bca65746ff3edb38e6e93762"
+		},
+		{
+			"ImportPath": "google.golang.org/cloud/internal",
+			"Rev": "2e43671e4ad874a7bca65746ff3edb38e6e93762"
 		},
 		{
 			"ImportPath": "gopkg.in/cheggaaa/pb.v1",
