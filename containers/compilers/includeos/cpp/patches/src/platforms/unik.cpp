@@ -103,7 +103,8 @@ void unik::Client::register_instance(net::Inet4 &inet, const net::UDP::port_t po
                     Document document;
                     document.Parse(json_data.c_str());
                     for (Value::ConstMemberIterator itr = document.MemberBegin(); itr != document.MemberEnd(); ++itr) {
-                        printf("env %s=%s\n", itr->name.GetString(), itr->value.GetString());
+                        printf("setting env %s=%s\n", itr->name.GetString(), itr->value.GetString());
+                        setenv(itr->name.GetString(), itr->value.GetString(), 1);
                     }
 
                     // Call the optional user callback if any

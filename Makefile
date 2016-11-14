@@ -45,7 +45,6 @@ endef
 
 all: ${SOURCES} binary
 
-.PHONY: submodules
 .PHONY: pull
 .PHONY: containers
 .PHONY: rump-debugger-qemu
@@ -75,9 +74,6 @@ all: ${SOURCES} binary
 .PHONY: vsphere-client
 .PHONY: qemu-util
 .PHONY: utils
-
-submodules:
-	git submodule update --init --recursive
 
 #pull containers
 pull:
@@ -254,11 +250,11 @@ endif
 #----
 
 # local build - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
-localbuild: instance-listener/bindata/instance_listener_data.go containers/version-data.go submodules ${SOURCES}
+localbuild: instance-listener/bindata/instance_listener_data.go containers/version-data.go ${SOURCES}
 	GOOS=${TARGET_OS} go build -v .
 
 # local install - useful if you have development env setup. if not - use binary! (this can't depend on binary as binary depends on it via the Dockerfile)
-localinstall: instance-listener/bindata/instance_listener_data.go containers/version-data.go submodules ${SOURCES}
+localinstall: instance-listener/bindata/instance_listener_data.go containers/version-data.go ${SOURCES}
 	GOOS=${TARGET_OS} go install -v .
 
 containers/version-data.go: containers/versions.json
