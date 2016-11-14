@@ -18,4 +18,4 @@ UniK stores Google Compute data in the following paths:
 
 * UniK boot volumes are stored as Images
 * UniK data volumes are not currently supported for Google Cloud (PRs on this are welcome).
-* UniK instances are `g1-small` EC2 Instances
+* UniK instances are `g1-small` Google Cloud Instances
