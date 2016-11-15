@@ -110,7 +110,7 @@ func (p *QemuProvider) RunInstance(params types.RunInstanceParams) (_ *types.Ins
 	var instanceIp string
 
 	instance := &types.Instance{
-		Id:             fmt.Sprintf("%v", cmd.Process.Pid),
+		Id:             fmt.Sprintf("%d", cmd.Process.Pid),
 		Name:           params.Name,
 		State:          types.InstanceState_Running,
 		IpAddress:      instanceIp,

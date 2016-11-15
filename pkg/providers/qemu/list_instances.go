@@ -2,11 +2,13 @@ package qemu
 
 import (
 	"fmt"
-	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
 	"os"
 	"strconv"
 	"syscall"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
 func (p *QemuProvider) ListInstances() ([]*types.Instance, error) {
@@ -18,10 +20,14 @@ func (p *QemuProvider) ListInstances() ([]*types.Instance, error) {
 	for _, instance := range p.state.GetInstances() {
 		pid, err := strconv.Atoi(instance.Id)
 		if err != nil {
-			return nil, errors.New("invalid id (is not a pid)", err)
+			logrus.WithField("instance", instance).Warn("invalid pid - removing instance")
+			p.state.RemoveInstance(instance)
+			continue
 		}
 		if err := detectInstance(pid); err != nil {
+			logrus.WithField("instance", instance).Debug("Instance is not running; removing")
 			p.state.RemoveInstance(instance)
+			continue
 		}
 		instances = append(instances, instance)
 	}
