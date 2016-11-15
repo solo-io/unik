@@ -51,7 +51,7 @@ endif
 CCOPTS  = -target i686-elf
 CPPOPTS = -target i686-elf
 
-INCLUDES  = -I../api/sys -I$(INSTALL)/libcxx/include -I$(INC_NEWLIB) -Iinclude -I../api -I../api/posix -I../mod/GSL -I../mod/fiber/include -Ilib -Ilib/mana/include -Ilib/json/rapidjson/include
+INCLUDES  = -I../api/sys -I$(INSTALL)/libcxx/include -I$(INC_NEWLIB) -Iinclude -I../api -I../api/posix -I../mod/GSL -I../mod/fiber/include -Ilib -Ilib/mana/include -Ilib/json/rapidjson/include -Ilib/mana/lib/http/uri/include
 CINCLUDES = -I../api/sys -I$(INC_NEWLIB) -Iinclude -I../api
 
 CCOPTS  += $(CAPABS) $(WARNS) -c -m32 -march=i686 $(CINCLUDES)

@@ -18,9 +18,22 @@ RUN mkdir /root/IncludeOS/src/lib/ && \
     cd json && \
     git submodule update --init
 
+COPY patches/install.sh /root/IncludeOS/install.sh
+
+#Install
+RUN cd ~ && pwd && \
+  cd IncludeOS && \
+  /bin/bash ./install.sh
+
 #Patches
 COPY patches /tmp/patches
 RUN cp -r /tmp/patches/* /root/IncludeOS/
+
+#Dependencies for unik.cpp
+RUN cd /root/IncludeOS/src/lib/mana && \
+    git submodule update --init && \
+    cd lib/http/ && \
+    git submodule update --init
 
 #Install
 RUN cd ~ && pwd && \

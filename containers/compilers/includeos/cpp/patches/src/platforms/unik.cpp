@@ -22,15 +22,29 @@
 #include <net/inet4>
 #include <regex>
 #include <info>
+#include <mana/server.hpp>
 
-using namespace rapidjson;
+#include "logger/logger.hpp"
 
 unik::Client::Registered_event unik::Client::on_registered_{nullptr};
+
+std::unique_ptr<Logger> logger_;
 
 /**
  * UniK instance listener hearbeat / http registration
  **/
 void unik::Client::register_instance(net::Inet4 &inet, const net::UDP::port_t port) {
+
+    /** SETUP LOGGER */
+    char* buffer = (char*)malloc(1024*16);
+    static gsl::span<char> spanerino{buffer, 1024*16};
+    logger_ = std::make_unique<Logger>(spanerino);
+    logger_->flush();
+    logger_->log("Kappa\n");
+
+    OS::add_stdout([] (const char* data, size_t len) {
+      logger_->log(std::string{data, len});
+    });
 
 //    let OS::start know it shouldn't start service yet
 //    OS::ready_ = false;
@@ -100,12 +114,26 @@ void unik::Client::register_instance(net::Inet4 &inet, const net::UDP::port_t po
                     std::string json_data = response.substr(json_start);
                     INFO("Unik Client", "json data: %s \n", json_data.c_str());
 
-                    Document document;
+                    rapidjson::Document document;
                     document.Parse(json_data.c_str());
-                    for (Value::ConstMemberIterator itr = document.MemberBegin(); itr != document.MemberEnd(); ++itr) {
+                    for (rapidjson::Value::ConstMemberIterator itr = document.MemberBegin(); itr != document.MemberEnd(); ++itr) {
                         printf("setting env %s=%s\n", itr->name.GetString(), itr->value.GetString());
                         setenv(itr->name.GetString(), itr->value.GetString(), 1);
                     }
+
+                    //serve logs on default_port (9967)
+                    mana::Router router;
+                    router.on_get("/logs", [](auto, auto res) {
+                      std::vector<std::string> entries = logger_->entries();
+                      std::string logs_;
+                      for (std::vector<std::string>::iterator it = entries.begin() ; it != entries.end(); ++it)
+                        logs_.append(*it);
+                      res->add_body(logs_.c_str());
+                      res->send();
+                    });
+
+                    std::unique_ptr<mana::Server> server = std::make_unique<Server>(inet);
+                    server->set_routes(router).listen(default_port);
 
                     // Call the optional user callback if any
                     if (on_registered_)
