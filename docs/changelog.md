@@ -1,5 +1,8 @@
 # UniK Changelog
 
+## Tue Nov 15 2016
+* Mirage volumes support is back. thanks to @yomimono.
+
 ## Tue Nov 10 2016
 * Added support for new docker for mac (removed device-mapper dependency for building images)
 * Temporary dropped supprot for mirage volumes (pending https://github.com/mirage/ocaml-fat/issues/54)
