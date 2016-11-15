@@ -29,9 +29,7 @@ sw                   sw                   XEN             2016-09-20 17:34:40.88
 
 In our example, the created mountpoint is named "xen:xvdc"
 
-**NOTE**: Mirage volumes is currently not supported due to issues building the mirage FAT tool. see: https://github.com/mirage/ocaml-fat/issues/54
-
-~~Now create the volume using unik, and make sure to use the "mirage-fat" type:~~
+Now create the volume using unik, and make sure to use the "mirage-fat" type:
 ```
 unik create-volume --name websitedata1 --data ./mirage-skeleton/static_website/htdocs/ --type mirage-fat --provider xen
 ```
