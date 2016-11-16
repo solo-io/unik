@@ -33,7 +33,9 @@ RUN cp -r /tmp/patches/* /root/IncludeOS/
 RUN cd /root/IncludeOS/src/lib/mana && \
     git submodule update --init && \
     cd lib/http/ && \
-    git submodule update --init
+    git submodule update --init && \
+    cd /root/IncludeOS/src/lib/mana && \
+    make
 
 #Install
 RUN cd ~ && pwd && \

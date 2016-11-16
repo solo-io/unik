@@ -23,6 +23,7 @@
 #include <regex>
 #include <info>
 #include <mana/server.hpp>
+#include <stdio.h>
 
 #include "logger/logger.hpp"
 
@@ -103,7 +104,7 @@ void unik::Client::register_instance(net::Inet4 &inet, const net::UDP::port_t po
             unik->write(http_request.c_str(), http_request.size());
 
             // Expect a response with meta data (which we ignore)
-            unik->on_read(1024, [&http](auto buf, size_t n) {
+            unik->on_read(1024, [&http, &inet](auto buf, size_t n) {
                 std::string response((char *) buf.get(), n);
                 INFO("Unik client", "Unik reply: %s \n", response.c_str());
 
@@ -126,13 +127,14 @@ void unik::Client::register_instance(net::Inet4 &inet, const net::UDP::port_t po
                     router.on_get("/logs", [](auto, auto res) {
                       std::vector<std::string> entries = logger_->entries();
                       std::string logs_;
-                      for (std::vector<std::string>::iterator it = entries.begin() ; it != entries.end(); ++it)
+                      for (std::vector<std::string>::iterator it = entries.begin() ; it != entries.end(); ++it) {
                         logs_.append(*it);
-                      res->add_body(logs_.c_str());
+                      }
+                      res->add_body(logs_);
                       res->send();
                     });
 
-                    std::unique_ptr<mana::Server> server = std::make_unique<Server>(inet);
+                    std::unique_ptr<mana::Server> server = std::make_unique<mana::Server>(inet);
                     server->set_routes(router).listen(default_port);
 
                     // Call the optional user callback if any
