@@ -109,14 +109,14 @@ var daemonConfig config.DaemonConfig
 func readDaemonConfig() error {
 	data, err := ioutil.ReadFile(daemonConfigFile)
 	if err != nil {
-		logrus.WithError(err).Errorf("failed to read daemon configuration file at " + daemonConfigFile + `\n
+		errMsg := fmt.Sprintf("failed to read daemon configuration file at " + daemonConfigFile + `\n
 		See documentation at http://github.com/emc-advanced-dev/unik for creating daemon config.'`)
-		return err
+		return errors.New(errMsg, err)
 	}
 	if err := yaml.Unmarshal(data, &daemonConfig); err != nil {
-		logrus.WithError(err).Errorf("failed to parse daemon configuration yaml at " + daemonConfigFile + `\n
+		errMsg := fmt.Sprintf("failed to parse daemon configuration yaml at " + daemonConfigFile + `\n
 		Please ensure config file contains valid yaml.'`)
-		return err
+		return errors.New(errMsg, err)
 	}
 	return nil
 }
