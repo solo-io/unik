@@ -34,3 +34,4 @@ containers/container-versions.go
 _debug
 
 instance-listener/bindata/
+.idea/
