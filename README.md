@@ -9,7 +9,7 @@ UniK utilizes a simple docker-like command line interface, making building unike
 UniK is built to be easily extensible, allowing (and encouraging) adding support for unikernel [compilers](docs/compilers/README.md) and cloud [providers](docs/providers/README.md). See [architecture](docs/architecture.md) for a better understanding of UniK's pluggable code design.
 
 To learn more about the motivation behind project UniK, read our [blog](https://github.com/emc-advanced-dev/unik/wiki/UniK:-Build-and-Run-Unikernels-with-Ease) post, or [watch](goo.gl/oiT05G) session ([Slides](http://www.slideshare.net/IditLevine/unik-slides)).
-We are also encourage you to read [this](goo.gl/3ge2vT) blog about IoT Security.<BR>
+We are also encourage you to read [this](goo.gl/3ge2vT) blog about IoT Security.<BR><BR>
 To stay up-to-date on UniK, follow us [@ProjectUnik](https://twitter.com/ProjectUniK) and join us on our [slack channel](http://project-unik.io).
 
 ---
