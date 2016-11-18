@@ -37,6 +37,9 @@ xen
 
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if daemonConfigFile == "" {
+			daemonConfigFile = os.Getenv("HOME")+"/.unik/daemon-config.yaml"
+		}
 		readDaemonConfig()
 		reader := bufio.NewReader(os.Stdin)
 		var configFunc func() error
@@ -139,6 +142,7 @@ xen
 func init() {
 	RootCmd.AddCommand(configureCmd)
 	configureCmd.Flags().StringVar(&provider, "provider", "", "<string,optional> provider to configure. if not given, unik will iterate through each possible provider to configure")
+	configureCmd.Flags().StringVar(&daemonConfigFile, "f", os.Getenv("HOME")+"/.unik/daemon-config.yaml", "<string, optional> output path for daemon config file")
 }
 
 func writeDaemonConfig() error {
@@ -159,6 +163,7 @@ func doAwsConfig(reader *bufio.Reader) error {
 	if err != nil {
 		return err
 	}
+	y = strings.TrimSuffix(y, "\n")
 	if y == "y" {
 		if len(daemonConfig.Providers.Aws) < 1 {
 			daemonConfig.Providers.Aws = append(daemonConfig.Providers.Aws, config.Aws{})
@@ -171,6 +176,7 @@ func doAwsConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		region = strings.TrimSuffix(region, "\n")
 		if region != "" {
 			daemonConfig.Providers.Aws[0].Region = region
 		}
@@ -179,6 +185,7 @@ func doAwsConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		zone = strings.TrimSuffix(zone, "\n")
 		if zone != "" {
 			daemonConfig.Providers.Aws[0].Zone = zone
 		}
@@ -192,6 +199,7 @@ func doGcloudConfig(reader *bufio.Reader) error {
 	if err != nil {
 		return err
 	}
+	y = strings.TrimSuffix(y, "\n")
 	if y == "y" {
 		if len(daemonConfig.Providers.Gcloud) < 1 {
 			daemonConfig.Providers.Gcloud = append(daemonConfig.Providers.Gcloud, config.Gcloud{})
@@ -204,6 +212,7 @@ func doGcloudConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		projectId = strings.TrimSuffix(projectId, "\n")
 		if projectId != "" {
 			daemonConfig.Providers.Gcloud[0].ProjectID = projectId
 		}
@@ -212,6 +221,7 @@ func doGcloudConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		zone = strings.TrimSuffix(zone, "\n")
 		if zone != "" {
 			daemonConfig.Providers.Gcloud[0].Zone = zone
 		}
@@ -225,6 +235,7 @@ func doOpenstackConfig(reader *bufio.Reader) error {
 	if err != nil {
 		return err
 	}
+	y = strings.TrimSuffix(y, "\n")
 	if y == "y" {
 		if len(daemonConfig.Providers.Openstack) < 1 {
 			daemonConfig.Providers.Openstack = append(daemonConfig.Providers.Openstack, config.Openstack{})
@@ -237,6 +248,7 @@ func doOpenstackConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		username = strings.TrimSuffix(username, "\n")
 		if username != "" {
 			daemonConfig.Providers.Openstack[0].UserName = username
 		}
@@ -245,6 +257,7 @@ func doOpenstackConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		password = strings.TrimSuffix(password, "\n")
 		if password != "" {
 			daemonConfig.Providers.Openstack[0].Password = password
 		}
@@ -253,6 +266,7 @@ func doOpenstackConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		authUrl = strings.TrimSuffix(authUrl, "\n")
 		if authUrl != "" {
 			daemonConfig.Providers.Openstack[0].AuthUrl = authUrl
 		}
@@ -261,6 +275,7 @@ func doOpenstackConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		tenantId = strings.TrimSuffix(tenantId, "\n")
 		if tenantId != "" {
 			daemonConfig.Providers.Openstack[0].TenantId = tenantId
 		}
@@ -269,6 +284,7 @@ func doOpenstackConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		projectName = strings.TrimSuffix(projectName, "\n")
 		if projectName != "" {
 			daemonConfig.Providers.Openstack[0].ProjectName = projectName
 		}
@@ -277,6 +293,7 @@ func doOpenstackConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		regionId = strings.TrimSuffix(regionId, "\n")
 		if regionId != "" {
 			daemonConfig.Providers.Openstack[0].RegionId = regionId
 		}
@@ -285,6 +302,7 @@ func doOpenstackConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		networkUUID = strings.TrimSuffix(networkUUID, "\n")
 		if networkUUID != "" {
 			daemonConfig.Providers.Openstack[0].NetworkUUID = networkUUID
 		}
@@ -298,6 +316,7 @@ func doQemuConfig(reader *bufio.Reader) error {
 	if err != nil {
 		return err
 	}
+	y = strings.TrimSuffix(y, "\n")
 	if y == "y" {
 		if len(daemonConfig.Providers.Qemu) < 1 {
 			daemonConfig.Providers.Qemu = append(daemonConfig.Providers.Qemu, config.Qemu{})
@@ -310,6 +329,7 @@ func doQemuConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		nographic = strings.TrimSuffix(nographic, "\n")
 		if nographic == "y" {
 			daemonConfig.Providers.Qemu[0].NoGraphic = true
 		}
@@ -323,6 +343,7 @@ func doUkvmConfig(reader *bufio.Reader) error {
 	if err != nil {
 		return err
 	}
+	y = strings.TrimSuffix(y, "\n")
 	if y == "y" {
 		if len(daemonConfig.Providers.Ukvm) < 1 {
 			daemonConfig.Providers.Ukvm = append(daemonConfig.Providers.Ukvm, config.Ukvm{})
@@ -335,6 +356,7 @@ func doUkvmConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		tapDevice = strings.TrimSuffix(tapDevice, "\n")
 		if tapDevice != "" {
 			daemonConfig.Providers.Ukvm[0].Tap = tapDevice
 		}
@@ -348,6 +370,7 @@ func doVirtualboxConfig(reader *bufio.Reader) error {
 	if err != nil {
 		return err
 	}
+	y = strings.TrimSuffix(y, "\n")
 	if y == "y" {
 		if len(daemonConfig.Providers.Virtualbox) < 1 {
 			daemonConfig.Providers.Virtualbox = append(daemonConfig.Providers.Virtualbox, config.Virtualbox{})
@@ -360,6 +383,7 @@ func doVirtualboxConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		adapterType = strings.TrimSuffix(adapterType, "\n")
 		if adapterType != "" {
 			daemonConfig.Providers.Virtualbox[0].VirtualboxAdapterType = config.VirtualboxAdapterType(adapterType)
 		}
@@ -368,6 +392,7 @@ func doVirtualboxConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		adapterName = strings.TrimSuffix(adapterName, "\n")
 		if adapterName != "" {
 			daemonConfig.Providers.Virtualbox[0].AdapterName = adapterName
 		}
@@ -381,6 +406,7 @@ func doVsphereConfig(reader *bufio.Reader) error {
 	if err != nil {
 		return err
 	}
+	y = strings.TrimSuffix(y, "\n")
 	if y == "y" {
 		if len(daemonConfig.Providers.Vsphere) < 1 {
 			daemonConfig.Providers.Vsphere = append(daemonConfig.Providers.Vsphere, config.Vsphere{})
@@ -393,6 +419,7 @@ func doVsphereConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		username = strings.TrimSuffix(username, "\n")
 		if username != "" {
 			daemonConfig.Providers.Vsphere[0].VsphereUser = username
 		}
@@ -401,6 +428,7 @@ func doVsphereConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		password = strings.TrimSuffix(password, "\n")
 		if password != "" {
 			daemonConfig.Providers.Vsphere[0].VspherePassword = password
 		}
@@ -409,6 +437,7 @@ func doVsphereConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		authUrl = strings.TrimSuffix(authUrl, "\n")
 		if authUrl != "" {
 			daemonConfig.Providers.Vsphere[0].VsphereURL = authUrl
 		}
@@ -417,6 +446,7 @@ func doVsphereConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		datastore = strings.TrimSuffix(datastore, "\n")
 		if datastore != "" {
 			daemonConfig.Providers.Vsphere[0].Datastore = datastore
 		}
@@ -425,6 +455,7 @@ func doVsphereConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		datacenter = strings.TrimSuffix(datacenter, "\n")
 		if datacenter != "" {
 			daemonConfig.Providers.Vsphere[0].Datacenter = datacenter
 		}
@@ -438,6 +469,7 @@ func doXenConfig(reader *bufio.Reader) error {
 	if err != nil {
 		return err
 	}
+	y = strings.TrimSuffix(y, "\n")
 	if y == "y" {
 		if len(daemonConfig.Providers.Xen) < 1 {
 			daemonConfig.Providers.Xen = append(daemonConfig.Providers.Xen, config.Xen{})
@@ -450,6 +482,7 @@ func doXenConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		xenBridge = strings.TrimSuffix(xenBridge, "\n")
 		if xenBridge != "" {
 			daemonConfig.Providers.Xen[0].XenBridge = xenBridge
 		}
@@ -458,6 +491,7 @@ func doXenConfig(reader *bufio.Reader) error {
 		if err != nil {
 			return err
 		}
+		pvKernel = strings.TrimSuffix(pvKernel, "\n")
 		if pvKernel != "" {
 			daemonConfig.Providers.Xen[0].KernelPath = pvKernel
 		}
