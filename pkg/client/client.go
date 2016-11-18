@@ -60,6 +60,22 @@ func (c *client) AvailableProviders() ([]string, error) {
 	return compilers, nil
 }
 
+func (c *client) DescribeCompiler(base string, lang string, provider string) (string, error) {
+	query := buildQuery(map[string]interface{}{
+		"base":     base,
+		"lang":     lang,
+		"provider": provider,
+	})
+	resp, body, err := lxhttpclient.Get(c.unikIP, "/describe_compiler"+query, nil)
+	if err != nil {
+		return "", errors.New("request failed", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New(fmt.Sprintf("failed with status %v: %s", resp.StatusCode, string(body)), err)
+	}
+	return string(body), nil
+}
+
 func buildQuery(params map[string]interface{}) string {
 	queryArray := []string{}
 	for key, val := range params {

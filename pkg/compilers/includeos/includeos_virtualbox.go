@@ -6,10 +6,11 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
-	"github.com/Sirupsen/logrus"
 )
 
 type IncludeosVirtualboxCompiler struct{}
@@ -52,4 +53,8 @@ func (i *IncludeosVirtualboxCompiler) findFirstImageFile(directory string) (stri
 		}
 	}
 	return "", errors.New("no image file found", goerrors.New("end of dir"))
+}
+
+func (r *IncludeosVirtualboxCompiler) Usage() *compilers.CompilerUsage {
+	return nil
 }
