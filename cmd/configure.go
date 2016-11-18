@@ -5,19 +5,20 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
 	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/config"
-	"io/ioutil"
-	"gopkg.in/yaml.v2"
-	"path/filepath"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/config"
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"path/filepath"
+	"strings"
 )
 
 var configureCmd = &cobra.Command{
 	Use:   "configure [--provider PROVIDER-NAME]",
 	Short: "A generate configuration file for daemon ('daemon.yaml')",
-	Long:  `An interactive command to help walk you through the process of creating or changing a configuration file for unik.
+	Long: `An interactive command to help walk you through the process of creating or changing a configuration file for unik.
 Can be used to configure an individual provider, or any number of providers.
 
 Usage:
@@ -28,7 +29,6 @@ where provider is one of the following:
 aws
 gcloud
 openstack
-photon
 qemu
 ukvm
 virtualbox
@@ -40,12 +40,89 @@ xen
 		readDaemonConfig()
 		reader := bufio.NewReader(os.Stdin)
 		var configFunc func() error
-		switch provider {
+		switch strings.ToLower(provider) {
+		case "aws":
+			configFunc = func() error {
+				if err := doAwsConfig(reader); err != nil {
+					return err
+				}
+				return nil
+			}
+		case "gcloud":
+			configFunc = func() error {
+				if err := doGcloudConfig(reader); err != nil {
+					return err
+				}
+				return nil
+			}
+		case "openstack":
+			configFunc = func() error {
+				if err := doOpenstackConfig(reader); err != nil {
+					return err
+				}
+				return nil
+			}
+		case "qemu":
+			configFunc = func() error {
+				if err := doQemuConfig(reader); err != nil {
+					return err
+				}
+				return nil
+			}
+		case "ukvm":
+			configFunc = func() error {
+				if err := doUkvmConfig(reader); err != nil {
+					return err
+				}
+				return nil
+			}
+		case "virtualbox":
+			configFunc = func() error {
+				if err := doVirtualboxConfig(reader); err != nil {
+					return err
+				}
+				return nil
+			}
+		case "vsphere":
+			configFunc = func() error {
+				if err := doVsphereConfig(reader); err != nil {
+					return err
+				}
+				return nil
+			}
+		case "xen":
+			configFunc = func() error {
+				if err := doXenConfig(reader); err != nil {
+					return err
+				}
+				return nil
+			}
 		case "":
 			configFunc = func() error {
-				doAwsConfig(reader)
-				doGcloudConfig(reader)
-				doOpenstackConfig(reader)
+				if err := doAwsConfig(reader); err != nil {
+					return err
+				}
+				if err := doGcloudConfig(reader); err != nil {
+					return err
+				}
+				if err := doOpenstackConfig(reader); err != nil {
+					return err
+				}
+				if err := doQemuConfig(reader); err != nil {
+					return err
+				}
+				if err := doUkvmConfig(reader); err != nil {
+					return err
+				}
+				if err := doVirtualboxConfig(reader); err != nil {
+					return err
+				}
+				if err := doVsphereConfig(reader); err != nil {
+					return err
+				}
+				if err := doXenConfig(reader); err != nil {
+					return err
+				}
 				return nil
 			}
 		}
@@ -61,7 +138,7 @@ xen
 
 func init() {
 	RootCmd.AddCommand(configureCmd)
-	buildCmd.Flags().StringVar(&provider, "provider", "", "<string,optional> provider to configure. if not given, unik will iterate through each possible provider to configure")
+	configureCmd.Flags().StringVar(&provider, "provider", "", "<string,optional> provider to configure. if not given, unik will iterate through each possible provider to configure")
 }
 
 func writeDaemonConfig() error {
@@ -75,7 +152,6 @@ func writeDaemonConfig() error {
 	}
 	return nil
 }
-
 
 func doAwsConfig(reader *bufio.Reader) error {
 	fmt.Print("Do you wish to configure unik for use with AWS? [y/N]: ")
@@ -118,7 +194,7 @@ func doGcloudConfig(reader *bufio.Reader) error {
 	}
 	if y == "y" {
 		if len(daemonConfig.Providers.Gcloud) < 1 {
-			daemonConfig.Providers.Aws = append(daemonConfig.Providers.Gcloud, config.Gcloud{})
+			daemonConfig.Providers.Gcloud = append(daemonConfig.Providers.Gcloud, config.Gcloud{})
 		}
 		if daemonConfig.Providers.Gcloud[0].Name == "" {
 			daemonConfig.Providers.Gcloud[0].Name = "gcloud-configuration"
@@ -151,7 +227,7 @@ func doOpenstackConfig(reader *bufio.Reader) error {
 	}
 	if y == "y" {
 		if len(daemonConfig.Providers.Openstack) < 1 {
-			daemonConfig.Providers.Aws = append(daemonConfig.Providers.Openstack, config.Openstack{})
+			daemonConfig.Providers.Openstack = append(daemonConfig.Providers.Openstack, config.Openstack{})
 		}
 		if daemonConfig.Providers.Openstack[0].Name == "" {
 			daemonConfig.Providers.Openstack[0].Name = "Openstack-configuration"
@@ -211,6 +287,179 @@ func doOpenstackConfig(reader *bufio.Reader) error {
 		}
 		if networkUUID != "" {
 			daemonConfig.Providers.Openstack[0].NetworkUUID = networkUUID
+		}
+	}
+	return nil
+}
+
+func doQemuConfig(reader *bufio.Reader) error {
+	fmt.Print("Do you wish to configure unik for use with Qemu? [y/N]: ")
+	y, err := reader.ReadString('\n')
+	if err != nil {
+		return err
+	}
+	if y == "y" {
+		if len(daemonConfig.Providers.Qemu) < 1 {
+			daemonConfig.Providers.Qemu = append(daemonConfig.Providers.Qemu, config.Qemu{})
+		}
+		if daemonConfig.Providers.Qemu[0].Name == "" {
+			daemonConfig.Providers.Qemu[0].Name = "Qemu-configuration"
+		}
+		fmt.Print("Run Qemu unikernels in nograpic mode [y/N]? (recommended for non-graphical environments): ")
+		nographic, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if nographic == "y" {
+			daemonConfig.Providers.Qemu[0].NoGraphic = true
+		}
+	}
+	return nil
+}
+
+func doUkvmConfig(reader *bufio.Reader) error {
+	fmt.Print("Do you wish to configure unik for use with Ukvm? [y/N]: ")
+	y, err := reader.ReadString('\n')
+	if err != nil {
+		return err
+	}
+	if y == "y" {
+		if len(daemonConfig.Providers.Ukvm) < 1 {
+			daemonConfig.Providers.Ukvm = append(daemonConfig.Providers.Ukvm, config.Ukvm{})
+		}
+		if daemonConfig.Providers.Ukvm[0].Name == "" {
+			daemonConfig.Providers.Ukvm[0].Name = "Ukvm-configuration"
+		}
+		fmt.Printf("Name of tap device to attach to Ukvm unikernels [%s]: ", daemonConfig.Providers.Ukvm[0].Tap)
+		tapDevice, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if tapDevice != "" {
+			daemonConfig.Providers.Ukvm[0].Tap = tapDevice
+		}
+	}
+	return nil
+}
+
+func doVirtualboxConfig(reader *bufio.Reader) error {
+	fmt.Print("Do you wish to configure unik for use with Virtualbox? [y/N]: ")
+	y, err := reader.ReadString('\n')
+	if err != nil {
+		return err
+	}
+	if y == "y" {
+		if len(daemonConfig.Providers.Virtualbox) < 1 {
+			daemonConfig.Providers.Virtualbox = append(daemonConfig.Providers.Virtualbox, config.Virtualbox{})
+		}
+		if daemonConfig.Providers.Virtualbox[0].Name == "" {
+			daemonConfig.Providers.Virtualbox[0].Name = "Virtualbox-configuration"
+		}
+		fmt.Printf("Virtualbox Network Type (bridged or host_only) [%s]: ", daemonConfig.Providers.Virtualbox[0].VirtualboxAdapterType)
+		adapterType, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if adapterType != "" {
+			daemonConfig.Providers.Virtualbox[0].VirtualboxAdapterType = config.VirtualboxAdapterType(adapterType)
+		}
+		fmt.Printf("Name of network adapter to attach to virtualbox instances [%s]: ", daemonConfig.Providers.Virtualbox[0].AdapterName)
+		adapterName, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if adapterName != "" {
+			daemonConfig.Providers.Virtualbox[0].AdapterName = adapterName
+		}
+	}
+	return nil
+}
+
+func doVsphereConfig(reader *bufio.Reader) error {
+	fmt.Print("Do you wish to configure unik for use with Vsphere? [y/N]: ")
+	y, err := reader.ReadString('\n')
+	if err != nil {
+		return err
+	}
+	if y == "y" {
+		if len(daemonConfig.Providers.Vsphere) < 1 {
+			daemonConfig.Providers.Vsphere = append(daemonConfig.Providers.Vsphere, config.Vsphere{})
+		}
+		if daemonConfig.Providers.Vsphere[0].Name == "" {
+			daemonConfig.Providers.Vsphere[0].Name = "Vsphere-configuration"
+		}
+		fmt.Printf("Vsphere username for authentication [%s]: ", daemonConfig.Providers.Vsphere[0].VsphereUser)
+		username, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if username != "" {
+			daemonConfig.Providers.Vsphere[0].VsphereUser = username
+		}
+		fmt.Printf("Vsphere password for authentication [%s]: ", daemonConfig.Providers.Vsphere[0].VspherePassword)
+		password, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if password != "" {
+			daemonConfig.Providers.Vsphere[0].VspherePassword = password
+		}
+		fmt.Printf("Vsphere authentication url [%s]: ", daemonConfig.Providers.Vsphere[0].VsphereURL)
+		authUrl, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if authUrl != "" {
+			daemonConfig.Providers.Vsphere[0].VsphereURL = authUrl
+		}
+		fmt.Printf("Vsphere datastore name [%s]: ", daemonConfig.Providers.Vsphere[0].Datastore)
+		datastore, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if datastore != "" {
+			daemonConfig.Providers.Vsphere[0].Datastore = datastore
+		}
+		fmt.Printf("Vsphere datacenter name [%s]: ", daemonConfig.Providers.Vsphere[0].Datacenter)
+		datacenter, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if datacenter != "" {
+			daemonConfig.Providers.Vsphere[0].Datacenter = datacenter
+		}
+	}
+	return nil
+}
+
+func doXenConfig(reader *bufio.Reader) error {
+	fmt.Print("Do you wish to configure unik for use with Xen? [y/N]: ")
+	y, err := reader.ReadString('\n')
+	if err != nil {
+		return err
+	}
+	if y == "y" {
+		if len(daemonConfig.Providers.Xen) < 1 {
+			daemonConfig.Providers.Xen = append(daemonConfig.Providers.Xen, config.Xen{})
+		}
+		if daemonConfig.Providers.Xen[0].Name == "" {
+			daemonConfig.Providers.Xen[0].Name = "Xen-configuration"
+		}
+		fmt.Printf("Name of xen bridge network interface to attach to Xen unikernels [%s]: ", daemonConfig.Providers.Xen[0].XenBridge)
+		xenBridge, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if xenBridge != "" {
+			daemonConfig.Providers.Xen[0].XenBridge = xenBridge
+		}
+		fmt.Printf("Path to PV Grub Boot Manager (see https://wiki.xen.org/wiki/PvGrub#Build for more info) [%s]: ", daemonConfig.Providers.Xen[0].KernelPath)
+		pvKernel, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if pvKernel != "" {
+			daemonConfig.Providers.Xen[0].KernelPath = pvKernel
 		}
 	}
 	return nil
