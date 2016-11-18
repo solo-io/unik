@@ -22,6 +22,7 @@ import (
 	"github.com/emc-advanced-dev/unik/pkg/compilers/includeos"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/mirage"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/osv"
+	"github.com/emc-advanced-dev/unik/pkg/compilers/osv/osvbootstrap"
 	"github.com/emc-advanced-dev/unik/pkg/compilers/rump"
 	"github.com/emc-advanced-dev/unik/pkg/config"
 	unikos "github.com/emc-advanced-dev/unik/pkg/os"
@@ -358,21 +359,21 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_C_OPENSTACK] = rump.NewRumpCCompiler("compilers-rump-c-hw", rump.CreateImageQemu)
 
 	//osv java
-	osvJavaXenCompiler := &osv.OsvAwsCompiler{
+	osvJavaXenCompiler := &osv.OSvJavaCompiler{
 		OSvCompilerBase: osv.OSvCompilerBase{
-			CreateImage: osv.CreateImageJava,
+			Bootstrapper: &osvbootstrap.AwsBootstrapper{},
 		},
 	}
 	_compilers[compilers.OSV_JAVA_XEN] = osvJavaXenCompiler
 	_compilers[compilers.OSV_JAVA_AWS] = osvJavaXenCompiler
-	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{
+	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OSvJavaCompiler{
 		OSvCompilerBase: osv.OSvCompilerBase{
-			CreateImage: osv.CreateImageJava,
+			Bootstrapper: &osvbootstrap.VirtualboxBootstrapper{},
 		},
 	}
-	_compilers[compilers.OSV_JAVA_VSPHERE] = &osv.OsvVmwareCompiler{
+	_compilers[compilers.OSV_JAVA_VSPHERE] = &osv.OSvJavaCompiler{
 		OSvCompilerBase: osv.OSvCompilerBase{
-			CreateImage: osv.CreateImageJava,
+			Bootstrapper: &osvbootstrap.VmwareBootstrapper{},
 		},
 	}
 	// At the moment OpenStack provider borrows Xen's compiler.
