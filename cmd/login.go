@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"path/filepath"
 )
 
 var loginCmd = &cobra.Command{
@@ -59,6 +60,7 @@ func setHubConfig(url, user, pass string) error {
 	if err != nil {
 		return errors.New("failed to convert config to yaml string ", err)
 	}
+	os.MkdirAll(filepath.Dir(hubConfigFile), 0755)
 	if err := ioutil.WriteFile(hubConfigFile, data, 0644); err != nil {
 		return errors.New("failed writing config to file "+clientConfigFile, err)
 	}
