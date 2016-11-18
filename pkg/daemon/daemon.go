@@ -1147,6 +1147,43 @@ func (d *UnikDaemon) initialize() {
 			return []string(availableProviders), http.StatusOK, nil
 		})
 	})
+	d.server.Get("/describe_compiler", func(res http.ResponseWriter, req *http.Request) {
+		handle(res, func() (interface{}, int, error) {
+			logrus.Debugf("describing compiler")
+
+			// Find compiler.
+			provider := req.FormValue("provider")
+			if _, ok := d.providers[provider]; !ok {
+				return nil, http.StatusBadRequest, errors.New(provider+" is not a known provider. Available: "+
+					strings.Join(d.providers.Keys(), "|"), nil)
+			}
+			base := req.FormValue("base")
+			if base == "" {
+				return nil, http.StatusBadRequest, errors.New("must provide 'base' parameter", nil)
+			}
+			lang := req.FormValue("lang")
+			if lang == "" {
+				return nil, http.StatusBadRequest, errors.New("must provide 'lang' parameter", nil)
+			}
+			compilerName, err := compilers.ValidateCompiler(base, lang, provider)
+			if err != nil {
+				return nil, http.StatusBadRequest, errors.New("invalid base - lang - provider match", err)
+			}
+			compiler, ok := d.compilers[compilerName]
+			if !ok {
+				return nil, http.StatusBadRequest, errors.New("failed to access compiler", nil)
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"compiler": compiler,
+			}).Infof("describe compiler")
+
+			// Let compiler describe itself.
+			description := compiler.Usage()
+
+			return description, http.StatusOK, nil
+		})
+	})
 }
 
 func streamOutput(outputFunc func() (string, error), w io.Writer) (err error) {

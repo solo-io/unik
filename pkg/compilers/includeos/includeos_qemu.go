@@ -50,3 +50,7 @@ func (i *IncludeosQemuCompiler) findFirstImageFile(directory string) (string, er
 	}
 	return "", errors.New("no image file found", goerrors.New("end of dir"))
 }
+
+func (r *IncludeosQemuCompiler) Usage() string {
+	return "No usage information available"
+}

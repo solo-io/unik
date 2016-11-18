@@ -64,3 +64,7 @@ func (r *OSvJavaCompiler) CompileRawImage(params types.CompileImageParams) (*typ
 	}
 	return r.OSvCompilerBase.Bootstrapper.Bootstrap(bootstrapParams)
 }
+
+func (r *OSvJavaCompiler) Usage() string {
+	return "No usage information available"
+}
