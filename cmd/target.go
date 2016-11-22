@@ -12,6 +12,7 @@ import (
 
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/config"
+	"path/filepath"
 )
 
 var show bool
@@ -56,6 +57,7 @@ func setClientConfig(host string, port int) error {
 	if err != nil {
 		return errors.New("failed to convert config to yaml string ", err)
 	}
+	os.MkdirAll(filepath.Dir(clientConfigFile), 0755)
 	if err := ioutil.WriteFile(clientConfigFile, data, 0644); err != nil {
 		return errors.New("failed writing config to file "+clientConfigFile, err)
 	}
