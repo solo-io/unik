@@ -6,10 +6,10 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/Sirupsen/logrus"
 )
 
 type IncludeosVirtualboxCompiler struct{}
@@ -24,7 +24,7 @@ func (i *IncludeosVirtualboxCompiler) CompileRawImage(params types.CompileImageP
 	res := &types.RawImage{}
 	localImageFile, err := i.findFirstImageFile(sourcesDir)
 	if err != nil {
-		logrus.Errorf("error getting local image file name")
+		return nil, errors.New("error getting local image file name", err)
 	}
 	res.LocalImagePath = path.Join(sourcesDir, localImageFile)
 	res.StageSpec.ImageFormat = types.ImageFormat_RAW
@@ -44,6 +44,7 @@ func (i *IncludeosVirtualboxCompiler) findFirstImageFile(directory string) (stri
 		return "", errors.New("could not read dir", err)
 	}
 	for _, file := range files {
+		logrus.Debugf("searching for .img file: %v", file.Name())
 		if file.Mode().IsRegular() {
 			if filepath.Ext(file.Name()) == ".img" {
 				return file.Name(), nil
