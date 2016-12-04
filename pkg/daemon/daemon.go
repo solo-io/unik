@@ -66,11 +66,11 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		return nil, errors.New("initializing containers", err)
 	}
 
-	if runtime.GOOS == "darwin" {
-		tmpDir := filepath.Join(os.Getenv("HOME"), ".unik", "tmp")
-		os.Setenv("TMPDIR", tmpDir)
-		os.MkdirAll(tmpDir, 0755)
-	}
+	//set up tmpdrir
+	tmpDir := filepath.Join(os.Getenv("HOME"), ".unik", "tmp")
+	os.Setenv("TMPDIR", tmpDir)
+	os.MkdirAll(tmpDir, 0755)
+
 	_providers := make(providers.Providers)
 	_compilers := make(map[compilers.CompilerType]compilers.Compiler)
 
