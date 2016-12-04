@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"path/filepath"
-	"runtime"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/pkg/ioutils"
