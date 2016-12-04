@@ -44,6 +44,10 @@ func (r *RumpCCompiler) CompileRawImage(params types.CompileImageParams) (*types
 	return r.CreateImage(resultFile, params.Args, params.MntPoints, nil, params.NoCleanup)
 }
 
+func (r *RumpCCompiler) Usage() string {
+	return "No usage information available"
+}
+
 func NewRumpCCompiler(dockerImage string, createImage func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error)) *RumpCCompiler {
 	return &RumpCCompiler{
 		RumCompilerBase: RumCompilerBase{

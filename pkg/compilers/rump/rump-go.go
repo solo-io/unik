@@ -56,6 +56,10 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 	return img, nil
 }
 
+func (r *RumpGoCompiler) Usage() string {
+	return "No usage information available"
+}
+
 type godeps struct {
 	ImportPath   string   `json:"ImportPath"`
 	GoVersion    string   `json:"GoVersion"`
