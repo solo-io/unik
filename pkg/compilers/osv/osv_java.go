@@ -1,8 +1,6 @@
 package osv
 
 import (
-	"os"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/emc-advanced-dev/unik/pkg/types"
@@ -12,6 +10,10 @@ import (
 	"path/filepath"
 )
 
+type OSvJavaCompiler struct {
+	OSvCompilerBase
+}
+
 // javaProjectConfig defines available inputs
 type javaProjectConfig struct {
 	MainFile    string `yaml:"main_file"`
@@ -19,22 +21,21 @@ type javaProjectConfig struct {
 	BuildCmd    string `yaml:"build_command"`
 }
 
-// CreateImageJava creates OSv image from project source code and returns filepath of it.
-func CreateImageJava(params types.CompileImageParams, useEc2Bootstrap bool) (string, error) {
+func (r *OSvJavaCompiler) CompileRawImage(params types.CompileImageParams) (*types.RawImage, error) {
 	sourcesDir := params.SourcesDir
 
 	var config javaProjectConfig
 	data, err := ioutil.ReadFile(filepath.Join(sourcesDir, "manifest.yaml"))
 	if err != nil {
-		return "", errors.New("failed to read manifest.yaml file", err)
+		return nil, errors.New("failed to read manifest.yaml file", err)
 	}
 	if err := yaml.Unmarshal(data, &config); err != nil {
-		return "", errors.New("failed to parse yaml manifest.yaml file", err)
+		return nil, errors.New("failed to parse yaml manifest.yaml file", err)
 	}
 
 	container := unikutil.NewContainer("compilers-osv-java").WithVolume("/dev", "/dev").WithVolume(sourcesDir+"/", "/project_directory")
 	var args []string
-	if useEc2Bootstrap {
+	if r.CompilerHelper.UseEc2() {
 		args = append(args, "-ec2")
 	}
 
@@ -52,21 +53,13 @@ func CreateImageJava(params types.CompileImageParams, useEc2Bootstrap bool) (str
 	}).Debugf("running compilers-osv-java container")
 
 	if err := container.Run(args...); err != nil {
-		return "", errors.New("failed running compilers-osv-java on "+sourcesDir, err)
+		return nil, errors.New("failed running compilers-osv-java on "+sourcesDir, err)
 	}
 
-	resultFile, err := ioutil.TempFile("", "osv-boot.vmdk.")
-	if err != nil {
-		return "", errors.New("failed to create tmpfile for result", err)
+	// And finally bootstrap.
+	convertParams := ConvertParams{
+		CompileParams:    params,
+		CapstanImagePath: filepath.Join(sourcesDir, "boot.qcow2"),
 	}
-	defer func() {
-		if err != nil && !params.NoCleanup {
-			os.Remove(resultFile.Name())
-		}
-	}()
-
-	if err := os.Rename(filepath.Join(sourcesDir, "boot.qcow2"), resultFile.Name()); err != nil {
-		return "", errors.New("failed to rename result file", err)
-	}
-	return resultFile.Name(), nil
+	return r.CompilerHelper.Convert(convertParams)
 }
