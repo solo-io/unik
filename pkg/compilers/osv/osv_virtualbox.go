@@ -6,11 +6,9 @@ import (
 
 const OSV_VIRTUALBOX_MEMORY = 512
 
-type VirtualboxCompilerHelper struct {
-	CompilerHelperBase
-}
+type VirtualboxImageFinisher struct {}
 
-func (b *VirtualboxCompilerHelper) Convert(params ConvertParams) (*types.RawImage, error) {
+func (b *VirtualboxImageFinisher) FinishImage(params FinishParams) (*types.RawImage, error) {
 	return &types.RawImage{
 		LocalImagePath: params.CapstanImagePath,
 		StageSpec: types.StageSpec{
@@ -18,10 +16,14 @@ func (b *VirtualboxCompilerHelper) Convert(params ConvertParams) (*types.RawImag
 		},
 		RunSpec: types.RunSpec{
 			DeviceMappings: []types.DeviceMapping{
-				types.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"},
+				{MountPoint: "/", DeviceName: "/dev/sda1"},
 			},
 			StorageDriver:         types.StorageDriver_SATA,
 			DefaultInstanceMemory: OSV_VIRTUALBOX_MEMORY,
 		},
 	}, nil
+}
+
+func (b *VirtualboxImageFinisher) UseEc2() bool {
+	return false
 }

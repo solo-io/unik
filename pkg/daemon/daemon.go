@@ -358,21 +358,15 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 
 	//osv java
 	osvJavaXenCompiler := &osv.OSvJavaCompiler{
-		OSvCompilerBase: osv.OSvCompilerBase{
-			CompilerHelper: &osv.AwsCompilerHelper{},
-		},
+		ImageFinisher: &osv.AwsImageFinisher{},
 	}
 	_compilers[compilers.OSV_JAVA_XEN] = osvJavaXenCompiler
 	_compilers[compilers.OSV_JAVA_AWS] = osvJavaXenCompiler
 	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OSvJavaCompiler{
-		OSvCompilerBase: osv.OSvCompilerBase{
-			CompilerHelper: &osv.VirtualboxCompilerHelper{},
-		},
+		ImageFinisher: &osv.VirtualboxImageFinisher{},
 	}
 	_compilers[compilers.OSV_JAVA_VSPHERE] = &osv.OSvJavaCompiler{
-		OSvCompilerBase: osv.OSvCompilerBase{
-			CompilerHelper: &osv.VmwareCompilerHelper{},
-		},
+		ImageFinisher: &osv.VmwareImageFinisher{},
 	}
 	// At the moment OpenStack provider borrows Xen's compiler.
 	_compilers[compilers.OSV_JAVA_OPENSTACK] = osvJavaXenCompiler

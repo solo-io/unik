@@ -6,11 +6,11 @@ import (
 
 const OSV_VMWARE_MEMORY = 512
 
-type VmwareCompilerHelper struct {
-	CompilerHelperBase
+type VmwareImageFinisher struct {
+	ImageFinisher
 }
 
-func (b *VmwareCompilerHelper) Convert(params ConvertParams) (*types.RawImage, error) {
+func (b *VmwareImageFinisher) FinishImage(params FinishParams) (*types.RawImage, error) {
 	return &types.RawImage{
 		LocalImagePath: params.CapstanImagePath,
 		StageSpec: types.StageSpec{
@@ -18,7 +18,7 @@ func (b *VmwareCompilerHelper) Convert(params ConvertParams) (*types.RawImage, e
 		},
 		RunSpec: types.RunSpec{
 			DeviceMappings: []types.DeviceMapping{
-				types.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"},
+				{MountPoint: "/", DeviceName: "/dev/sda1"},
 			},
 			StorageDriver:         types.StorageDriver_IDE,
 			VsphereNetworkType:    types.VsphereNetworkType_VMXNET3,

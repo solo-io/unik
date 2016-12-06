@@ -11,7 +11,7 @@ import (
 )
 
 type OSvJavaCompiler struct {
-	OSvCompilerBase
+	ImageFinisher ImageFinisher
 }
 
 // javaProjectConfig defines available inputs
@@ -35,7 +35,7 @@ func (r *OSvJavaCompiler) CompileRawImage(params types.CompileImageParams) (*typ
 
 	container := unikutil.NewContainer("compilers-osv-java").WithVolume("/dev", "/dev").WithVolume(sourcesDir+"/", "/project_directory")
 	var args []string
-	if r.CompilerHelper.UseEc2() {
+	if r.ImageFinisher.UseEc2() {
 		args = append(args, "-ec2")
 	}
 
@@ -57,9 +57,9 @@ func (r *OSvJavaCompiler) CompileRawImage(params types.CompileImageParams) (*typ
 	}
 
 	// And finally bootstrap.
-	convertParams := ConvertParams{
+	convertParams := FinishParams{
 		CompileParams:    params,
 		CapstanImagePath: filepath.Join(sourcesDir, "boot.qcow2"),
 	}
-	return r.CompilerHelper.Convert(convertParams)
+	return r.ImageFinisher.FinishImage(convertParams)
 }

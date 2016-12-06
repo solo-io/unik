@@ -6,11 +6,9 @@ import (
 
 const OSV_AWS_MEMORY = 1024
 
-type AwsCompilerHelper struct {
-	CompilerHelperBase
-}
+type AwsImageFinisher struct {}
 
-func (b *AwsCompilerHelper) Convert(params ConvertParams) (*types.RawImage, error) {
+func (b *AwsImageFinisher) FinishImage(params FinishParams) (*types.RawImage, error) {
 	return &types.RawImage{
 		LocalImagePath: params.CapstanImagePath,
 		StageSpec: types.StageSpec{
@@ -19,13 +17,13 @@ func (b *AwsCompilerHelper) Convert(params ConvertParams) (*types.RawImage, erro
 		},
 		RunSpec: types.RunSpec{
 			DeviceMappings: []types.DeviceMapping{
-				types.DeviceMapping{MountPoint: "/", DeviceName: "/dev/sda1"},
+				{MountPoint: "/", DeviceName: "/dev/sda1"},
 			},
 			DefaultInstanceMemory: OSV_AWS_MEMORY,
 		},
 	}, nil
 }
 
-func (b *AwsCompilerHelper) UseEc2() bool {
+func (b *AwsImageFinisher) UseEc2() bool {
 	return true
 }
