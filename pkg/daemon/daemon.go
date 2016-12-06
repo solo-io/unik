@@ -357,22 +357,16 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.RUMP_C_OPENSTACK] = rump.NewRumpCCompiler("compilers-rump-c-hw", rump.CreateImageQemu)
 
 	//osv java
-	osvJavaXenCompiler := &osv.OsvAwsCompiler{
-		OSvCompilerBase: osv.OSvCompilerBase{
-			CreateImage: osv.CreateImageJava,
-		},
+	osvJavaXenCompiler := &osv.OSvJavaCompiler{
+		ImageFinisher: &osv.AwsImageFinisher{},
 	}
 	_compilers[compilers.OSV_JAVA_XEN] = osvJavaXenCompiler
 	_compilers[compilers.OSV_JAVA_AWS] = osvJavaXenCompiler
-	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OsvVirtualboxCompiler{
-		OSvCompilerBase: osv.OSvCompilerBase{
-			CreateImage: osv.CreateImageJava,
-		},
+	_compilers[compilers.OSV_JAVA_VIRTUALBOX] = &osv.OSvJavaCompiler{
+		ImageFinisher: &osv.VirtualboxImageFinisher{},
 	}
-	_compilers[compilers.OSV_JAVA_VSPHERE] = &osv.OsvVmwareCompiler{
-		OSvCompilerBase: osv.OSvCompilerBase{
-			CreateImage: osv.CreateImageJava,
-		},
+	_compilers[compilers.OSV_JAVA_VSPHERE] = &osv.OSvJavaCompiler{
+		ImageFinisher: &osv.VmwareImageFinisher{},
 	}
 	// At the moment OpenStack provider borrows Xen's compiler.
 	_compilers[compilers.OSV_JAVA_OPENSTACK] = osvJavaXenCompiler
