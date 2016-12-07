@@ -9,6 +9,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"gopkg.in/yaml.v2"
 )
@@ -76,6 +77,10 @@ func (r *RumpScriptCompiler) CompileRawImage(params types.CompileImageParams) (*
 	}
 
 	return r.CreateImage(resultFile, args, params.MntPoints, append(r.ScriptEnv, fmt.Sprintf("MAIN_FILE=%s", config.MainFile), fmt.Sprintf("BOOTSTRAP_TYPE=%s", r.BootstrapType)), params.NoCleanup)
+}
+
+func (r *RumpScriptCompiler) Usage() *compilers.CompilerUsage {
+	return nil
 }
 
 func NewRumpPythonCompiler(dockerImage string, createImage func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error), bootStrapType string) *RumpScriptCompiler {

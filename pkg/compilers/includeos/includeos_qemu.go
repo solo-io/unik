@@ -4,6 +4,7 @@ import (
 	goerrors "errors"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"os"
@@ -49,4 +50,8 @@ func (i *IncludeosQemuCompiler) findFirstImageFile(directory string) (string, er
 		}
 	}
 	return "", errors.New("no image file found", goerrors.New("end of dir"))
+}
+
+func (r *IncludeosQemuCompiler) Usage() *compilers.CompilerUsage {
+	return nil
 }

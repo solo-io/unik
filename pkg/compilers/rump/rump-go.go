@@ -10,6 +10,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 )
 
@@ -54,6 +55,10 @@ func (r *RumpGoCompiler) CompileRawImage(params types.CompileImageParams) (*type
 		return nil, errors.New("creating boot volume from kernel binary", err)
 	}
 	return img, nil
+}
+
+func (r *RumpGoCompiler) Usage() *compilers.CompilerUsage {
+	return nil
 }
 
 type godeps struct {

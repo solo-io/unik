@@ -3,6 +3,7 @@ package osv
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
 	"gopkg.in/yaml.v2"
@@ -62,4 +63,13 @@ func (r *OSvJavaCompiler) CompileRawImage(params types.CompileImageParams) (*typ
 		CapstanImagePath: filepath.Join(sourcesDir, "boot.qcow2"),
 	}
 	return r.ImageFinisher.FinishImage(convertParams)
+}
+
+func (r *OSvJavaCompiler) Usage() *compilers.CompilerUsage {
+	return &compilers.CompilerUsage{
+		PrepareApplication: "Compile your Java application into a fat jar.",
+		ConfigurationFiles: map[string]string{
+			"/manifest.yaml": "main_file: <relative-path-to-your-fat-jar>",
+		},
+	}
 }

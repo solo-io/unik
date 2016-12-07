@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/emc-advanced-dev/unik/pkg/compilers"
 	"github.com/emc-advanced-dev/unik/pkg/types"
 	"gopkg.in/yaml.v2"
 )
@@ -42,6 +43,10 @@ func (r *RumpCCompiler) CompileRawImage(params types.CompileImageParams) (*types
 	resultFile := path.Join(sourcesDir, "program.bin")
 
 	return r.CreateImage(resultFile, params.Args, params.MntPoints, nil, params.NoCleanup)
+}
+
+func (r *RumpCCompiler) Usage() *compilers.CompilerUsage {
+	return nil
 }
 
 func NewRumpCCompiler(dockerImage string, createImage func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error)) *RumpCCompiler {
