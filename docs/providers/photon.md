@@ -1,5 +1,5 @@
 # Photon Controller Provider
-UniK supports running VMware-compatibel unikernels on ESXi hosts using the Photon Controller API.
+UniK supports running VMware-compatible unikernels on ESXi hosts using the Photon Controller API.
 
 To run UniK instances with Photon, add a Photon stub to your `daemon-config.yaml`:
 
