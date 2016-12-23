@@ -371,11 +371,20 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	// At the moment OpenStack provider borrows Xen's compiler.
 	_compilers[compilers.OSV_JAVA_OPENSTACK] = osvJavaXenCompiler
 
+	// osv dynamic
 	d := &UnikDaemon{
 		server:    lxmartini.QuietMartini(),
 		providers: _providers,
 		compilers: _compilers,
 	}
+
+	osvDynamicQemuCompiler := &osv.OsvQemuCompiler{
+		OSvCompilerBase: osv.OSvCompilerBase{
+			CreateImage: osv.CreateImageDynamic,
+		},
+	}
+	_compilers[compilers.OSV_DYNAMIC_QEMU] = osvDynamicQemuCompiler
+	_compilers[compilers.OSV_DYNAMIC_OPENSTACK] = osvDynamicQemuCompiler
 
 	d.initialize()
 
