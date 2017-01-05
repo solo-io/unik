@@ -54,20 +54,22 @@ func (p *OpenstackProvider) Stage(params types.StageImageParams) (_ *types.Image
 		return nil, errors.New("statting raw image file", err)
 	}
 
-	// TODO: Obtain image LOGICAL size, not actual (e.g. 10GB for OSv, not 8MB)
-	imageSizeB := rawImageFile.Size()
-	imageSizeMB := int(unikos.Bytes(imageSizeB).ToMegaBytes())
+	// Image size - use logical size unless physical size is bigger
+	imagePhysicalSizeMB := int(unikos.Bytes(rawImageFile.Size()).ToMegaBytes())
+	if imagePhysicalSizeMB > params.RawImage.RunSpec.MinInstanceDiskMB {
+		params.RawImage.RunSpec.MinInstanceDiskMB = int(imagePhysicalSizeMB)
+	}
 
 	// Pick flavor.
-	flavor, err := pickFlavor(clientNova, imageSizeMB, 0)
+	flavor, err := pickFlavor(clientNova, params.RawImage.RunSpec.MinInstanceDiskMB, 0)
 	if err != nil {
 		return nil, errors.New("picking a flavor", err)
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"imageSizeB":  imageSizeB,
-		"imageSizeMB": imageSizeMB,
-		"flavor":      flavor,
+		"imagePhysicalSizeMB": imagePhysicalSizeMB,
+		"MinInstanceDiskMB":   params.RawImage.RunSpec.MinInstanceDiskMB,
+		"flavor":              flavor,
 	}).Debug("pushing image to openstack")
 
 	// Push image to OpenStack.
@@ -81,7 +83,7 @@ func (p *OpenstackProvider) Stage(params types.StageImageParams) (_ *types.Image
 		Name:           createdImage.Name,
 		RunSpec:        params.RawImage.RunSpec,
 		StageSpec:      params.RawImage.StageSpec,
-		SizeMb:         int64(imageSizeMB),
+		SizeMb:         int64(imagePhysicalSizeMB),
 		Infrastructure: types.Infrastructure_OPENSTACK,
 		Created:        time.Now(),
 	}

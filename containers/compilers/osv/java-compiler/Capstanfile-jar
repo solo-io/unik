@@ -1,9 +1,0 @@
-base: cloudius/osv-openjdk8
-
-cmdline: >
-    /java.so
-    -jar
-    /program.jar
-
-files:
-  /program.jar: /program.jar
