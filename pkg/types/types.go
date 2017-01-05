@@ -134,11 +134,13 @@ const (
 type RunSpec struct {
 	DeviceMappings []DeviceMapping `json:"DeviceMappings"` //required for all compilers
 	// DefaultInstanceMemory is in MB
-	DefaultInstanceMemory int                `json:"DefaultInstanceMemory"` //required for all compilers
-	MinInstanceDiskMB     int                `json:"MinInstanceDiskMB"`
-	StorageDriver         StorageDriver      `json:"StorageDriver,omitempty"`
-	VsphereNetworkType    VsphereNetworkType `json:"VsphereNetworkType"`
-	Compiler              string             `json:"Compiler,omitempty"`
+	DefaultInstanceMemory int `json:"DefaultInstanceMemory"` //required for all compilers
+	// MinInstanceDiskMB specifies minimum disk requirement to run the instance.
+	// Used e.g. to pick flavor in the case of OpenStack provider.
+	MinInstanceDiskMB  int                `json:"MinInstanceDiskMB"`
+	StorageDriver      StorageDriver      `json:"StorageDriver,omitempty"`
+	VsphereNetworkType VsphereNetworkType `json:"VsphereNetworkType"`
+	Compiler           string             `json:"Compiler,omitempty"`
 }
 
 type DeviceMapping struct {

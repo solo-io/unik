@@ -12,8 +12,6 @@ import (
 const DEFAULT_INSTANCE_DISKMB int = 10 * 1024 // 10 GB
 
 func (p *OpenstackProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {
-	// return nil, errors.New("not yet supportded for openstack", nil)
-
 	logrus.WithFields(logrus.Fields{
 		"image-id": params.ImageId,
 		"mounts":   params.MntPointsToVolumeIds,

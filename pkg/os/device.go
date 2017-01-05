@@ -45,6 +45,10 @@ func (s GigaBytes) ToPartedFormat() string {
 	return fmt.Sprintf("%dGiB", uint64(s))
 }
 
+func (s GigaBytes) ToMegaBytes() MegaBytes {
+	return MegaBytes(s << 10)
+}
+
 func (s GigaBytes) ToBytes() Bytes {
 	return Bytes(s << 30)
 }
