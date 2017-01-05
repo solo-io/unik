@@ -16,6 +16,10 @@ type Compiler interface {
 }
 
 type CompilerUsage struct {
+	// GeneralDescription section briefly describes what user has
+	// to prepare.
+	GeneralDescription string
+
 	// PrepareApplication section briefly describes how user should
 	// prepare her application PRIOR composing unikernel with UniK
 	PrepareApplication string
@@ -29,6 +33,7 @@ type CompilerUsage struct {
 }
 
 func (c *CompilerUsage) ToString() string {
+	general := strings.TrimSpace(c.GeneralDescription)
 	prepApp := strings.TrimSpace(c.PrepareApplication)
 	other := strings.TrimSpace(c.Other)
 
@@ -41,12 +46,15 @@ func (c *CompilerUsage) ToString() string {
 	configFiles = strings.TrimSpace(configFiles)
 
 	description := fmt.Sprintf(`
+OVERVIEW		
+%s
+
 HOW TO PREPARE APPLICATION	
 %s
 
 CONFIGURATION FILES
 %s
-`, prepApp, configFiles)
+`, general, prepApp, configFiles)
 
 	if other != "" {
 		description += fmt.Sprintf("\nOTHER\n%s", other)
