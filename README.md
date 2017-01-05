@@ -36,7 +36,9 @@ Due to the frequency with which features and patches are applied to UniK, we hav
   - Using the [command line interface](docs/cli.md)
   - Compiling [Node.js](docs/compilers/rump.md#nodejs) Applications to Unikernels
   - Compiling [Go](docs/compilers/rump.md#golang) Applications to Unikernels
-  - Compiling [Java](docs/compilers/osv.md#java) Applications to Unikernels
+  - Compiling [Java](docs/compilers/osv.md#java) Applications to Unikernels (OSv)
+  - Compiling [Node.js](docs/compilers/osv.md#nodejs) Applications to Unikernels (OSv)
+  - Compiling [C/C++](docs/compilers/osv.md#native) Applications to Unikernels (OSv)
   - Compiling [C/C++](docs/compilers/includeos.md) Applications to Unikernels
   - Compiling [Python3](docs/compilers/rump.md#python-3) Applications to Unikernels
 - **Developer Documentation**
@@ -47,7 +49,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 
 ### Supported unikernel types:
 * **rump**: UniK supports compiling [Python](docs/compilers/rump.md#python-3), [Node.js](docs/compilers/rump.md#nodejs) and [Go](docs/compilers/rump.md#golang) code into [rumprun](docs/compilers/rump.md) unikernels
-* **OSv**: UniK supports compiling Java code into [OSv](http://osv.io/) unikernels
+* **OSv**: UniK supports compiling Java, Node.js, C and C++ code into [OSv](http://osv.io/) unikernels
 * **IncludeOS**: UniK supports compiling C++ code into [IncludeOS](https://github.com/hioa-cs/IncludeOS) unikernels
 * **MirageOS**: UniK supports compiling [OCaml](docs/compilers/mirage.md), code into [MirageOS](https://mirage.io) unikernels
 
