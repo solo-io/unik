@@ -64,7 +64,7 @@ all: ${SOURCES} binary
 .PHONY: compilers-rump-python3-hw
 .PHONY: compilers-rump-python3-hw-no-stub
 .PHONY: compilers-rump-python3-xen
-.PHONY: compilers-osv-java
+.PHONY: compilers-osv-dynamic
 .PHONY: compilers-mirage-ocaml-xen
 .PHONY: compilers-mirage-ocaml-ukvm
 
@@ -82,7 +82,6 @@ pull:
 	$(call pull_container,boot-creator)
 	$(call pull_container,qemu-util)
 	$(call pull_container,compilers-includeos-cpp-hw)
-	$(call pull_container,compilers-osv-java)
 	$(call pull_container,compilers-rump-java-hw)
 	$(call pull_container,compilers-rump-java-xen)
 	$(call pull_container,compilers-rump-go-hw)
@@ -99,6 +98,7 @@ pull:
 	$(call pull_container,compilers-rump-base-hw)
 	$(call pull_container,rump-debugger-qemu)
 	$(call pull_container,compilers-rump-base-common)
+	$(call pull_container,compilers-osv-dynamic)
 	docker pull euranova/ubuntu-vbox
 #------
 
@@ -120,7 +120,7 @@ compilers: compilers-includeos-cpp-hw \
            compilers-rump-python3-hw \
            compilers-rump-python3-hw-no-stub \
            compilers-rump-python3-xen \
-           compilers-osv-java
+           compilers-osv-dynamic
 
 compilers-includeos-cpp-common:
 	$(call build_container,compilers/includeos/cpp,$@,.common)
@@ -181,12 +181,8 @@ compilers-rump-python3-hw-no-stub: compilers-rump-base-hw
 compilers-rump-python3-xen: compilers-rump-go-xen
 	$(call build_container,compilers/rump/python3,$@,.xen)
 
-compilers-osv-java:
-	cd containers/compilers/osv/java-compiler/java-main-caller && mvn package
-	cd containers/compilers/osv/java-compiler && GOOS=linux go build
-	$(call build_container,compilers/osv/java-compiler,$@,)
-	cd containers/compilers/osv/java-compiler && rm java-compiler
-	cd containers/compilers/osv/java-compiler/java-main-caller && rm -rf target
+compilers-osv-dynamic:
+	$(call build_container,compilers/osv/dynamic,$@,)
 
 compilers-mirage-ocaml-xen:
 	$(call build_container,compilers/mirage/ocaml,$@,.xen)
@@ -275,7 +271,7 @@ remove-containers:
 	-rm -rf containers/utils/vsphere-client/vsphere-client.empty
 	-$(call remove_container,image-creator)
 	-$(call remove_container,boot-creator)
-	-$(call remove_container,compilers-osv-java)
+	-$(call remove_container,compilers-osv-dynamic)
 	-$(call remove_container,compilers-rump-go-xen)
 	-$(call remove_container,compilers-rump-go-hw)
 	-$(call remove_container,compilers-rump-nodejs-hw)
