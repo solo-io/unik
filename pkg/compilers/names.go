@@ -73,6 +73,9 @@ var (
 	OSV_JAVA_QEMU       = compilerName("osv", "java", "qemu")
 	OSV_JAVA_OPENSTACK  = compilerName("osv", "java", "openstack")
 
+	OSV_NODEJS_QEMU      = compilerName("osv", "nodejs", "qemu")
+	OSV_NODEJS_OPENSTACK = compilerName("osv", "nodejs", "openstack")
+
 	INCLUDEOS_CPP_QEMU       = compilerName("includeos", "cpp", "qemu")
 	INCLUDEOS_CPP_XEN        = compilerName("includeos", "cpp", "xen")
 	INCLUDEOS_CPP_VIRTUALBOX = compilerName("includeos", "cpp", "virtualbox")
@@ -128,6 +131,9 @@ var compilers = []CompilerType{
 	OSV_JAVA_VSPHERE,
 	OSV_JAVA_QEMU,
 	OSV_JAVA_OPENSTACK,
+
+	OSV_NODEJS_QEMU,
+	OSV_NODEJS_OPENSTACK,
 
 	INCLUDEOS_CPP_QEMU,
 	INCLUDEOS_CPP_XEN,
