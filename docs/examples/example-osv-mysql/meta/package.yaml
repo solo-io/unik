@@ -1,0 +1,5 @@
+name: my.test
+title: My Test
+author: I am
+require:
+ - eu.mikelangelo-project.app.mysql-5.6.21

@@ -1,0 +1,5 @@
+
+config_set:
+   conf1: 
+      bootcmd: /usr/bin/mysqld --datadir=/usr/data --user=root --init-file=/etc/mysql-init.txt
+config_set_default: conf1

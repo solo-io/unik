@@ -32,6 +32,9 @@ Compiling Java on the OSv platform requires the following parameters be met:
   * Project uses **Gradle** or **Maven** and able to be built as a fat `.jar` or `.war`
 
 ## Node.js
+
+[NodeJS example](../examples/example-osv-nodejs)
+
 It's trivial to deploy your Node.js application into unikernel. First you must collect all
 external npm libraries with:
 ```
@@ -90,6 +93,9 @@ $ unik build
 ```
 
 ## Native
+
+[C/C++ example](../examples/example-osv-mysql)
+
 Native runtime can be used either for running your C/C++ application or for running
 arbitrary precompiled application that exists in public repository (these are called
 application packages).
