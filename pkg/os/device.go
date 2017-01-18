@@ -2,9 +2,12 @@ package os
 
 import (
 	"fmt"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"math"
 	"os"
+	"regexp"
+	"strconv"
+
+	"github.com/emc-advanced-dev/pkg/errors"
 )
 
 type DiskSize interface {
@@ -95,4 +98,24 @@ type Part interface {
 func IsExists(f string) bool {
 	_, err := os.Stat(f)
 	return !os.IsNotExist(err)
+}
+
+// ParseSize parses disk size string (e.g. "10GB" or "150MB") into MegaBytes
+// If no unit string is provided, megabytes are assumed
+func ParseSize(sizeStr string) (MegaBytes, error) {
+	r, _ := regexp.Compile("^([0-9]+)(m|mb|M|MB|g|gb|G|GB)?$")
+	match := r.FindStringSubmatch(sizeStr)
+	if len(match) != 3 {
+		return -1, fmt.Errorf("%s: unrecognized size", sizeStr)
+	}
+	size, _ := strconv.ParseInt(match[1], 10, 64)
+	unit := match[2]
+	switch unit {
+	case "g", "gb", "G", "GB":
+		size *= 1024
+	}
+	if size == 0 {
+		return -1, fmt.Errorf("%s: size must be larger than zero", sizeStr)
+	}
+	return MegaBytes(size), nil
 }

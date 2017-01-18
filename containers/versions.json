@@ -23,5 +23,6 @@
   "compilers-rump-base-hw": "8cd85d4a7ee1009b",
   "qemu-util": "6f5922561bbb86e3",
   "compilers-osv-java": "14f2183e5cb49482",
+  "compilers-osv-dynamic": "59ba07ca2f12ecaa",
   "compilers-mirage-ocaml-ukvm": "2c35c23771682e9a"
 }

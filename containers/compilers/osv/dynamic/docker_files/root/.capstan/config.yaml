@@ -1,0 +1,5 @@
+# Don't use KVM feature.
+# This feature requires exclusive access so if any other
+# hypervisor (besides qemu) locks it, then 'capstan package compose'
+# would result in error.
+disable_kvm: true

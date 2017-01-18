@@ -1,0 +1,6 @@
+{
+  "name": "example-osv-nodejs",  
+  "dependencies": {
+    "express": "^4.14.0"
+  }  
+}

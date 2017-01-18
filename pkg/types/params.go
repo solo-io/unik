@@ -30,6 +30,7 @@ type CompileImageParams struct {
 	Args       string
 	MntPoints  []string
 	NoCleanup  bool
+	SizeMB     int
 }
 
 type PullImagePararms struct {

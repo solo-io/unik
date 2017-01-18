@@ -1,0 +1,8 @@
+
+config_set:
+   conf1: 
+      main: server.js
+      env:
+         PORT: 3000
+  
+config_set_default: conf1
