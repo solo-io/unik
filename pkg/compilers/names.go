@@ -75,9 +75,11 @@ var (
 
 	OSV_NODEJS_QEMU      = compilerName("osv", "nodejs", "qemu")
 	OSV_NODEJS_OPENSTACK = compilerName("osv", "nodejs", "openstack")
+	OSV_NODEJS_AWS       = compilerName("osv", "nodejs", "aws")
 
 	OSV_NATIVE_QEMU      = compilerName("osv", "native", "qemu")
 	OSV_NATIVE_OPENSTACK = compilerName("osv", "native", "openstack")
+	OSV_NATIVE_AWS       = compilerName("osv", "native", "aws")
 
 	INCLUDEOS_CPP_QEMU       = compilerName("includeos", "cpp", "qemu")
 	INCLUDEOS_CPP_XEN        = compilerName("includeos", "cpp", "xen")
@@ -137,9 +139,11 @@ var compilers = []CompilerType{
 
 	OSV_NODEJS_QEMU,
 	OSV_NODEJS_OPENSTACK,
+	OSV_NODEJS_AWS,
 
 	OSV_NATIVE_QEMU,
 	OSV_NATIVE_OPENSTACK,
+	OSV_NATIVE_AWS,
 
 	INCLUDEOS_CPP_QEMU,
 	INCLUDEOS_CPP_XEN,

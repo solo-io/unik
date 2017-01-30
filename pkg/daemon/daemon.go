@@ -377,6 +377,9 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	}
 	_compilers[compilers.OSV_NODEJS_QEMU] = osvNodeQemuCompiler
 	_compilers[compilers.OSV_NODEJS_OPENSTACK] = osvNodeQemuCompiler
+	_compilers[compilers.OSV_NODEJS_AWS] = &osv.OSvNodeCompiler{
+		ImageFinisher: &osv.AwsImageFinisher{},
+	}
 
 	// osv native
 	osvNativeQemuCompiler := &osv.OSvNativeCompiler{
@@ -384,6 +387,9 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	}
 	_compilers[compilers.OSV_NATIVE_QEMU] = osvNativeQemuCompiler
 	_compilers[compilers.OSV_NATIVE_OPENSTACK] = osvNativeQemuCompiler
+	_compilers[compilers.OSV_NATIVE_AWS] = &osv.OSvNativeCompiler{
+		ImageFinisher: &osv.AwsImageFinisher{},
+	}
 
 	d := &UnikDaemon{
 		server:    lxmartini.QuietMartini(),
