@@ -31,7 +31,7 @@ Ensure that each of the following are installed
   * Open Virtualbox
   * Open **Preferences** > **Network** > **Host-only Networks**
   * Click the green add button on the right side of the UI
-  * Record the name of the new Host-Only adapter. You will need this in your UniK configuration
+  * Record the name of the new Host-Only adapter (e.g. "vboxnet0"). You will need this in your UniK configuration
   * Ensure that the Virtualbox DHCP Server is Enabled for this Host-Only Network:
     * With the Host-Only Network selected, Click the edit button (screwdriver image)
     * In the **Adapter** tab, note the IPv4 address and netmask of the adapter.
@@ -42,6 +42,10 @@ Ensure that each of the following are installed
 
 
 3. Configure UniK daemon
+  * UniK configuration files are stored in `$HOME/.unik`. Create this directory, if it is not present:
+  ```
+  $mkdir $HOME/.unik
+  ```
   * Using a text editor, create and save the following to `$HOME/.unik/daemon-config.yaml`:
   ```yaml
   providers:
@@ -57,7 +61,7 @@ Ensure that each of the following are installed
   * Open a new terminal window/tab. This terminal will be where we leave the UniK daemon running.
   * `cd` to the `_build` directory created by `make`
   * run `unik daemon --debug` (the `--debug` flag is optional, if you want to see more verbose output)
-  * UniK will compile and deploy its own 30 MB unikernel. This unikernel is the [Unik Instance Listener](./instance_listener.md). The instance listener uses udp broadcast to detect instance ips and bootstrap instances running on Virtualbox.
+  * UniK will compile and deploy its own 30 MB unikernel. This unikernel is the [Unik Instance Listener](./instance_listener.md). The Instance Listener uses udp broadcast to detect (the IP address) and bootstrap instances running on Virtualbox.
   * After this is finished, UniK is running and ready to accept commands.
   * Open a new terminal window and type `unik target --host localhost` to set the CLI target to the your local machine.
 
