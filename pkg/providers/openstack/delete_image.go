@@ -3,7 +3,7 @@ package openstack
 import (
 	"fmt"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/cf-unik/unik/pkg/types"
 	"github.com/rackspace/gophercloud"
 	"github.com/rackspace/gophercloud/openstack/imageservice/v2/images"
 )

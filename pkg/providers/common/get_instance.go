@@ -2,8 +2,8 @@ package common
 
 import (
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/providers"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/cf-unik/unik/pkg/providers"
+	"github.com/cf-unik/unik/pkg/types"
 	"strings"
 )
 

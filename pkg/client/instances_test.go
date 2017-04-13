@@ -1,12 +1,12 @@
 package client_test
 
 import (
-	. "github.com/emc-advanced-dev/unik/pkg/client"
+	. "github.com/cf-unik/unik/pkg/client"
 
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	"github.com/emc-advanced-dev/unik/test/helpers"
+	"github.com/cf-unik/unik/pkg/types"
+	"github.com/cf-unik/unik/test/helpers"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"

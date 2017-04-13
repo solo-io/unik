@@ -7,10 +7,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/config"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere/vsphereclient"
-	"github.com/emc-advanced-dev/unik/pkg/state"
+	"github.com/cf-unik/unik/pkg/config"
+	"github.com/cf-unik/unik/pkg/providers/common"
+	"github.com/cf-unik/unik/pkg/providers/vsphere/vsphereclient"
+	"github.com/cf-unik/unik/pkg/state"
 	"time"
 )
 

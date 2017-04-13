@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	unikutil "github.com/cf-unik/unik/pkg/util"
 	"net"
 	"path/filepath"
 )

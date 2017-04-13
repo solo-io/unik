@@ -13,9 +13,9 @@ import (
 	"net/url"
 
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/config"
-	"github.com/emc-advanced-dev/unik/pkg/daemon"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/cf-unik/unik/pkg/config"
+	"github.com/cf-unik/unik/pkg/daemon"
+	unikutil "github.com/cf-unik/unik/pkg/util"
 )
 
 var daemonRuntimeFolder, daemonConfigFile, logFile string

@@ -13,10 +13,10 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 
-	"github.com/emc-advanced-dev/unik/pkg/compilers"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/cf-unik/unik/pkg/compilers"
+	unikos "github.com/cf-unik/unik/pkg/os"
+	"github.com/cf-unik/unik/pkg/types"
+	unikutil "github.com/cf-unik/unik/pkg/util"
 	"gopkg.in/yaml.v2"
 )
 

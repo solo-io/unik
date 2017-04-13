@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/emc-advanced-dev/unik/docs/examples/example-go-nontrivial",
+	"ImportPath": "github.com/cf-unik/unik/docs/examples/example-go-nontrivial",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v63",
 	"Packages": [
@@ -7,7 +7,7 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/emc-advanced-dev/unik/docs/examples",
+			"ImportPath": "github.com/cf-unik/unik/docs/examples",
 			"Rev": "816f9c96529dab76ac3363b8272febb8c677484d"
 		}
 	]

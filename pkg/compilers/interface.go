@@ -2,7 +2,7 @@ package compilers
 
 import (
 	"fmt"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/cf-unik/unik/pkg/types"
 	"strings"
 )
 

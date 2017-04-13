@@ -2,7 +2,7 @@ package common
 
 import (
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/cf-unik/unik/pkg/types"
 )
 
 func GetDeviceNameForMnt(image *types.Image, mntPoint string) (string, error) {

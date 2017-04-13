@@ -9,8 +9,8 @@ import (
 
 	"github.com/emc-advanced-dev/pkg/errors"
 
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	unikos "github.com/cf-unik/unik/pkg/os"
+	unikutil "github.com/cf-unik/unik/pkg/util"
 )
 
 func BuildBootableImage(kernel, cmdline string, usePartitionTables, noCleanup bool) (string, error) {

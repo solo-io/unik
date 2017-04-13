@@ -3,7 +3,7 @@ package photon
 import (
 	"github.com/emc-advanced-dev/pkg/errors"
 
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/cf-unik/unik/pkg/types"
 )
 
 func (p *PhotonProvider) ListInstances() ([]*types.Instance, error) {

@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/cf-unik/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 )
 

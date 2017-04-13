@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/client"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
+	"github.com/cf-unik/unik/pkg/client"
+	unikos "github.com/cf-unik/unik/pkg/os"
 )
 
 var data string

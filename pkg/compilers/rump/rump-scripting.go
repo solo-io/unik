@@ -9,8 +9,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/compilers"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/cf-unik/unik/pkg/compilers"
+	"github.com/cf-unik/unik/pkg/types"
 	"gopkg.in/yaml.v2"
 )
 

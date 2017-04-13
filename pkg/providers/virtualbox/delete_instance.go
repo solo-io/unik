@@ -3,8 +3,8 @@ package virtualbox
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/cf-unik/unik/pkg/providers/virtualbox/virtualboxclient"
+	"github.com/cf-unik/unik/pkg/types"
 )
 
 func (p *VirtualboxProvider) DeleteInstance(id string, force bool) error {

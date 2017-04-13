@@ -1,6 +1,6 @@
 package types
 
-import "github.com/emc-advanced-dev/unik/pkg/config"
+import "github.com/cf-unik/unik/pkg/config"
 
 type RunInstanceParams struct {
 	Name                 string

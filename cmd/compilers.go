@@ -22,7 +22,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/emc-advanced-dev/unik/pkg/client"
+	"github.com/cf-unik/unik/pkg/client"
 )
 
 var compilersCmd = &cobra.Command{

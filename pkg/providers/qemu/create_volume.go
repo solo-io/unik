@@ -7,8 +7,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/cf-unik/unik/pkg/providers/common"
+	"github.com/cf-unik/unik/pkg/types"
 )
 
 func (p *QemuProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.Volume, err error) {

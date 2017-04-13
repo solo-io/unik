@@ -2,7 +2,7 @@ package xen
 
 import (
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
+	"github.com/cf-unik/unik/pkg/providers/common"
 )
 
 func (p *XenProvider) GetInstanceLogs(id string) (string, error) {

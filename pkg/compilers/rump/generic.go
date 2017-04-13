@@ -8,8 +8,8 @@ import (
 
 	"github.com/emc-advanced-dev/pkg/errors"
 
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/cf-unik/unik/pkg/types"
+	unikutil "github.com/cf-unik/unik/pkg/util"
 )
 
 func execContainer(imageName string, cmds []string, binds map[string]string, privileged bool, env map[string]string) error {

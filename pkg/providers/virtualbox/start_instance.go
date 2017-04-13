@@ -2,7 +2,7 @@ package virtualbox
 
 import (
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/providers/virtualbox/virtualboxclient"
+	"github.com/cf-unik/unik/pkg/providers/virtualbox/virtualboxclient"
 )
 
 func (p *VirtualboxProvider) StartInstance(id string) error {

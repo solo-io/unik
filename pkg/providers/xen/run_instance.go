@@ -9,9 +9,9 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"github.com/emc-advanced-dev/unik/pkg/providers/xen/xenclient"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/cf-unik/unik/pkg/providers/common"
+	"github.com/cf-unik/unik/pkg/providers/xen/xenclient"
+	"github.com/cf-unik/unik/pkg/types"
 )
 
 func (p *XenProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {

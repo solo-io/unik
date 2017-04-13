@@ -8,9 +8,9 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/compilers"
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/cf-unik/unik/pkg/compilers"
+	"github.com/cf-unik/unik/pkg/types"
+	unikutil "github.com/cf-unik/unik/pkg/util"
 )
 
 type IncludeosVirtualboxCompiler struct{}

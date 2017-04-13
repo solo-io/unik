@@ -8,8 +8,8 @@ import (
 
 	"github.com/emc-advanced-dev/pkg/errors"
 
-	"github.com/emc-advanced-dev/unik/pkg/config"
-	"github.com/emc-advanced-dev/unik/pkg/state"
+	"github.com/cf-unik/unik/pkg/config"
+	"github.com/cf-unik/unik/pkg/state"
 	"github.com/vmware/photon-controller-go-sdk/photon"
 )
 

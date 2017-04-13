@@ -1,7 +1,7 @@
 package ukvm
 
 import (
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	"github.com/cf-unik/unik/pkg/types"
 )
 
 func (p *UkvmProvider) ListImages() ([]*types.Image, error) {

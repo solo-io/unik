@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/client"
+	"github.com/cf-unik/unik/pkg/client"
 )
 
 var startCmd = &cobra.Command{

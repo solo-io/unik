@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/emc-advanced-dev/unik/test/test_apps/test_go_app",
+	"ImportPath": "github.com/cf-unik/unik/test/test_apps/test_go_app",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v63",
 	"Packages": [

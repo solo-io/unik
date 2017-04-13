@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/emc-advanced-dev/unik/instance-listener",
+	"ImportPath": "github.com/cf-unik/unik/instance-listener",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v63",
 	"Packages": [

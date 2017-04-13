@@ -3,10 +3,10 @@ package vsphere
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/providers/common"
-	"github.com/emc-advanced-dev/unik/pkg/providers/vsphere/vsphereclient"
-	"github.com/emc-advanced-dev/unik/pkg/types"
-	unikutil "github.com/emc-advanced-dev/unik/pkg/util"
+	"github.com/cf-unik/unik/pkg/providers/common"
+	"github.com/cf-unik/unik/pkg/providers/vsphere/vsphereclient"
+	"github.com/cf-unik/unik/pkg/types"
+	unikutil "github.com/cf-unik/unik/pkg/util"
 	"time"
 )
 

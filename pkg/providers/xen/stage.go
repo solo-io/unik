@@ -7,8 +7,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	unikos "github.com/cf-unik/unik/pkg/os"
+	"github.com/cf-unik/unik/pkg/types"
 )
 
 func (p *XenProvider) Stage(params types.StageImageParams) (_ *types.Image, err error) {

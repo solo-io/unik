@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/emc-advanced-dev/unik/pkg/config"
+	"github.com/cf-unik/unik/pkg/config"
 	"path/filepath"
 )
 

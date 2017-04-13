@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/emc-advanced-dev/unik/docs/examples/example_godeps_go_app",
+	"ImportPath": "github.com/cf-unik/unik/docs/examples/example_godeps_go_app",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v63",
 	"Packages": [

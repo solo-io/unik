@@ -104,7 +104,7 @@ Ensure that each of the following are installed
   	],
   	"Deps": [
   		{
-  			"ImportPath": "github.com/emc-advanced-dev/unik/docs/examples",
+  			"ImportPath": "github.com/cf-unik/unik/docs/examples",
   			"Rev": "f8cc0dd435de36377eac060c93481cc9f3ae9688"
   		}
   	]

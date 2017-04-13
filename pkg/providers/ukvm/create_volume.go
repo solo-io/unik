@@ -7,8 +7,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	unikos "github.com/emc-advanced-dev/unik/pkg/os"
-	"github.com/emc-advanced-dev/unik/pkg/types"
+	unikos "github.com/cf-unik/unik/pkg/os"
+	"github.com/cf-unik/unik/pkg/types"
 )
 
 func (p *UkvmProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.Volume, err error) {
