@@ -78,7 +78,7 @@ Compiling Python applications on rumprun requires the following parameters be me
   * the `manifest.yaml` file should contain a single line of text like so:
     ```yaml
     main_file: YOUR_MAIN_FILE.py
-  runtime_args: "optional string of python runtime arguments"
+    runtime_args: "optional string of python runtime arguments"
     ```
     where you replace `YOUR_MAIN_FILE.py` with the relative path to your main file from the root directory of your project.
 
