@@ -78,7 +78,7 @@ all: ${SOURCES} binary
 
 #pull containers
 pull:
-	@echo "Pullling containers from docker hub"
+	@echo "Pulling containers from docker hub"
 	$(call pull_container,vsphere-client)
 	$(call pull_container,boot-creator)
 	$(call pull_container,qemu-util)
