@@ -76,7 +76,7 @@ replacing `NEW_HOST_ONLY_ADAPTER` with the name of the network adapter you creat
     -DartifactId=my-app
   ```
 
-    Great! we've got the project structure created. Let's `cd` into the new project folder `my-app`.
+Great! we've got the project structure created. Let's `cd` into the new project folder `my-app`.
 
 3. We need to add a plugin to our project's `pom.xml` so it can be built as a fat jar (all dependencies packaged into one `.jar` file):
   * Add the `maven-assembly-plugin` between the `<plugins>...</plugins>` tags:
