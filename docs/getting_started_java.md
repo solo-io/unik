@@ -43,22 +43,24 @@ Ensure that each of the following are installed
 
   3. Configure UniK daemon
     * Using a text editor, create and save the following to `$HOME/.unik/daemon-config.yaml`:
-    ```yaml
-    providers:
-      virtualbox:
-        - name: my-vbox
-          adapter_type: host_only
-          adapter_name: NEW_HOST_ONLY_ADAPTER
-    ```
-    replacing `NEW_HOST_ONLY_ADAPTER` with the name of the network adapter you created.
+    
+```yaml
+providers:
+  virtualbox:
+    - name: my-vbox
+      adapter_type: host_only
+      adapter_name: NEW_HOST_ONLY_ADAPTER
+```
+    
+replacing `NEW_HOST_ONLY_ADAPTER` with the name of the network adapter you created.
 
-    4. Launch UniK and automatically deploy the *Virtualbox Instance Listener*
-      * Open a new terminal window/tab. This terminal will be where we leave the UniK daemon running.
-      * `cd` to the `_build` directory created by `make`
-      * run `./unik daemon --debug` (the `--debug` flag is optional, if you want to see more verbose output)
-      * UniK will compile and deploy its own 30 MB unikernel. This unikernel is the [Unik Instance Listener](./instance_listener.md). The instance listener uses udp broadcast to detect instance ips and bootstrap instances running on Virtualbox.
-      * After this is finished, UniK is running and ready to accept commands.
-      * Open a new terminal window and type `unik target --host localhost` to set the CLI target to the your local machine.
+  4. Launch UniK and automatically deploy the *Virtualbox Instance Listener*
+    * Open a new terminal window/tab. This terminal will be where we leave the UniK daemon running.
+    * `cd` to the `_build` directory created by `make`
+    * run `./unik daemon --debug` (the `--debug` flag is optional, if you want to see more verbose output)
+    * UniK will compile and deploy its own 30 MB unikernel. This unikernel is the [Unik Instance Listener](./instance_listener.md). The instance listener uses udp broadcast to detect instance ips and bootstrap instances running on Virtualbox.
+    * After this is finished, UniK is running and ready to accept commands.
+    * Open a new terminal window and type `unik target --host localhost` to set the CLI target to the your local machine.
 
 ---
 
@@ -74,11 +76,12 @@ Ensure that each of the following are installed
     -DartifactId=my-app
   ```
 
-    Great! we've got the project structure created. Let's `cd` into the new project folder `my-app`.
+Great! we've got the project structure created. Let's `cd` into the new project folder `my-app`.
 
 3. We need to add a plugin to our project's `pom.xml` so it can be built as a fat jar (all dependencies packaged into one `.jar` file):
   * Add the `maven-assembly-plugin` between the `<plugins>...</plugins>` tags:
-    ```xml
+
+```xml
 <plugins>
        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -104,51 +107,52 @@ Ensure that each of the following are installed
           </executions>
        </plugin>
 </plugins>
-    ```
+```
 
-    * Now our application is UniK-ready. Let's add some code to our `App.java` source file. Open up `src/main/java/com/mycompany/app/App.java` and replace its contents with the following:
+  * Now our application is UniK-ready. Let's add some code to our `App.java` source file. Open up `src/main/java/com/mycompany/app/App.java` and replace its contents with the following:
 
-      ```java
-      package com.mycompany.app;
+```java
+  package com.mycompany.app;
 
-      import java.io.IOException;
-      import java.io.OutputStream;
-      import java.net.InetSocketAddress;
+  import java.io.IOException;
+  import java.io.OutputStream;
+  import java.net.InetSocketAddress;
 
-      import com.sun.net.httpserver.HttpExchange;
-      import com.sun.net.httpserver.HttpHandler;
-      import com.sun.net.httpserver.HttpServer;
+  import com.sun.net.httpserver.HttpExchange;
+  import com.sun.net.httpserver.HttpHandler;
+  import com.sun.net.httpserver.HttpServer;
 
-      public class App
-      {
-        public static void main(String[] args) throws Exception {
-            System.out.println("Started!");
-            HttpServer server = HttpServer.create(new InetSocketAddress(4000), 0);
-            server.createContext("/", new MyHandler());
-            server.setExecutor(null); // creates a default executor
-            server.start();
+  public class App
+  {
+    public static void main(String[] args) throws Exception {
+        System.out.println("Started!");
+        HttpServer server = HttpServer.create(new InetSocketAddress(4000), 0);
+        server.createContext("/", new MyHandler());
+        server.setExecutor(null); // creates a default executor
+        server.start();
+    }
+
+    static class MyHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange t) throws IOException {
+            String response = "Java running inside a unikernel!";
+            t.sendResponseHeaders(200, response.length());
+            OutputStream os = t.getResponseBody();
+            os.write(response.getBytes());
+            os.close();
         }
-
-        static class MyHandler implements HttpHandler {
-            @Override
-            public void handle(HttpExchange t) throws IOException {
-                String response = "Java running inside a unikernel!";
-                t.sendResponseHeaders(200, response.length());
-                OutputStream os = t.getResponseBody();
-                os.write(response.getBytes());
-                os.close();
-            }
-        }
-      }     
-      ```
+    }
+  }     
+ ```
 
 2. If you have Java installed, you can try running this code with `mvn package && java -jar target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar`. Visit [http://localhost:4000/](http://localhost:4000/) to see that the server is running.
 
 3. We have to add a manifest file to tell unik how to build our application into a unikernel. Create a file named `manifest.yaml` in the same directory as the `pom.xml` (the java project root) and paste the following inside:
+  
   ```yaml
-main_file: target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar
-build_command: mvn package
-  ```
+  main_file: target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar
+  build_command: mvn package
+  ``` 
   This will tell UniK to build our project with the `mvn package` commmand, and that the resulting jar file will be located at `target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar`.
 
 4. Great! Now we're ready to compile this code to a unikernel.
