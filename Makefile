@@ -250,7 +250,7 @@ endif
 	@echo Building for platform $(UNAME)
 	docker build -t projectunik/$@ -f Dockerfile .
 	mkdir -p ./_build
-	docker run --rm -v $(shell pwd)/_build:/opt/build -e TARGET_OS=$(TARGET_OS) projectunik/$@
+	docker run --rm -v $(shell pwd)/_build:/opt/build:z -e TARGET_OS=$(TARGET_OS) projectunik/$@
 	#docker rmi -f projectunik/$@
 	@echo "Install finished! UniK binary can be found at $(shell pwd)/_build/unik"
 #----
