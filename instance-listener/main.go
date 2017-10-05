@@ -61,7 +61,7 @@ func main() {
 		}
 	}
 
-	listenerIp, err := getLocalIp()
+	listenerIp, listenerIpMask, err := getLocalIp()
 	if err != nil {
 		log.Printf("ERROR: failed to get local ip: %v", err)
 		return
@@ -69,7 +69,6 @@ func main() {
 
 	log.Printf("Starting unik discovery (udp heartbeat broadcast) with ip %s", listenerIp.String())
 	info := []byte(*dataPrefix + ":" + listenerIp.String())
-	listenerIpMask := listenerIp.DefaultMask()
 	BROADCAST_IPv4 := reverseMask(listenerIp, listenerIpMask)
 	if listenerIpMask == nil {
 		log.Printf("ERROR: listener-ip: %v; listener-ip-mask: %v; could not calculate broadcast address", listenerIp, listenerIpMask)
@@ -180,10 +179,10 @@ func main() {
 	http.ListenAndServe(":3000", m)
 }
 
-func getLocalIp() (net.IP, error) {
+func getLocalIp() (net.IP, net.IPMask, error) {
 	ifaces, err := net.Interfaces()
 	if err != nil {
-		return net.IP{}, errors.New("retrieving network interfaces" + err.Error())
+		return net.IP{}, net.IPMask{}, errors.New("retrieving network interfaces" + err.Error())
 	}
 	for _, iface := range ifaces {
 		log.Printf("found an interface: %v\n", iface)
@@ -195,13 +194,13 @@ func getLocalIp() (net.IP, error) {
 			log.Printf("inspecting address: %v", addr)
 			switch v := addr.(type) {
 			case *net.IPNet:
-				if !v.IP.IsLoopback() && v.IP.IsGlobalUnicast() && v.IP.To4() != nil {
-					return v.IP.To4(), nil
+				if !v.IP.IsLoopback() && v.IP.IsGlobalUnicast() && v.IP.To4() != nil && v.Mask != nil {
+					return v.IP.To4(),v.Mask,  nil
 				}
 			}
 		}
 	}
-	return net.IP{}, errors.New("failed to find ip on ifaces: " + fmt.Sprintf("%v", ifaces))
+	return net.IP{}, net.IPMask{}, errors.New("failed to find ip on ifaces: " + fmt.Sprintf("%v", ifaces))
 }
 
 // ReverseMask returns the result of masking the IP address ip with mask.
