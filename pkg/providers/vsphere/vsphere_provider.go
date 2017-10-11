@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
+	"os"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
@@ -59,6 +60,12 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 	}
 
 	p.instanceListenerIp = instanceListenerIp
+
+	tmpDir := filepath.Join(os.Getenv("HOME"), ".unik", "tmp")
+        os.Setenv("TMPDIR", tmpDir)
+        logrus.Infof("Creating directory %s", tmpDir)
+        os.MkdirAll(tmpDir, 0755)
+
 	// begin update instances cycle
 	go func() {
 		for {
