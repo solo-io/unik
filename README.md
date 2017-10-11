@@ -73,7 +73,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 * multi-account support per provider (i.e. multiple AWS accounts/regions, etc.)
 * migrate from [martini](https://github.com/go-martini/martini) to [echo](https://github.com/labstack/echo)
 
-UniK is still experimental! APIs and compatibility are subject to change. We are looking for community support to help identify potential bugs and compatibility issues. Please open a Github issue for any problems you may experience, and join us on our [slack channel](http://project-unik.io)
+UniK is still experimental! APIs and compatibility are subject to change. We are looking for community support to help identify potential bugs and compatibility issues. Please open a Github issue for any problems you may experience, and join us on our [slack channel](http://slack.solo.io)
 
 ---
 
