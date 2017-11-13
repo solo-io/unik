@@ -9,10 +9,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/compilers"
-	"github.com/cf-unik/unik/pkg/providers/common"
-	"github.com/cf-unik/unik/pkg/types"
-	"github.com/cf-unik/unik/pkg/util"
+	"github.com/solo-io/unik/pkg/compilers"
+	"github.com/solo-io/unik/pkg/providers/common"
+	"github.com/solo-io/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/util"
 )
 
 func (p *UkvmProvider) RunInstance(params types.RunInstanceParams) (_ *types.Instance, err error) {

@@ -1,7 +1,7 @@
 package openstack
 
 import (
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/types"
 	"github.com/rackspace/gophercloud"
 	"github.com/rackspace/gophercloud/openstack/imageservice/v2/images"
 	"github.com/rackspace/gophercloud/pagination"

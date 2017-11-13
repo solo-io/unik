@@ -6,7 +6,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/cf-unik/unik/pkg/client"
+	"github.com/solo-io/unik/pkg/client"
 )
 
 var psCmd = &cobra.Command{

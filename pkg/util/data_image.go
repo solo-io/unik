@@ -11,7 +11,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	unikos "github.com/cf-unik/unik/pkg/os"
+	unikos "github.com/solo-io/unik/pkg/os"
 )
 
 func BuildRawDataImageWithType(dataTar io.ReadCloser, size unikos.MegaBytes, volType string, usePartitionTables bool) (string, error) {

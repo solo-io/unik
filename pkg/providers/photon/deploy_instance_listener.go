@@ -7,10 +7,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/compilers/rump"
-	"github.com/cf-unik/unik/pkg/config"
-	"github.com/cf-unik/unik/pkg/providers/common"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/compilers/rump"
+	"github.com/solo-io/unik/pkg/config"
+	"github.com/solo-io/unik/pkg/providers/common"
+	"github.com/solo-io/unik/pkg/types"
 	"github.com/vmware/photon-controller-go-sdk/photon"
 )
 

@@ -1,7 +1,7 @@
 package photon
 
 import (
-	"github.com/cf-unik/unik/pkg/providers"
+	"github.com/solo-io/unik/pkg/providers"
 )
 
 func (p *PhotonProvider) GetConfig() providers.ProviderConfig {

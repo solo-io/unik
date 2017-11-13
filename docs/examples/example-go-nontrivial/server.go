@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/cf-unik/unik/docs/examples/example-go-nontrivial/func1"
-	"github.com/cf-unik/unik/docs/examples/example-go-nontrivial/func2"
+	"github.com/solo-io/unik/docs/examples/example-go-nontrivial/func1"
+	"github.com/solo-io/unik/docs/examples/example-go-nontrivial/func2"
 )
 
 func main() {

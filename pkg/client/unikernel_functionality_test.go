@@ -1,12 +1,12 @@
 package client_test
 
 import (
-	. "github.com/cf-unik/unik/pkg/client"
+	. "github.com/solo-io/unik/pkg/client"
 
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	"github.com/cf-unik/unik/pkg/types"
-	"github.com/cf-unik/unik/test/helpers"
+	"github.com/solo-io/unik/pkg/types"
+	"github.com/solo-io/unik/test/helpers"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"

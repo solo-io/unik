@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/client"
+	"github.com/solo-io/unik/pkg/client"
 )
 
 var providersCmd = &cobra.Command{

@@ -9,8 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/cf-unik/unik/pkg/config"
-	"github.com/cf-unik/unik/pkg/state"
+	"github.com/solo-io/unik/pkg/config"
+	"github.com/solo-io/unik/pkg/state"
 )
 
 func AwsStateFile() string {

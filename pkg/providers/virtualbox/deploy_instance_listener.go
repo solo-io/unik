@@ -7,13 +7,13 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/compilers/rump"
-	"github.com/cf-unik/unik/pkg/config"
-	unikos "github.com/cf-unik/unik/pkg/os"
-	"github.com/cf-unik/unik/pkg/providers/common"
-	"github.com/cf-unik/unik/pkg/providers/virtualbox/virtualboxclient"
-	"github.com/cf-unik/unik/pkg/types"
-	"github.com/cf-unik/unik/pkg/util"
+	"github.com/solo-io/unik/pkg/compilers/rump"
+	"github.com/solo-io/unik/pkg/config"
+	unikos "github.com/solo-io/unik/pkg/os"
+	"github.com/solo-io/unik/pkg/providers/common"
+	"github.com/solo-io/unik/pkg/providers/virtualbox/virtualboxclient"
+	"github.com/solo-io/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/util"
 )
 
 var timeout = time.Second * 10

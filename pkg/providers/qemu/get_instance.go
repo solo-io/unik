@@ -1,8 +1,8 @@
 package qemu
 
 import (
-	"github.com/cf-unik/unik/pkg/providers/common"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/providers/common"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 func (p *QemuProvider) GetInstance(nameOrIdPrefix string) (*types.Instance, error) {

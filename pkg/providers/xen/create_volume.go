@@ -7,7 +7,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 func (p *XenProvider) CreateVolume(params types.CreateVolumeParams) (_ *types.Volume, err error) {

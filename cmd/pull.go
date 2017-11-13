@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	"github.com/cf-unik/unik/pkg/client"
+	"github.com/solo-io/unik/pkg/client"
 	"github.com/spf13/cobra"
 )
 

@@ -3,8 +3,8 @@ package virtualbox
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/providers/common"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/providers/common"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 func (p *VirtualboxProvider) PushImage(params types.PushImagePararms) error {

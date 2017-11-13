@@ -1,6 +1,6 @@
 package xen
 
-import "github.com/cf-unik/unik/pkg/types"
+import "github.com/solo-io/unik/pkg/types"
 
 func (p *XenProvider) ListInstances() ([]*types.Instance, error) {
 	if len(p.state.GetInstances()) < 1 {

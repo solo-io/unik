@@ -7,7 +7,7 @@ import (
 	"regexp"
 
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 // ConvertParams contains all the information needed when bootstrapping.

@@ -3,8 +3,8 @@ package common
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/providers"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/providers"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 func VerifyMntsInput(p providers.Provider, image *types.Image, mntPointsToVolumeIds map[string]string) error {

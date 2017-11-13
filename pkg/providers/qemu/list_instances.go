@@ -8,7 +8,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 func (p *QemuProvider) ListInstances() ([]*types.Instance, error) {

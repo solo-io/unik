@@ -2,7 +2,7 @@ package gcloud
 
 import (
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/providers/common"
+	"github.com/solo-io/unik/pkg/providers/common"
 )
 
 func (p *GcloudProvider) GetInstanceLogs(id string) (string, error) {

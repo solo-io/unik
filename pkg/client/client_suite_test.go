@@ -6,9 +6,9 @@ import (
 
 	"encoding/json"
 	"github.com/Sirupsen/logrus"
-	"github.com/cf-unik/unik/pkg/daemon"
-	"github.com/cf-unik/unik/pkg/util"
-	"github.com/cf-unik/unik/test/helpers"
+	"github.com/solo-io/unik/pkg/daemon"
+	"github.com/solo-io/unik/pkg/util"
+	"github.com/solo-io/unik/test/helpers"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"net/http"
 	"os"

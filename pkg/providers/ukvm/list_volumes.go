@@ -1,7 +1,7 @@
 package ukvm
 
 import (
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 func (p *UkvmProvider) ListVolumes() ([]*types.Volume, error) {

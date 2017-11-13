@@ -1,6 +1,6 @@
 package types
 
-import "github.com/cf-unik/unik/pkg/config"
+import "github.com/solo-io/unik/pkg/config"
 
 type RunInstanceParams struct {
 	Name                 string

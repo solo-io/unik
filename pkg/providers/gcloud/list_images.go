@@ -1,7 +1,7 @@
 package gcloud
 
 import (
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 func (p *GcloudProvider) ListImages() ([]*types.Image, error) {

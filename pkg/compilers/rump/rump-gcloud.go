@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/cf-unik/unik/pkg/compilers"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/compilers"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 func CreateImageGCloud(kernel string, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error) {

@@ -12,7 +12,7 @@ import (
 	"net"
 
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/client"
+	"github.com/solo-io/unik/pkg/client"
 )
 
 var instanceName, imageName string

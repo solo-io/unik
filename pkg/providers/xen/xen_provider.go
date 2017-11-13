@@ -4,9 +4,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cf-unik/unik/pkg/config"
-	"github.com/cf-unik/unik/pkg/providers/xen/xenclient"
-	"github.com/cf-unik/unik/pkg/state"
+	"github.com/solo-io/unik/pkg/config"
+	"github.com/solo-io/unik/pkg/providers/xen/xenclient"
+	"github.com/solo-io/unik/pkg/state"
 )
 
 type XenProvider struct {

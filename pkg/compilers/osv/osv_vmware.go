@@ -1,7 +1,7 @@
 package osv
 
 import (
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 const OSV_VMWARE_MEMORY = 512

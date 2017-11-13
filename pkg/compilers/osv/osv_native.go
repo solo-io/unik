@@ -3,8 +3,8 @@ package osv
 import (
 	"fmt"
 
-	"github.com/cf-unik/unik/pkg/compilers"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/compilers"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 type OSvNativeCompiler struct {

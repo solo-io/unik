@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
-	"github.com/cf-unik/unik/pkg/config"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/config"
+	"github.com/solo-io/unik/pkg/types"
 	"sort"
 )
 

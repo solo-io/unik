@@ -2,7 +2,7 @@ package openstack
 
 import (
 	"fmt"
-	"github.com/cf-unik/unik/pkg/config"
+	"github.com/solo-io/unik/pkg/config"
 	"github.com/rackspace/gophercloud"
 	"github.com/rackspace/gophercloud/openstack"
 	"os"

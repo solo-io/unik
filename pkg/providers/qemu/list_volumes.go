@@ -1,7 +1,7 @@
 package qemu
 
 import (
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 func (p *QemuProvider) ListVolumes() ([]*types.Volume, error) {

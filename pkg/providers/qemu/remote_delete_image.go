@@ -2,7 +2,7 @@ package qemu
 
 import (
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 func (p *QemuProvider) RemoteDeleteImage(params types.RemoteDeleteImagePararms) error {

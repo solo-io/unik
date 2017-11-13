@@ -10,7 +10,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/containers"
+	"github.com/solo-io/unik/containers"
 	"github.com/pborman/uuid"
 )
 

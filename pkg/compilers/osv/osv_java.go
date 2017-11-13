@@ -3,9 +3,9 @@ package osv
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/pkg/compilers"
-	"github.com/cf-unik/unik/pkg/types"
-	unikutil "github.com/cf-unik/unik/pkg/util"
+	"github.com/solo-io/unik/pkg/compilers"
+	"github.com/solo-io/unik/pkg/types"
+	unikutil "github.com/solo-io/unik/pkg/util"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path/filepath"

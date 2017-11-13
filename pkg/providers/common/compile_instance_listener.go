@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/emc-advanced-dev/pkg/errors"
-	"github.com/cf-unik/unik/instance-listener/bindata"
-	"github.com/cf-unik/unik/pkg/compilers/rump"
-	"github.com/cf-unik/unik/pkg/types"
+	"github.com/solo-io/unik/instance-listener/bindata"
+	"github.com/solo-io/unik/pkg/compilers/rump"
+	"github.com/solo-io/unik/pkg/types"
 )
 
 func CompileInstanceListener(sourceDir, instanceListenerPrefix, dockerImage string, createImageFunc func(kernel, args string, mntPoints, bakedEnv []string, noCleanup bool) (*types.RawImage, error), enablePersistence bool) (*types.RawImage, error) {
