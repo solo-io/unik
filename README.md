@@ -1,4 +1,12 @@
-# <img src="https://i.imgur.com/Myqu83U.png" alt="Build and run unikernels" width="300" height="134">
+<h2 align="center">
+    <img src="https://i.imgur.com/v5eH7HV.png" alt="Build and run unikernels" width="150" height="184">
+  <br>
+   A platform for automating unikernel compilation and deployment
+</h2>
+
+
+<BR>
+
 
 
 UniK (pronounced you-neek) is a tool for compiling application sources into unikernels (lightweight bootable disk images) rather than binaries.
