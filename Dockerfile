@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 
 RUN apt-get update && apt-get install -y curl make git jq
 
-RUN curl --insecure https://storage.googleapis.com/golang/go1.6.2.linux-amd64.tar.gz | tar xz -C /usr/local
+RUN curl --insecure https://storage.googleapis.com/golang/go1.7.6.linux-amd64.tar.gz | tar xz -C /usr/local
 
 ENV GOROOT=/usr/local/go
 ENV GOPATH=/go
