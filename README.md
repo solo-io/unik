@@ -74,6 +74,8 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 * [Photon Controller](docs/providers/photon.md)
 
 ### Roadmap:
+* extend unik to build & deploy [Kata Containers](https://katacontainers.io)
+* extend unik to build & deploy [LinuxKit](https://github.com/linuxkit/linuxkit)
 * dynamic volume and application arguments configuration at instance runtime (rather than at compile time)
 * expanding test coverage
 * better code documentation
