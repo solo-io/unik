@@ -84,7 +84,7 @@ Ensure that each of the following are installed
 
 4. Use `npm` to install the dependency for our app, `express.js`:
   ```bash
-  npm install express
+  npm install express serve-index
   ```
 
   Try running this code with `node server.js`. Visit [http://localhost:8080/](http://localhost:8080/) to see that the server is running.
