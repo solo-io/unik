@@ -11,13 +11,15 @@
 ```
 $ git clone https://github.com/solo-io/unik.git
 $ cd unik
-$ make
+$ make # or 'make binary'; see the notes below
 $ _build/unik
 Unik is a tool for compiling application source code
 into bootable disk images. Unik also runs and manages unikernel
 instances across infrastructures.
 ...
 ```
+
+Note that `make` will pre-pull a number of large docker containers unik needs in order to run. In order to skip pre-pulling (as you may not require all of these containers), you can replace `make` with `make binary`. Note that the first time unik requires a specific docker image, it will pull that image.
 
 This will place the `unik` executable at **unik/_build/unik**. Run UniK commands with `./_build/unik`, or move the binary to somewhere in your path, such as `/usr/local/bin` to run commands from anywhere with `unik [command]`
 
