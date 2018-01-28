@@ -53,8 +53,7 @@ Ensure that each of the following are installed
 
 4. Launch UniK and automatically deploy the *Virtualbox Instance Listener*
   * Open a new terminal window/tab. This terminal will be where we leave the UniK daemon running.
-  * `cd` to the `_build` directory created by `make`
-  * run `./unik daemon --debug` (the `--debug` flag is optional, if you want to see more verbose output)
+  * run `unik daemon --debug` (the `--debug` flag is optional, if you want to see more verbose output)
   * UniK will compile and deploy its own 30 MB unikernel. This unikernel is the [Unik Instance Listener](./instance_listener.md). The instance listener uses udp broadcast to detect instance ips and bootstrap instances running on Virtualbox.
   * After this is finished, UniK is running and ready to accept commands.
   * Open a new terminal window and type `unik target --host localhost` to set the CLI target to the your local machine.
