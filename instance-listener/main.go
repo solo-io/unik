@@ -90,7 +90,7 @@ func main() {
 				log.Printf("ERROR: broadcast-ip: %v; failed writing to broadcast udp socket: "+err.Error(), BROADCAST_IPv4)
 				return
 			}
-			time.Sleep(1000 * time.Millisecond)
+			time.Sleep(5000 * time.Millisecond)
 		}
 	}()
 	m := http.NewServeMux()

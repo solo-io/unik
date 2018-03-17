@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
+	"os"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
@@ -50,7 +51,7 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 	p.getClient().Mkdir("unik/vsphere/volumes")
 
 	if err := p.deployInstanceListener(); err != nil {
-		return nil, errors.New("deploying virtualbox instance listener", err)
+		return nil, errors.New("deploying vsphere instance listener", err)
 	}
 
 	instanceListenerIp, err := common.GetInstanceListenerIp(instanceListenerPrefix, timeout)
@@ -59,6 +60,12 @@ func NewVsphereProvier(config config.Vsphere) (*VsphereProvider, error) {
 	}
 
 	p.instanceListenerIp = instanceListenerIp
+
+	tmpDir := filepath.Join(os.Getenv("HOME"), ".unik", "tmp")
+        os.Setenv("TMPDIR", tmpDir)
+        logrus.Infof("Creating directory %s", tmpDir)
+        os.MkdirAll(tmpDir, 0755)
+
 	// begin update instances cycle
 	go func() {
 		for {
