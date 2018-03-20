@@ -91,7 +91,7 @@ Ensure that each of the following are installed
   }
   ```
 
-2. Try running this code with `go run http.go`. Visit [http://localhost:8080/](http://localhost:8080/) to see that the server is running.
+2. Try running this code with `go run httpd.go`. Visit [http://localhost:8080/](http://localhost:8080/) to see that the server is running.
 3. We need to create a dummy `Godeps` file. This is necessary to tell the Go compiler how Go projects and their dependencies are structured. Fortunately, with this example, our project has no dependencies, and we can just fill out a simple `Godeps` file without installing [`godep`](https://github.com/tools/godep). Note: for Go projects with imported dependencies, and nested packages, you will need to install Godeps and run `GO15VENDOREXPERIMENT=1 godep save ./...` in your project. See [Compiling Go Apps with UniK](compilers/rump.md#golang) for more information.
   * To create the dummy Godeps file, create a folder named `Godeps` in the same directory as `httpd.go`. Inside, create a file named `Godeps.json` and paste the following inside:
   ```json
