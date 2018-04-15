@@ -1,7 +1,7 @@
 # Getting Started
 
 In this tutorial we'll be:
-  1. [installing UniK](getting_started.md#installing-unik)
+  1. [installing UniK](getting_started_python3.md#installing-unik)
   2. [writing a simple HTTP Daemon in Python](getting_started.md#write-a-python-http-server)
   3. [compiling to a unikernel and launching an instance on Virtualbox](getting_started.md#compile-an-image-and-run-on-virtualbox)
 
