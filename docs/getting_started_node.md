@@ -1,9 +1,9 @@
 # Getting Started
 
 In this tutorial we'll be:
-  1. [installing UniK](getting_started.md#installing-unik)
-  2. [writing a simple HTTP Daemon in Nodejs](getting_started.md#write-a-nodejs-http-server)
-  3. [compiling to a unikernel and launching an instance on Virtualbox](getting_started.md#compile-an-image-and-run-on-virtualbox)
+  1. [installing UniK](getting_started_node.md#installing-unik)
+  2. [writing a simple HTTP Daemon in Nodejs](getting_started_node.md#write-a-nodejs-http-server)
+  3. [compiling to a unikernel and launching an instance on Virtualbox](getting_started_node.md#compile-an-image-and-run-on-virtualbox)
 
 ### Installing UniK
 #### Prerequisites
