@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
+	"sort"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -12,7 +14,6 @@ import (
 
 	"github.com/solo-io/unik/pkg/config"
 	"github.com/solo-io/unik/pkg/types"
-	"sort"
 )
 
 var clientConfigFile, hubConfigFile, host string
@@ -31,9 +32,17 @@ You may set a custom client configuration file
 with the global flag --client-config=<path>`,
 }
 
+func getHomeDir() string {
+	if runtime.GOOS == "windows" {
+		return os.Getenv("USERPROFILE")
+	} else {
+		return os.Getenv("HOME")
+	}
+}
+
 func init() {
-	RootCmd.PersistentFlags().StringVar(&clientConfigFile, "client-config", os.Getenv("HOME")+"/.unik/client-config.yaml", "client config file")
-	RootCmd.PersistentFlags().StringVar(&hubConfigFile, "hub-config", os.Getenv("HOME")+"/.unik/hub-config.yaml", "hub config file")
+	RootCmd.PersistentFlags().StringVar(&clientConfigFile, "client-config", getHomeDir()+"/.unik/client-config.yaml", "client config file")
+	RootCmd.PersistentFlags().StringVar(&hubConfigFile, "hub-config", getHomeDir()+"/.unik/hub-config.yaml", "hub config file")
 	RootCmd.PersistentFlags().StringVar(&host, "host", "", "<string, optional>: host/ip address of the host running the unik daemon")
 	targetCmd.Flags().IntVar(&port, "port", 3000, "<int, optional>: port the daemon is running on (default: 3000)")
 }

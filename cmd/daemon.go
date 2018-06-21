@@ -96,7 +96,7 @@ Example usage:
 
 func init() {
 	RootCmd.AddCommand(daemonCmd)
-	daemonCmd.Flags().StringVar(&daemonRuntimeFolder, "d", os.Getenv("HOME")+"/.unik/", "daemon runtime folder - where state is stored. (default is $HOME/.unik/)")
+	daemonCmd.Flags().StringVar(&daemonRuntimeFolder, "d", getHomeDir()+"/.unik/", "daemon runtime folder - where state is stored. (default is $HOME/.unik/)")
 	daemonCmd.Flags().StringVar(&daemonConfigFile, "f", "", "daemon config file (default is {RuntimeFolder}/daemon-config.yaml)")
 	daemonCmd.Flags().IntVar(&port, "port", 3000, "<int, optional> listening port for daemon")
 	daemonCmd.Flags().BoolVar(&debugMode, "debug", false, "<bool, optional> more verbose logging for the daemon")
