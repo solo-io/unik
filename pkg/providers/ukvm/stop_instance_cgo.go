@@ -3,12 +3,13 @@
 package ukvm
 
 import (
+	"os"
+	"strconv"
 	"syscall"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/solo-io/unik/pkg/types"
-	"strconv"
 )
 
 func (p *UkvmProvider) StopInstance(id string) error {
@@ -23,9 +24,15 @@ func (p *UkvmProvider) StopInstance(id string) error {
 		return errors.New("invalid instance id (should be ukvm pid)", err)
 	}
 
-	if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
-		logrus.Warn("failed terminating instance, assuming instance has externally terminated", err)
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		logrus.Warn("failed finding instance, assuming instance has externally terminated", err)
+	} else {
+		if err := process.Signal(syscall.SIGKILL); err != nil {
+			logrus.Warn("failed terminating instance, assuming instance has externally terminated", err)
+		}
 	}
+
 	volumesToDetach := []*types.Volume{}
 	volumes, err := p.ListVolumes()
 	if err != nil {
