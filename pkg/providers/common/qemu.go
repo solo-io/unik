@@ -22,8 +22,8 @@ func ConvertRawImage(sourceFormat, targetFormat types.ImageFormat, inputFile, ou
 	dir := filepath.Dir(inputFile)
 	outDir := filepath.Dir(outputFile)
 
-	container := unikutil.NewContainer("qemu-util").WithVolume(dir, dir).
-		WithVolume(outDir, outDir)
+	container := unikutil.NewContainer("qemu-util").WithVolume(dir, "/unik/input").
+		WithVolume(outDir, "/unik/output")
 
 	args := []string{"qemu-img", "convert", "-f", string(sourceFormat), "-O", targetFormatName}
 	if targetFormat == types.ImageFormat_VMDK {
@@ -38,7 +38,7 @@ func ConvertRawImage(sourceFormat, targetFormat types.ImageFormat, inputFile, ou
 	tmpOutputFile.Close()
 	defer os.Remove(tmpOutputFile.Name())
 
-	args = append(args, inputFile, tmpOutputFile.Name())
+	args = append(args, "/unik/input/" + filepath.Base(inputFile), "/unik/output/" + filepath.Base(tmpOutputFile.Name()))
 
 	logrus.WithField("command", args).Debugf("running command")
 	if err := container.Run(args...); err != nil {
