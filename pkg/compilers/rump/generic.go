@@ -35,6 +35,9 @@ func (r *RumCompilerBase) runContainer(localFolder string, envPairs []string) er
 		env[split[0]] = split[1]
 	}
 
+	if unikutil.IsDockerToolbox() {
+		localFolder = unikutil.GetToolboxMountPath(localFolder)
+	}
 	return unikutil.NewContainer(r.DockerImage).WithVolume(localFolder, "/opt/code").WithEnvs(env).Run()
 
 }
