@@ -5,7 +5,9 @@ package util
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 
 	"github.com/Sirupsen/logrus"
@@ -137,6 +139,9 @@ func (c *Container) BuildCmd(arguments ...string) *exec.Cmd {
 		args = append(args, "-e", fmt.Sprintf("%s=%s", key, val))
 	}
 	for key, val := range c.volumes {
+		if IsDockerToolbox() {
+			key = GetToolboxMountPath(key)
+		}
 		args = append(args, "-v", fmt.Sprintf("%s:%s", key, val))
 	}
 
@@ -165,4 +170,16 @@ func (c *Container) BuildCmd(arguments ...string) *exec.Cmd {
 	cmd := exec.Command("docker", args...)
 
 	return cmd
+}
+
+func IsDockerToolbox() bool {
+	return runtime.GOOS == "windows" && os.Getenv("DOCKER_TOOLBOX_INSTALL_PATH") != ""
+}
+
+func GetToolboxMountPath(path string) string {
+	path = strings.Replace(path, "\\", "/", -1)
+	if len(path) >= 2 && path[1] == ':' {
+		path = "/" + strings.ToLower(string(path[0])) + path[2:]
+	}
+	return path
 }
