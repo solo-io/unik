@@ -16,8 +16,8 @@ UniK utilizes a simple docker-like command line interface, making building unike
 UniK is built to be easily extensible, allowing (and encouraging) adding support for unikernel [compilers](docs/compilers/README.md) and cloud [providers](docs/providers/README.md). See [architecture](docs/architecture.md) for a better understanding of UniK's pluggable code design.
 
 To learn more about the motivation behind project UniK, read our [blog](https://medium.com/solo-io/unik-build-and-run-unikernels-with-ease-2c7344115cbb) post, or [watch](https://www.youtube.com/watch?v=wcZWg3YtvnY) session ([Slides](http://www.slideshare.net/IditLevine/unik-slides)).
-We also encourage you to read [this](https://www.solo.io/single-post/2017/05/14/Worried-about-IoT-DDoS-Think-Unikernels) blog about IoT Security.<BR><BR>
-To stay up-to-date on UniK, follow us [@ProjectUnik](https://twitter.com/ProjectUniK) and join us on our [slack channel](http://slack.solo.io).
+We also encourage you to read [this](https://medium.com/solo-io/worried-about-iot-ddos-think-unikernels-fae2a9c5c51b) blog about IoT Security.<BR><BR>
+To stay up-to-date on UniK, follow us at[twitter](https://twitter.com/soloio_inc) and join us on our [slack channel](http://slack.solo.io).
 
 ---
 
