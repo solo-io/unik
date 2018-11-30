@@ -4,7 +4,7 @@ import (
 	. "github.com/solo-io/unik/pkg/client"
 
 	"fmt"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/unik/pkg/types"
 	"github.com/solo-io/unik/test/helpers"
 	. "github.com/onsi/ginkgo"

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"

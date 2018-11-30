@@ -3,17 +3,18 @@ package common
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sirupsen/logrus"
+	"io"
+	"net/http"
+	"os"
+
 	"github.com/djannot/aws-sdk-go/aws"
 	"github.com/djannot/aws-sdk-go/aws/session"
 	"github.com/djannot/aws-sdk-go/service/s3"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/layer-x/layerx-commons/lxhttpclient"
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/unik/pkg/config"
 	"github.com/solo-io/unik/pkg/types"
-	"github.com/layer-x/layerx-commons/lxhttpclient"
-	"io"
-	"net/http"
-	"os"
 )
 
 const (

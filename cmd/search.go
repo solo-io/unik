@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"encoding/json"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/unik/pkg/types"
 	"github.com/layer-x/layerx-commons/lxhttpclient"
 	"github.com/spf13/cobra"

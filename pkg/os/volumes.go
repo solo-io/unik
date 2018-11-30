@@ -8,7 +8,7 @@ import (
 
 	"github.com/emc-advanced-dev/pkg/errors"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type RawVolume struct {

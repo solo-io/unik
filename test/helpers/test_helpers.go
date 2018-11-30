@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/solo-io/unik/pkg/client"
 	"github.com/solo-io/unik/pkg/config"

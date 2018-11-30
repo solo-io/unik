@@ -3,7 +3,7 @@ package util
 import (
 	"bufio"
 	"fmt"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"io"
 	"math"
 	"os/exec"

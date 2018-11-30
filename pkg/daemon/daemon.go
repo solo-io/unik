@@ -14,9 +14,11 @@ import (
 
 	"path/filepath"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/pkg/ioutils"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/go-martini/martini"
+	"github.com/layer-x/layerx-commons/lxmartini"
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/unik/pkg/compilers"
 	"github.com/solo-io/unik/pkg/compilers/includeos"
 	"github.com/solo-io/unik/pkg/compilers/mirage"
@@ -37,8 +39,6 @@ import (
 	"github.com/solo-io/unik/pkg/state"
 	"github.com/solo-io/unik/pkg/types"
 	"github.com/solo-io/unik/pkg/util"
-	"github.com/go-martini/martini"
-	"github.com/layer-x/layerx-commons/lxmartini"
 )
 
 type UnikDaemon struct {
@@ -407,7 +407,8 @@ func (d *UnikDaemon) Run(port int) {
 }
 
 func (d *UnikDaemon) Stop() error {
-	return d.server.Close()
+	// return d.server.Stop()
+	return nil
 }
 
 func (d *UnikDaemon) initialize() {

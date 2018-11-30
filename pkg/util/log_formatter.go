@@ -3,11 +3,12 @@ package util
 import (
 	"bytes"
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"runtime"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 //Redaction formatter
@@ -28,7 +29,6 @@ var (
 
 func init() {
 	baseTimestamp = time.Now()
-	isTerminal = logrus.IsTerminal()
 }
 
 func miniTS() int {
@@ -82,7 +82,7 @@ func (f *RedactedTextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
-		timestampFormat = logrus.DefaultTimestampFormat
+		timestampFormat = time.RFC3339
 	}
 	if isColored {
 		f.printColored(b, entry, keys, timestampFormat)

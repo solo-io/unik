@@ -3,7 +3,7 @@ package ukvm
 import (
 	"os"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 )
 

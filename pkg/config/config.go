@@ -56,6 +56,9 @@ type Qemu struct {
 	NoGraphic    bool   `yaml:"no_graphic"`
 	DebuggerPort int    `yaml:"debugger_port"`
 }
+type Firecracker struct {
+	Binary string `yaml:"binary"`
+}
 
 type Ukvm struct {
 	Name string `yaml:"name"`

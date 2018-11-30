@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/unik/pkg/compilers"
 	"github.com/solo-io/unik/pkg/types"
 )

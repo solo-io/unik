@@ -2,7 +2,7 @@ package os
 
 import (
 	"archive/tar"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"io"
 	"os"

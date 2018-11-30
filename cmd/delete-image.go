@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/emc-advanced-dev/pkg/errors"

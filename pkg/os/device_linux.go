@@ -12,7 +12,7 @@ import (
 
 	"github.com/emc-advanced-dev/pkg/errors"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 func Mount(device BlockDevice) (mntpoint string, err error) {

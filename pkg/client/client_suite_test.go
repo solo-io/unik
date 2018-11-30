@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"encoding/json"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/unik/pkg/daemon"
 	"github.com/solo-io/unik/pkg/util"
 	"github.com/solo-io/unik/test/helpers"

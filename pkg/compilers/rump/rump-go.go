@@ -8,7 +8,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/solo-io/unik/pkg/compilers"
 	"github.com/solo-io/unik/pkg/types"

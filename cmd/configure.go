@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/solo-io/unik/pkg/config"
 	"github.com/spf13/cobra"

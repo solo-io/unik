@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/unik/pkg/compilers"
 	unikos "github.com/solo-io/unik/pkg/os"
 	"github.com/solo-io/unik/pkg/types"

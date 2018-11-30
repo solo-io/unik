@@ -1,7 +1,7 @@
 package openstack
 
 import (
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"path/filepath"
 
 	"github.com/solo-io/unik/pkg/config"

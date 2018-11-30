@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
 
 	"github.com/solo-io/unik/pkg/compilers"
