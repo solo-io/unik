@@ -121,7 +121,8 @@
   revision = "bb66dbd3628125f64907fba4905e47c8ead41436"
 
 [[projects]]
-  digest = "1:2cd93f18832d25a2232cc12aa242af73893ed393165ed9c984969182f520e1f9"
+  branch = "master"
+  digest = "1:c20825bd2b2411fd3b999b817a62274aa8584019f4c45bb281f97326ea9c1a96"
   name = "github.com/firecracker-microvm/firecracker-go-sdk"
   packages = [
     ".",
@@ -130,8 +131,7 @@
     "client/operations",
   ]
   pruneopts = "UT"
-  revision = "7727a035dd92661d5a2b2f7052778a054fae4f8e"
-  source = "github.com/yuval-k/firecracker-go-sdk"
+  revision = "fa29a4c78770b4a1a933e476bb1d99645d1e9a68"
 
 [[projects]]
   digest = "1:58c19d0fb39b08969d3f511ea6769b4aa02d7fab7f125f6eddde310b0ccbde8a"

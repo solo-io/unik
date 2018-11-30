@@ -59,8 +59,7 @@
 
 [[constraint]]
   name = "github.com/firecracker-microvm/firecracker-go-sdk"
-  revision = "7727a035dd92661d5a2b2f7052778a054fae4f8e"
-  source = "github.com/yuval-k/firecracker-go-sdk"
+  branch = "master"
 
 [[override]]
   name = "golang.org/x/sys"
