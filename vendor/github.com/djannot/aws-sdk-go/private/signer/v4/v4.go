@@ -115,8 +115,6 @@ type signer struct {
 	authorization    string
 	notHoist         bool
 	signedHeaderVals http.Header
-
-	pass string
 }
 
 // Sign requests with signature version 4.

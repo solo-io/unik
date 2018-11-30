@@ -213,8 +213,8 @@ func postWithRetries(url string, path string, headers map[string]string, message
 		switch message.(type) {
 		case proto.Message:
 			return postPB(url, path, headers, message.(proto.Message))
-		case *bytes.Buffer:
-			return postBuffer(url, path, headers, message.(*bytes.Buffer))
+		case io.Reader:
+			return postBuffer(url, path, headers, message.(io.Reader))
 		default:
 			_, err := json.Marshal(message)
 			if err != nil {
@@ -237,9 +237,9 @@ func postPB(url string, path string, headers map[string]string, pb proto.Message
 	return postData(url, path, headers, data)
 }
 
-func postBuffer(url string, path string, headers map[string]string, buffer *bytes.Buffer) (*http.Response, []byte, error) {
+func postBuffer(url string, path string, headers map[string]string, reader io.Reader) (*http.Response, []byte, error) {
 	completeURL := parseURL(url, path)
-	request, err := http.NewRequest("POST", completeURL, buffer)
+	request, err := http.NewRequest("POST", completeURL, reader)
 	if err != nil {
 		return nil, emptyBytes, lxerrors.New("error generating post request", err)
 	}
@@ -356,8 +356,8 @@ func postAsyncWithRetries(url string, path string, headers map[string]string, me
 		switch message.(type) {
 		case proto.Message:
 			return postAsyncPB(url, path, headers, message.(proto.Message))
-		case *bytes.Buffer:
-			return postAsyncBuffer(url, path, headers, message.(*bytes.Buffer))
+		case io.Reader:
+			return postAsyncBuffer(url, path, headers, message.(io.Reader))
 		default:
 			_, err := json.Marshal(message)
 			if err != nil {
@@ -380,9 +380,9 @@ func postAsyncPB(url string, path string, headers map[string]string, pb proto.Me
 	return postAsyncData(url, path, headers, data)
 }
 
-func postAsyncBuffer(url string, path string, headers map[string]string, buffer *bytes.Buffer) (*http.Response, error) {
+func postAsyncBuffer(url string, path string, headers map[string]string, reader io.Reader) (*http.Response, error) {
 	completeURL := parseURL(url, path)
-	request, err := http.NewRequest("POST", completeURL, buffer)
+	request, err := http.NewRequest("POST", completeURL, reader)
 	if err != nil {
 		return nil, lxerrors.New("error generating post request", err)
 	}

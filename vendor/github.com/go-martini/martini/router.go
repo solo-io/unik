@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strconv"
 	"sync"
-	"errors"
 )
 
 // Params is a map of name/value pairs for named routes. An instance of martini.Params is available to be injected into any route handler.
@@ -37,9 +36,6 @@ type Router interface {
 	Any(string, ...Handler) Route
 	// AddRoute adds a route for a given HTTP method request to the specified matching pattern.
 	AddRoute(string, string, ...Handler) Route
-
-	// RemoveRoute removes a route for a given HTTP method request to the specified matching pattern.
-	RemoveRoute(name string) error
 
 	// NotFound sets the handlers that are called when a no route matches a request. Throws a basic 404 by default.
 	NotFound(...Handler)
@@ -113,17 +109,6 @@ func (r *router) Any(pattern string, h ...Handler) Route {
 
 func (r *router) AddRoute(method, pattern string, h ...Handler) Route {
 	return r.addRoute(method, pattern, h)
-}
-
-func (r *router) RemoveRoute(pattern string) error {
-	for i, route := range r.routes {
-		fmt.Printf("searching route %s", route.Pattern())
-		if route.Pattern() == pattern {
-			r.routes = append(r.routes[:i], r.routes[i+1:]...)
-			return nil
-		}
-	}
-	return errors.New("unknown route "+pattern)
 }
 
 func (r *router) Handle(res http.ResponseWriter, req *http.Request, context Context) {

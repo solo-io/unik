@@ -2,7 +2,7 @@ package lxmartini
 
 import (
 	"github.com/go-martini/martini"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 	"github.com/layer-x/layerx-commons/lxerrors"

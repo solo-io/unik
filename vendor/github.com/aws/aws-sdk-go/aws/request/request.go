@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/client/metadata"
 )
 
@@ -77,7 +78,13 @@ func New(cfg aws.Config, clientInfo metadata.ClientInfo, handlers Handlers,
 	}
 
 	httpReq, _ := http.NewRequest(method, "", nil)
-	httpReq.URL, _ = url.Parse(clientInfo.Endpoint + p)
+
+	var err error
+	httpReq.URL, err = url.Parse(clientInfo.Endpoint + p)
+	if err != nil {
+		httpReq.URL = &url.URL{}
+		err = awserr.New("InvalidEndpointURL", "invalid endpoint uri", err)
+	}
 
 	r := &Request{
 		Config:     cfg,
@@ -91,7 +98,7 @@ func New(cfg aws.Config, clientInfo metadata.ClientInfo, handlers Handlers,
 		HTTPRequest: httpReq,
 		Body:        nil,
 		Params:      params,
-		Error:       nil,
+		Error:       err,
 		Data:        data,
 	}
 	r.SetBufferBody([]byte{})
@@ -185,7 +192,6 @@ func debugLogReqError(r *Request, stage string, retrying bool, err error) {
 // which occurred will be returned.
 func (r *Request) Build() error {
 	if !r.built {
-		r.Error = nil
 		r.Handlers.Validate.Run(r)
 		if r.Error != nil {
 			debugLogReqError(r, "Validate Request", false, r.Error)
@@ -202,7 +208,7 @@ func (r *Request) Build() error {
 	return r.Error
 }
 
-// Sign will sign the request retuning error if errors are encountered.
+// Sign will sign the request returning error if errors are encountered.
 //
 // Send will build the request prior to signing. All Sign Handlers will
 // be executed in the order they were set.
@@ -221,6 +227,13 @@ func (r *Request) Sign() error {
 //
 // Send will sign the request prior to sending. All Send Handlers will
 // be executed in the order they were set.
+//
+// Canceling a request is non-deterministic. If a request has been canceled,
+// then the transport will choose, randomly, one of the state channels during
+// reads or getting the connection.
+//
+// readLoop() and getConn(req *Request, cm connectMethod)
+// https://github.com/golang/go/blob/master/src/net/http/transport.go
 func (r *Request) Send() error {
 	for {
 		if aws.BoolValue(r.Retryable) {
@@ -240,20 +253,8 @@ func (r *Request) Send() error {
 				body = ioutil.NopCloser(r.Body)
 			}
 
-			r.HTTPRequest = &http.Request{
-				URL:           r.HTTPRequest.URL,
-				Header:        r.HTTPRequest.Header,
-				Close:         r.HTTPRequest.Close,
-				Form:          r.HTTPRequest.Form,
-				PostForm:      r.HTTPRequest.PostForm,
-				Body:          body,
-				MultipartForm: r.HTTPRequest.MultipartForm,
-				Host:          r.HTTPRequest.Host,
-				Method:        r.HTTPRequest.Method,
-				Proto:         r.HTTPRequest.Proto,
-				ContentLength: r.HTTPRequest.ContentLength,
-			}
-			if r.HTTPResponse.Body != nil {
+			r.HTTPRequest = copyHTTPRequest(r.HTTPRequest, body)
+			if r.HTTPResponse != nil && r.HTTPResponse.Body != nil {
 				// Closing response body. Since we are setting a new request to send off, this
 				// response will get squashed and leaked.
 				r.HTTPResponse.Body.Close()
@@ -269,6 +270,10 @@ func (r *Request) Send() error {
 
 		r.Handlers.Send.Run(r)
 		if r.Error != nil {
+			if strings.Contains(r.Error.Error(), "net/http: request canceled") {
+				return r.Error
+			}
+
 			err := r.Error
 			r.Handlers.Retry.Run(r)
 			r.Handlers.AfterRetry.Run(r)
