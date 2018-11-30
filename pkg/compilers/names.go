@@ -89,6 +89,8 @@ var (
 	MIRAGE_OCAML_XEN  = compilerName("mirage", "ocaml", "xen")
 	MIRAGE_OCAML_UKVM = compilerName("mirage", "ocaml", "ukvm")
 	MIRAGE_OCAML_QEMU = compilerName("mirage", "ocaml", "qemu")
+
+	FIRECRACKER_GO = compilerName("firecracker", "go", "firecracker")
 )
 
 var compilers = []CompilerType{
@@ -153,6 +155,8 @@ var compilers = []CompilerType{
 	MIRAGE_OCAML_XEN,
 	MIRAGE_OCAML_UKVM,
 	MIRAGE_OCAML_QEMU,
+
+	FIRECRACKER_GO,
 }
 
 func ValidateCompiler(base, language, provider string) (CompilerType, error) {
