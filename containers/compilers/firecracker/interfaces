@@ -1,2 +1,2 @@
-auto eth0
-iface eth0 inet manual
+auto lo
+iface lo inet loopback
