@@ -21,15 +21,16 @@ const (
 type Infrastructure string
 
 const (
-	Infrastructure_AWS        Infrastructure = "AWS"
-	Infrastructure_GCLOUD     Infrastructure = "GCLOUD"
-	Infrastructure_VSPHERE    Infrastructure = "VSPHERE"
-	Infrastructure_VIRTUALBOX Infrastructure = "VIRTUALBOX"
-	Infrastructure_QEMU       Infrastructure = "QEMU"
-	Infrastructure_PHOTON     Infrastructure = "PHOTON"
-	Infrastructure_XEN        Infrastructure = "XEN"
-	Infrastructure_OPENSTACK  Infrastructure = "OPENSTACK"
-	Infrastructure_UKVM       Infrastructure = "UKVM"
+	Infrastructure_AWS         Infrastructure = "AWS"
+	Infrastructure_GCLOUD      Infrastructure = "GCLOUD"
+	Infrastructure_VSPHERE     Infrastructure = "VSPHERE"
+	Infrastructure_VIRTUALBOX  Infrastructure = "VIRTUALBOX"
+	Infrastructure_QEMU        Infrastructure = "QEMU"
+	Infrastructure_PHOTON      Infrastructure = "PHOTON"
+	Infrastructure_XEN         Infrastructure = "XEN"
+	Infrastructure_OPENSTACK   Infrastructure = "OPENSTACK"
+	Infrastructure_UKVM        Infrastructure = "UKVM"
+	Infrastructure_FIRECRACKER Infrastructure = "FIRECRACKER"
 )
 
 type Image struct {

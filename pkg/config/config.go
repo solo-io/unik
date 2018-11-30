@@ -6,15 +6,16 @@ type DaemonConfig struct {
 }
 
 type Providers struct {
-	Aws        []Aws        `yaml:"aws"`
-	Gcloud     []Gcloud     `yaml:"gcloud"`
-	Vsphere    []Vsphere    `yaml:"vsphere"`
-	Virtualbox []Virtualbox `yaml:"virtualbox"`
-	Qemu       []Qemu       `yaml:"qemu"`
-	Photon     []Photon     `yaml:"photon"`
-	Xen        []Xen        `yaml:"xen"`
-	Openstack  []Openstack  `yaml:"openstack"`
-	Ukvm       []Ukvm       `yaml:"ukvm"`
+	Aws         []Aws         `yaml:"aws"`
+	Gcloud      []Gcloud      `yaml:"gcloud"`
+	Vsphere     []Vsphere     `yaml:"vsphere"`
+	Virtualbox  []Virtualbox  `yaml:"virtualbox"`
+	Qemu        []Qemu        `yaml:"qemu"`
+	Photon      []Photon      `yaml:"photon"`
+	Xen         []Xen         `yaml:"xen"`
+	Openstack   []Openstack   `yaml:"openstack"`
+	Ukvm        []Ukvm        `yaml:"ukvm"`
+	Firecracker []Firecracker `yaml:"firecracker"`
 }
 
 type Aws struct {
@@ -57,7 +58,12 @@ type Qemu struct {
 	DebuggerPort int    `yaml:"debugger_port"`
 }
 type Firecracker struct {
+	Name string `yaml:"name"`
+
 	Binary string `yaml:"binary"`
+	Kernel string `yaml:"kernel"`
+	// either empty, stdio, or xterm
+	Console string `yaml:"console"`
 }
 
 type Ukvm struct {

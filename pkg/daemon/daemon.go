@@ -20,14 +20,17 @@ import (
 	"github.com/layer-x/layerx-commons/lxmartini"
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/unik/pkg/compilers"
+	firecrackercompiler "github.com/solo-io/unik/pkg/compilers/firecracker"
 	"github.com/solo-io/unik/pkg/compilers/includeos"
 	"github.com/solo-io/unik/pkg/compilers/mirage"
 	"github.com/solo-io/unik/pkg/compilers/osv"
 	"github.com/solo-io/unik/pkg/compilers/rump"
+
 	"github.com/solo-io/unik/pkg/config"
 	unikos "github.com/solo-io/unik/pkg/os"
 	"github.com/solo-io/unik/pkg/providers"
 	"github.com/solo-io/unik/pkg/providers/aws"
+	firecrackerprovider "github.com/solo-io/unik/pkg/providers/firecracker"
 	"github.com/solo-io/unik/pkg/providers/gcloud"
 	"github.com/solo-io/unik/pkg/providers/openstack"
 	"github.com/solo-io/unik/pkg/providers/photon"
@@ -36,6 +39,7 @@ import (
 	"github.com/solo-io/unik/pkg/providers/virtualbox"
 	"github.com/solo-io/unik/pkg/providers/vsphere"
 	"github.com/solo-io/unik/pkg/providers/xen"
+
 	"github.com/solo-io/unik/pkg/state"
 	"github.com/solo-io/unik/pkg/types"
 	"github.com/solo-io/unik/pkg/util"
@@ -49,15 +53,16 @@ type UnikDaemon struct {
 
 const (
 	//available providers
-	aws_provider        = "aws"
-	vsphere_provider    = "vsphere"
-	virtualbox_provider = "virtualbox"
-	qemu_provider       = "qemu"
-	photon_provider     = "photon"
-	xen_provider        = "xen"
-	ukvm_provider       = "ukvm"
-	gcloud_provider     = "gcloud"
-	openstack_provider  = "openstack"
+	aws_provider         = "aws"
+	vsphere_provider     = "vsphere"
+	virtualbox_provider  = "virtualbox"
+	qemu_provider        = "qemu"
+	photon_provider      = "photon"
+	xen_provider         = "xen"
+	ukvm_provider        = "ukvm"
+	gcloud_provider      = "gcloud"
+	openstack_provider   = "openstack"
+	firecracker_provider = "firecracker"
 )
 
 func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
@@ -216,6 +221,22 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 		}
 		p = p.WithState(s)
 		_providers[gcloud_provider] = p
+		break
+	}
+
+	for _, firecrackerConfig := range config.Providers.Firecracker {
+		logrus.Infof("Bootstrapping provider %s with config %v", firecracker_provider, firecrackerConfig)
+		p, err := firecrackerprovider.NewProvider(firecrackerConfig)
+		if err != nil {
+			return nil, errors.New("initializing firecracker provider", err)
+		}
+		s, err := state.BasicStateFromFile(firecrackerprovider.FirecrackerStateFile())
+		if err != nil {
+			logrus.WithError(err).Warnf("failed to read firecracker state file at %s, creating blank state", firecrackerprovider.FirecrackerStateFile())
+			s = state.NewBasicState(firecrackerprovider.FirecrackerStateFile())
+		}
+		p = p.WithState(s)
+		_providers[firecracker_provider] = p
 		break
 	}
 
@@ -390,6 +411,7 @@ func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error) {
 	_compilers[compilers.OSV_NATIVE_AWS] = &osv.OSvNativeCompiler{
 		ImageFinisher: &osv.AwsImageFinisher{},
 	}
+	_compilers[compilers.FIRECRACKER_GO] = &firecrackercompiler.FirecrackerCompiler{}
 
 	d := &UnikDaemon{
 		server:    lxmartini.QuietMartini(),
