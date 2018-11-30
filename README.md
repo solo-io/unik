@@ -33,8 +33,8 @@ Due to the frequency with which features and patches are applied to UniK, we hav
   - [Configuring the daemon](docs/configure.md)
   - [Launching the InstanceListener](docs/instance_listener.md)
 - **Getting Started**
-  - [Pull and run a unikernel without building](docs/getting_started_pull.md) on AWS Firecracker with UniK
-  - [Run your first Go MicroVM](docs/compilers/firecracker.md) on Virtualbox with UniK
+  - [Pull and run a unikernel without building](docs/getting_started_pull.md) on Virtualbox with UniK
+  - [Run your first Go MicroVM](docs/compilers/firecracker.md) on AWS Firecracker with Unik
   - [Run your first Go unikernel](docs/getting_started.md) on Virtualbox with UniK
   - [Run your first Node.js unikernel](docs/getting_started_node.md) on Virtualbox with UniK
   - [Run your first Python3 unikernel](docs/getting_started_python3.md) on Virtualbox with UniK
@@ -56,7 +56,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 ---
 
 ### Supported unikernel types:
-* **AWS Firecracker**: UniK supports compiling GO code into [AWS Firecracker](https://aws.amazon.com/blogs/aws/firecracker-lightweight-virtualization-for-serverless-computing/) MicroVM
+* **AWS Firecracker**: UniK supports compiling GO code into [AWS Firecracker](https://aws.amazon.com/blogs/aws/firecracker-lightweight-virtualization-for-serverless-computing/) MicroVMs
 * **rump**: UniK supports compiling [Python](docs/compilers/rump.md#python-3), [Node.js](docs/compilers/rump.md#nodejs) and [Go](docs/compilers/rump.md#golang) code into [rumprun](docs/compilers/rump.md) unikernels
 * **OSv**: UniK supports compiling Java, Node.js, C and C++ code into [OSv](http://osv.io/) unikernels
 * **IncludeOS**: UniK supports compiling C++ code into [IncludeOS](https://github.com/hioa-cs/IncludeOS) unikernels
