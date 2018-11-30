@@ -6,4 +6,5 @@ rc-service networking start
 /usr/local/bin/program
 
 # shutdown firecracker
+echo User program is all done. rebooting.
 reboot

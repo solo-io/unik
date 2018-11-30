@@ -21,9 +21,19 @@ cp -r  /tmp/overlay/* /tmp/tmp/
 
 cd $CODEDIR
 go get -d -v ./...
-go build -o /tmp/tmp/usr/local/bin/program
+CGO_ENABLED=0 go build -o /tmp/tmp/usr/local/bin/program
 
 # not using gopath.. so no need for: cp /go/bin/* /tmp/tmp/usr/local/bin/program
+
+cat > /tmp/tmp/prepare.sh <<EOF
+passwd root -d root
+apk add -u openrc ca-certificates
+exit 
+EOF
+
+chroot /tmp/tmp/ /bin/sh /prepare.sh
+
+rm /tmp/tmp/prepare.sh 
 
 umount /tmp/tmp
 
