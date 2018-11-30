@@ -24,5 +24,6 @@
   "qemu-util": "6f5922561bbb86e3",
   "compilers-osv-java": "14f2183e5cb49482",
   "compilers-osv-dynamic": "59ba07ca2f12ecaa",
-  "compilers-mirage-ocaml-ukvm": "2c35c23771682e9a"
+  "compilers-mirage-ocaml-ukvm": "2c35c23771682e9a",
+  "compilers-firecracker": "e73d7a4ba9e2e211"
 }
