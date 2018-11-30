@@ -521,23 +521,17 @@ func (m *Machine) startInstance(ctx context.Context) error {
 		ActionType: models.InstanceActionInfoActionTypeInstanceStart,
 	}
 
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	resp, err := m.client.CreateSyncAction(ctx, &info)
 	if err == nil {
 		m.logger.Printf("startInstance successful: %s", resp.Error())
 	} else {
-		m.logger.Printf("Error starting instance: %s", err)
+		m.logger.Errorf("Starting instance: %s", err)
 	}
 	return err
 }
 
 // SetMetadata sets the machine's metadata for MDDS
 func (m *Machine) SetMetadata(ctx context.Context, metadata interface{}) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	respcreated, respnocontent, err := m.client.PutMmds(ctx, metadata)
 
 	if err == nil {
@@ -550,7 +544,7 @@ func (m *Machine) SetMetadata(ctx context.Context, metadata interface{}) error {
 		}
 		m.logger.Printf("SetMetadata successful: %s", message)
 	} else {
-		m.logger.Printf("Error setting metadata: %s", err)
+		m.logger.Errorf("Setting metadata: %s", err)
 	}
 	return err
 }
