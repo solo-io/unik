@@ -200,6 +200,9 @@ compilers-mirage-ocaml-xen:
 compilers-mirage-ocaml-ukvm:
 	$(call build_container,compilers/mirage/ocaml,$@,.ukvm)
 
+compilers-firecracker:
+	$(call build_container,compilers/firecracker,$@,)
+
 #utils
 utils: boot-creator image-creator vsphere-client qemu-util
 
@@ -297,6 +300,7 @@ remove-containers:
 	-$(call remove_container,compilers-rump-base-hw)
 	-$(call remove_container,rump-debugger-qemu)
 	-$(call remove_container,compilers-rump-base-common)
+	-$(call remove_container,compilers-firecracker)
 
 clean:
 	rm -rf ./_build

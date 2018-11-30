@@ -1,0 +1,9 @@
+# do some minimal init
+rc-service sysfs start
+rc-service networking start
+
+# run program. the firecracker compiler would place this here.
+/usr/local/bin/program
+
+# shutdown firecracker
+reboot

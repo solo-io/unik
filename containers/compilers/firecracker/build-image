@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# run this container like so
+# docker run --rm --privileged -v /path/to/code:/go/src/gopath/to/code firecracker-builder
+
+set -ex
+
+
+dd if=/dev/zero of=/tmp/rootfs bs=1M count=50
+mkfs.ext4 /tmp/rootfs
+
+mkdir /tmp/tmp
+# mknod /dev/loop0 b 7 0 
+mount /tmp/rootfs /tmp/tmp -o loop
+
+tar xzf /tmp/alpine-minirootfs-3.8.1-x86_64.tar.gz -C /tmp/tmp
+
+CODEDIR=${CODEDIR:-/opt/code}
+
+cp -r  /tmp/overlay/* /tmp/tmp/
+
+cd $CODEDIR
+go get -d -v ./...
+go build -o /tmp/tmp/usr/local/bin/program
+
+# not using gopath.. so no need for: cp /go/bin/* /tmp/tmp/usr/local/bin/program
+
+umount /tmp/tmp
+
+OUTDIR=${OUTDIR:-$CODEDIR}
+
+mkdir -p $OUTDIR || :
+
+cp /tmp/rootfs $OUTDIR
