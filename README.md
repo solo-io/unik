@@ -2,18 +2,18 @@
     <img src="https://i.imgur.com/v5eH7HV.png" alt="Build and run unikernels" width="150" height="184">
 </h1>
 
-<h4 align="center">A platform for automating unikernel compilation and deployment</h4>
+<h4 align="center">A platform for automating unikernel & MicroVM compilation and deployment</h4>
 <BR>
 
 
 
-UniK (pronounced you-neek) is a tool for compiling application sources into unikernels (lightweight bootable disk images) rather than binaries.
+UniK (pronounced you-neek) is a tool for compiling application sources into unikernels (lightweight bootable disk images) and MicroVM rather than binaries.
 
-UniK runs and manages instances of compiled images across a variety of cloud providers as well as locally on Virtualbox.
+UniK runs and manages instances of compiled images across a variety of cloud providers as well as locally.
 
-UniK utilizes a simple docker-like command line interface, making building unikernels as easy as building containers.
+UniK utilizes a simple docker-like command line interface, making building unikernels and MicroVM as easy as building containers.
 
-UniK is built to be easily extensible, allowing (and encouraging) adding support for unikernel [compilers](docs/compilers/README.md) and cloud [providers](docs/providers/README.md). See [architecture](docs/architecture.md) for a better understanding of UniK's pluggable code design.
+UniK is built to be easily extensible, allowing (and encouraging) adding support for unikernel/MicroVM [compilers](docs/compilers/README.md) and cloud [providers](docs/providers/README.md). See [architecture](docs/architecture.md) for a better understanding of UniK's pluggable code design.
 
 To learn more about the motivation behind project UniK, read our [blog](https://medium.com/solo-io/unik-build-and-run-unikernels-with-ease-2c7344115cbb) post, or [watch](https://www.youtube.com/watch?v=wcZWg3YtvnY) session ([Slides](http://www.slideshare.net/IditLevine/unik-slides)).
 We also encourage you to read [this](https://medium.com/solo-io/worried-about-iot-ddos-think-unikernels-fae2a9c5c51b) blog about IoT Security.<BR><BR>
@@ -33,7 +33,8 @@ Due to the frequency with which features and patches are applied to UniK, we hav
   - [Configuring the daemon](docs/configure.md)
   - [Launching the InstanceListener](docs/instance_listener.md)
 - **Getting Started**
-  - [Pull and run a unikernel without building](docs/getting_started_pull.md) on Virtualbox with UniK
+  - [Pull and run a unikernel without building](docs/getting_started_pull.md) on AWS Firecracker with UniK
+  - [Run your first Go MicroVM](docs/compilers/firecracker.md) on Virtualbox with UniK
   - [Run your first Go unikernel](docs/getting_started.md) on Virtualbox with UniK
   - [Run your first Node.js unikernel](docs/getting_started_node.md) on Virtualbox with UniK
   - [Run your first Python3 unikernel](docs/getting_started_python3.md) on Virtualbox with UniK
@@ -55,6 +56,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 ---
 
 ### Supported unikernel types:
+* **AWS Firecracker**: UniK supports compiling GO code into [AWS Firecracker](https://aws.amazon.com/blogs/aws/firecracker-lightweight-virtualization-for-serverless-computing/) MicroVM
 * **rump**: UniK supports compiling [Python](docs/compilers/rump.md#python-3), [Node.js](docs/compilers/rump.md#nodejs) and [Go](docs/compilers/rump.md#golang) code into [rumprun](docs/compilers/rump.md) unikernels
 * **OSv**: UniK supports compiling Java, Node.js, C and C++ code into [OSv](http://osv.io/) unikernels
 * **IncludeOS**: UniK supports compiling C++ code into [IncludeOS](https://github.com/hioa-cs/IncludeOS) unikernels
@@ -63,6 +65,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
 *We are looking for community help to add support for more unikernel types and languages.*
 
 ### Supported providers:
+* [AWS Firecracker](https://aws.amazon.com/blogs/aws/firecracker-lightweight-virtualization-for-serverless-computing/)
 * [Virtualbox](docs/providers/virtualbox.md)
 * [AWS](docs/providers/aws.md)
 * [Google Cloud](docs/providers/gcloud.md)
