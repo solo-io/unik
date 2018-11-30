@@ -1,6 +1,6 @@
 
 
-# For devs - build unikq
+# For devs - build unik
 If needed (during dev cycle), build compiler and unik:
 ```
 make compilers-firecracker
