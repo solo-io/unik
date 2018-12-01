@@ -63,5 +63,5 @@ In other terminal, build and run:
 # Cleanup:
 ```
 ./unik delete-instance --instance writeOS_vm1
-./unik delete-image --image myImage
+./unik delete-image --image writeOS_miVM
 ```

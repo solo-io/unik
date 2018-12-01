@@ -3,7 +3,6 @@ package firecracker
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,16 +44,17 @@ func (p *FirecrackerProvider) RunInstance(params types.RunInstanceParams) (_ *ty
 		return nil, errors.New("invalid mapping for volume", err)
 	}
 
-	instanceid := fmt.Sprintf("firecracker-instance-%d", rand.Int63())
-	tmpfolder := filepath.Join(os.TempDir(), instanceid)
-	err = os.Mkdir(tmpfolder, 0755)
+	instanceId := params.Name
+	instanceDir := getInstanceDir(instanceId)
+
+	err = os.Mkdir(instanceDir, 0755)
 	if err != nil {
 		return nil, errors.New("can't create instance dir", err)
 	}
 
-	logs := filepath.Join(tmpfolder, "logs.fifo")
-	metrics := filepath.Join(tmpfolder, "metrics.fifo")
-	sock := filepath.Join(tmpfolder, "firecracker.sock")
+	logs := filepath.Join(instanceDir, "logs.fifo")
+	metrics := filepath.Join(instanceDir, "metrics.fifo")
+	sock := filepath.Join(instanceDir, "firecracker.sock")
 
 	if params.InstanceMemory == 0 {
 		params.InstanceMemory = image.RunSpec.DefaultInstanceMemory
@@ -127,7 +127,7 @@ func (p *FirecrackerProvider) RunInstance(params types.RunInstanceParams) (_ *ty
 	var instanceIp string
 
 	instance := &types.Instance{
-		Id:             instanceid,
+		Id:             instanceId,
 		Name:           params.Name,
 		State:          types.InstanceState_Running,
 		IpAddress:      instanceIp,
@@ -135,6 +135,12 @@ func (p *FirecrackerProvider) RunInstance(params types.RunInstanceParams) (_ *ty
 		ImageId:        image.Id,
 		Created:        time.Now(),
 	}
+
+	go func() {
+		<-vmmCtx.Done()
+		p.state.RemoveInstance(instance)
+		os.RemoveAll(instanceDir)
+	}()
 
 	if err := p.state.ModifyInstances(func(instances map[string]*types.Instance) error {
 		instances[instance.Id] = instance
@@ -144,6 +150,10 @@ func (p *FirecrackerProvider) RunInstance(params types.RunInstanceParams) (_ *ty
 	}
 
 	logrus.WithField("instance", instance).Infof("instance created successfully")
+
+	p.mapLock.Lock()
+	p.runningMachines[instanceId] = m
+	p.mapLock.Unlock()
 
 	return instance, nil
 }

@@ -3,12 +3,8 @@
 package firecracker
 
 import (
-	"os"
-	"strconv"
-	"syscall"
-
-	"github.com/sirupsen/logrus"
 	"github.com/emc-advanced-dev/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/unik/pkg/types"
 )
 
@@ -18,19 +14,18 @@ func (p *FirecrackerProvider) StopInstance(id string) error {
 		return errors.New("retrieving instance "+id, err)
 	}
 
-	// kill firecracker
-	pid, err := strconv.Atoi(instance.Id)
-	if err != nil {
-		return errors.New("invalid instance id (should be firecracker pid)", err)
-	}
+	p.mapLock.RLock()
+	m := p.runningMachines[id]
+	p.mapLock.RUnlock()
 
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		logrus.Warn("failed finding instance, assuming instance has externally terminated", err)
+	if m == nil {
+		logrus.WithField("instance", instance).Warn("instance not available in runtime")
 	} else {
-		if err := process.Signal(syscall.SIGKILL); err != nil {
-			logrus.Warn("failed terminating instance, assuming instance has externally terminated", err)
-		}
+		p.mapLock.Lock()
+		delete(p.runningMachines, id)
+		p.mapLock.Unlock()
+
+		m.StopVMM()
 	}
 
 	volumesToDetach := []*types.Volume{}

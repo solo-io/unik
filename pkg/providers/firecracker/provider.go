@@ -3,6 +3,9 @@ package firecracker
 import (
 	"os"
 	"path/filepath"
+	"sync"
+
+	firecrackersdk "github.com/firecracker-microvm/firecracker-go-sdk"
 
 	"github.com/solo-io/unik/pkg/config"
 	"github.com/solo-io/unik/pkg/state"
@@ -11,6 +14,9 @@ import (
 type FirecrackerProvider struct {
 	config config.Firecracker
 	state  state.State
+
+	runningMachines map[string]*firecrackersdk.Machine
+	mapLock         sync.RWMutex
 }
 
 func FirecrackerStateFile() string {
@@ -36,8 +42,9 @@ func NewProvider(config config.Firecracker) (*FirecrackerProvider, error) {
 	os.MkdirAll(firecrackerVolumesDirectory(), 0777)
 
 	p := &FirecrackerProvider{
-		config: config,
-		state:  state.NewBasicState(FirecrackerStateFile()),
+		config:          config,
+		state:           state.NewBasicState(FirecrackerStateFile()),
+		runningMachines: map[string]*firecrackersdk.Machine{},
 	}
 
 	return p, nil
@@ -54,4 +61,12 @@ func getImagePath(imageName string) string {
 
 func getVolumePath(volumeName string) string {
 	return filepath.Join(firecrackerVolumesDirectory(), volumeName, "data.img")
+}
+
+func getInstanceDir(instanceName string) string {
+	return filepath.Join(firecrackerInstancesDirectory(), instanceName)
+}
+
+func getImageDir(imageName string) string {
+	return filepath.Join(firecrackerImagesDirectory(), imageName)
 }
