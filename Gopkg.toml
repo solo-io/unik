@@ -24,6 +24,13 @@
 #   go-tests = true
 #   unused-packages = true
 
+[[override]]
+  name = "gopkg.in/fsnotify.v1"
+  source = "https://github.com/fsnotify/fsnotify/archive/v1.4.7.tar.gz"
+
+[[override]]
+  name = "github.com/go-openapi/runtime"
+  version = "0.17.2"
 
 [[constraint]]
   name = "github.com/aws/aws-sdk-go"
@@ -59,7 +66,7 @@
 
 [[constraint]]
   name = "github.com/firecracker-microvm/firecracker-go-sdk"
-  branch = "master"
+  revision = "d6ebdb60773e8c83eba39f3719a135298a8f9ba8"
 
 [[override]]
   name = "golang.org/x/sys"
