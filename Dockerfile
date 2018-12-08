@@ -1,4 +1,4 @@
-FROM golang:1.7.6
+FROM golang:1.11.1
 
 RUN apt-get update && apt-get install -y curl make git jq
 

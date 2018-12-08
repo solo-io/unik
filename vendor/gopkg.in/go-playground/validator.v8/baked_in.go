@@ -271,11 +271,7 @@ func IsISBN13(v *Validate, topStruct reflect.Value, currentStructOrField reflect
 		checksum += factor[i%2] * int32(s[i]-'0')
 	}
 
-	if (int32(s[12]-'0'))-((10-(checksum%10))%10) == 0 {
-		return true
-	}
-
-	return false
+	return (int32(s[12]-'0'))-((10-(checksum%10))%10) == 0
 }
 
 // IsISBN10 is the validation function for validating if the field's value is a valid v10 ISBN.
@@ -301,32 +297,28 @@ func IsISBN10(v *Validate, topStruct reflect.Value, currentStructOrField reflect
 		checksum += 10 * int32(s[9]-'0')
 	}
 
-	if checksum%11 == 0 {
-		return true
-	}
-
-	return false
+	return checksum%11 == 0
 }
 
-// ExcludesRune is the validation function for validating that the field's value does not contain the rune specified withing the param.
+// ExcludesRune is the validation function for validating that the field's value does not contain the rune specified within the param.
 // NOTE: This is exposed for use within your own custom functions and not intended to be called directly.
 func ExcludesRune(v *Validate, topStruct reflect.Value, currentStructOrField reflect.Value, field reflect.Value, fieldType reflect.Type, fieldKind reflect.Kind, param string) bool {
 	return !ContainsRune(v, topStruct, currentStructOrField, field, fieldType, fieldKind, param)
 }
 
-// ExcludesAll is the validation function for validating that the field's value does not contain any of the characters specified withing the param.
+// ExcludesAll is the validation function for validating that the field's value does not contain any of the characters specified within the param.
 // NOTE: This is exposed for use within your own custom functions and not intended to be called directly.
 func ExcludesAll(v *Validate, topStruct reflect.Value, currentStructOrField reflect.Value, field reflect.Value, fieldType reflect.Type, fieldKind reflect.Kind, param string) bool {
 	return !ContainsAny(v, topStruct, currentStructOrField, field, fieldType, fieldKind, param)
 }
 
-// Excludes is the validation function for validating that the field's value does not contain the text specified withing the param.
+// Excludes is the validation function for validating that the field's value does not contain the text specified within the param.
 // NOTE: This is exposed for use within your own custom functions and not intended to be called directly.
 func Excludes(v *Validate, topStruct reflect.Value, currentStructOrField reflect.Value, field reflect.Value, fieldType reflect.Type, fieldKind reflect.Kind, param string) bool {
 	return !Contains(v, topStruct, currentStructOrField, field, fieldType, fieldKind, param)
 }
 
-// ContainsRune is the validation function for validating that the field's value contains the rune specified withing the param.
+// ContainsRune is the validation function for validating that the field's value contains the rune specified within the param.
 // NOTE: This is exposed for use within your own custom functions and not intended to be called directly.
 func ContainsRune(v *Validate, topStruct reflect.Value, currentStructOrField reflect.Value, field reflect.Value, fieldType reflect.Type, fieldKind reflect.Kind, param string) bool {
 	r, _ := utf8.DecodeRuneInString(param)
@@ -334,13 +326,13 @@ func ContainsRune(v *Validate, topStruct reflect.Value, currentStructOrField ref
 	return strings.ContainsRune(field.String(), r)
 }
 
-// ContainsAny is the validation function for validating that the field's value contains any of the characters specified withing the param.
+// ContainsAny is the validation function for validating that the field's value contains any of the characters specified within the param.
 // NOTE: This is exposed for use within your own custom functions and not intended to be called directly.
 func ContainsAny(v *Validate, topStruct reflect.Value, currentStructOrField reflect.Value, field reflect.Value, fieldType reflect.Type, fieldKind reflect.Kind, param string) bool {
 	return strings.ContainsAny(field.String(), param)
 }
 
-// Contains is the validation function for validating that the field's value contains the text specified withing the param.
+// Contains is the validation function for validating that the field's value contains the text specified within the param.
 // NOTE: This is exposed for use within your own custom functions and not intended to be called directly.
 func Contains(v *Validate, topStruct reflect.Value, currentStructOrField reflect.Value, field reflect.Value, fieldType reflect.Type, fieldKind reflect.Kind, param string) bool {
 	return strings.Contains(field.String(), param)
@@ -1040,7 +1032,7 @@ func IsGt(v *Validate, topStruct reflect.Value, currentStructOrField reflect.Val
 		return field.Float() > p
 	case reflect.Struct:
 
-		if field.Type() == timeType || field.Type() == timePtrType {
+		if fieldType == timeType || fieldType == timePtrType {
 
 			return field.Interface().(time.Time).After(time.Now().UTC())
 		}
@@ -1255,7 +1247,7 @@ func IsLt(v *Validate, topStruct reflect.Value, currentStructOrField reflect.Val
 
 	case reflect.Struct:
 
-		if field.Type() == timeType || field.Type() == timePtrType {
+		if fieldType == timeType || fieldType == timePtrType {
 
 			return field.Interface().(time.Time).Before(time.Now().UTC())
 		}

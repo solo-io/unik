@@ -25,28 +25,8 @@ additional flags to the Go compiler via the `EXTRAGOARGS` make variable.
 Tools
 ---
 
-There's a basic command-line tool, built as `cmd/firectl/firectl` that lets you
-run arbitrary Firecracker MicroVMs via the command line. This lets you run a
-fully functional Firecracker MicroVM, including console access, read/write
-access to filesystems, and network connectivity.
-
-```
-Usage of ./cmd/firectl/firectl:
-    --firecracker-binary=  Path to Firecracker binary
-    --firecracker-console= Console type (stdio|xterm|none) (default: stdio)
-    --kernel=              Path to the kernel image (default: ./vmlinux)
-    --kernel-opts=         Kernel commandline (default: ro console=ttyS0 noapic reboot=k panic=1 pci=off nomodules)
-    --root-drive=          Path to root disk image
-    --add-drive=           Path to additional drive, suffixed with :ro or :rw, can be specified multiple times
-    --tap-device=          NIC info, specified as DEVICE:MAC
-    --vmm-log-fifo=        FIFO for Firecracker logs
-    --log-level=           vmm log level (default: Debug)
-    --metrics-fifo=        FIFO for Firecracker metrics
--d, --debug                Enable debug output
--h, --help                 Show usage
-```
-
-`$ ./cmd/firectl/firectl --firecracker-binary=./firecracker-0.10.1 --firecracker-console=stdio --root-drive=openwrt-x86-64-rootfs-squashfs.img --tap-device=vmtap33/9a:e4:f6:b0:2d:f3 --add-drive drive-2.img:ro -d --vmm-log-fifo=/tmp/fc-logs.fifo --metrics-fifo=/tmp/fc-metrics`
+There's a [firectl](cmd/firectl) tool that provides a simple command-line
+interface to launching a firecracker VM.
 
 Network configuration
 ---

@@ -162,7 +162,7 @@ Here is a list of the current built in validators:
 
 Skip Field
 
-Tells the validation to skip this struct field; this is particularily
+Tells the validation to skip this struct field; this is particularly
 handy in ignoring embedded structs from being validated. (Usage: -)
 	Usage: -
 
@@ -280,11 +280,11 @@ validates the number of items.
 
 Not Equal
 
-For strings & numbers, eq will ensure that the value is not
+For strings & numbers, ne will ensure that the value is not
 equal to the parameter given. For slices, arrays, and maps,
 validates the number of items.
 
-	Usage: eq=10
+	Usage: ne=10
 
 Greater Than
 
