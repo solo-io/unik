@@ -9,7 +9,7 @@ RUN apt-get update -y && \
  apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
-RUN curl https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz | tar xz -C /usr/local && mv /usr/local/go /usr/local/go1.5 && ln -s /usr/local/go1.5 /usr/local/go
+RUN curl https://storage.googleapis.com/golang/go1.11.1.linux-amd64.tar.gz | tar xz -C /usr/local && mv /usr/local/go /usr/local/go1.5 && ln -s /usr/local/go1.5 /usr/local/go
 
 
 ENV GOPATH=/go

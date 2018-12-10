@@ -35,3 +35,12 @@ _debug
 
 instance-listener/bindata/
 .idea/
+
+# Swap
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
+
+# Session
+Session.vim

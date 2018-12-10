@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-base-hw:3e0e31ac24ba649f
+FROM projectunik/compilers-rump-base-hw:8c532004d98728f4
 
 RUN apt-get update
 RUN apt-get install -y python

@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-go-hw:a92f4aa53a414bbf
+FROM projectunik/compilers-rump-go-hw:10b309685eb8ee0f
 
 ENV RUMP_BAKE=hw_generic
 
