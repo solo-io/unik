@@ -102,7 +102,7 @@ func parseInstanceState(serverState string) types.InstanceState {
 
 	logrus.WithFields(logrus.Fields{
 		"serverState": serverState,
-	}).Infof("recieved unknown instance state")
+	}).Infof("Received unknown instance state")
 
 	return types.InstanceState_Unknown
 }
