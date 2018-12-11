@@ -38,7 +38,7 @@ Providers typically store some type of state, which may include a JSON represent
 
 Providers perform API calls talk to the hypervisor / cloud provider / infrastructure where the images are hosted and instances are run.
 
-To add an implemented provider to the Daemon, see the Unik API Server constructor function `func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error)` in [`daemon.go`](../pkg/daemon/daemon.go)
+To add an implemented provider to the Daemon, see the Unik API Server constructor function `func NewUnikDaemon(config config.DaemonConfig) (*UnikDaemon, error)` in [`daemon.go`](../../pkg/daemon/daemon.go)
 
 Your change should look something like this:
 ```go
