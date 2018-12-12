@@ -47,9 +47,11 @@ func (p *FirecrackerProvider) RunInstance(params types.RunInstanceParams) (_ *ty
 	instanceId := params.Name
 	instanceDir := getInstanceDir(instanceId)
 
-	err = os.Mkdir(instanceDir, 0755)
-	if err != nil {
-		return nil, errors.New("can't create instance dir", err)
+	if _, err := os.Stat(instanceDir); os.IsNotExist(err) {
+		err = os.Mkdir(instanceDir, 0755)
+		if err != nil {
+			return nil, errors.New("can't create instance dir", err)
+		}
 	}
 
 	logs := filepath.Join(instanceDir, "logs.fifo")
