@@ -846,7 +846,7 @@ func (d *UnikDaemon) initialize() {
 
 			logrus.WithFields(logrus.Fields{
 				"request": runInstanceRequest,
-			}).Debugf("recieved run request")
+			}).Debugf("Received run request")
 
 			if runInstanceRequest.ImageName == "" {
 				return nil, http.StatusBadRequest, errors.New("image must be named", nil)
