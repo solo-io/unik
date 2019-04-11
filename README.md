@@ -92,6 +92,6 @@ UniK is still experimental! APIs and compatibility are subject to change. We are
 
 ### Thanks
 
-**UniK** would not be possible without the valuable open-source work of projects in the unikernel community. We would like to extend a special thank-you to [AWS Firecracker](https://aws.amazon.com/blogs/aws/firecracker-lightweight-virtualization-for-serverless-computing/), [rumprun](https://github.com/rumpkernel), [deferpanic](https://github.com/deferpanic), [cloudius systems](https://github.com/cloudius-systems), [mirageos](https://mirage.io) and [includeOS](http://www.includeos.org/).
+**UniK** would not be possible without the valuable open-source work of projects in the unikernel community. We would like to extend a special thank-you to [Firecracker](https://firecracker-microvm.github.io/), [rumprun](https://github.com/rumpkernel), [deferpanic](https://github.com/deferpanic), [cloudius systems](https://github.com/cloudius-systems), [mirageos](https://mirage.io) and [includeOS](http://www.includeos.org/).
 
 <!--(for contributors): push images: CONTAINERVER=0.1 for i in $(docker images | grep projectunik/ | awk '{print $1}'); do docker push $i:$CONTAINERVER; done-->
