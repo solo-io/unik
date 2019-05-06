@@ -125,21 +125,20 @@ Ensure that each of the following are installed
 
 #### Compile an image and run on Virtualbox
 
-1. Run the following command from the directory where your `service.cpp` is located:
-  ```
-  unik build --name myImage --path ./ --base includeos --language cpp --provider virtualbox
-  ```
-  This command will instruct UniK to compile the sources found in the working directory (`./`) using the `includeos-cpp-virtualbox` compiler.
+1. Run the following command from the directory where your `service.cpp` is located to instruct UniK to compile the sources found in the working directory (`./`) using the `includeos-cpp-virtualbox` compiler :
+```
+unik build --name myImage --path ./ --base includeos --language cpp --provider virtualbox
+```
 2. You can watch the output of the `build` command in the terminal window running the daemon.
 3. When `build` finishes, the resulting disk image will reside at `$HOME/.unik/virtualbox/images/myImage/boot.vmdk`
 4. Run an instance of this image with
-  ```
-  unik run --instanceName myInstance --imageName myImage
-  ```
+```
+unik run --instanceName myInstance --imageName myImage
+```
 5. When the instance finishes launching, let's check its IP and see that it is running our application.
 6. Run `unik instances`. The instance IP Address should be listed.
 7. Direct your browser to `http://instance-ip:8080` and see that your instance is running!
 8. To clean up your image and the instance you created
-  ```
-  unik rmi --force --image myImage
-  ```
+```
+unik rmi --force --image myImage
+```
