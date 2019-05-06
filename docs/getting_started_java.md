@@ -28,21 +28,21 @@ Ensure that each of the following are installed
   $ mv _build/unik /usr/local/bin/
   ```
 
-  2. Configure a Host-Only Network on Virtualbox
-    * Open Virtualbox
-    * Open **Preferences** > **Network** > **Host-only Networks**
-    * Click the green add button on the right side of the UI
-    * Record the name of the new Host-Only adapter. You will need this in your UniK configuration
-    * Ensure that the Virtualbox DHCP Server is Enabled for this Host-Only Network:
-      * With the Host-Only Network selected, Click the edit button (screwdriver image)
-      * In the **Adapter** tab, note the IPv4 address and netmask of the adapter.
-      * In the **DHCP Server** tab, check the **Enable Server** box
-      * Set **Server Address** an IP on the same subnet as the Adapter IP. For example, if the adapter IP is `192.168.100.1`, make set the DHCP server IP as `192.168.100.X`, where X is a number between 2-254.
-      * Set **Server Mask** to the netmask you just noted
-      * Set **Upper / Lower Address Bound** to a range of IPs on the same subnet. We recommend using the range `X-254` where X is one higher than the IP you used for the DHCP server itself. E.g., if your DHCP server is `192.168.100.2`, you can set the lower and upper bounds to `192.168.100.3` and `192.168.100.254`, respectively.
+2. Configure a Host-Only Network on Virtualbox
+  * Open Virtualbox
+  * Open **Preferences** > **Network** > **Host-only Networks**
+  * Click the green add button on the right side of the UI
+  * Record the name of the new Host-Only adapter. You will need this in your UniK configuration
+  * Ensure that the Virtualbox DHCP Server is Enabled for this Host-Only Network:
+    * With the Host-Only Network selected, Click the edit button (screwdriver image)
+    * In the **Adapter** tab, note the IPv4 address and netmask of the adapter.
+    * In the **DHCP Server** tab, check the **Enable Server** box
+    * Set **Server Address** an IP on the same subnet as the Adapter IP. For example, if the adapter IP is `192.168.100.1`, make set the DHCP server IP as `192.168.100.X`, where X is a number between 2-254.
+    * Set **Server Mask** to the netmask you just noted
+    * Set **Upper / Lower Address Bound** to a range of IPs on the same subnet. We recommend using the range `X-254` where X is one higher than the IP you used for the DHCP server itself. E.g., if your DHCP server is `192.168.100.2`, you can set the lower and upper bounds to `192.168.100.3` and `192.168.100.254`, respectively.
 
-  3. Configure UniK daemon
-    * Using a text editor, create and save the following to `$HOME/.unik/daemon-config.yaml`:
+3. Configure UniK daemon
+  * Using a text editor, create and save the following to `$HOME/.unik/daemon-config.yaml`:
     
 ```yaml
 providers:
@@ -54,13 +54,13 @@ providers:
     
 replacing `NEW_HOST_ONLY_ADAPTER` with the name of the network adapter you created.
 
-  4. Launch UniK and automatically deploy the *Virtualbox Instance Listener*
-    * Open a new terminal window/tab. This terminal will be where we leave the UniK daemon running.
-    * `cd` to the `_build` directory created by `make`
-    * run `./unik daemon --debug` (the `--debug` flag is optional, if you want to see more verbose output)
-    * UniK will compile and deploy its own 30 MB unikernel. This unikernel is the [Unik Instance Listener](./instance_listener.md). The instance listener uses udp broadcast to detect instance ips and bootstrap instances running on Virtualbox.
-    * After this is finished, UniK is running and ready to accept commands.
-    * Open a new terminal window and type `unik target --host localhost` to set the CLI target to the your local machine.
+4. Launch UniK and automatically deploy the *Virtualbox Instance Listener*
+  * Open a new terminal window/tab. This terminal will be where we leave the UniK daemon running.
+  * `cd` to the `_build` directory created by `make`
+  * run `./unik daemon --debug` (the `--debug` flag is optional, if you want to see more verbose output)
+  * UniK will compile and deploy its own 30 MB unikernel. This unikernel is the [Unik Instance Listener](./instance_listener.md). The instance listener uses udp broadcast to detect instance ips and bootstrap instances running on Virtualbox.
+  * After this is finished, UniK is running and ready to accept commands.
+  * Open a new terminal window and type `unik target --host localhost` to set the CLI target to the your local machine.
 
 ---
 
