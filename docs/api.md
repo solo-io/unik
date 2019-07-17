@@ -37,7 +37,7 @@ A string describing the compiler is returned, or `<missing compiler description>
 
 Get all providers available to the targeted unik backend.
 
-Retruns a list with the names of all providers. 
+Returns a list with the names of all providers. 
 
 
 ## Images
@@ -97,7 +97,7 @@ base      | The Unikernel Base to build the image on. These include different un
 lang      | The language/runtime the image should be built with. E.g. for a golang project, specify `go`. Languages supported depend on the unikernel base.        | yes
 force   | If set to true, the image creation is inforced | no
 no_cleanup   | If set to true, the files send to the server will not be removed after the image is created | no
-mounts   | A comma separeted list of mountpoint where on runtime a volume is expected to be mounted | no
+mounts   | A comma separated list of mountpoint where on runtime a volume is expected to be mounted | no
 args   | A list of arguments to be passed to the application at runtime  | no
 
 Returns a JSON object, describing the newly created image.
@@ -112,7 +112,7 @@ The fallowing query parameters are available:
 
 Parameter | Description | Mandatory
 ----------| ----------- | :--------:
-force   | If set to true, the image removal is inforced | no
+force   | If set to true, the image removal is enforced | no
 
 Returns HTTP Status `204` on success. 
 
@@ -129,7 +129,7 @@ The body must be of the type `application/json` with the fallowing format:
 	"pass":string
 }
 ```
-It describes the Hub configuration, which is the url and credentials for a AWS S3 instance. 
+It describes the Hub configuration, which is the url and credentials for an AWS S3 instance. 
 
 Returns HTTP Status `202` on success. 
 
@@ -142,12 +142,11 @@ The fallowing query parameters are available:
 Parameter | Description | Mandatory
 ----------| ----------- | :--------:
 provider  |  The (cloud/hypervisor) provider the image should be built for. Supported providers depend on the unikernel base.     | yes
-force     | If set to true, a locally exsting image might get overwritten | no
+force     | If set to true, a locally existing image might get overwritten | no
 
 The body must contain the description of the Hub, for more details [see](#POST-imagespushimage_name).
 
 Returns HTTP Status `202` on success. 
-
 
 ### POST `/images/remote-delete/{image_name}`
 
@@ -192,7 +191,7 @@ The fallowing query parameters are available:
 
 Parameter | Description | Mandatory
 ----------| ----------- | :--------:
-force   | If set to true, the instance removal is inforced | no
+force   | If set to true, the instance removal is enforced | no
 
 Returns HTTP Status `204` on success. 
 
@@ -204,7 +203,7 @@ The fallowing query parameters are available:
 
 Parameter | Description | Mandatory
 ----------| ----------- | :--------:
-fallow   | If set to true, the logs will be continously streamed to the client | no
+fallow   | If set to true, the logs will be continuously streamed to the client | no
 delete   | Only valid with fallow=true. If set to true, the instance will be removed as soon as the connection is terminated  | no
 
 Returns a string containing all available logs, or a stream if fallow=true. 
@@ -292,30 +291,30 @@ Parameter | Description | In Body  | In Query |
 ----------| ----------- | -------- | -------- |
 tarfile   | The data added initially to the volume  | yes | no
 provider  |  The (cloud/hypervisor) provider the volume should be built for.   | yes | yes
-raw | If ture, the data is send as raw bytes, otherwise as tar.gz | optional | no
+raw | If true, the data is send as raw bytes, otherwise as tar.gz | optional | no
 no_cleanup |  If set to true, the files send to the server will not be removed after the volume is created | optional | optional 
 size | The size of the volume in MB | no | yes 
 
-The size, unlike the other parameters, must always be send as query parameter. 
+The size, unlike the other parameters, must be always send as query parameter. 
 
 Returns a JSON describing the newly created volume. 
 See description of the request for a single volume for more [details](#GET-volumesvolume_name) about the object.
 
 ### DELETE `/volumes/{volume_name}`
 
-Deletes a volume indentified by its name.
+Deletes a volume identified by its name.
 
 The fallowing query parameters are available:
 
 Parameter | Description | Mandatory
 ----------| ----------- | :--------:
-force   | If set to true, the volume removal is inforced | no
+force   | If set to true, the volume removal is enforced | no
 
 Returns HTTP Status `204` on success. 
 
 ### POST `/volumes/{volume_name}/attach/{instance_id}`
 
-Attatches an existing volume, identified by its name, to a running instance, identified by its id. 
+Attaches an existing volume, identified by its name, to a running instance, identified by its id. 
 
 The fallowing query parameters are available:
 
