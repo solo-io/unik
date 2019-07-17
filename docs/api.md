@@ -47,7 +47,7 @@ Retruns a list with the names of all providers.
 Lists all available unikernel images across providers. Includes important information for running and managing instances, including the required mount points for the image.
 
 Returns a JSON list of objects, describing all images. 
-See description of the request for a single image for more [details](#GET-/images/{image_name}) about the object.
+See description of the request for a single image for more [details](#GET-imagesimage_name) about the object.
 
 ### GET `/images/{image_name}`
 
@@ -101,7 +101,7 @@ mounts   | A comma separeted list of mountpoint where on runtime a volume is exp
 args   | A list of arguments to be passed to the application at runtime  | no
 
 Returns a JSON object, describing the newly created image.
-See description of the request for a single image for more [details](#GET-/images/{image_name}) about the object.
+See description of the request for a single image for more [details](#GET-imagesimage_name) about the object.
 
 
 ### DELETE `/images/{image_name}`
@@ -144,7 +144,7 @@ Parameter | Description | Mandatory
 provider  |  The (cloud/hypervisor) provider the image should be built for. Supported providers depend on the unikernel base.     | yes
 force     | If set to true, a locally exsting image might get overwritten | no
 
-The body must contain the description of the Hub, for more details [see](#POST-/images/push/{image_name}).
+The body must contain the description of the Hub, for more details [see](#POST-imagespushimage_name).
 
 Returns HTTP Status `202` on success. 
 
@@ -153,7 +153,7 @@ Returns HTTP Status `202` on success.
 
 Deletes an image from the specified hub. 
 
-The body must contain the description of the Hub, for more details [see](#POST-/images/push/{image_name}).
+The body must contain the description of the Hub, for more details [see](#POST-imagespushimage_name).
 
 Returns HTTP Status `202` on success. 
     
@@ -164,7 +164,7 @@ Returns HTTP Status `202` on success.
 Lists all available unikernel instances across providers. Includes important information about the state of the instances.
 
 Returns a JSON list of objects, describing all instances. 
-See description of the request for a single instance for more [details](#GET-/instances/{instance_id}) about the object.
+See description of the request for a single instance for more [details](#GET-instancesinstance_id) about the object.
 
 ### GET `/instances/{instance_id}`
 
@@ -235,7 +235,7 @@ As body a JSON of the fallowing format is expected:
 }
 ```
 Returns a JSON object describing the newly created instance.
-See description of the request for a single instance for more [details](#GET-/instances/{instance_id}) about the object.
+See description of the request for a single instance for more [details](#GET-instancesinstance_id) about the object.
 
 ### POST `/instances/{instance_id}/start`
 
@@ -256,7 +256,7 @@ Returns HTTP Status `200` on success.
 Lists all available unik-managed volumes across providers.
 
 Returns a JSON list of objects, describing all volumes. 
-See description of the request for a single volume for more [details](#GET-/volumes/{volume_name}) about the object.
+See description of the request for a single volume for more [details](#GET-volumesvolume_name) about the object.
 
 ### GET `/volumes/{volume_name}`
 
@@ -299,7 +299,7 @@ size | The size of the volume in MB | no | yes
 The size, unlike the other parameters, must always be send as query parameter. 
 
 Returns a JSON describing the newly created volume. 
-See description of the request for a single volume for more [details](#GET-/volumes/{volume_name}) about the object.
+See description of the request for a single volume for more [details](#GET-volumesvolume_name) about the object.
 
 ### DELETE `/volumes/{volume_name}`
 
