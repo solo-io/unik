@@ -25,5 +25,5 @@
   "compilers-osv-java": "14f2183e5cb49482",
   "compilers-osv-dynamic": "59ba07ca2f12ecaa",
   "compilers-mirage-ocaml-ukvm": "2c35c23771682e9a",
-  "compilers-firecracker": "84382da222f5971c"
+  "compilers-firecracker": "0b68bcdd190d2a7d"
 }

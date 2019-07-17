@@ -5,6 +5,7 @@
 - [`jq`](https://stedolan.github.io/jq/)
 - [`make`](https://www.gnu.org/software/make/)
 - [Virtualbox](https://www.virtualbox.org/) (if using the [virtualbox provider](providers/virtualbox.md))
+- [go-bindata](https://github.com/jteeuwen/go-bindata)
 
 ---
 #### Install

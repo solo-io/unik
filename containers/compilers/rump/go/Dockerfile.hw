@@ -1,4 +1,4 @@
-FROM projectunik/compilers-rump-base-hw:8cd85d4a7ee1009b
+FROM projectunik/compilers-rump-base-hw:8c532004d98728f4
 
 RUN curl https://storage.googleapis.com/golang/go1.6.3.linux-amd64.tar.gz | tar xz -C /usr/local && \
     mv /usr/local/go /usr/local/go1.6 && ln -s /usr/local/go1.6 /usr/local/go && \
