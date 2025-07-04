@@ -40,7 +40,7 @@ Due to the frequency with which features and patches are applied to UniK, we hav
   - [Run your first Python3 unikernel](docs/getting_started_python3.md) on Virtualbox with UniK
   - [Run your first Java unikernel](docs/getting_started_java.md) on Virtualbox with UniK
   - [Run your first C++ unikernel](docs/getting_started_cpp.md) on Virtualbox with UniK
-- **User Documenation**
+- **User Documentation**
   - Using the [command line interface](docs/cli.md)
   - Compiling [Node.js](docs/compilers/rump.md#nodejs) Applications to Unikernels
   - Compiling [Go](docs/compilers/rump.md#golang) Applications to Unikernels
